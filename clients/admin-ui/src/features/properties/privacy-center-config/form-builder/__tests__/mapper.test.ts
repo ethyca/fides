@@ -181,6 +181,69 @@ describe("mapSpecToPcShape", () => {
     expect(result.pcShape.notes.placeholder).toBeUndefined();
   });
 
+  it("emits fieldOrder reflecting children order across identity and custom fields", () => {
+    const spec = buildSpec(
+      {
+        f_email: { type: "Email", props: { required: true }, children: [] },
+        f_reason: {
+          type: "Text",
+          props: { name: "reason", label: "Reason", required: false },
+          children: [],
+        },
+        f_name: { type: "Name", props: { required: false }, children: [] },
+        f_topics: {
+          type: "MultiSelect",
+          props: {
+            name: "topics",
+            label: "Topics",
+            required: false,
+            options: ["A", "B"],
+          },
+          children: [],
+        },
+      },
+      ["f_email", "f_reason", "f_name", "f_topics"],
+    );
+
+    const result = mapSpecToPcShape(spec);
+
+    expect(result.errors).toEqual([]);
+    expect(result.fieldOrder).toEqual(["email", "reason", "name", "topics"]);
+    expect(result.identityInputs).toEqual({ email: "required", name: "optional" });
+    expect(Object.keys(result.pcShape)).toEqual(["reason", "topics"]);
+  });
+
+  it("returns an empty fieldOrder when the spec has no children", () => {
+    const spec = buildSpec({}, []);
+    const result = mapSpecToPcShape(spec);
+    expect(result.fieldOrder).toEqual([]);
+  });
+
+  it("excludes unknown components from fieldOrder while reporting them as dropped", () => {
+    const spec = buildSpec(
+      {
+        ok: {
+          type: "Text",
+          props: { name: "notes", label: "Notes", required: false },
+          children: [],
+        },
+        weird: {
+          type: "Mystery",
+          props: {},
+          children: [],
+        },
+      },
+      ["ok", "weird"],
+    );
+
+    const result = mapSpecToPcShape(spec);
+
+    expect(result.fieldOrder).toEqual(["notes"]);
+    expect(result.droppedFeatures.map((d) => d.kind)).toContain(
+      "unknown_component",
+    );
+  });
+
   it("translates json-render `visible` into legacy `visible_when` and does not drop it", () => {
     const spec = buildSpec(
       {

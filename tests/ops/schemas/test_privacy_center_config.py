@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict
 
 import pytest
 from pydantic import ValidationError
@@ -572,6 +573,134 @@ class TestReorderCustomPrivacyRequestFields:
         result = reorder_custom_privacy_request_fields(config)
         keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
         assert keys == ["b", "a", "new_field"]  # new_field appended at end
+
+    def test_field_order_takes_precedence_over_deprecated_key(self):
+        """When both keys are present, field_order wins; deprecated key is stripped."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "identity_inputs": {"email": "required"},
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                    },
+                    "field_order": ["b", "email", "a"],
+                    "custom_privacy_request_field_order": ["a", "b"],  # ignored
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        # Customs are reordered to match field_order, filtered to custom keys.
+        assert list(
+            result["actions"][0]["custom_privacy_request_fields"].keys()
+        ) == ["b", "a"]
+        # Deprecated key is stripped; field_order survives untouched.
+        assert "custom_privacy_request_field_order" not in result["actions"][0]
+        assert result["actions"][0]["field_order"] == ["b", "email", "a"]
+
+    def test_field_order_with_only_identity_keys_preserves_custom_dict_order(self):
+        """field_order containing no custom keys leaves custom dict order untouched."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "identity_inputs": {"email": "required", "name": "optional"},
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                    },
+                    "field_order": ["email", "name"],
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        # No custom keys in field_order → fall back to existing dict order.
+        assert list(
+            result["actions"][0]["custom_privacy_request_fields"].keys()
+        ) == ["a", "b"]
+
+
+class TestPrivacyRequestOptionFieldOrder:
+    """Tests for the field_order validator on PrivacyRequestOption."""
+
+    @staticmethod
+    def _base_payload(**overrides: Any) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {
+            "icon_path": "/icon.svg",
+            "title": "Access",
+            "description": "Access my data",
+            "identity_inputs": {"email": "required", "name": "optional"},
+            "custom_privacy_request_fields": {
+                "reason": {"label": "Reason", "field_type": "text"},
+                "topics": {
+                    "label": "Topics",
+                    "field_type": "multiselect",
+                    "options": ["A", "B"],
+                },
+            },
+        }
+        payload.update(overrides)
+        return payload
+
+    def test_absent_field_order_is_valid(self):
+        """Legacy configs without field_order continue to validate."""
+        option = PrivacyRequestOption.model_validate(self._base_payload())
+        assert option.field_order is None
+
+    def test_valid_mixed_field_order_round_trips(self):
+        """field_order mixing identity and custom keys validates and survives a dump."""
+        payload = self._base_payload(
+            field_order=["email", "reason", "name", "topics"]
+        )
+        option = PrivacyRequestOption.model_validate(payload)
+        assert option.field_order == ["email", "reason", "name", "topics"]
+        dumped = option.model_dump(by_alias=True, exclude_none=True)
+        assert dumped["field_order"] == ["email", "reason", "name", "topics"]
+
+    def test_partial_field_order_is_valid(self):
+        """Configured fields missing from field_order intentionally fall through (no error)."""
+        # `topics` and `name` are configured but absent from field_order.
+        payload = self._base_payload(field_order=["email", "reason"])
+        option = PrivacyRequestOption.model_validate(payload)
+        assert option.field_order == ["email", "reason"]
+
+    def test_unknown_keys_in_field_order_raise(self):
+        """Keys not in identity_inputs or custom_privacy_request_fields raise ValidationError."""
+        payload = self._base_payload(
+            field_order=["email", "ghost_field", "reason"]
+        )
+        with pytest.raises(ValidationError) as exc:
+            PrivacyRequestOption.model_validate(payload)
+        assert "field_order references unknown keys" in str(exc.value)
+        assert "ghost_field" in str(exc.value)
+
+    def test_duplicate_keys_in_field_order_raise(self):
+        """Duplicates in field_order raise ValidationError."""
+        payload = self._base_payload(field_order=["email", "reason", "email"])
+        with pytest.raises(ValidationError) as exc:
+            PrivacyRequestOption.model_validate(payload)
+        assert "field_order contains duplicate keys" in str(exc.value)
+
+    def test_empty_field_order_is_valid(self):
+        """An empty list validates (renderer falls back to legacy ordering)."""
+        payload = self._base_payload(field_order=[])
+        option = PrivacyRequestOption.model_validate(payload)
+        assert option.field_order == []
+
+    def test_field_order_with_custom_identity_keys(self):
+        """Custom identity keys (extras on IdentityInputs) are valid in field_order."""
+        payload = self._base_payload(
+            identity_inputs={
+                "email": "required",
+                "loyalty_id": {"label": "Loyalty ID"},
+            },
+            field_order=["loyalty_id", "email", "reason", "topics"],
+        )
+        option = PrivacyRequestOption.model_validate(payload)
+        assert option.field_order[0] == "loyalty_id"
 
 
 def test_privacy_request_option_preserves_unknown_extras() -> None:

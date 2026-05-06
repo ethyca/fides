@@ -35,6 +35,7 @@ interface ActionShape {
   cancelButtonText?: string | null;
   custom_privacy_request_fields?: PcCustomFields;
   identity_inputs?: Record<string, "required" | "optional"> | null;
+  field_order?: string[] | null;
   // eslint-disable-next-line no-underscore-dangle
   _form_builder_spec?: { spec: JsonRenderSpec; version: number };
 }
@@ -55,6 +56,7 @@ interface FormBuilderPageProps {
     actionPolicyKey: string;
     pcShape: PcCustomFields;
     identityInputs: Record<string, "required" | "optional">;
+    fieldOrder: string[];
     richSpec: JsonRenderSpec;
   }) => Promise<void>;
 }
@@ -127,6 +129,7 @@ export const FormBuilderPage = ({
       return synthesizeSpecFromPcShape(
         action.custom_privacy_request_fields ?? {},
         action.identity_inputs,
+        action.field_order,
       );
     }
     // No saved fields yet — seed with the standard DSR defaults so the
@@ -328,6 +331,7 @@ export const FormBuilderPage = ({
         actionPolicyKey,
         pcShape: result.pcShape,
         identityInputs: result.identityInputs,
+        fieldOrder: result.fieldOrder,
         richSpec: builder.spec,
       });
       // Save just wrote rich + legacy in lockstep, so any prior drift is

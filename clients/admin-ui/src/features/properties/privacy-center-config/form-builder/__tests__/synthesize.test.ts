@@ -52,4 +52,110 @@ describe("synthesizeSpecFromPcShape", () => {
     expect(back.pcShape.country.field_type).toBe("location");
     expect(back.pcShape.contact_method.field_type).toBe("radio");
   });
+
+  it("uses fieldOrder when provided, interleaving identity and custom fields", () => {
+    const pcShape = {
+      reason: { label: "Reason", field_type: "text" as const, required: false },
+      topics: {
+        label: "Topics",
+        field_type: "multiselect" as const,
+        options: ["A", "B"],
+        required: false,
+      },
+    };
+    const identityInputs = {
+      email: "required" as const,
+      name: "optional" as const,
+    };
+    const fieldOrder = ["email", "reason", "name", "topics"];
+
+    const spec = synthesizeSpecFromPcShape(pcShape, identityInputs, fieldOrder);
+
+    expect(spec.elements.form.children).toEqual([
+      "f_email",
+      "f_reason",
+      "f_name",
+      "f_topics",
+    ]);
+    const back = mapSpecToPcShape(spec);
+    expect(back.fieldOrder).toEqual(["email", "reason", "name", "topics"]);
+  });
+
+  it("falls back to legacy ordering when fieldOrder is absent", () => {
+    const pcShape = {
+      reason: { label: "Reason", field_type: "text" as const, required: false },
+    };
+    const identityInputs = {
+      phone: "optional" as const,
+      email: "required" as const,
+      name: "optional" as const,
+    };
+
+    const spec = synthesizeSpecFromPcShape(pcShape, identityInputs);
+
+    // Canonical legacy order: name → email → phone → customs.
+    expect(spec.elements.form.children).toEqual([
+      "f_name",
+      "f_email",
+      "f_phone",
+      "f_reason",
+    ]);
+  });
+
+  it("appends configured fields missing from fieldOrder using legacy fallback", () => {
+    const pcShape = {
+      reason: { label: "Reason", field_type: "text" as const, required: false },
+      topics: {
+        label: "Topics",
+        field_type: "multiselect" as const,
+        options: ["A"],
+        required: false,
+      },
+    };
+    const identityInputs = { email: "required" as const };
+    const fieldOrder = ["reason", "email"]; // `topics` configured but absent from order
+
+    const spec = synthesizeSpecFromPcShape(pcShape, identityInputs, fieldOrder);
+
+    expect(spec.elements.form.children).toEqual([
+      "f_reason",
+      "f_email",
+      "f_topics",
+    ]);
+  });
+
+  it("skips unknown keys in fieldOrder rather than crashing on stale data", () => {
+    const pcShape = {
+      reason: { label: "Reason", field_type: "text" as const, required: false },
+    };
+    const identityInputs = { email: "required" as const };
+    const fieldOrder = ["email", "ghost_field", "reason"];
+
+    const spec = synthesizeSpecFromPcShape(pcShape, identityInputs, fieldOrder);
+
+    expect(spec.elements.form.children).toEqual(["f_email", "f_reason"]);
+  });
+
+  it("preserves arbitrary order via a synthesize → map round trip", () => {
+    const pcShape = {
+      reason: { label: "Reason", field_type: "text" as const, required: false },
+      topics: {
+        label: "Topics",
+        field_type: "multiselect" as const,
+        options: ["A"],
+        required: false,
+      },
+    };
+    const identityInputs = {
+      email: "required" as const,
+      name: "optional" as const,
+      phone: "optional" as const,
+    };
+    const fieldOrder = ["topics", "email", "phone", "reason", "name"];
+
+    const spec = synthesizeSpecFromPcShape(pcShape, identityInputs, fieldOrder);
+    const back = mapSpecToPcShape(spec);
+
+    expect(back.fieldOrder).toEqual(fieldOrder);
+  });
 });

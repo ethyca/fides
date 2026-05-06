@@ -21,6 +21,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.84.0..main)
 
+### Added
+- Privacy center form builder: free reordering of identity and custom fields via a new `field_order` array on each privacy request action, persisted end-to-end through the form builder, the privacy center renderer, and admin/property APIs.
+
+### Deprecated
+- `custom_privacy_request_field_order` on privacy center actions — superseded by `field_order`, which orders identity and custom fields jointly. Existing configs continue to read correctly.
+
 ## [2.84.0](https://github.com/ethyca/fides/compare/2.83.3..2.84.0)
 
 ### Added

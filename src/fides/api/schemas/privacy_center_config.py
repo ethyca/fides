@@ -161,6 +161,35 @@ class PrivacyRequestOption(FidesSchema):
     custom_privacy_request_fields: Optional[
         Dict[str, CustomPrivacyRequestFieldUnion]
     ] = None
+    # Unified render order across identity_inputs and custom_privacy_request_fields.
+    # When set, the privacy center renders fields strictly in this order; absent
+    # legacy configs fall back to the hardcoded name → email → phone → customs
+    # sequence. Supersedes `custom_privacy_request_field_order` (deprecated).
+    field_order: Optional[List[str]] = None
+
+    @model_validator(mode="after")
+    def _validate_field_order(self) -> "PrivacyRequestOption":
+        if self.field_order is None:
+            return self
+        if len(self.field_order) != len(set(self.field_order)):
+            raise ValueError("field_order contains duplicate keys")
+        identity_keys = set(
+            (self.identity_inputs.model_dump(exclude_none=True).keys())
+            if self.identity_inputs is not None
+            else ()
+        )
+        custom_keys = set((self.custom_privacy_request_fields or {}).keys())
+        valid_keys = identity_keys | custom_keys
+        unknown = [k for k in self.field_order if k not in valid_keys]
+        if unknown:
+            raise ValueError(
+                f"field_order references unknown keys: {sorted(unknown)}"
+            )
+        # Configured fields not listed in field_order intentionally fall through
+        # to legacy ordering at the end of the rendered list. This path matters
+        # only for hand-edited YAML — the form builder always emits a complete
+        # field_order on save.
+        return self
 
 
 class ConsentConfigButton(FidesSchema):
@@ -286,11 +315,15 @@ class PartialPrivacyCenterConfig(FidesSchema):
 
 def reorder_custom_privacy_request_fields(config: dict[str, Any]) -> dict[str, Any]:
     """Return a copy of the privacy center config with custom_privacy_request_fields
-    ordered by custom_privacy_request_field_order when present.
+    ordered by the persisted ordering hints.
 
     JSONB does not preserve object key order. This helper reconstructs the desired
-    order using the stored order list and removes that internal key from the result.
-    When no order list exists (legacy config), the existing key order is preserved.
+    order from `field_order` (preferred — orders identity + custom fields jointly)
+    or falls back to the deprecated `custom_privacy_request_field_order` for legacy
+    configs that predate `field_order`. The deprecated key is stripped from the
+    result so it doesn't leak into API responses.
+
+    When neither order list exists (legacy config), the existing key order is preserved.
     """
     result = copy.deepcopy(config)
     actions = result.get("actions")
@@ -304,15 +337,26 @@ def reorder_custom_privacy_request_fields(config: dict[str, Any]) -> dict[str, A
         if not fields or not isinstance(fields, dict):
             continue
 
-        order = action.get("custom_privacy_request_field_order")
-        if isinstance(order, list) and len(order) > 0:
-            ordered = {k: fields[k] for k in order if k in fields}
-            # Append any fields not in order (prevents data loss if order list becomes stale)
+        # Prefer field_order (filtered to custom keys) over the deprecated key.
+        custom_order: List[str] = []
+        unified_order = action.get("field_order")
+        if isinstance(unified_order, list) and len(unified_order) > 0:
+            custom_order = [k for k in unified_order if k in fields]
+        else:
+            legacy_order = action.get("custom_privacy_request_field_order")
+            if isinstance(legacy_order, list):
+                custom_order = [k for k in legacy_order if k in fields]
+
+        if custom_order:
+            ordered = {k: fields[k] for k in custom_order}
+            # Append any fields not in order (prevents data loss if the order
+            # list becomes stale from a hand-edited YAML).
             for k in fields:
                 if k not in ordered:
                     ordered[k] = fields[k]
             action["custom_privacy_request_fields"] = ordered
-            action.pop("custom_privacy_request_field_order", None)
-        # No order list: deep copy already preserved existing key order
+
+        # Always strip the deprecated internal key from the response.
+        action.pop("custom_privacy_request_field_order", None)
 
     return result

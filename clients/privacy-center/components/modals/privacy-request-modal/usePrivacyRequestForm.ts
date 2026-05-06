@@ -20,8 +20,15 @@ import { useSettings } from "~/features/common/settings.slice";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
+import {
+  CustomConfigField,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
 import { FormValues, MultiselectFieldValue } from "~/types/forms";
+
+import { buildOrderedFields } from "./buildOrderedFields";
+
+export type { OrderedField } from "./buildOrderedFields";
 
 /**
  *
@@ -290,12 +297,20 @@ const usePrivacyRequestForm = ({
     }),
   });
 
+  const orderedFields = buildOrderedFields(
+    legacyIdentityFields,
+    customIdentityFields as Record<string, CustomConfigField>,
+    customPrivacyRequestFields,
+    action?.field_order,
+  );
+
   return {
     ...formik,
     isSubmitting: formik.isSubmitting || isSubmitPending,
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,
+    orderedFields,
   };
 };
 

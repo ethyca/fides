@@ -35,11 +35,13 @@ const FormBuilderRoute: NextPage = () => {
     actionPolicyKey: key,
     pcShape,
     identityInputs,
+    fieldOrder,
     richSpec,
   }: {
     actionPolicyKey: string;
     pcShape: PcCustomFields;
     identityInputs: MapResult["identityInputs"];
+    fieldOrder: MapResult["fieldOrder"];
     richSpec: JsonRenderSpec;
   }) => {
     if (!property) {
@@ -47,22 +49,31 @@ const FormBuilderRoute: NextPage = () => {
     }
     const config = property.privacy_center_config ?? { actions: [] };
     const existingActions = (config as { actions?: any[] }).actions ?? [];
-    const actions = existingActions.map((action: any) =>
-      action.policy_key === key
-        ? {
-            ...action,
-            custom_privacy_request_fields: pcShape,
-            identity_inputs:
-              Object.keys(identityInputs).length > 0 ? identityInputs : null,
-            // eslint-disable-next-line no-underscore-dangle
-            _form_builder_spec: {
-              version: 1,
-              spec: richSpec,
-              updated_at: new Date().toISOString(),
-            },
-          }
-        : action,
-    );
+    const actions = existingActions.map((action: any) => {
+      if (action.policy_key !== key) {
+        return action;
+      }
+      // Drop the deprecated custom_privacy_request_field_order; field_order
+      // supersedes it. Without this, stale legacy ordering can shadow newly
+      // saved customs after a rename or reorder.
+      const {
+        custom_privacy_request_field_order: _legacyOrder,
+        ...rest
+      } = action;
+      return {
+        ...rest,
+        custom_privacy_request_fields: pcShape,
+        identity_inputs:
+          Object.keys(identityInputs).length > 0 ? identityInputs : null,
+        field_order: fieldOrder,
+        // eslint-disable-next-line no-underscore-dangle
+        _form_builder_spec: {
+          version: 1,
+          spec: richSpec,
+          updated_at: new Date().toISOString(),
+        },
+      };
+    });
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { id: propertyId, messaging_templates, ...rest } = property as any;
     await updateProperty({

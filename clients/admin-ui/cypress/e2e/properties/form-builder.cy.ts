@@ -111,7 +111,66 @@ describe("Privacy center form builder", () => {
       .should("be.visible");
   });
 
-  // ── Test 2: dropped-features acknowledgement ────────────────────────────────
+  // ── Test 2: field_order persists across save ────────────────────────────────
+  it("saves field_order so a custom field can sit between identity fields", () => {
+    // Spec places `reason` between Email and Phone — i.e. the legacy
+    // hardcoded name → email → phone → customs ordering can't represent this.
+    const spec = {
+      root: "form",
+      elements: {
+        form: {
+          type: "Form",
+          props: {},
+          children: ["f_email", "f_reason", "f_phone"],
+        },
+        f_email: { type: "Email", props: { required: true }, children: [] },
+        f_reason: {
+          type: "Text",
+          props: { name: "reason", label: "Reason", required: false },
+          children: [],
+        },
+        f_phone: { type: "Phone", props: { required: false }, children: [] },
+      },
+    };
+
+    cy.intercept(
+      "POST",
+      `/api/v1/plus/property/${PROPERTY_ID}/form-builder/chat`,
+      {
+        statusCode: 200,
+        headers: { "content-type": "text/event-stream" },
+        body: buildSseBody(spec),
+      },
+    ).as("chatTurn");
+
+    cy.intercept("PUT", `/api/v1/plus/property/${PROPERTY_ID}`, {
+      statusCode: 200,
+      body: buildPropertyFixture(),
+    }).as("savePut");
+
+    cy.visit(`/properties/${PROPERTY_ID}/forms/${POLICY_KEY}`);
+    cy.wait("@getProperty");
+
+    cy.findByPlaceholderText(/tell the builder/i).type(
+      "Add a reason field between email and phone",
+    );
+    cy.findByRole("button", { name: /^send$/i }).click();
+    cy.wait("@chatTurn");
+
+    cy.findByRole("button", { name: /^save$/i }).click();
+    cy.wait("@savePut").then((interception) => {
+      const action = (
+        interception.request.body.privacy_center_config.actions ?? []
+      ).find((a: { policy_key?: string }) => a.policy_key === POLICY_KEY);
+      expect(action.field_order).to.deep.equal(["email", "reason", "phone"]);
+      // Deprecated key should not be re-emitted on save.
+      expect(action).not.to.have.property(
+        "custom_privacy_request_field_order",
+      );
+    });
+  });
+
+  // ── Test 3: dropped-features acknowledgement ────────────────────────────────
   it("warns and gates save when conditional logic is present", () => {
     const spec = buildSpec({
       f_state: {

@@ -166,6 +166,11 @@ export type PrivacyRequestOption = {
   cancelButtonText?: string | null;
   identity_inputs?: IdentityInputs | null;
   custom_privacy_request_fields?: CustomPrivacyRequestFields | null;
+  // Unified render order across identity_inputs and custom_privacy_request_fields.
+  // When set, the renderer iterates this list strictly and looks each key up in
+  // either bucket. Absent on legacy configs — those fall back to the hardcoded
+  // name → email → phone → other identities → customs sequence.
+  field_order?: string[] | null;
 };
 
 export enum ConsentNonApplicableFlagMode {

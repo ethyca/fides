@@ -77,6 +77,11 @@ export type ValidationError =
 export interface MapResult {
   pcShape: PcCustomFields;
   identityInputs: Record<string, "required" | "optional">;
+  // Unified render order across identity_inputs and pcShape, in the order the
+  // form builder's children list resolved. Persisted as `field_order` on the
+  // privacy center action so the public renderer can interleave identity and
+  // custom fields freely. Empty if the spec has no children.
+  fieldOrder: string[];
   droppedFeatures: DroppedFeature[];
   errors: ValidationError[];
 }
@@ -204,11 +209,12 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
   const errors: ValidationError[] = [];
   const pcShape: PcCustomFields = {};
   const identityInputs: Record<string, "required" | "optional"> = {};
+  const fieldOrder: string[] = [];
 
   const root = spec.elements?.[spec.root];
   if (!root || root.type !== "Form") {
     errors.push({ kind: "missing_form_root", rootId: spec.root });
-    return { pcShape, identityInputs, droppedFeatures, errors };
+    return { pcShape, identityInputs, fieldOrder, droppedFeatures, errors };
   }
 
   const seenNames: Record<string, string[]> = {};
@@ -260,6 +266,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
       }
       const { required } = validation.data as { required: boolean };
       identityInputs[identityKey] = required ? "required" : "optional";
+      fieldOrder.push(identityKey);
       return;
     }
 
@@ -380,6 +387,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
       }
     }
     pcShape[name] = pcField;
+    fieldOrder.push(name);
   });
 
   Object.entries(seenNames).forEach(([name, ids]) => {
@@ -388,5 +396,5 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
     }
   });
 
-  return { pcShape, identityInputs, droppedFeatures, errors };
+  return { pcShape, identityInputs, fieldOrder, droppedFeatures, errors };
 }
