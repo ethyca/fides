@@ -69,19 +69,18 @@ async def test_erasure_email(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_cls.assert_called_once_with(
-        ANY,
-        EmailForActionType(
-            subject="Notification of user erasure requests from Test Org",
-            body=erasure_email_template.render(
-                {
-                    "controller": "Test Org",
-                    "third_party_vendor_name": "Attentive Email",
-                    "identities": ["customer-1@example.com"],
-                }
-            ),
-        ),
-        "attentive@example.com",
+    mock_mailgun_cls.assert_called_once()
+    call_args = mock_mailgun_cls.return_value.send_email.call_args
+    assert call_args[0][0] == "attentive@example.com"
+    assert (
+        call_args[0][1].subject == "Notification of user erasure requests from Test Org"
+    )
+    assert call_args[0][1].body == erasure_email_template.render(
+        {
+            "controller": "Test Org",
+            "third_party_vendor_name": "Attentive Email",
+            "identities": ["customer-1@example.com"],
+        }
     )
 
     # verify the privacy request was queued for further processing
@@ -139,19 +138,18 @@ async def test_erasure_email_property_specific_messaging(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_cls.assert_called_once_with(
-        ANY,
-        EmailForActionType(
-            subject="Notification of user erasure requests from Test Org",
-            body=erasure_email_template.render(
-                {
-                    "controller": "Test Org",
-                    "third_party_vendor_name": "Attentive Email",
-                    "identities": ["customer-1@example.com"],
-                }
-            ),
-        ),
-        "attentive@example.com",
+    mock_mailgun_cls.assert_called_once()
+    call_args = mock_mailgun_cls.return_value.send_email.call_args
+    assert call_args[0][0] == "attentive@example.com"
+    assert (
+        call_args[0][1].subject == "Notification of user erasure requests from Test Org"
+    )
+    assert call_args[0][1].body == erasure_email_template.render(
+        {
+            "controller": "Test Org",
+            "third_party_vendor_name": "Attentive Email",
+            "identities": ["customer-1@example.com"],
+        }
     )
 
     # verify the privacy request was queued for further processing
