@@ -31,7 +31,7 @@ from loguru import logger
 from opentelemetry import context as otel_context
 from opentelemetry import trace
 from opentelemetry.context import Context
-from opentelemetry.propagators.textmap import Getter
+from opentelemetry.propagators.textmap import Getter, Setter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export import (
@@ -176,7 +176,11 @@ def _inject_trace_headers(
     if headers is None:
         return
     ctx = otel_context.get_current()
-    _PROPAGATOR.inject(headers, context=ctx, setter=_celery_carrier_set)
+    _PROPAGATOR.inject(
+        headers,
+        context=ctx,
+        setter=cast(Setter[Dict[str, Any]], _celery_carrier_set),
+    )
 
 
 @task_prerun.connect(dispatch_uid="fides_otel_task_prerun", weak=False)
@@ -238,7 +242,8 @@ def _finish_task_span(task: Task, **_kwargs: Any) -> None:  # noqa: ARG001
     span, (detach_task, detach_span) = stack.pop()
     _task_otel_stack.set(stack if stack else None)
     try:
-        if span.status.status_code == StatusCode.UNSET:
+        span_status = getattr(span, "status", None)
+        if span_status is not None and span_status.status_code == StatusCode.UNSET:
             span.set_status(Status(StatusCode.OK))
     finally:
         span.end()
