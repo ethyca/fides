@@ -546,7 +546,7 @@ export const ConfigureIntegrationForm = ({
             <Form.Item
               name="dataset"
               label="Privacy request datasets"
-              tooltip="Datasets associated with this integration are used during privacy request execution to discover and act on relevant data."
+              tooltip="Datasets associated with this integration for privacy request fulfillment."
               className="w-full"
             >
               <Select
