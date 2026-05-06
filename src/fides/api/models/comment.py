@@ -14,6 +14,7 @@ from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment, AttachmentReference
+    from fides.api.models.client import ClientDetail
     from fides.api.models.correspondence_metadata import CorrespondenceMetadata
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
@@ -115,6 +116,9 @@ class Comment(Base):
         ForeignKey("comment.id", name="comment_parent_id_fkey", ondelete="SET NULL"),
         nullable=True,
     )
+    client_id = Column(
+        String, ForeignKey("client.id", ondelete="SET NULL"), nullable=True
+    )
     # Not all users in the system have a username, and users can be deleted.
     # Store a non-normalized copy of username for these cases.
     username = Column(String, nullable=True)
@@ -144,6 +148,13 @@ class Comment(Base):
         "FidesUser",
         lazy="selectin",
         uselist=False,
+    )
+    client = relationship(
+        "ClientDetail",
+        lazy="selectin",
+        uselist=False,
+        foreign_keys=[client_id],
+        primaryjoin="Comment.client_id == ClientDetail.id",
     )
 
     correspondence_metadata = relationship(
