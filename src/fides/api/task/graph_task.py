@@ -2,6 +2,7 @@
 import copy
 import traceback
 from abc import ABC
+from contextlib import nullcontext
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -44,6 +45,8 @@ from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, Reque
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.service.connectors.saas_connector import SaaSConnector
+from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
@@ -65,6 +68,7 @@ from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.common.session_management import get_autoclose_db_session as get_db
 from fides.config import CONFIG
+from fides.observability import celery_step_span
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 
@@ -295,6 +299,29 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         ):
             return True
         return connection_config.access == AccessLevel.write
+
+    def _dsr_graph_node_connector_span(self, action: str):
+        """Child OTEL span for SQL or SaaS connector I/O (same trace as the Celery task)."""
+        connector = self.connector
+        if isinstance(connector, SQLConnector):
+            family = "sql"
+        elif isinstance(connector, SaaSConnector):
+            family = "saas"
+        else:
+            return nullcontext()
+
+        cfg = connector.configuration
+        attrs: Dict[str, Any] = {
+            "dsr.node.action": action,
+            "dsr.node.collection": str(self.execution_node.address),
+            "dsr.node.connection_key": cfg.key,
+            "dsr.node.connection_type": cfg.connection_type.value,
+            "dsr.connector.family": family,
+        }
+        if self._saas_version:
+            attrs["dsr.node.saas_version"] = self._saas_version
+
+        return celery_step_span(f"dsr.graph_task.{action}", **attrs)
 
     def _combine_seed_data(
         self,
@@ -730,13 +757,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
             # Use execution context to capture postprocessor messages
             with collect_execution_log_messages() as messages:
-                output: List[Row] = self.connector.retrieve_data(
-                    self.execution_node,
-                    self.resources.policy,
-                    self.resources.request,
-                    self.request_task,
-                    formatted_input_data,
-                )
+                with self._dsr_graph_node_connector_span("access"):
+                    output: List[Row] = self.connector.retrieve_data(
+                        self.execution_node,
+                        self.resources.policy,
+                        self.resources.request,
+                        self.request_task,
+                        formatted_input_data,
+                    )
 
             if is_traversal_only:
                 # TRAVERSAL_ONLY bridge nodes: retrieve data for FK propagation
@@ -843,14 +871,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         # Use execution context to capture postprocessor messages
         with collect_execution_log_messages() as messages:
-            output = self.connector.mask_data(
-                self.execution_node,
-                self.resources.policy,
-                self.resources.request,
-                self.resources.privacy_request_task,
-                retrieved_data,
-                formatted_input_data,
-            )
+            with self._dsr_graph_node_connector_span("erasure"):
+                output = self.connector.mask_data(
+                    self.execution_node,
+                    self.resources.policy,
+                    self.resources.request,
+                    self.resources.privacy_request_task,
+                    retrieved_data,
+                    formatted_input_data,
+                )
 
         self.request_task.rows_masked = output  # Saved as part of update_status below
 
@@ -890,14 +919,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             "Sending consent request to connector {}",
             self.connector.configuration.key,
         )
-        output: bool = self.connector.run_consent_request(
-            self.execution_node,
-            self.resources.policy,
-            self.resources.request,
-            self.resources.privacy_request_task,
-            identity,
-            self.resources.session,
-        )
+        with self._dsr_graph_node_connector_span("consent"):
+            output: bool = self.connector.run_consent_request(
+                self.execution_node,
+                self.resources.policy,
+                self.resources.request,
+                self.resources.privacy_request_task,
+                identity,
+                self.resources.session,
+            )
         self.request_task.consent_sent = output
         logger.info(
             "Consent request to {} completed, consent_sent={}",
