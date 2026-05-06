@@ -39,10 +39,15 @@ interface AssignedDatasetsSectionProps {
 
 const MAX_VISIBLE_CATEGORIES = 2;
 
-const renderDataCategories = (
-  categories: string[] | undefined,
-  definedSet: Set<string>,
-) => {
+interface DataCategoriesCellProps {
+  categories: string[] | undefined;
+  definedSet: Set<string>;
+}
+
+const DataCategoriesCell = ({
+  categories,
+  definedSet,
+}: DataCategoriesCellProps) => {
   if (!categories || categories.length === 0) {
     return <Tag className="cursor-default">None detected</Tag>;
   }
@@ -276,8 +281,9 @@ const AssignedDatasetsSection = ({
         dataIndex: "data_categories",
         key: "data_categories",
         width: "28%",
-        render: (categories: string[]) =>
-          renderDataCategories(categories, definedSet),
+        render: (categories: string[]) => (
+          <DataCategoriesCell categories={categories} definedSet={definedSet} />
+        ),
       },
       {
         title: "Steward",

@@ -2,6 +2,7 @@ import { Alert, Button, Flex, Icons, useMessage } from "fidesui";
 import { useMemo } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
+import { pluralize } from "~/features/common/utils";
 
 import {
   useAcceptPurposeCategoriesMutation,
@@ -63,9 +64,11 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
       return;
     }
     message.success(
-      undeclared.length === 1
-        ? `Added "${undeclared[0]}" to defined categories`
-        : `Added ${undeclared.length} categories to defined list`,
+      pluralize(
+        undeclared.length,
+        `Added "${undeclared[0]}" to defined categories`,
+        `Added ${undeclared.length} categories to defined list`,
+      ),
     );
   };
 
@@ -83,7 +86,7 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
         <Flex align="center" gap={8}>
           <span>
             {undeclared.length}{" "}
-            {undeclared.length === 1 ? "category was" : "categories were"}{" "}
+            {pluralize(undeclared.length, "category was", "categories were")}{" "}
             detected in{" "}
             {contributingSystems.length > 0 ? (
               <>
@@ -95,7 +98,7 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
                 ))}{" "}
               </>
             ) : null}
-            that {undeclared.length === 1 ? "is not" : "are not"} defined on
+            that {pluralize(undeclared.length, "is not", "are not")} defined on
             this purpose.
           </span>
           <Button
@@ -106,7 +109,7 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
             loading={isAccepting}
             className="whitespace-nowrap"
           >
-            Approve {undeclared.length === 1 ? "category" : "categories"}
+            Approve {pluralize(undeclared.length, "category", "categories")}
           </Button>
         </Flex>
       }
