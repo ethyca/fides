@@ -489,8 +489,8 @@ export const ConfigureIntegrationForm = ({
           </Form.Item>
           <Form.Item
             name="enabled"
-            label="Enable integration"
-            tooltip="When enabled, this integration is used to fulfill privacy requests. Disabling excludes it from privacy request execution; it has no effect on discovery monitors or connection tests."
+            label="Enable for privacy requests"
+            tooltip="When enabled, this integration is used during privacy request execution."
             valuePropName="checked"
             className="w-full"
           >

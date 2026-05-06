@@ -1,4 +1,4 @@
 type: Added
-description: Added an "Enable integration" toggle to the new Integrations form for managing whether an integration is used by privacy requests.
+description: Added an "Enable for privacy requests" toggle to the new Integrations form for controlling whether an integration is used during privacy request execution.
 pr: 8121
 labels: []
