@@ -259,7 +259,6 @@ class PrivacyRequest(
         UUID(as_uuid=True),
         ForeignKey("duplicate_group.id"),
         nullable=True,
-        index=True,
     )
     duplicate_group = relationship(
         DuplicateGroup,

@@ -15,7 +15,6 @@ import {
 
 import ActivityTimelineEntry from "./ActivityTimelineEntry";
 import styles from "./ActivityTimelineEntry.module.scss";
-import DuplicatesDrawer from "./DuplicatesDrawer";
 import {
   DUPLICATE_DETECTION_DATASET_NAME,
   usePrivacyRequestComments,
@@ -23,6 +22,7 @@ import {
   usePrivacyRequestManualTasks,
 } from "./hooks";
 import LogDrawer from "./LogDrawer";
+import RelatedRequestsDrawer from "./RelatedRequestsDrawer";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequestEntity;
@@ -37,10 +37,17 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const [currentStatus, setCurrentStatus] = useState<ExecutionLogStatus>(
     ExecutionLogStatus.ERROR,
   );
-  const [isDuplicatesDrawerOpen, setIsDuplicatesDrawerOpen] = useState(false);
+  const [isRelatedRequestsDrawerOpen, setIsRelatedRequestsDrawerOpen] =
+    useState(false);
 
   const { results, id: privacyRequestId } = subjectRequest;
-  const duplicateRequestGroupId = subjectRequest.duplicate_request_group_id;
+  const hasIdentityForRelatedRequests = useMemo(
+    () =>
+      Object.values(subjectRequest.identity ?? {}).some(
+        (field) => typeof field?.value === "string" && field.value.length > 0,
+      ),
+    [subjectRequest.identity],
+  );
 
   const { commentItems, isLoading: isCommentsLoading } =
     usePrivacyRequestComments(privacyRequestId);
@@ -118,12 +125,12 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         const key = item.title;
         if (
           key === DUPLICATE_DETECTION_DATASET_NAME &&
-          duplicateRequestGroupId
+          hasIdentityForRelatedRequests
         ) {
           return {
             ...item,
-            hasDuplicateGroup: true,
-            onClick: () => setIsDuplicatesDrawerOpen(true),
+            hasRelatedRequests: true,
+            onClick: () => setIsRelatedRequestsDrawerOpen(true),
           };
         }
         if (results[key]) {
@@ -162,9 +169,9 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
   }, [
-    duplicateRequestGroupId,
     eventItems,
     filteredCommentItems,
+    hasIdentityForRelatedRequests,
     manualTaskItems,
     results,
     showLogs,
@@ -206,12 +213,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         onCloseErrorPanel={closeErrorPanel}
         privacyRequest={subjectRequest}
       />
-      {duplicateRequestGroupId && (
-        <DuplicatesDrawer
-          isOpen={isDuplicatesDrawerOpen}
-          onClose={() => setIsDuplicatesDrawerOpen(false)}
-          duplicateRequestGroupId={duplicateRequestGroupId}
-          currentRequestId={privacyRequestId}
+      {hasIdentityForRelatedRequests && (
+        <RelatedRequestsDrawer
+          isOpen={isRelatedRequestsDrawerOpen}
+          onClose={() => setIsRelatedRequestsDrawerOpen(false)}
+          privacyRequest={subjectRequest}
         />
       )}
     </Box>

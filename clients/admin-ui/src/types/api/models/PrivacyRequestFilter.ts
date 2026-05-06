@@ -73,10 +73,6 @@ export type PrivacyRequestFilter = {
    */
   location?: string | null;
   /**
-   * Duplicate Request Group Id
-   */
-  duplicate_request_group_id?: string | null;
-  /**
    * Action Type
    */
   action_type?: ActionType | Array<ActionType> | null;

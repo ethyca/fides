@@ -1,4 +1,4 @@
 type: Added
-description: Added "View duplicates" drawer linking to other requests in the same duplicate group
+description: Added "View related requests" drawer on the privacy request timeline that lists other requests sharing identity values with the current one
 pr: 7965
-labels: ["db-migration"]
+labels: []

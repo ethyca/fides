@@ -14,39 +14,69 @@ import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import { formatDate } from "~/features/common/utils";
 import { statusPropMap } from "~/features/privacy-requests/cells";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
+import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus } from "~/types/api";
 
-type DuplicateRequestRow = {
+type RelatedRequestRow = {
   id: string;
   status: PrivacyRequestStatus;
   created_at?: string | null;
   source?: string | null;
 };
 
-type DuplicatesDrawerProps = {
+type RelatedRequestsDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
-  duplicateRequestGroupId: string;
-  currentRequestId: string;
+  privacyRequest: PrivacyRequestEntity;
 };
 
-const DuplicatesDrawer = ({
+// Builds an `identities` filter payload from the current request's identity
+// fields. Empty/null values are excluded so we don't widen the search to
+// every request missing that field. The backend OR-matches across fields
+// (see filter_privacy_request_queryset), which is what we want for
+// "related requests": a later request that adds a phone number still
+// surfaces alongside an earlier email-only one from the same person.
+const buildIdentitiesFilter = (
+  identity: PrivacyRequestEntity["identity"] | undefined,
+): Record<string, string> | undefined => {
+  if (!identity) {
+    return undefined;
+  }
+  const entries = Object.entries(identity).flatMap(([fieldName, field]) => {
+    const value = field?.value;
+    if (typeof value !== "string" || value.length === 0) {
+      return [];
+    }
+    return [[fieldName, value]] as const;
+  });
+  if (entries.length === 0) {
+    return undefined;
+  }
+  return Object.fromEntries(entries);
+};
+
+const RelatedRequestsDrawer = ({
   isOpen,
   onClose,
-  duplicateRequestGroupId,
-  currentRequestId,
-}: DuplicatesDrawerProps) => {
+  privacyRequest,
+}: RelatedRequestsDrawerProps) => {
+  const identitiesFilter = useMemo(
+    () => buildIdentitiesFilter(privacyRequest.identity),
+    [privacyRequest.identity],
+  );
+  const currentRequestId = privacyRequest.id;
+
   const { data, isFetching } = useSearchPrivacyRequestsQuery(
     {
-      duplicate_request_group_id: duplicateRequestGroupId,
+      identities: identitiesFilter,
       page: 1,
       size: 100,
     },
-    { skip: !isOpen || !duplicateRequestGroupId },
+    { skip: !isOpen || !identitiesFilter },
   );
 
-  const rows = useMemo<DuplicateRequestRow[]>(() => {
-    const items = (data?.items ?? []) as DuplicateRequestRow[];
+  const rows = useMemo<RelatedRequestRow[]>(() => {
+    const items = (data?.items ?? []) as RelatedRequestRow[];
     // Pin the current request to the top so users always see it in context.
     return [...items].sort((a, b) => {
       if (a.id === currentRequestId) {
@@ -59,7 +89,7 @@ const DuplicatesDrawer = ({
     });
   }, [data, currentRequestId]);
 
-  const columns = useMemo<ColumnsType<DuplicateRequestRow>>(
+  const columns = useMemo<ColumnsType<RelatedRequestRow>>(
     () => [
       {
         title: "Request ID",
@@ -76,7 +106,7 @@ const DuplicatesDrawer = ({
               href={`${PRIVACY_REQUESTS_ROUTE}/${id}`}
               target="_blank"
               rel="noopener noreferrer"
-              data-testid="duplicates-drawer-link"
+              data-testid="related-requests-drawer-link"
             >
               {id}
             </RouterLink>
@@ -119,20 +149,25 @@ const DuplicatesDrawer = ({
       width="50vw"
       autoFocus={false}
       destroyOnHidden
-      title="Duplicate requests"
+      title="Related requests"
     >
-      <Table<DuplicateRequestRow>
-        data-testid="duplicates-drawer-table"
+      <Typography.Paragraph type="secondary" className="!mb-4">
+        Requests that share at least one identity value (e.g. email, phone) with
+        this one — including any that were marked as duplicates. Use this to see
+        the full context across submissions from the same subject.
+      </Typography.Paragraph>
+      <Table<RelatedRequestRow>
+        data-testid="related-requests-drawer-table"
         rowKey="id"
         columns={columns}
         dataSource={rows}
         loading={isFetching}
         pagination={false}
         size="small"
-        locale={{ emptyText: "No duplicate requests found." }}
+        locale={{ emptyText: "No related requests found." }}
       />
     </Drawer>
   );
 };
 
-export default DuplicatesDrawer;
+export default RelatedRequestsDrawer;
