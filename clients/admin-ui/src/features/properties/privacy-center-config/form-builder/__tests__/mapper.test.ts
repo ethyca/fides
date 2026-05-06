@@ -209,7 +209,10 @@ describe("mapSpecToPcShape", () => {
 
     expect(result.errors).toEqual([]);
     expect(result.fieldOrder).toEqual(["email", "reason", "name", "topics"]);
-    expect(result.identityInputs).toEqual({ email: "required", name: "optional" });
+    expect(result.identityInputs).toEqual({
+      email: "required",
+      name: "optional",
+    });
     expect(Object.keys(result.pcShape)).toEqual(["reason", "topics"]);
   });
 

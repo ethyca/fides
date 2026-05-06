@@ -56,10 +56,8 @@ const FormBuilderRoute: NextPage = () => {
       // Drop the deprecated custom_privacy_request_field_order; field_order
       // supersedes it. Without this, stale legacy ordering can shadow newly
       // saved customs after a rename or reorder.
-      const {
-        custom_privacy_request_field_order: _legacyOrder,
-        ...rest
-      } = action;
+      const rest = { ...action };
+      delete rest.custom_privacy_request_field_order;
       return {
         ...rest,
         custom_privacy_request_fields: pcShape,

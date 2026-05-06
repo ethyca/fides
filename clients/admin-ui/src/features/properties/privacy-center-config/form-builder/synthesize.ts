@@ -70,10 +70,7 @@ const buildCustomElement = (
       if (text.hidden !== undefined) {
         props.hidden = text.hidden;
       }
-      if (
-        text.query_param_key !== undefined &&
-        text.query_param_key !== null
-      ) {
+      if (text.query_param_key !== undefined && text.query_param_key !== null) {
         props.query_param_key = text.query_param_key;
       }
       break;
