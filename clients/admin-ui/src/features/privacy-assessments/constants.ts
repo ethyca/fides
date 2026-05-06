@@ -11,6 +11,7 @@ export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
   [AssessmentStatus.IN_PROGRESS]: "In progress",
   [AssessmentStatus.COMPLETED]: "Completed",
   [AssessmentStatus.OUTDATED]: "Out of date",
+  [AssessmentStatus.GENERATING]: "Generating...",
 };
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {

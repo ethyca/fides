@@ -62,11 +62,6 @@ export const usePrivacyRequestEventLogs = (
           title: key,
           date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
-          showViewLog:
-            hasUnresolvedErrorStatus ||
-            hasSkippedEntryStatus ||
-            hasAwaitingProcessingStatus ||
-            hasPollingStatus,
           onClick: () => {}, // This will be overridden in the component
           isError: hasUnresolvedErrorStatus,
           isSkipped: hasSkippedEntryStatus,
@@ -76,6 +71,7 @@ export const usePrivacyRequestEventLogs = (
           // matches dataset_name set in
           // fides.api.service.privacy_request.duplication_detection.mark_as_duplicate
           isDuplicateDetection: key === DUPLICATE_DETECTION_DATASET_NAME,
+          logCount: logs.length,
         };
       });
 

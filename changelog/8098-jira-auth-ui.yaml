@@ -1,0 +1,4 @@
+type: Added
+description: Add Jira credential management UI for OAuth authorization and SaaS connector credential linking
+pr: 8098
+labels: []

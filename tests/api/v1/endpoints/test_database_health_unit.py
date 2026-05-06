@@ -34,7 +34,7 @@ async def test_check_async_session_times_out(monkeypatch: pytest.MonkeyPatch) ->
         async def __aexit__(self, *_args: object) -> None:
             return None
 
-    monkeypatch.setattr(health, "DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS", 0.15)
+    monkeypatch.setattr(health.CONFIG.database, "healthcheck_query_timeout", 0.15)
 
     def _factory() -> _SlowCM:
         return _SlowCM()
