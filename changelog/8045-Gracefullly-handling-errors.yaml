@@ -1,0 +1,4 @@
+type: Changed
+description: Updating the handling on async polling workflows to allow for partial results on sub requests errors
+pr: 8045 # PR number
+labels: []

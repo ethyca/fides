@@ -165,6 +165,11 @@ export interface FidesInitOptions {
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
 
+  // ATT authorization status from Apple's ATTrackingManager. When "denied" or "restricted",
+  // notices where att_exempt is false are disabled (locked to opt_out).
+  // Intended for use by mobile SDKs after the user denies Apple's App Tracking Transparency prompt.
+  fidesAttStatus?: FidesAttStatus;
+
   // List of system names to exclude from notice asset disclosure (e.g., cookies) in responses
   fidesDisabledSystems?: string[] | null;
 
@@ -761,6 +766,7 @@ export type PrivacyNotice = {
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
+  att_exempt?: boolean;
   has_gpc_flag?: boolean;
   framework?: PrivacyNoticeFramework;
   default_preference?: UserConsentPreference;
@@ -922,6 +928,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "otFidesMapping"
   | "transcendFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesAttStatus"
   | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
@@ -973,6 +980,13 @@ export enum RejectAllMechanism {
 }
 
 // NOTE: updates to this enum should be reflected in the FidesEventDetailsTrigger type and vice versa
+export enum FidesAttStatus {
+  NOT_DETERMINED = "not_determined",
+  RESTRICTED = "restricted",
+  DENIED = "denied",
+  AUTHORIZED = "authorized",
+}
+
 export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
