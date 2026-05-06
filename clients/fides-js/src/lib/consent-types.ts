@@ -168,7 +168,7 @@ export interface FidesInitOptions {
   // ATT authorization status from Apple's ATTrackingManager. When "denied" or "restricted",
   // notices where att_exempt is false are disabled (locked to opt_out).
   // Intended for use by mobile SDKs after the user denies Apple's App Tracking Transparency prompt.
-  fidesAttStatus?: "not_determined" | "restricted" | "denied" | "authorized";
+  fidesAttStatus?: FidesAttStatus;
 
   // List of system names to exclude from notice asset disclosure (e.g., cookies) in responses
   fidesDisabledSystems?: string[] | null;
@@ -980,6 +980,15 @@ export enum RejectAllMechanism {
 }
 
 // NOTE: updates to this enum should be reflected in the FidesEventDetailsTrigger type and vice versa
+export const FidesAttStatus = {
+  NOT_DETERMINED: "not_determined",
+  RESTRICTED: "restricted",
+  DENIED: "denied",
+  AUTHORIZED: "authorized",
+} as const;
+export type FidesAttStatus =
+  (typeof FidesAttStatus)[keyof typeof FidesAttStatus];
+
 export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",

@@ -6,6 +6,7 @@ import { matomo } from "../integrations/matomo";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
+  FidesAttStatus,
   FidesCookie,
   FidesGlobal,
   FidesOptions,
@@ -117,7 +118,7 @@ export const getCoreFides = ({
       otFidesMapping: null,
       transcendFidesMapping: null,
       fidesDisabledNotices: null,
-      fidesAttStatus: "not_determined",
+      fidesAttStatus: FidesAttStatus.NOT_DETERMINED,
       fidesDisabledSystems: null,
       fidesConsentNonApplicableFlagMode: null,
       fidesConsentFlagType: null,

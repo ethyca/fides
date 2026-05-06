@@ -1,5 +1,6 @@
 import {
   ConsentMechanism,
+  FidesAttStatus,
   PrivacyNoticeWithPreference,
 } from "../consent-types";
 
@@ -30,9 +31,12 @@ import {
 export const filterAttDeniedFromDraft = (
   draftIds: string[],
   notices: Array<PrivacyNoticeWithPreference>,
-  fidesAttStatus: string | undefined,
+  fidesAttStatus: FidesAttStatus | undefined,
 ): string[] => {
-  if (fidesAttStatus !== "denied" && fidesAttStatus !== "restricted") {
+  if (
+    fidesAttStatus !== FidesAttStatus.DENIED &&
+    fidesAttStatus !== FidesAttStatus.RESTRICTED
+  ) {
     return draftIds;
   }
   const noticeMap = new Map(notices.map((n) => [n.id, n]));

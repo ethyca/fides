@@ -1,5 +1,6 @@
 import {
   ConsentMechanism,
+  FidesAttStatus,
   PrivacyNoticeWithPreference,
 } from "~/lib/consent-types";
 import { filterAttDeniedFromDraft } from "~/lib/tcf/att-utils";
@@ -19,7 +20,7 @@ describe("filterAttDeniedFromDraft", () => {
   const draftIds = ["notice-1", "notice-2", "notice-3"];
 
   describe("when ATT is not denied", () => {
-    it.each(["not_determined", "authorized", undefined])(
+    it.each([FidesAttStatus.NOT_DETERMINED, FidesAttStatus.AUTHORIZED, undefined])(
       "returns draft unchanged when fidesAttStatus is %s",
       (status) => {
         const notices = [makeNotice({ id: "notice-1" })];
@@ -30,7 +31,7 @@ describe("filterAttDeniedFromDraft", () => {
   });
 
   describe("when ATT is denied (status is 'denied' or 'restricted')", () => {
-    it.each(["denied", "restricted"])(
+    it.each([FidesAttStatus.DENIED, FidesAttStatus.RESTRICTED])(
       "removes non-exempt notices from draft when status is %s",
       (status) => {
         const notices = [
@@ -43,7 +44,7 @@ describe("filterAttDeniedFromDraft", () => {
       },
     );
 
-    it.each(["denied", "restricted"])(
+    it.each([FidesAttStatus.DENIED, FidesAttStatus.RESTRICTED])(
       "preserves att_exempt notices when status is %s",
       (status) => {
         const notices = [
@@ -56,7 +57,7 @@ describe("filterAttDeniedFromDraft", () => {
       },
     );
 
-    it.each(["denied", "restricted"])(
+    it.each([FidesAttStatus.DENIED, FidesAttStatus.RESTRICTED])(
       "preserves notice_only notices regardless of att_exempt when status is %s",
       (status) => {
         const notices = [
@@ -81,7 +82,7 @@ describe("filterAttDeniedFromDraft", () => {
       const result = filterAttDeniedFromDraft(
         ["notice-1", "unknown-id"],
         notices,
-        "denied",
+        FidesAttStatus.DENIED,
       );
       // unknown-id has no notice entry → treated as non-exempt, removed
       expect(result).toEqual(["notice-1"]);
@@ -95,7 +96,7 @@ describe("filterAttDeniedFromDraft", () => {
       const result = filterAttDeniedFromDraft(
         ["notice-1", "notice-2"],
         notices,
-        "denied",
+        FidesAttStatus.DENIED,
       );
       expect(result).toEqual([]);
     });
@@ -109,34 +110,35 @@ describe("ATT locking: notice disabled logic", () => {
    * we verify the boolean expression directly here.
    */
   const isAttLocked = (
-    fidesAttStatus: string | undefined,
+    fidesAttStatus: FidesAttStatus | undefined,
     attExempt: boolean | undefined,
   ): boolean =>
-    (fidesAttStatus === "denied" || fidesAttStatus === "restricted") &&
+    (fidesAttStatus === FidesAttStatus.DENIED ||
+      fidesAttStatus === FidesAttStatus.RESTRICTED) &&
     !attExempt;
 
   it("does not lock notice when fidesAttStatus is not_determined", () => {
-    expect(isAttLocked("not_determined", false)).toBe(false);
-    expect(isAttLocked("not_determined", true)).toBe(false);
+    expect(isAttLocked(FidesAttStatus.NOT_DETERMINED, false)).toBe(false);
+    expect(isAttLocked(FidesAttStatus.NOT_DETERMINED, true)).toBe(false);
   });
 
   it("does not lock notice when fidesAttStatus is authorized", () => {
-    expect(isAttLocked("authorized", false)).toBe(false);
-    expect(isAttLocked("authorized", true)).toBe(false);
+    expect(isAttLocked(FidesAttStatus.AUTHORIZED, false)).toBe(false);
+    expect(isAttLocked(FidesAttStatus.AUTHORIZED, true)).toBe(false);
   });
 
   it("locks non-exempt notice when fidesAttStatus is denied", () => {
-    expect(isAttLocked("denied", false)).toBe(true);
-    expect(isAttLocked("denied", undefined)).toBe(true);
+    expect(isAttLocked(FidesAttStatus.DENIED, false)).toBe(true);
+    expect(isAttLocked(FidesAttStatus.DENIED, undefined)).toBe(true);
   });
 
   it("locks non-exempt notice when fidesAttStatus is restricted", () => {
-    expect(isAttLocked("restricted", false)).toBe(true);
-    expect(isAttLocked("restricted", undefined)).toBe(true);
+    expect(isAttLocked(FidesAttStatus.RESTRICTED, false)).toBe(true);
+    expect(isAttLocked(FidesAttStatus.RESTRICTED, undefined)).toBe(true);
   });
 
   it("does not lock att_exempt notice even when ATT is denied", () => {
-    expect(isAttLocked("denied", true)).toBe(false);
-    expect(isAttLocked("restricted", true)).toBe(false);
+    expect(isAttLocked(FidesAttStatus.DENIED, true)).toBe(false);
+    expect(isAttLocked(FidesAttStatus.RESTRICTED, true)).toBe(false);
   });
 });

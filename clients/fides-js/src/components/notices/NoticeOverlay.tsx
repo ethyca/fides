@@ -14,6 +14,7 @@ import {
   AssetType,
   ConsentMechanism,
   ConsentMethod,
+  FidesAttStatus,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyExperience,
@@ -129,8 +130,8 @@ const NoticeOverlay = () => {
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
             false) ||
           notice.disabled ||
-          ((options.fidesAttStatus === "denied" ||
-            options.fidesAttStatus === "restricted") &&
+          ((options.fidesAttStatus === FidesAttStatus.DENIED ||
+            options.fidesAttStatus === FidesAttStatus.RESTRICTED) &&
             !notice.att_exempt);
         const bestTranslation = selectBestNoticeTranslation(
           currentLocale,

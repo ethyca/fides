@@ -9,6 +9,7 @@ import {
   ConsentMechanism,
   ConsentMethod,
   EmptyExperience,
+  FidesAttStatus,
   FidesExperienceTranslationOverrides,
   FidesModalDefaultView,
   NoticeConsent,
@@ -185,8 +186,8 @@ export const TcfOverlay = () => {
             (options.fidesDisabledNotices?.includes(notice.notice_key) ??
               false) ||
             notice.disabled ||
-            ((options.fidesAttStatus === "denied" ||
-              options.fidesAttStatus === "restricted") &&
+            ((options.fidesAttStatus === FidesAttStatus.DENIED ||
+              options.fidesAttStatus === FidesAttStatus.RESTRICTED) &&
               !notice.att_exempt);
           const bestTranslation = selectBestNoticeTranslation(
             currentLocale,
@@ -796,8 +797,8 @@ export const TcfOverlay = () => {
           onTabChange={handleTabChange}
           fullExperienceState={fullExperienceState}
           attDenied={
-            options.fidesAttStatus === "denied" ||
-            options.fidesAttStatus === "restricted"
+            options.fidesAttStatus === FidesAttStatus.DENIED ||
+            options.fidesAttStatus === FidesAttStatus.RESTRICTED
           }
         />
       )}
