@@ -20,14 +20,15 @@ describe("filterAttDeniedFromDraft", () => {
   const draftIds = ["notice-1", "notice-2", "notice-3"];
 
   describe("when ATT is not denied", () => {
-    it.each([FidesAttStatus.NOT_DETERMINED, FidesAttStatus.AUTHORIZED, undefined])(
-      "returns draft unchanged when fidesAttStatus is %s",
-      (status) => {
-        const notices = [makeNotice({ id: "notice-1" })];
-        const result = filterAttDeniedFromDraft(draftIds, notices, status);
-        expect(result).toEqual(draftIds);
-      },
-    );
+    it.each([
+      FidesAttStatus.NOT_DETERMINED,
+      FidesAttStatus.AUTHORIZED,
+      undefined,
+    ])("returns draft unchanged when fidesAttStatus is %s", (status) => {
+      const notices = [makeNotice({ id: "notice-1" })];
+      const result = filterAttDeniedFromDraft(draftIds, notices, status);
+      expect(result).toEqual(draftIds);
+    });
   });
 
   describe("when ATT is denied (status is 'denied' or 'restricted')", () => {
