@@ -100,7 +100,7 @@ export const DSRStatusCard = () => {
           <Flex
             vertical
             justify="space-between"
-            className="w-[180px] shrink-0 border-r border-solid border-r-[var(--ant-color-border)] pr-5"
+            className="w-[180px] shrink-0 border-r border-solid border-r-[var(--fidesui-color-border)] pr-5"
           >
             <div>
               <Flex align="baseline" gap="middle">

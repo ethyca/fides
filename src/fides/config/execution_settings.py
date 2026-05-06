@@ -93,8 +93,14 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="When enabled, falls back to the legacy traversal algorithm. Intended as a temporary safety net in case of regressions with the optimized traversal.",
     )
+    task_soft_time_limit_seconds: int = Field(
+        default=0,
+        description="Soft time limit in seconds for privacy request Celery tasks. "
+        "When exceeded, SoftTimeLimitExceeded is raised and the full stack trace is logged. "
+        "Set to 0 to disable (default).",
+    )
     jira_polling_interval_minutes: int = Field(
-        default=10,
+        default=3,
         description="Minutes between polling Jira for ticket status updates.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

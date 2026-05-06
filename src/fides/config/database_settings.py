@@ -142,6 +142,12 @@ class DatabaseSettings(FidesSettings):
         default=True,
         description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
     )
+    healthcheck_query_timeout: float = Field(
+        default=1.0,
+        ge=0.1,
+        le=10.0,
+        description="Timeout in seconds for database healthcheck queries on the /health/database endpoint.",
+    )
     test_db: str = Field(
         default="default_test_db",
         description="Used instead of the 'db' value when the FIDES_TEST_MODE environment variable is set to True. Avoids overwriting production data.",

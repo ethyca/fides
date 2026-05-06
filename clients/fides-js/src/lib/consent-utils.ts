@@ -263,6 +263,14 @@ export const shouldResurfaceBanner = (
   if (!isPrivacyExperience(experience)) {
     return false;
   }
+
+  const shouldResurfaceBasedOnConfiguration = Boolean(
+    cookie?.fides_meta.consentMethod &&
+    experience.experience_config?.resurface_behavior?.includes(
+      cookie.fides_meta.consentMethod,
+    ),
+  );
+
   // Never surface banner if modal is set to show immediately
   if (options.fidesModalDisplay === "immediate") {
     return false;
@@ -276,6 +284,7 @@ export const shouldResurfaceBanner = (
   }
   // Always resurface banner for TCF unless consent was set by override
   // or the saved version_hash matches
+  // or if the banner is configured to resurface
   if (
     experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
     !!cookie
@@ -284,7 +293,10 @@ export const shouldResurfaceBanner = (
       return false;
     }
     if (experience.meta?.version_hash) {
-      return experience.meta.version_hash !== cookie.tcf_version_hash;
+      return (
+        experience.meta.version_hash !== cookie.tcf_version_hash ||
+        shouldResurfaceBasedOnConfiguration
+      );
     }
     return true;
   }
@@ -311,13 +323,9 @@ export const shouldResurfaceBanner = (
   if (cookie?.fides_meta.consentMethod === ConsentMethod.GPC) {
     return true;
   }
+
   // Resurface if configured for this consent method
-  if (
-    cookie?.fides_meta.consentMethod &&
-    experience.experience_config?.resurface_behavior?.includes(
-      cookie.fides_meta.consentMethod,
-    )
-  ) {
+  if (shouldResurfaceBasedOnConfiguration) {
     return true;
   }
   // Lastly, if we do have a prior consent state, resurface if we find *any*
