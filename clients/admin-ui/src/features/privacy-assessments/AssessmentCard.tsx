@@ -147,7 +147,7 @@ export const AssessmentCard = ({
                   />
                   <div>
                     <Text strong type="success" size="sm">
-                      Assessment complete
+                      Completed
                     </Text>
                     <Paragraph type="secondary" size="sm">
                       {completionDate}
@@ -163,7 +163,7 @@ export const AssessmentCard = ({
               <>
                 <Flex justify="space-between">
                   <Text type="secondary" size="sm">
-                    Completeness
+                    Questions answered
                   </Text>
                   <Text strong size="sm">
                     {completeness}%
