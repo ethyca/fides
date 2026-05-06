@@ -52,8 +52,8 @@ _CELERY_TRACING_ENABLED = False
 # Stack of (task root span, (detach_token_for_parent_ctx, detach_token_for_span_ctx)).
 # Nested tasks (e.g. ``apply()`` from inside another task) must not clobber the parent
 # handle: ``task_postrun`` runs inner-to-outer, matching push/pop order.
-_task_otel_stack: ContextVar[Optional[List[Tuple[Span, Tuple[Any, Any]]]]] = (
-    ContextVar("fides_celery_task_otel_stack", default=None)
+_task_otel_stack: ContextVar[Optional[List[Tuple[Span, Tuple[Any, Any]]]]] = ContextVar(
+    "fides_celery_task_otel_stack", default=None
 )
 
 _PROPAGATOR = TraceContextTextMapPropagator()
@@ -217,9 +217,7 @@ def _start_task_span(task: Task, **_kwargs: Any) -> None:
 
 
 @task_failure.connect(dispatch_uid="fides_otel_task_failure", weak=False)
-def _record_task_failure(
-    task: Task, exception: BaseException, **_kwargs: Any
-) -> None:  # noqa: ARG001
+def _record_task_failure(task: Task, exception: BaseException, **_kwargs: Any) -> None:  # noqa: ARG001
     if not _CELERY_TRACING_ENABLED:
         return
     stack = _task_otel_stack.get() or []
