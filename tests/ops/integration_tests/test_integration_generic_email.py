@@ -24,9 +24,12 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -66,7 +69,7 @@ async def test_erasure_email(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_dispatcher.assert_called_once_with(
+    mock_mailgun_cls.assert_called_once_with(
         ANY,
         EmailForActionType(
             subject="Notification of user erasure requests from Test Org",
@@ -90,9 +93,12 @@ async def test_erasure_email(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_property_specific_messaging(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -133,7 +139,7 @@ async def test_erasure_email_property_specific_messaging(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_dispatcher.assert_called_once_with(
+    mock_mailgun_cls.assert_called_once_with(
         ANY,
         EmailForActionType(
             subject="Notification of user erasure requests from Test Org",
@@ -157,9 +163,12 @@ async def test_erasure_email_property_specific_messaging(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_no_messaging_config(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -195,7 +204,7 @@ async def test_erasure_email_no_messaging_config(
     # job will fail because there is no messaging config
     assert exit_state == EmailExitState.email_send_failed
 
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
     mock_requeue_privacy_requests.assert_not_called()
 
 
@@ -204,9 +213,12 @@ async def test_erasure_email_no_messaging_config(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_no_email_for_access_and_erasure_policy(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -245,7 +257,7 @@ async def test_erasure_email_no_email_for_access_and_erasure_policy(
     assert exit_state == EmailExitState.no_applicable_privacy_requests
 
     # verify no emails were sent
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
     mock_requeue_privacy_requests.assert_not_called()
 
 
@@ -326,9 +338,12 @@ async def test_erasure_email_no_updates_needed(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_disabled_connector(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -371,9 +386,12 @@ async def test_erasure_email_disabled_connector(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_unsupported_identity(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
