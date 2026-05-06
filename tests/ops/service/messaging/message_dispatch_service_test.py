@@ -32,10 +32,7 @@ from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import (
-    PROVIDER_MAP,
-    dispatch_message,
-)
+from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_providers.twilio_email_service import (
     EMAIL_TEMPLATE_NAME,
     TwilioEmailService,
@@ -932,9 +929,6 @@ class TestMessageDispatchService:
     def test_dispatch_invalid_action_type(self, db):
         with pytest.raises(MessageDispatchException):
             dispatch_message(db, "bad", to_identity=None, service_type=None)
-
-    def test_provider_map_unknown_type(self):
-        assert PROVIDER_MAP.get("bad") is None
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service.MailgunService",
