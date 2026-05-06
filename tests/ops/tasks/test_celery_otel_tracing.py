@@ -18,6 +18,10 @@ another task is brittle under ``task_always_eager`` (Celery publish/signal
 behavior varies). The nested test below mirrors what ``before_task_publish``
 injection is meant to accomplish by explicitly injecting trace context before
 scheduling the child task.
+
+``logging.celery_otel_tracing`` defaults to false in application config; an
+autouse fixture in this module enables it and re-runs ``configure_celery_tracing``
+so these tests still validate span export.
 """
 
 from __future__ import annotations
@@ -33,8 +37,20 @@ from opentelemetry import trace
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from fides.config import CONFIG
+from fides.observability.celery_tracing import configure_celery_tracing
 
 _PROPAGATOR = TraceContextTextMapPropagator()
+
+
+@pytest.fixture(autouse=True)
+def _enable_celery_otel_tracing_for_tests(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Application default is off; turn tracing on for span assertions in this file."""
+    monkeypatch.setattr(
+        CONFIG,
+        "logging",
+        CONFIG.logging.model_copy(update={"celery_otel_tracing": True}),
+    )
+    configure_celery_tracing(CONFIG)
 
 
 def _record_message(record: Any) -> str:
@@ -64,9 +80,6 @@ def test_celery_otel_emits_span_log_for_task(
     celery_session_worker: Any,
     loguru_caplog: Any,
 ) -> None:
-    if not CONFIG.logging.celery_otel_tracing:
-        pytest.skip("celery_otel_tracing disabled in config")
-
     suffix = uuid4().hex[:10]
     task_name = f"otel_span_log_test_{suffix}"
 
@@ -110,9 +123,6 @@ def test_celery_otel_task_joins_trace_from_traceparent_headers(
     celery_session_worker: Any,
     loguru_caplog: Any,
 ) -> None:
-    if not CONFIG.logging.celery_otel_tracing:
-        pytest.skip("celery_otel_tracing disabled in config")
-
     suffix = uuid4().hex[:10]
     task_name = f"otel_header_join_{suffix}"
 
@@ -163,9 +173,6 @@ def test_celery_otel_nested_tasks_share_trace_when_traceparent_is_injected(
     loguru_caplog: Any,
 ) -> None:
     """Parent schedules child with explicit traceparent headers (mirrors publish-time inject)."""
-    if not CONFIG.logging.celery_otel_tracing:
-        pytest.skip("celery_otel_tracing disabled in config")
-
     suffix = uuid4().hex[:10]
     child_name = f"otel_nested_child_{suffix}"
     parent_name = f"otel_nested_parent_{suffix}"
@@ -315,9 +322,6 @@ def test_celery_otel_dsr_sql_graph_task_access_emits_child_span_sharing_trace_id
     policy: Any,
 ) -> None:
     """``dsr.graph_task.access`` is a child span of the Celery task (same ``trace_id``)."""
-    if not CONFIG.logging.celery_otel_tracing:
-        pytest.skip("celery_otel_tracing disabled in config")
-
     mock_retrieve.return_value = [{"id": 1}]
     mock_post_processing.return_value = [{"id": 1}]
 
@@ -389,9 +393,6 @@ def test_celery_otel_dsr_saas_graph_task_access_emits_child_span_sharing_trace_i
     saas_example_connection_config: Any,
 ) -> None:
     """SaaS Tier-A node span shares ``trace_id`` with the enclosing Celery task span."""
-    if not CONFIG.logging.celery_otel_tracing:
-        pytest.skip("celery_otel_tracing disabled in config")
-
     mock_retrieve.return_value = [{"id": 1}]
     mock_post_processing.return_value = [{"id": 1}]
 
