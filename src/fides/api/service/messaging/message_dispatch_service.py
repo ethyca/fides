@@ -79,12 +79,6 @@ def _resolve_provider_map() -> dict[
     }
 
 
-# Static reference for completeness invariant tests
-PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = (
-    _resolve_provider_map()
-)
-
-
 @celery_app.task(
     base=DatabaseTask,
     bind=True,
