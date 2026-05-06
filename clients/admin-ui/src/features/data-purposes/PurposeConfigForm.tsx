@@ -98,7 +98,7 @@ const PurposeConfigForm = ({ purpose }: PurposeConfigFormProps) => {
   );
 
   useEffect(() => {
-    form.setFieldsValue(purpose);
+    form.setFieldsValue({ ...purpose, tags: purpose.tags ?? undefined });
   }, [purpose, form]);
 
   const handleFinish = async (values: Partial<DataPurpose>) => {
