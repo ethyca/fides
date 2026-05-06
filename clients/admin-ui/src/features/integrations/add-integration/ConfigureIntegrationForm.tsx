@@ -5,6 +5,7 @@ import {
   Input,
   Select,
   Spin,
+  Switch,
   Text,
   useMessage,
 } from "fidesui";
@@ -51,6 +52,10 @@ type FormValues = {
   name: string;
   description: string;
   system_fides_key?: string;
+  // Inverted form of ConnectionConfig.disabled. Controls whether the
+  // integration is used by privacy requests; does not affect discovery
+  // monitors or connection tests.
+  enabled: boolean;
   secrets?: ConnectionSecrets;
   dataset?: string[];
   property_ids?: string[];
@@ -174,6 +179,7 @@ export const ConfigureIntegrationForm = ({
       name: connection?.name ?? "",
       description: connection?.description ?? "",
       system_fides_key: initialSystemFidesKey,
+      enabled: connection ? !connection.disabled : true,
       ...(hasSecrets && {
         secrets: mapValues(secrets?.properties, (s, key) => {
           const value = connection?.secrets?.[key] ?? s.default;
@@ -234,7 +240,7 @@ export const ConfigureIntegrationForm = ({
     const connectionPayload = isEditing
       ? {
           ...connection,
-          disabled: connection.disabled ?? false,
+          disabled: !values.enabled,
           name: values.name,
           description: values.description,
           secrets: undefined,
@@ -246,7 +252,7 @@ export const ConfigureIntegrationForm = ({
             ? ConnectionType.SAAS
             : connectionOption.identifier) as ConnectionType,
           access: AccessLevel.READ,
-          disabled: false,
+          disabled: !values.enabled,
           description: values.description,
           secrets: processedValues.secrets,
           dataset: values.dataset,
@@ -480,6 +486,15 @@ export const ConfigureIntegrationForm = ({
           </Form.Item>
           <Form.Item name="description" label="Description" className="w-full">
             <Input data-testid="input-description" />
+          </Form.Item>
+          <Form.Item
+            name="enabled"
+            label="Enable integration"
+            tooltip="When enabled, this integration is used to fulfill privacy requests. Disabling excludes it from privacy request execution; it has no effect on discovery monitors or connection tests."
+            valuePropName="checked"
+            className="w-full"
+          >
+            <Switch data-testid="input-enabled" />
           </Form.Item>
           {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
             connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
