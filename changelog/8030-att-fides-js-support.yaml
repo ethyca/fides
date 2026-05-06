@@ -1,3 +1,0 @@
-type: Added
-description: Added fides_att_status option to fides-js to lock non-exempt notices when Apple ATT permission is denied or restricted.
-pr: 8030
