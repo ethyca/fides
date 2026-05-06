@@ -2286,7 +2286,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">615</span>
 <span class="normal">616</span>
 <span class="normal">617</span>
-<span class="normal">618</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2501,6 +2505,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># still valid before using them.</span>
 <span class="n">task_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
+<span class="c1"># Timeout in seconds for database healthcheck queries on the</span>
+<span class="c1"># /health/database endpoint.</span>
+<span class="n">healthcheck_query_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="c1"># number</span>
+
 <span class="c1"># The database user with which to login to the application database.</span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;defaultuser&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
@@ -2614,7 +2622,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="n">task_soft_time_limit_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1"># Minutes between polling Jira for ticket status updates.</span>
-<span class="n">jira_polling_interval_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># integer</span>
+<span class="n">jira_polling_interval_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1">#-------------#</span>
 <span class="c1">#-- LOGGING --#</span>

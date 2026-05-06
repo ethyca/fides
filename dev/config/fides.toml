@@ -213,6 +213,10 @@ task_engine_keepalives_count = 5 # integer
 # still valid before using them.
 task_engine_pool_pre_ping = true # boolean
 
+# Timeout in seconds for database healthcheck queries on the
+# /health/database endpoint.
+healthcheck_query_timeout = 1.0 # number
+
 # The database user with which to login to the application database.
 user = "defaultuser" # string
 
@@ -326,7 +330,7 @@ use_legacy_traversal = false # boolean
 task_soft_time_limit_seconds = 0 # integer
 
 # Minutes between polling Jira for ticket status updates.
-jira_polling_interval_minutes = 10 # integer
+jira_polling_interval_minutes = 3 # integer
 
 #-------------#
 #-- LOGGING --#
