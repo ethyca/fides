@@ -1,3 +1,4 @@
+from email.message import EmailMessage
 from typing import Any
 
 from loguru import logger
@@ -29,13 +30,13 @@ class SESClient:
     ) -> dict[str, dict[str, dict[str, str]]]:
         """Returns verification attributes for the given identities."""
 
-    def send_email(
+    def send_raw_email(  # type: ignore[empty-body]
         self,
         Source: str,
-        Destination: dict[str, list[str]],
-        Message: dict[str, Any],
-    ) -> None:
-        pass
+        Destinations: list[str],
+        RawMessage: dict[str, bytes],
+    ) -> dict[str, str]:
+        """Sends a raw MIME email."""
 
 
 class AwsSesService(BaseEmailProviderService):
@@ -110,10 +111,11 @@ class AwsSesService(BaseEmailProviderService):
                 raise MessageDispatchException(f"{identity} is not verified in SES.")
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
-        """Send an email using AWS SES simple API.
+        """Send an email using AWS SES raw API for custom header support.
 
-        Does NOT call validate_email_and_domain_status() — that is done at
-        config save/test time. SES rejects sends from unverified identities.
+        Builds a MIME message using ``email.message.EmailMessage`` (modern
+        Python 3.6+ API). Does NOT call validate_email_and_domain_status() —
+        that is done at config save/test time.
         """
         ses_client = self.get_ses_client()
 
@@ -122,16 +124,44 @@ class AwsSesService(BaseEmailProviderService):
             from_address = f"noreply@{self.details.domain}"
 
         try:
-            ses_client.send_email(
+            msg = self._build_mime(from_address, to.strip(), message)
+            ses_client.send_raw_email(
                 Source=from_address,
-                Destination={"ToAddresses": [to.strip()]},
-                Message={
-                    "Subject": {"Data": message.subject},
-                    "Body": {"Html": {"Data": message.body}},
-                },
+                Destinations=[to.strip()],
+                RawMessage={"Data": msg.as_bytes()},
             )
+        except MessageDispatchException:
+            raise
         except Exception as exc:
             logger.error("Email failed to send: {}", str(exc))
             raise MessageDispatchException(
                 f"AWS SES email failed to send due to: {str(exc)}"
             )
+
+    @staticmethod
+    def _build_mime(
+        from_address: str, to: str, message: EmailForActionType
+    ) -> EmailMessage:
+        """Build a MIME EmailMessage with optional threading headers."""
+        msg = EmailMessage()
+        msg["From"] = from_address
+        msg["To"] = to
+        msg["Subject"] = message.subject
+
+        # Threading headers
+        if message.reply_to:
+            msg["Reply-To"] = message.reply_to
+        if message.message_id:
+            msg["Message-ID"] = message.message_id
+        if message.in_reply_to:
+            msg["In-Reply-To"] = message.in_reply_to
+        if message.references:
+            msg["References"] = message.references
+
+        if message.body_text:
+            msg.set_content(message.body_text)
+            msg.add_alternative(message.body, subtype="html")
+        else:
+            msg.set_content(message.body, subtype="html")
+
+        return msg

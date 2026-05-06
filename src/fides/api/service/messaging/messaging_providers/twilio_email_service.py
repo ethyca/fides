@@ -2,7 +2,16 @@ import json
 
 import sendgrid
 from loguru import logger
-from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
+from sendgrid.helpers.mail import (
+    Content,
+    Email,
+    Header,
+    Mail,
+    Personalization,
+    ReplyTo,
+    TemplateId,
+    To,
+)
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.messaging import MessagingConfig
@@ -48,6 +57,20 @@ class TwilioEmailService(BaseEmailProviderService):
             mail = self._compose_mail(
                 from_email, to_email, message.subject, message.body, template_id
             )
+
+            # Threading / envelope headers
+            if message.reply_to:
+                mail.reply_to = ReplyTo(message.reply_to)
+            threading_headers = {
+                "Message-ID": message.message_id,
+                "In-Reply-To": message.in_reply_to,
+                "References": message.references,
+            }
+            for key, value in threading_headers.items():
+                if value:
+                    mail.header = Header(key, value)
+            if message.body_text:
+                mail.add_content(Content("text/plain", message.body_text))
 
             response = sg.client.mail.send.post(request_body=mail.get())
             if response.status_code >= 400:

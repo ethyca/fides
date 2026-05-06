@@ -311,6 +311,12 @@ class EmailForActionType(BaseModel):
     subject: str
     body: str
     template_variables: Optional[Dict[str, Any]] = {}
+    # Threading / envelope fields (all optional, backward compatible)
+    reply_to: str | None = None
+    message_id: str | None = None  # RFC 5322 Message-ID
+    in_reply_to: str | None = None
+    references: str | None = None
+    body_text: str | None = None  # plaintext alternative
 
 
 class MessagingServiceDetails(Enum):

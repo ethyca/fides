@@ -30,15 +30,32 @@ class MailchimpTransactionalService(BaseEmailProviderService):
         ]
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
+        msg_payload: dict = {
+            "from_email": self.from_email,
+            "subject": message.subject,
+            "html": message.body,
+            "to": [{"email": to.strip(), "type": "to"}],
+        }
+
+        # Threading / envelope headers
+        headers = {}
+        if message.reply_to:
+            headers["Reply-To"] = message.reply_to
+        if message.message_id:
+            headers["Message-ID"] = message.message_id
+        if message.in_reply_to:
+            headers["In-Reply-To"] = message.in_reply_to
+        if message.references:
+            headers["References"] = message.references
+        if headers:
+            msg_payload["headers"] = headers
+        if message.body_text:
+            msg_payload["text"] = message.body_text
+
         data = json.dumps(
             {
                 "key": self.api_key,
-                "message": {
-                    "from_email": self.from_email,
-                    "subject": message.subject,
-                    "html": message.body,
-                    "to": [{"email": to.strip(), "type": "to"}],
-                },
+                "message": msg_payload,
             }
         )
 
