@@ -272,7 +272,7 @@ const HomePage: NextPage = () => {
                   color="gray.800"
                   href={`${basePath}/privacy-request-metrics`}
                 >
-                  Privacy request disclosures
+                  {config.metrics?.link_text ?? "Privacy request disclosures"}
                 </Link>
               )}
             </Flex>
