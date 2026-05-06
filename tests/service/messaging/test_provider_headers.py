@@ -252,9 +252,10 @@ class TestAwsSesHeaders:
         ses_service.send_email("to@test.com", _email_with_headers())
 
         call_args = ses_service._ses_client.send_raw_email.call_args
-        raw_data = call_args.kwargs.get("RawMessage", {}).get("Data") or call_args[1][
-            "RawMessage"
-        ]["Data"]
+        raw_data = (
+            call_args.kwargs.get("RawMessage", {}).get("Data")
+            or call_args[1]["RawMessage"]["Data"]
+        )
 
         # Parse the MIME message
         msg = BytesParser(policy=policy.default).parsebytes(
@@ -277,9 +278,10 @@ class TestAwsSesHeaders:
         ses_service.send_email("to@test.com", _email_without_headers())
 
         call_args = ses_service._ses_client.send_raw_email.call_args
-        raw_data = call_args.kwargs.get("RawMessage", {}).get("Data") or call_args[1][
-            "RawMessage"
-        ]["Data"]
+        raw_data = (
+            call_args.kwargs.get("RawMessage", {}).get("Data")
+            or call_args[1]["RawMessage"]["Data"]
+        )
 
         msg = BytesParser(policy=policy.default).parsebytes(
             raw_data if isinstance(raw_data, bytes) else raw_data.encode()
@@ -298,9 +300,10 @@ class TestAwsSesHeaders:
         ses_service.send_email("to@test.com", email)
 
         call_args = ses_service._ses_client.send_raw_email.call_args
-        raw_data = call_args.kwargs.get("RawMessage", {}).get("Data") or call_args[1][
-            "RawMessage"
-        ]["Data"]
+        raw_data = (
+            call_args.kwargs.get("RawMessage", {}).get("Data")
+            or call_args[1]["RawMessage"]["Data"]
+        )
 
         msg = BytesParser(policy=policy.default).parsebytes(
             raw_data if isinstance(raw_data, bytes) else raw_data.encode()
@@ -317,9 +320,10 @@ class TestAwsSesHeaders:
         ses_service.send_email("to@test.com", email)
 
         call_args = ses_service._ses_client.send_raw_email.call_args
-        raw_data = call_args.kwargs.get("RawMessage", {}).get("Data") or call_args[1][
-            "RawMessage"
-        ]["Data"]
+        raw_data = (
+            call_args.kwargs.get("RawMessage", {}).get("Data")
+            or call_args[1]["RawMessage"]["Data"]
+        )
 
         msg = BytesParser(policy=policy.default).parsebytes(
             raw_data if isinstance(raw_data, bytes) else raw_data.encode()
