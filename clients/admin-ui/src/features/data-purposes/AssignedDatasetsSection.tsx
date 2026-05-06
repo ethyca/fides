@@ -354,7 +354,6 @@ const AssignedDatasetsSection = ({
               <Tooltip title="Approve category">
                 <Button
                   aria-label="Approve category"
-                  type="text"
                   size="small"
                   icon={<Icons.Checkmark size={14} />}
                   onClick={(event) => {
@@ -366,7 +365,6 @@ const AssignedDatasetsSection = ({
               <Tooltip title="Remove category">
                 <Button
                   aria-label="Remove category"
-                  type="text"
                   size="small"
                   icon={<Icons.Close size={14} />}
                   onClick={(event) => {
