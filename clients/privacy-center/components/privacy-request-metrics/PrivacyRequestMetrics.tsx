@@ -65,7 +65,7 @@ export const PrivacyRequestMetrics = () => {
       py={["6", "16"]}
       px={5}
       spacing={10}
-      className="pc-page--metrics"
+      className="pc-page pc-page--metrics pc-metrics"
     >
       <Stack align="center" spacing={3} w="100%" maxWidth={1080}>
         <Heading as="h1" fontSize={["2xl", "3xl"]} fontWeight="semibold">

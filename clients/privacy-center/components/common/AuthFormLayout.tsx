@@ -40,14 +40,16 @@ export const AuthFormLayout = ({
         justify="center"
         align="center"
         data-testid={dataTestId}
-        className={[styles.root, className].filter(Boolean).join(" ")}
+        className={[styles.root, "pc-page", "pc-form", className]
+          .filter(Boolean)
+          .join(" ")}
       >
         <div className={styles.container}>
           <Space direction="vertical" size={64} style={{ width: "100%" }}>
             {/* Fides Logo */}
             <Flex justify="center">
               <img
-                className="pc-form__logo"
+                className="pc-logo"
                 src={config?.logo_path || "/logo.svg"}
                 alt="Logo"
                 width={205}

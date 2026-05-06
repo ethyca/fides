@@ -27,58 +27,71 @@ Override basic theme colors by uncommenting and editing those below
  * Use these classes to customize specific elements. Target them in this file
  * or in property.stylesheet via the Fides API.
  *
- * Page scoping (use to target elements on a specific page):
+ * Naming follows BEM:
+ *   .pc-block                Block — a standalone component
+ *   .pc-block__element       Element — a part of a block
+ *   .pc-block--modifier      Modifier — a variant or page-scope of a block
+ *
+ * Modifiers always appear alongside their base block, e.g.
+ *   class="pc-button pc-button--submit"
+ *   class="pc-page pc-page--consent"
+ *
+ * Page scoping (every page wrapper carries `.pc-page` plus a modifier):
+ *   .pc-page                    Every privacy-center page wrapper
  *   .pc-page--home              Home page
  *   .pc-page--privacy-request   Privacy request form page
  *   .pc-page--verify            Verification code page
  *   .pc-page--success           Request submitted page
  *   .pc-page--consent           Consent preferences page
  *   .pc-page--metrics           Privacy request metrics page
+ *   .pc-page__heading           Page heading (home, consent)
+ *   .pc-page__description       Page description (home, consent)
  *
  * Homepage:
- *   .pc-header                 Top navigation bar
- *   .pc-logo                   Logo image (in header)
- *   .pc-heading                Main title
- *   .pc-description            Description text
- *   .pc-card                   Action card
+ *   .pc-header                  Top navigation bar
+ *   .pc-logo                    Logo image (used on home and form pages)
+ *   .pc-card                    Action card
  *   .pc-card__icon              Card icon
  *   .pc-card__title             Card title text
  *   .pc-card__description       Card description text
- *   .pc-policy-links           Policy links container
- *   .pc-policy-links__link     Individual policy link
- *   .pc-brand-link             Brand/attribution link
+ *   .pc-policy-links            Policy links container
+ *   .pc-policy-links__link      Individual policy link
+ *   .pc-brand-link              Brand/attribution link
  *
  * Form pages (privacy request, verify, success):
- *   .pc-form__logo              Form page logo
+ *   .pc-form                    Form page wrapper (Auth form layout)
  *   .pc-form__box               Form container box
  *   .pc-form__title             Form page title
  *   .pc-form__content           Form content area
  *
- * Privacy request form:
+ * Form fields (use base + modifier together):
+ *   .pc-field                   Form field wrapper
  *   .pc-field--name             Name input field
  *   .pc-field--email            Email input field
  *   .pc-field--phone            Phone input field
  *   .pc-field--custom           Custom identity fields
+ *   .pc-field--code             Verification code input
+ *
+ * Buttons (use base + modifier together):
+ *   .pc-button                  Button base
  *   .pc-button--submit          Submit/Continue button
  *   .pc-button--cancel          Cancel button
- *
- * Verification:
- *   .pc-field--code             Verification code input
  *   .pc-button--resend          Resend code button
  *   .pc-button--verify          Submit code button
- *
- * Success:
- *   .pc-success__icon           Checkmark icon
- *   .pc-success__message        Confirmation message text
  *   .pc-button--return          Return home button
  *
+ * Success:
+ *   .pc-success                 Submitted-page wrapper
+ *   .pc-success__icon           Checkmark icon
+ *   .pc-success__message        Confirmation message text
+ *
  * Consent:
- *   .pc-consent__heading        Consent page heading
- *   .pc-consent__description    Consent page description
+ *   .pc-consent                 Consent page wrapper
  *   .pc-consent__toggle         Individual consent toggle
  *   .pc-consent__banner         GPC banner
  *
  * Metrics:
+ *   .pc-metrics                 Metrics page wrapper
  *   .pc-metrics__table          Metrics data table
  *   .pc-metrics__disclaimer     Legal disclaimer text
  *
@@ -87,6 +100,10 @@ Override basic theme colors by uncommenting and editing those below
  *   .pc-page--privacy-request .pc-form__box {
  *     background-color: #fafafa;
  *     border: 1px solid #e0e0e0;
+ *   }
+ *
+ *   .pc-button--submit {
+ *     background-color: #6c63ff;
  *   }
  *
  *   .pc-card:hover {

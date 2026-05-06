@@ -184,11 +184,11 @@ const HomePage: NextPage = () => {
   }
 
   return (
-    <main data-testid="home" className="pc-page--home">
+    <main data-testid="home" className="pc-page pc-page--home">
       <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
         <Stack align="center" spacing={3}>
           <Heading
-            className="pc-heading"
+            className="pc-page__heading"
             fontSize={["3xl", "4xl"]}
             color="gray.800"
             fontWeight="semibold"
@@ -199,7 +199,7 @@ const HomePage: NextPage = () => {
           </Heading>
 
           <TextOrHtml
-            className="pc-description"
+            className="pc-page__description"
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}

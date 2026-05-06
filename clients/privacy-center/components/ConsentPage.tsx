@@ -280,7 +280,7 @@ const ConsentPage: NextPage = () => {
       as="main"
       align="center"
       data-testid="consent"
-      className="pc-page--consent"
+      className="pc-page pc-page--consent pc-consent"
     >
       <ClientMetadata title="Privacy Center" icon={config.favicon_path} />
 

@@ -15,7 +15,7 @@ const RequestSubmittedPage = () => {
   };
 
   return (
-    <Flex gap="medium" vertical align="center">
+    <Flex className="pc-success" gap="medium" vertical align="center">
       <Image
         className="pc-success__icon"
         src="/green-check.svg"
@@ -29,7 +29,7 @@ const RequestSubmittedPage = () => {
         contact with you shortly.
       </Text>
       <Button
-        className="pc-button--return"
+        className="pc-button pc-button--return"
         type="primary"
         onClick={handleContinue}
         block
