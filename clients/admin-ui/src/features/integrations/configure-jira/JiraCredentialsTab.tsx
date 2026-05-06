@@ -31,6 +31,12 @@ interface JiraCredentialsTabProps {
   };
 }
 
+enum SyncStatus {
+  SYNCED = "synced",
+  STALE = "stale",
+  SOURCE_MISSING = "source_missing",
+}
+
 const SYNC_STATUS_CONFIG: Record<
   NonNullable<JiraCredentialLinkStatus["sync_status"]>,
   { label: string; color: "success" | "warning" | "error" }
@@ -125,14 +131,14 @@ const JiraCredentialsTab = ({
                   </Tag>
                 )}
               </Flex>
-              {syncStatus === "stale" && (
+              {syncStatus === SyncStatus.STALE && (
                 <Alert
                   type="warning"
                   title="Credentials may be out of date. Re-link to sync the latest credentials from the source connector."
                   showIcon
                 />
               )}
-              {syncStatus === "source_missing" && (
+              {syncStatus === SyncStatus.SOURCE_MISSING && (
                 <Alert
                   type="error"
                   title="The source connector has been removed. Unlink and choose a new source, or authorize via OAuth."
