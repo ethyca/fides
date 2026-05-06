@@ -15,9 +15,14 @@ import { DaysLeft, Header, LabeledText, ReceivedOn } from "./components";
 interface ListItemProps {
   item: PrivacyRequestResponseExtended;
   checkbox?: React.ReactNode;
+  showActions?: boolean;
 }
 
-export const ListItem = ({ item, checkbox }: ListItemProps) => {
+export const ListItem = ({
+  item,
+  checkbox,
+  showActions = true,
+}: ListItemProps) => {
   const primaryIdentity = getPrimaryIdentity(item.identity);
   const otherIdentities = getOtherIdentities(item.identity, primaryIdentity);
   const customFields = getCustomFields(item.custom_privacy_request_fields);
@@ -37,7 +42,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
 
   return (
     <List.Item>
-      <div className="pr-4">{checkbox}</div>
+      {checkbox && <div className="pr-4">{checkbox}</div>}
       <Flex vertical gap="small" className="grow pr-8">
         <Header privacyRequest={item} primaryIdentity={primaryIdentity} />
         <Flex vertical gap="small" wrap>
@@ -93,9 +98,11 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
         />
         <ReceivedOn createdAt={item.created_at} />
       </div>
-      <Flex className="min-w-[90px]" align="center" justify="end" gap="small">
-        <RequestTableActions key="other-actions" subjectRequest={item} />
-      </Flex>
+      {showActions && (
+        <Flex className="min-w-[90px]" align="center" justify="end" gap="small">
+          <RequestTableActions key="other-actions" subjectRequest={item} />
+        </Flex>
+      )}
     </List.Item>
   );
 };
