@@ -853,15 +853,10 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.MailgunService",
-        autospec=True,
-    )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_messaging_config(
         self,
         upload_mock,
-        mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
         cache,
@@ -872,6 +867,8 @@ class TestPrivacyRequestsEmailNotifications:
         request,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
+        messaging_config,
+        mock_mailgun_http,
     ):
         upload_mock.return_value = "http://www.data-download-url"
         customer_email = "customer-1@example.com"
@@ -891,19 +888,14 @@ class TestPrivacyRequestsEmailNotifications:
         assert pr.status == PrivacyRequestStatus.error
         pr.delete(db=db)
 
-        assert mailgun_send.called is False
+        assert not mock_mailgun_http.called
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.MailgunService",
-        autospec=True,
-    )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(
         self,
         upload_mock,
-        mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
         cache,
@@ -914,6 +906,8 @@ class TestPrivacyRequestsEmailNotifications:
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
         request,
+        messaging_config,
+        mock_mailgun_http,
     ):
         upload_mock.return_value = "http://www.data-download-url"
         data = {
@@ -932,7 +926,7 @@ class TestPrivacyRequestsEmailNotifications:
         assert pr.status == PrivacyRequestStatus.error
         pr.delete(db=db)
 
-        assert mailgun_send.called is False
+        assert not mock_mailgun_http.called
 
 
 class TestPrivacyRequestsManualWebhooks:

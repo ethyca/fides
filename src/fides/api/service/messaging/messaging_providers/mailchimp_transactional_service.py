@@ -22,12 +22,10 @@ class MailchimpTransactionalService(BaseEmailProviderService):
 
     def __init__(self, messaging_config: MessagingConfig):
         super().__init__(messaging_config)
-        self.from_email = messaging_config.details[
-            MessagingServiceDetails.EMAIL_FROM.value
-        ]
-        self.api_key = messaging_config.secrets[
-            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
-        ]
+        self.from_email = self._get_detail(MessagingServiceDetails.EMAIL_FROM)
+        self.api_key = self._get_secret(
+            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY
+        )
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
         data = json.dumps(

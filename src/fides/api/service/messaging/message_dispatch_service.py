@@ -64,20 +64,12 @@ from fides.service.messaging.aws_ses_service import AWS_SES_Service
 EMAIL_JOIN_STRING = ", "
 
 
-def _resolve_provider_map() -> dict[
-    MessagingServiceType, type[BaseMessageProviderService]
-]:
-    """Build provider map at call time so test mocks of provider classes are respected.
-
-    Note: aws_ses is excluded — it uses the legacy _aws_ses_dispatcher until
-    the follow-up PR migrates it to AwsSesService.
-    """
-    return {
-        MessagingServiceType.mailgun: MailgunService,
-        MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
-        MessagingServiceType.twilio_text: TwilioSmsService,
-        MessagingServiceType.twilio_email: TwilioEmailService,
-    }
+_PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = {
+    MessagingServiceType.mailgun: MailgunService,
+    MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
+    MessagingServiceType.twilio_text: TwilioSmsService,
+    MessagingServiceType.twilio_email: TwilioEmailService,
+}
 
 
 @celery_app.task(
@@ -321,7 +313,7 @@ def dispatch_message(
         _aws_ses_dispatcher(messaging_config, message, to)  # type: ignore[arg-type]
         return
 
-    provider_cls = _resolve_provider_map().get(messaging_service)
+    provider_cls = _PROVIDER_MAP.get(messaging_service)
     if not provider_cls:
         logger.error(
             "Dispatcher has not been implemented for message service type: {}",

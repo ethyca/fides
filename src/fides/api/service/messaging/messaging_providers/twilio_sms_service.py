@@ -17,17 +17,13 @@ class TwilioSmsService(BaseSMSProviderService):
 
     def __init__(self, messaging_config: MessagingConfig):
         super().__init__(messaging_config)
-        self.account_sid = messaging_config.secrets[
-            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
-        ]
-        self.auth_token = messaging_config.secrets[
-            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
-        ]
-        self.messaging_service_sid = messaging_config.secrets.get(
-            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
+        self.account_sid = self._get_secret(MessagingServiceSecrets.TWILIO_ACCOUNT_SID)
+        self.auth_token = self._get_secret(MessagingServiceSecrets.TWILIO_AUTH_TOKEN)
+        self.messaging_service_sid = self._get_optional_secret(
+            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID
         )
-        self.sender_phone_number = messaging_config.secrets.get(
-            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
+        self.sender_phone_number = self._get_optional_secret(
+            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER
         )
 
     def validate_config(self) -> None:
