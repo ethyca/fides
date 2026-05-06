@@ -8,6 +8,7 @@ import {
   EmptyExperience,
   experienceIsValid,
   fetchExperience,
+  FidesAttStatus,
   FidesConfig,
   parseCommaSeparatedString,
   PrivacyExperience,
@@ -400,6 +401,7 @@ export default async function handler(
       fidesDisabledNotices: environment.settings.FIDES_DISABLED_NOTICES
         ? parseCommaSeparatedString(environment.settings.FIDES_DISABLED_NOTICES)
         : null,
+      fidesAttStatus: FidesAttStatus.AUTHORIZED,
       fidesDisabledSystems: environment.settings.FIDES_DISABLED_SYSTEMS
         ? parseCommaSeparatedString(environment.settings.FIDES_DISABLED_SYSTEMS)
         : null,

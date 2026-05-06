@@ -7,7 +7,14 @@ type LogoProps = {
 };
 
 const LogoImage = ({ src }: Pick<LogoProps, "src">) => (
-  <Image src={src} margin="8px" height="68px" alt="Logo" data-testid="logo" />
+  <Image
+    src={src}
+    margin="8px"
+    height="68px"
+    alt="Logo"
+    data-testid="logo"
+    className="pc-logo"
+  />
 );
 
 const Logo = ({ src, href }: LogoProps) => {

@@ -45,6 +45,7 @@ const BrandLink = ({
 
   return (
     <Link
+      className="pc-brand-link"
       fontSize="8px"
       isExternal
       position={position}

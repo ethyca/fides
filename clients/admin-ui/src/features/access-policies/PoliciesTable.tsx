@@ -312,7 +312,7 @@ const PoliciesTable = ({
         ),
       },
       {
-        title: "Controls",
+        title: "Control",
         dataIndex: "control",
         key: "control",
         width: 240,

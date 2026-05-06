@@ -122,6 +122,7 @@ export const MonitorResult = ({
               confidenceCounts={confidenceCounts}
               reviewHref={href}
               monitorId={key}
+              monitorType={monitorType}
               id={`confidence-row-${key}`}
             />
           </ExpandCollapse>
