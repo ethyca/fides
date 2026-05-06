@@ -57,9 +57,9 @@ from fides.api.service.messaging.messaging_providers.twilio_sms_service import (
     TwilioSmsService,
 )
 from fides.api.tasks import DatabaseTask, celery_app
-from fides.service.messaging.aws_ses_service import AWS_SES_Service
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.aws_ses_service import AWS_SES_Service
 
 EMAIL_JOIN_STRING = ", "
 
