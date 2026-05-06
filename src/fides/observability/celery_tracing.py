@@ -1,8 +1,8 @@
 """OpenTelemetry-style tracing for Celery tasks (log-based exporter).
 
-When ``logging.celery_otel_tracing`` is true (the default), trace context is injected into
-Celery message headers and restored in workers. Completed spans are logged at
-INFO via Loguru (no OTLP backend required). Set the flag to false to disable.
+When ``logging.celery_otel_tracing`` is true, trace context is injected into Celery message
+headers and restored in workers. Completed spans are logged at INFO via Loguru (no OTLP
+backend required). The flag defaults to false; set it to true to enable tracing.
 """
 
 from __future__ import annotations
@@ -137,12 +137,12 @@ def configure_celery_tracing(config: FidesConfig) -> None:
     this sets ``_CELERY_TRACING_ENABLED`` to True.
 
     No-ops when ``config.logging.celery_otel_tracing`` is false. If the attribute
-    is missing, tracing defaults to on (``getattr(..., True)``).
+    is missing, tracing defaults to off (``getattr(..., False)``).
     """
     global _TRACER_PROVIDER_INSTALLED  # noqa: PLW0603
     global _CELERY_TRACING_ENABLED  # noqa: PLW0603
 
-    if not getattr(config.logging, "celery_otel_tracing", True):
+    if not getattr(config.logging, "celery_otel_tracing", False):
         _CELERY_TRACING_ENABLED = False
         return
 
