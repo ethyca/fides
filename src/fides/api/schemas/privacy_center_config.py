@@ -263,6 +263,7 @@ class PrivacyCenterConfig(FidesSchema):
     links: List[PrivacyCenterLink] = []
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
     metrics: Optional[MetricsConfig] = None
+    error_message: Optional[str] = None
 
     @field_validator(
         "server_url_development",

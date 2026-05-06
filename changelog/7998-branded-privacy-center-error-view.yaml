@@ -1,0 +1,4 @@
+type: Added
+description: Replaced the unstyled Privacy Center error fallback with a branded error view and added a configurable `error_message` config field
+pr: 7998
+labels: []
