@@ -67,7 +67,11 @@ EMAIL_JOIN_STRING = ", "
 def _resolve_provider_map() -> dict[
     MessagingServiceType, type[BaseMessageProviderService]
 ]:
-    """Build provider map at call time so test mocks of provider classes are respected."""
+    """Build provider map at call time so test mocks of provider classes are respected.
+
+    Note: aws_ses is excluded — it uses the legacy _aws_ses_dispatcher until
+    the follow-up PR migrates it to AwsSesService.
+    """
     return {
         MessagingServiceType.mailgun: MailgunService,
         MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
@@ -76,7 +80,7 @@ def _resolve_provider_map() -> dict[
     }
 
 
-# Static reference for completeness invariant tests
+# Static reference for tests (incomplete until aws_ses is migrated)
 PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = (
     _resolve_provider_map()
 )
