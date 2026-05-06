@@ -17,6 +17,11 @@ import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/priva
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus } from "~/types/api";
 
+import {
+  extractIdentityFields,
+  formatLabelList,
+} from "./relatedRequestsDrawerUtils";
+
 type RelatedRequestRow = {
   id: string;
   status: PrivacyRequestStatus;
@@ -30,49 +35,24 @@ type RelatedRequestsDrawerProps = {
   privacyRequest: PrivacyRequestEntity;
 };
 
-// Builds an `identities` filter payload from the current request's identity
-// fields. Empty/null values are excluded so we don't widen the search to
-// every request missing that field. The backend OR-matches across fields
-// (see filter_privacy_request_queryset), which is what we want for
-// "related requests": a later request that adds a phone number still
-// surfaces alongside an earlier email-only one from the same person.
-const buildIdentitiesFilter = (
-  identity: PrivacyRequestEntity["identity"] | undefined,
-): Record<string, string> | undefined => {
-  if (!identity) {
-    return undefined;
-  }
-  const entries = Object.entries(identity).flatMap(([fieldName, field]) => {
-    const value = field?.value;
-    if (typeof value !== "string" || value.length === 0) {
-      return [];
-    }
-    return [[fieldName, value]] as const;
-  });
-  if (entries.length === 0) {
-    return undefined;
-  }
-  return Object.fromEntries(entries);
-};
-
 const RelatedRequestsDrawer = ({
   isOpen,
   onClose,
   privacyRequest,
 }: RelatedRequestsDrawerProps) => {
-  const identitiesFilter = useMemo(
-    () => buildIdentitiesFilter(privacyRequest.identity),
+  const identityFields = useMemo(
+    () => extractIdentityFields(privacyRequest.identity),
     [privacyRequest.identity],
   );
   const currentRequestId = privacyRequest.id;
 
   const { data, isFetching } = useSearchPrivacyRequestsQuery(
     {
-      identities: identitiesFilter,
+      identities: identityFields?.filter,
       page: 1,
       size: 100,
     },
-    { skip: !isOpen || !identitiesFilter },
+    { skip: !isOpen || !identityFields },
   );
 
   const rows = useMemo<RelatedRequestRow[]>(() => {
@@ -152,9 +132,11 @@ const RelatedRequestsDrawer = ({
       title="Related requests"
     >
       <Typography.Paragraph type="secondary" className="!mb-4">
-        Requests that share at least one identity value (e.g. email, phone) with
-        this one — including any that were marked as duplicates. Use this to see
-        the full context across submissions from the same subject.
+        Showing requests that match this request&apos;s{" "}
+        <Typography.Text strong>
+          {formatLabelList(identityFields?.labels ?? []).toLocaleLowerCase()}
+        </Typography.Text>
+        , including any that were marked as duplicates.
       </Typography.Paragraph>
       <Table<RelatedRequestRow>
         data-testid="related-requests-drawer-table"
