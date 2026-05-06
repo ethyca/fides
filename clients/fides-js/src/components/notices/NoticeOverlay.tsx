@@ -129,7 +129,9 @@ const NoticeOverlay = () => {
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
             false) ||
           notice.disabled ||
-          (options.fidesAttDenied && !notice.att_exempt);
+          ((options.fidesAttStatus === "denied" ||
+            options.fidesAttStatus === "restricted") &&
+            !notice.att_exempt);
         const bestTranslation = selectBestNoticeTranslation(
           currentLocale,
           i18n.getDefaultLocale(),

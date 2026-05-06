@@ -251,7 +251,8 @@ export type VendorRecord = TCFVendorConsentRecord &
   };
 
 export interface PurposeRecord
-  extends TCFPurposeConsentRecord, TCFPurposeLegitimateInterestsRecord {
+  extends TCFPurposeConsentRecord,
+    TCFPurposeLegitimateInterestsRecord {
   isConsent: boolean;
   isLegint: boolean;
   isSpecial: boolean;

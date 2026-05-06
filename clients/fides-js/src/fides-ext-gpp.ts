@@ -78,10 +78,10 @@ const userHasExistingPrefs = (
   }
   return Boolean(
     notices &&
-    Object.entries(savedConsent).some(
-      ([key, val]) =>
-        key in notices.map((i) => i.notice_key) && val !== undefined,
-    ),
+      Object.entries(savedConsent).some(
+        ([key, val]) =>
+          key in notices.map((i) => i.notice_key) && val !== undefined,
+      ),
   );
 };
 
