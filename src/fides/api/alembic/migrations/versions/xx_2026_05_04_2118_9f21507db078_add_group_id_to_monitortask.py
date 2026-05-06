@@ -1,7 +1,7 @@
 """Add group_id to MonitorTask
 
 Revision ID: 9f21507db078
-Revises: ae57c33876cc
+Revises: 55cf25a3e2ca
 Create Date: 2026-05-04 21:18:44.962348
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '9f21507db078'
-down_revision = 'ae57c33876cc'
+down_revision = '55cf25a3e2ca'
 branch_labels = None
 depends_on = None
 
