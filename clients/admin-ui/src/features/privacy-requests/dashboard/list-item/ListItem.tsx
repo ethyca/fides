@@ -11,7 +11,13 @@ import {
   getOtherIdentities,
   getPrimaryIdentity,
 } from "../utils";
-import { DaysLeft, Header, LabeledText, ReceivedOn } from "./components";
+import {
+  DaysLeft,
+  Header,
+  HeaderLinkOverrides,
+  LabeledText,
+  ReceivedOn,
+} from "./components";
 
 interface ListItemProps {
   item: PrivacyRequestResponseExtended;
@@ -24,6 +30,15 @@ interface ListItemProps {
    * misleading.
    */
   compact?: boolean;
+  /**
+   * Slot for header customization. Mirrors AntD's nested-config style
+   * (e.g. `Table`'s `expandable` / `pagination` / `rowSelection` props) —
+   * add sub-keys here as new header overrides become necessary, instead of
+   * growing the top-level prop list.
+   */
+  header?: {
+    link?: HeaderLinkOverrides;
+  };
 }
 
 export const ListItem = ({
@@ -31,6 +46,7 @@ export const ListItem = ({
   checkbox,
   showActions = true,
   compact = false,
+  header,
 }: ListItemProps) => {
   const primaryIdentity = getPrimaryIdentity(item.identity);
   const otherIdentities = getOtherIdentities(item.identity, primaryIdentity);
@@ -53,7 +69,11 @@ export const ListItem = ({
     <List.Item>
       {checkbox && <div className="pr-4">{checkbox}</div>}
       <Flex vertical gap="small" className="grow pr-8">
-        <Header privacyRequest={item} primaryIdentity={primaryIdentity} />
+        <Header
+          privacyRequest={item}
+          primaryIdentity={primaryIdentity}
+          link={header?.link}
+        />
         <Flex vertical gap="small" wrap>
           <Flex gap="small" wrap>
             <LabeledText label="Policy">{item.policy.name}</LabeledText>

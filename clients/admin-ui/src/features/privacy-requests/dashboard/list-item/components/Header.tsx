@@ -11,12 +11,29 @@ import { PrivacyRequestResponseExtended } from "~/types/api";
 
 import { IdentityValueWithKey } from "../../utils";
 
+export type HeaderLinkOverrides = {
+  /**
+   * Anchor `target`. When set, the header link bypasses the in-app
+   * `router.push` interceptor and lets the native anchor handle navigation —
+   * use `"_blank"` to open in a new tab.
+   */
+  target?: React.HTMLAttributeAnchorTarget;
+  /** Anchor `rel`. */
+  rel?: string;
+};
+
 interface HeaderProps {
   privacyRequest: PrivacyRequestResponseExtended;
   primaryIdentity: IdentityValueWithKey | null;
+  link?: HeaderLinkOverrides;
 }
 
-export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
+export const Header = ({
+  privacyRequest,
+  primaryIdentity,
+  link,
+}: HeaderProps) => {
+  const useNativeNavigation = link?.target !== undefined;
   const router = useRouter();
   const { flags } = useFlags();
 
@@ -29,13 +46,19 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
           <Typography.Link
             href={`/privacy-requests/${privacyRequest.id}`}
             variant="primary"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push({
-                pathname: PRIVACY_REQUEST_DETAIL_ROUTE,
-                query: { id: privacyRequest.id },
-              });
-            }}
+            target={link?.target}
+            rel={link?.rel}
+            onClick={
+              useNativeNavigation
+                ? undefined
+                : (e) => {
+                    e.preventDefault();
+                    router.push({
+                      pathname: PRIVACY_REQUEST_DETAIL_ROUTE,
+                      query: { id: privacyRequest.id },
+                    });
+                  }
+            }
           >
             {primaryIdentity?.value ?? "Unknown identity"}
           </Typography.Link>

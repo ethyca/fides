@@ -65,7 +65,14 @@ const RelatedRequestsDrawer = ({
           dataSource={otherRequests}
           locale={{ emptyText: "No other related requests found." }}
           renderItem={(item) => (
-            <ListItem item={item} showActions={false} compact />
+            <ListItem
+              item={item}
+              showActions={false}
+              compact
+              header={{
+                link: { target: "_blank", rel: "noopener noreferrer" },
+              }}
+            />
           )}
         />
       </Spin>
