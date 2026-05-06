@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from uuid import uuid4
 
 import pydash
@@ -298,6 +298,46 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         )
         return total_rows_masked
 
+    @staticmethod
+    def _extract_correlation_id(
+        response: Any,
+        correlation_id_path: Optional[str],
+        param_value_map: Dict[str, Any],
+    ) -> str:
+        """Extract correlation ID from the response body, falling back to param_value_map.
+
+        Some APIs return an empty body after the initial request (e.g. Movable Ink).
+        In those cases the correlation ID can be resolved from the request's own
+        param values — for example using ``<privacy_request_id>`` which is always
+        populated automatically.
+        """
+        # Try extracting from the response body first
+        response_data = None
+        if response.content:
+            try:
+                response_data = response.json()
+            except ValueError as exc:
+                raise FidesopsException(f"Invalid JSON response: {exc}")
+
+        if response_data and correlation_id_path:
+            correlation_id = pydash.get(response_data, correlation_id_path)
+            if correlation_id:
+                return str(correlation_id)
+
+        # Fall back to param_value_map (e.g. privacy_request_id, uuid)
+        if correlation_id_path:
+            fallback = param_value_map.get(correlation_id_path)
+            if fallback:
+                logger.info(
+                    "Correlation ID not found in response body; using '{}' from param values",
+                    correlation_id_path,
+                )
+                return str(fallback)
+
+        raise FidesopsException(
+            f"Could not extract correlation ID from response or param values using path: {correlation_id_path}"
+        )
+
     def _handle_polling_initial_request(
         self,
         request_task: RequestTask,
@@ -325,20 +365,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             if not response.ok:
                 continue
 
-            try:
-                response_data = response.json()
-                correlation_id = pydash.get(
-                    response_data, read_request.correlation_id_path
-                )
-                if not correlation_id:
-                    raise FidesopsException(
-                        f"Could not extract correlation ID from response using path: {read_request.correlation_id_path}"
-                    )
-            except ValueError as exc:
-                raise FidesopsException(
-                    f"Invalid JSON response from initial request: {exc}"
-                )
-
+            correlation_id = self._extract_correlation_id(
+                response, read_request.correlation_id_path, param_value_map
+            )
             param_value_map["correlation_id"] = str(correlation_id)
             PollingSubRequestHandler.create_sub_request(
                 self.session, request_task, param_value_map
@@ -381,22 +410,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 if not response.ok:
                     continue
 
-                # Extract correlation ID from response (required, like access requests)
-                try:
-                    response_data = response.json()
-                    correlation_id = pydash.get(
-                        response_data, request.correlation_id_path
-                    )
-                    if not correlation_id:
-                        raise FidesopsException(
-                            f"Could not extract correlation ID from response using path: {request.correlation_id_path}"
-                        )
-                except ValueError as exc:
-                    raise FidesopsException(
-                        f"Invalid JSON response from initial erasure request: {exc}"
-                    )
-
-                # Add correlation_id to the existing param_value_map (like access requests)
+                correlation_id = self._extract_correlation_id(
+                    response, request.correlation_id_path, param_value_map
+                )
                 param_value_map["correlation_id"] = str(correlation_id)
                 PollingSubRequestHandler.create_sub_request(
                     self.session, request_task, param_value_map

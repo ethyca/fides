@@ -1,0 +1,4 @@
+type: Fixed
+description: Fix integration detail page 404 caused by Next.js route shadowing after ENG-564 added a nested route directory
+pr: 8103
+labels: []

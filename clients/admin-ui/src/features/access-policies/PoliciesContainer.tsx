@@ -43,7 +43,7 @@ const PoliciesContainer = () => {
     }
 
     if (controlFilter) {
-      result = result.filter((p) => p.controls?.includes(controlFilter));
+      result = result.filter((p) => p.control === controlFilter);
     }
 
     if (enabledFilter === "enabled") {

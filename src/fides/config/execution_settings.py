@@ -100,7 +100,7 @@ class ExecutionSettings(FidesSettings):
         "Set to 0 to disable (default).",
     )
     jira_polling_interval_minutes: int = Field(
-        default=10,
+        default=3,
         description="Minutes between polling Jira for ticket status updates.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

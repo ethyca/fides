@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { ChatConfigCreate, ChatConfigUpdate } from "~/types/api";
 
@@ -258,12 +259,9 @@ const SlackChatForm = ({ configId }: SlackChatFormProps) => {
                 {isAuthorized && <AuthorizationStatus authorized />}
               </>
             ) : (
-              <Button
-                onClick={() => router.push(CHAT_PROVIDERS_ROUTE)}
-                data-testid="cancel-btn"
-              >
-                Cancel
-              </Button>
+              <RouterLink href={CHAT_PROVIDERS_ROUTE}>
+                <Button data-testid="cancel-btn">Cancel</Button>
+              </RouterLink>
             )}
             <Button
               htmlType="submit"

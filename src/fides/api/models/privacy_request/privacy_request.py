@@ -83,6 +83,9 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
+from fides.api.models.privacy_request.custom_field_persistence import (
+    CustomPrivacyRequestFieldPersistenceMixin,
+)
 from fides.api.models.privacy_request.duplicate_group import DuplicateGroup
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
@@ -136,13 +139,19 @@ if TYPE_CHECKING:
 
 
 class PrivacyRequest(
-    IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
+    CustomPrivacyRequestFieldPersistenceMixin,
+    IdentityVerificationMixin,
+    DecryptedIdentityAutomatonMixin,
+    Contextualizable,
+    Base,
 ):  # pylint: disable=R0904,too-many-instance-attributes
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
     progression within the Fides system.
     """
+
+    _custom_field_fk_column = "privacy_request_id"
 
     __table_args__ = (
         # Composite index for duplicate detection queries
@@ -619,34 +628,6 @@ class PrivacyRequest(
             except Exception as exc:
                 # This should never affect the ability to create privacy requests
                 logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
-
-    def persist_custom_privacy_request_fields(
-        self,
-        db: Session,
-        custom_privacy_request_fields: Dict[str, CustomPrivacyRequestFieldSchema],
-    ) -> None:
-        if not custom_privacy_request_fields:
-            return
-
-        if CONFIG.execution.allow_custom_privacy_request_field_collection:
-            for key, item in custom_privacy_request_fields.items():
-                if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
-                    CustomPrivacyRequestField.create(
-                        db=db,
-                        data={
-                            "privacy_request_id": self.id,
-                            "field_name": key,
-                            "field_label": item.label,
-                            "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
-                        },
-                    )
-        else:
-            logger.info(
-                "Custom fields provided in privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
-                self.id,
-            )
 
     def get_persisted_identity(self) -> Identity:
         """
