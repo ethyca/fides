@@ -172,11 +172,19 @@ const GridMotionExperiment = () => {
     }
   };
 
+  const RADAR_W_SPLASH = 440;
+  const GRID_W = 720;
+  const GRID_H = 400;
+  const PAIR_GAP = 64;
+  const PAIR_W = GRID_W + PAIR_GAP + RADAR_W_SPLASH;
+  const RADAR_CENTER_OFFSET = (PAIR_W - RADAR_W_SPLASH) / 2;
+  const GRID_CENTER_OFFSET = (PAIR_W - GRID_W) / 2;
+
   const radarTarget =
     mode === "splash"
       ? {
-          left: "70%",
-          width: 480,
+          left: `calc(50% + ${RADAR_CENTER_OFFSET}px)`,
+          width: RADAR_W_SPLASH,
         }
       : {
           left: "20vw",
@@ -224,11 +232,11 @@ const GridMotionExperiment = () => {
         <div
           style={{
             position: "fixed",
-            left: 32,
             top: `calc(50% + ${HEADER_HEIGHT / 2}px)`,
-            transform: "translateY(-50%)",
-            width: "min(48vw, 700px)",
-            height: `min(820px, calc(100vh - ${HEADER_HEIGHT}px - 64px))`,
+            left: `calc(50% - ${GRID_CENTER_OFFSET}px)`,
+            transform: "translate(-50%, -50%)",
+            width: GRID_W,
+            height: GRID_H,
             zIndex: 2,
             pointerEvents: mode === "splash" ? "auto" : "none",
             opacity: mode === "splash" ? 1 : 0,

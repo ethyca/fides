@@ -145,8 +145,8 @@ const ProductCardMetrics = ({
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        gap: 18,
-        padding: 20,
+        gap: 12,
+        padding: 16,
         border: "none",
         borderRadius: 4,
         background: GLASS_BG_NEUTRAL,
@@ -158,33 +158,18 @@ const ProductCardMetrics = ({
         color: INK,
         width: "100%",
         height: "100%",
-        maxHeight: 400,
         boxSizing: "border-box",
         overflow: "hidden",
       }}
     >
       {!owned && <NotInPlanBadge />}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            flexShrink: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(43,46,53,0.04)",
-            boxShadow: "inset 0 0 0 1px rgba(43,46,53,0.06)",
-            borderRadius: 4,
-          }}
-        >
-          <ProductIcon productId={product.id} size={28} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <ProductIcon productId={product.id} size={28} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <span
             style={{
-              fontSize: 20,
+              fontSize: 17,
               fontWeight: 500,
               letterSpacing: "-0.01em",
               lineHeight: 1.1,
@@ -192,12 +177,12 @@ const ProductCardMetrics = ({
           >
             {name}
           </span>
-          <span style={{ fontSize: 12, color: INK_MUTED }}>{tagline}</span>
+          <span style={{ fontSize: 11, color: INK_MUTED }}>{tagline}</span>
         </div>
       </div>
 
       {vizs.length > 0 && (
-        <div style={{ display: "flex", gap: 24, alignItems: "stretch" }}>
+        <div style={{ display: "flex", gap: 20, alignItems: "stretch" }}>
           {vizs.map((v) => (
             <VizBlock key={v.label} {...v} />
           ))}
