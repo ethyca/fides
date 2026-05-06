@@ -1,0 +1,4 @@
+type: New Feature
+description: Added threading header support (Reply-To, Message-ID, In-Reply-To, References) and plaintext alternative to all email providers, with AWS SES switching to send_raw_email for custom header support
+pr: 8122
+labels: []
