@@ -21,6 +21,7 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
+import IntegrationPrivacyRequests from "~/features/integrations/IntegrationPrivacyRequests";
 import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 import {
   ConnectionConfigurationResponse,
@@ -43,6 +44,7 @@ interface UseFeatureBasedTabsProps {
   instructions?: React.ReactNode;
   supportsConnectionTest: boolean;
   supportsSystemLinking: boolean;
+  supportsPrivacyRequests: boolean;
 }
 
 export const useFeatureBasedTabs = ({
@@ -59,6 +61,7 @@ export const useFeatureBasedTabs = ({
   instructions,
   supportsConnectionTest,
   supportsSystemLinking,
+  supportsPrivacyRequests,
 }: UseFeatureBasedTabsProps) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const tabs = useMemo(() => {
@@ -171,6 +174,19 @@ export const useFeatureBasedTabs = ({
       });
     }
 
+    if (supportsPrivacyRequests) {
+      tabItems.push({
+        label: "Privacy requests",
+        key: "privacy-requests",
+        children: (
+          <IntegrationPrivacyRequests
+            connection={connection!}
+            integrationOption={integrationOption}
+          />
+        ),
+      });
+    }
+
     // Add conditional tabs based on enabled features
     if (enabledFeatures?.includes(IntegrationFeature.DATA_SYNC)) {
       tabItems.push({
@@ -268,6 +284,7 @@ export const useFeatureBasedTabs = ({
   }, [
     enabledFeatures,
     supportsSystemLinking,
+    supportsPrivacyRequests,
     onOpen,
     isOpen,
     onClose,
