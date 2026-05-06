@@ -324,7 +324,7 @@ def dispatch_message(
     # AWS SES uses legacy dispatcher — will be migrated to a provider class
     # in a follow-up PR.
     if messaging_service == MessagingServiceType.aws_ses:
-        _aws_ses_dispatcher(messaging_config, message, to)
+        _aws_ses_dispatcher(messaging_config, message, to)  # type: ignore[arg-type]
         return
 
     provider_cls = _resolve_provider_map().get(messaging_service)
