@@ -161,14 +161,15 @@ export const AssessmentCard = ({
             )}
             {!isGenerating && !isComplete && (
               <>
-                <Flex justify="space-between">
-                  <Text type="secondary" size="sm">
-                    Questions answered
-                  </Text>
+                <div>
                   <Text strong size="sm">
-                    {completeness}%
+                    {Math.round(completeness)}%
                   </Text>
-                </Flex>
+                  <Text type="secondary" size="sm">
+                    {" "}
+                    of questions answered
+                  </Text>
+                </div>
                 <Progress
                   percent={completeness}
                   showInfo={false}
