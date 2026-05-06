@@ -16,11 +16,11 @@ from tenacity import (
 )
 
 from fides.api.db.session import get_db_engine, get_db_session
-from fides.observability.celery_tracing import configure_celery_tracing
 from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
+from fides.observability.celery_tracing import configure_celery_tracing
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served

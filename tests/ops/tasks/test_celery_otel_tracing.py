@@ -43,9 +43,7 @@ def _record_message(record: Any) -> str:
 
 def _span_export_records(loguru_caplog: Any) -> List[Any]:
     return [
-        r
-        for r in loguru_caplog.records
-        if _record_message(r) == "otel.celery.span"
+        r for r in loguru_caplog.records if _record_message(r) == "otel.celery.span"
     ]
 
 
@@ -132,7 +130,9 @@ def test_celery_otel_task_joins_trace_from_traceparent_headers(
         )
         _PROPAGATOR.inject(carrier, context=otel_context.get_current())
 
-    assert "traceparent" in carrier, "expected W3C trace context injection to populate traceparent"
+    assert "traceparent" in carrier, (
+        "expected W3C trace context injection to populate traceparent"
+    )
 
     loguru_caplog.clear()
     eager_result = _otel_join_task.apply(headers=dict(carrier))
@@ -206,10 +206,14 @@ def test_celery_otel_nested_tasks_share_trace_when_traceparent_is_injected(
 
     trace_ids = {_record_extra(r).get("trace_id") for r in ours}
     trace_ids.discard(None)
-    assert len(trace_ids) == 1, f"expected one trace_id across nested tasks, got {trace_ids}"
+    assert len(trace_ids) == 1, (
+        f"expected one trace_id across nested tasks, got {trace_ids}"
+    )
 
 
-def _build_postgres_graph_task_for_otel(db: Any, privacy_request: Any, policy: Any) -> Any:
+def _build_postgres_graph_task_for_otel(
+    db: Any, privacy_request: Any, policy: Any
+) -> Any:
     """Minimal persisted RequestTask + postgres ``GraphTask`` (matches traversal-only tests)."""
     from fides.api.graph.config import (
         Collection,
@@ -277,7 +281,6 @@ def _build_saas_graph_task_for_otel(
     from fides.api.schemas.policy import ActionType
     from fides.api.task.graph_task import EMPTY_REQUEST_TASK, GraphTask
     from fides.api.task.task_resources import TaskResources
-
     from tests.ops.graph.graph_test_util import generate_node
 
     resources = TaskResources(
@@ -346,10 +349,16 @@ def test_celery_otel_dsr_sql_graph_task_access_emits_child_span_sharing_trace_id
         ),
         None,
     )
-    assert parent is not None, f"expected Celery task span; got span_names={[ _record_extra(r).get('span_name') for r in recs ]}"
+    assert parent is not None, (
+        f"expected Celery task span; got span_names={[_record_extra(r).get('span_name') for r in recs]}"
+    )
 
     child = next(
-        (r for r in recs if _record_extra(r).get("span_name") == "dsr.graph_task.access"),
+        (
+            r
+            for r in recs
+            if _record_extra(r).get("span_name") == "dsr.graph_task.access"
+        ),
         None,
     )
     assert child is not None, "expected dsr.graph_task.access child span"
@@ -416,10 +425,16 @@ def test_celery_otel_dsr_saas_graph_task_access_emits_child_span_sharing_trace_i
         ),
         None,
     )
-    assert parent is not None, f"expected Celery task span; got span_names={[ _record_extra(r).get('span_name') for r in recs ]}"
+    assert parent is not None, (
+        f"expected Celery task span; got span_names={[_record_extra(r).get('span_name') for r in recs]}"
+    )
 
     child = next(
-        (r for r in recs if _record_extra(r).get("span_name") == "dsr.graph_task.access"),
+        (
+            r
+            for r in recs
+            if _record_extra(r).get("span_name") == "dsr.graph_task.access"
+        ),
         None,
     )
     assert child is not None, "expected dsr.graph_task.access child span"
