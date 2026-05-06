@@ -19,8 +19,9 @@ const RequestSubmittedPage = () => {
   };
 
   return (
-    <Flex gap="medium" vertical align="center">
+    <Flex className="pc-success" gap="medium" vertical align="center">
       <Image
+        className="pc-success__icon"
         src="/green-check.svg"
         alt="green-checkmark"
         width="48px"
@@ -32,11 +33,12 @@ const RequestSubmittedPage = () => {
           {action.success_title}
         </Title>
       )}
-      <Text style={{ textAlign: "center" }}>
+      <Text className="pc-success__message" style={{ textAlign: "center" }}>
         {action?.success_description ??
           "Thanks for your request. A member of our team will review and be in contact with you shortly."}
       </Text>
       <Button
+        className="pc-button pc-button--return"
         type="primary"
         onClick={handleContinue}
         block
