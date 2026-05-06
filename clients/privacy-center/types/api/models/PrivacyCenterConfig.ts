@@ -33,4 +33,5 @@ export type PrivacyCenterConfig = {
   privacy_policy_url_text?: string | null;
   links?: Array<PrivacyCenterLink>;
   metrics?: MetricsConfig | null;
+  error_message?: string | null;
 };

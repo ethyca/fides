@@ -35,6 +35,7 @@ const TcfTabs = ({
   activeTabIndex,
   onTabChange,
   fullExperienceState,
+  attDenied = false,
 }: {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
   customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
@@ -46,6 +47,7 @@ const TcfTabs = ({
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
   fullExperienceState: FetchState;
+  attDenied?: boolean;
 }) => {
   const { i18n } = useI18n();
   const handleUpdateDraftState = useCallback(
@@ -98,6 +100,7 @@ const TcfTabs = ({
               }
               enabledIds={enabledIds}
               onChange={handleUpdateDraftState}
+              attDenied={attDenied}
             />
           )}
         </div>
@@ -168,6 +171,7 @@ const TcfTabs = ({
               experience={experience as PrivacyExperience}
               enabledIds={enabledIds}
               onChange={handleUpdateDraftState}
+              attDenied={attDenied}
             />
           )}
         </div>

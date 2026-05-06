@@ -33,7 +33,7 @@ export const embeddedConsentCspHeader = (args: {
     script-src 'self' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
     connect-src 'self' ${args.fidesApiHost} ${args.geolocationApiHost};
-    img-src 'self' blob: data:;
+    img-src * blob: data:;
     font-src 'self';
     object-src 'none';
     base-uri 'self';

@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Migrate var(--fidesui-*) consumers to --ant-* and delete Sass var generation
-pr: 8065
-labels: []
