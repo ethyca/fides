@@ -37,3 +37,10 @@ class TestExecutionSettings:
 
         settings = ExecutionSettings(**kwargs)
         assert settings.disable_consent_identity_verification is expected
+
+    def test_allow_custom_privacy_request_file_upload_default(self):
+        assert ExecutionSettings().allow_custom_privacy_request_file_upload is False
+
+    def test_allow_custom_privacy_request_file_upload_set_true(self):
+        settings = ExecutionSettings(allow_custom_privacy_request_file_upload=True)
+        assert settings.allow_custom_privacy_request_file_upload is True
