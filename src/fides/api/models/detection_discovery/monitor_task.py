@@ -51,7 +51,7 @@ class MonitorTask(WorkerTask, Base):
     )
     staged_resource_urns = Column(ARRAY(String), nullable=True)
     child_resource_urns = Column(ARRAY(String), nullable=True)
-    group_id = Column(String, nullable=True, index=True)
+    group_id = Column(String(255), nullable=True, index=True)
     dismissed = Column(Boolean, nullable=False, default=False)
 
     monitor_config = relationship(MonitorConfig, cascade="all, delete")
@@ -65,7 +65,11 @@ class MonitorTask(WorkerTask, Base):
 
     @classmethod
     def is_cancelled(cls, db: Session, celery_id: str) -> bool:
-        """Check if a monitor task has been cancelled by inspecting its status."""
+        """Check if a monitor task has been cancelled by inspecting its status.
+
+        Cancellation uses awaiting_processing because partial classification
+        results are preserved — the task is paused, not discarded.
+        """
         task = cls.get_by(db=db, field="celery_id", value=celery_id)
         if not task:
             return False
