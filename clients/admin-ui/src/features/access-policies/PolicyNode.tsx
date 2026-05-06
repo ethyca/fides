@@ -22,7 +22,7 @@ export interface PolicyNodeData extends Record<string, unknown> {
   fidesKey: string;
   enabled: boolean;
   priority: number;
-  control?: string;
+  control: string | null;
   controlOptions: NonNullable<SelectProps["options"]>;
   actionMessage: string;
   onNameChange: (value: string) => void;
@@ -30,7 +30,7 @@ export interface PolicyNodeData extends Record<string, unknown> {
   onFidesKeyChange: (value: string) => void;
   onEnabledChange: (value: boolean) => void;
   onPriorityChange: (value: number) => void;
-  onControlChange: (value: string | undefined) => void;
+  onControlChange: (value: string | null) => void;
   onActionMessageChange: (value: string) => void;
   onAddNode?: () => void;
   onAddAction?: () => void;
@@ -105,12 +105,12 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
           <Form.Item label="Control" className="mb-2">
             <Select
               placeholder="Select control"
-              value={control}
-              onChange={onControlChange}
+              value={control ?? undefined}
+              onChange={(value) => onControlChange(value ?? null)}
               options={controlOptions}
               className="w-full"
               allowClear
-              data-testid="policy-controls-select"
+              data-testid="policy-control-select"
               aria-label="Select control"
             />
           </Form.Item>

@@ -11,7 +11,7 @@ interface HeaderProps {
 
 const Header = ({ logoPath, logoUrl }: HeaderProps) => {
   return (
-    <header>
+    <header className="pc-header">
       <Flex
         bg="gray.75"
         minHeight={14}

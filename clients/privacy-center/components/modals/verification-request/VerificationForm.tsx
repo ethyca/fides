@@ -71,6 +71,7 @@ const VerificationForm = ({
         layout="vertical"
       >
         <Form.Item
+          className="pc-field pc-field--code"
           required
           validateStatus={touched.code && !!errors.code ? "error" : undefined}
           label="Verification code"
@@ -86,10 +87,16 @@ const VerificationForm = ({
           />
         </Form.Item>
         <Flex justify="stretch" gap="medium">
-          <Button variant="outlined" onClick={resetVerificationProcess} block>
+          <Button
+            className="pc-button pc-button--resend"
+            variant="outlined"
+            onClick={resetVerificationProcess}
+            block
+          >
             {verificationResendButtonText ?? "Resend code"}
           </Button>
           <Button
+            className="pc-button pc-button--verify"
             htmlType="submit"
             type="primary"
             loading={isSubmitting}

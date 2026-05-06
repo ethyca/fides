@@ -101,6 +101,7 @@ export type Config = {
   privacy_policy_url_text?: string;
   links?: PrivacyCenterLink[];
   metrics?: MetricsConfig;
+  error_message?: string | null;
 };
 
 export type PrivacyCenterLink = {

@@ -269,13 +269,16 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         </Flex>
         {assessment.template_name && (
           <Text type="secondary" size="sm" className="block">
-            {assessment.template_name}
+            Template: {assessment.template_name}
           </Text>
         )}
       </div>
 
       <Flex justify="space-between" align="center" className="mb-2 w-full">
         <div>
+          <Text type="secondary" size="sm">
+            Data categories:{" "}
+          </Text>
           {(assessment.data_categories ?? []).length > 0 ? (
             <TagList
               tags={(assessment.data_categories ?? []).map((key) => ({
@@ -286,7 +289,9 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
               expandable
             />
           ) : (
-            <Tag>0 data categories</Tag>
+            <Text type="secondary" size="sm">
+              None
+            </Text>
           )}
         </div>
         {!isComplete && (

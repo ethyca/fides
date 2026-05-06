@@ -2062,6 +2062,8 @@ dataset:
   - name: privacynoticetemplate
     data_categories: []
     fields:
+    - name: att_exempt
+      data_categories: [system.operations]
     - name: consent_mechanism
       data_categories: [system.operations]
     - name: created_at
@@ -2093,6 +2095,8 @@ dataset:
   - name: privacynotice
     data_categories: []
     fields:
+    - name: att_exempt
+      data_categories: [system.operations]
     - name: consent_mechanism
       data_categories: [system.operations]
     - name: created_at
@@ -2128,6 +2132,8 @@ dataset:
   - name: privacynoticehistory
     description: For auditing purposes, a record of how a privacy notice and a translation has changed
     fields:
+    - name: att_exempt
+      data_categories: [ system.operations ]
     - name: displayed_in_api
       data_categories: [ system.operations ]
     - name: displayed_in_overlay
