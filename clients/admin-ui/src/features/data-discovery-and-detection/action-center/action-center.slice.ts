@@ -552,13 +552,11 @@ const actionCenterApi = baseApi.injectEndpoints({
         steward_user_id?: string[];
       }
     >({
-      query: ({ monitor_type, ...params }) => {
-        return {
-          url: `/plus/discovery-monitor/aggregate-results/summary/${monitor_type}/refresh`,
-          method: "POST",
-          params,
-        };
-      },
+      query: ({ monitor_type, ...params }) => ({
+        url: `/plus/discovery-monitor/aggregate-results/summary/${monitor_type}/refresh`,
+        method: "POST",
+        params,
+      }),
       invalidatesTags: [
         "Monitor Statistics",
         "Discovery Monitor Results",

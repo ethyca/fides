@@ -6,7 +6,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
-from fides.api.request_context import get_user_id
+from fides.api.request_context import get_client_id, get_user_id
 
 
 class EventAuditService:
@@ -21,6 +21,7 @@ class EventAuditService:
         status: EventAuditStatus,
         *,
         user_id: Optional[str] = None,
+        client_id: Optional[str] = None,
         resource_type: Optional[str] = None,
         resource_identifier: Optional[str] = None,
         description: Optional[str] = None,
@@ -28,11 +29,14 @@ class EventAuditService:
     ) -> EventAudit:
         """Create a new audit event record."""
 
-        # Uses the passed in user_id or falls back to the authenticated user via get_user_id()
+        # Prefer explicit args, then fall back to request context.
+        # user_id and client_id are mutually exclusive: a request is attributed
+        # to a human user OR an API client, never both.
         data = {
             "event_type": event_type,
             "status": status,
             "user_id": user_id or get_user_id(),
+            "client_id": client_id or get_client_id(),
             "resource_type": resource_type,
             "resource_identifier": resource_identifier,
             "description": description,
