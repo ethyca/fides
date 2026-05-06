@@ -94,6 +94,9 @@ dataset:
     - name: username
       data_categories:
         - user.account.username
+    - name: client_id
+      data_categories:
+        - system.operations
   - name: answer_version
     description: 'Immutable history of assessment answer versions'
     fields:
@@ -396,6 +399,9 @@ dataset:
     - name: username
       data_categories:
         - user.account.username
+    - name: client_id
+      data_categories:
+        - system.operations
   - name: comment_reference
     fields:
     - name: comment_id
@@ -1600,6 +1606,8 @@ dataset:
     - name: manual_task_instance_id
       data_categories: [system.operations]
     - name: connection_config_id
+      data_categories: [system.operations]
+    - name: needs_polling
       data_categories: [system.operations]
     - name: ticket_key
       data_categories: [system.operations]
@@ -3903,6 +3911,8 @@ dataset:
     - name: user_id
       description: 'ID of the user who triggered the audit event'
       data_categories: [user.unique_id]
+    - name: client_id
+      data_categories: [system.operations]
   - name: oauth_config
     description: 'Fides Generated Description for Table: oauth_config'
     data_categories: [ ]
