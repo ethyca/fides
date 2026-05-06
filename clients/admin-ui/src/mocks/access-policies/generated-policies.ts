@@ -25,7 +25,6 @@ export const generatedPoliciesForIndustry = (): AccessPolicy[] => {
         "priority: 100",
         "controls:",
         "  - eea_uk_gdpr",
-        "  - us_glba_ccpa",
         "decision: DENY",
         "match:",
         "  data_use:",

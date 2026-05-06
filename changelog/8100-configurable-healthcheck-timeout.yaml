@@ -1,4 +1,0 @@
-type: Added
-description: Added configurable timeout for database healthcheck queries
-pr: 8100
-labels: []

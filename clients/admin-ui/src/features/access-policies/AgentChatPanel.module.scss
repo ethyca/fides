@@ -1,10 +1,11 @@
 .panel {
   height: 100%;
   overflow: hidden;
+  border-left: 1px solid var(--fidesui-color-border);
 }
 
 .header {
-  padding: 8px 12px;
+  padding: 12px 12px;
   border-bottom: 1px solid var(--fidesui-color-border);
   flex-shrink: 0;
 }
@@ -30,6 +31,11 @@
   padding: 8px 12px;
   border-top: 1px solid var(--fidesui-color-border);
   flex-shrink: 0;
+
+  :global(.ant-sender-content) {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 }
 
 .agentAvatar {
