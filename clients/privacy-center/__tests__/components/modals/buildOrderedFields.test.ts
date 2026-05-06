@@ -10,6 +10,23 @@ const textField = (label: string): CustomConfigField => ({
   required: false,
 });
 
+// Helper that flattens a descriptor into a stable string for comparison.
+const stringifyField = (f: OrderedField): string => {
+  switch (f.kind) {
+    case "name":
+    case "email":
+    case "phone":
+      return `${f.kind}:${f.mode}`;
+    case "custom-identity":
+    case "custom":
+      return `${f.kind}:${f.key}`;
+    default: {
+      const exhaustive: never = f;
+      throw new Error(`unhandled: ${JSON.stringify(exhaustive)}`);
+    }
+  }
+};
+
 describe("buildOrderedFields", () => {
   describe("with field_order present", () => {
     it("renders strictly in field_order, interleaving identity and customs", () => {
@@ -20,7 +37,7 @@ describe("buildOrderedFields", () => {
         ["email", "reason", "name", "topics", "phone"],
       );
 
-      expect(result.map((f) => describe_(f))).toEqual([
+      expect(result.map((f) => stringifyField(f))).toEqual([
         "email:required",
         "custom:reason",
         "name:optional",
@@ -37,7 +54,7 @@ describe("buildOrderedFields", () => {
         ["loyalty_id", "email"],
       );
 
-      expect(result.map((f) => describe_(f))).toEqual([
+      expect(result.map((f) => stringifyField(f))).toEqual([
         "custom-identity:loyalty_id",
         "email:required",
       ]);
@@ -51,7 +68,7 @@ describe("buildOrderedFields", () => {
         ["reason", "email"], // `phone` configured but not listed
       );
 
-      expect(result.map((f) => describe_(f))).toEqual([
+      expect(result.map((f) => stringifyField(f))).toEqual([
         "custom:reason",
         "email:required",
         "phone:optional",
@@ -66,7 +83,7 @@ describe("buildOrderedFields", () => {
         ["email", "ghost_field", "reason"],
       );
 
-      expect(result.map((f) => describe_(f))).toEqual([
+      expect(result.map((f) => stringifyField(f))).toEqual([
         "email:required",
         "custom:reason",
       ]);
@@ -80,7 +97,7 @@ describe("buildOrderedFields", () => {
         ["email", "reason", "email"],
       );
 
-      expect(result.map((f) => describe_(f))).toEqual([
+      expect(result.map((f) => stringifyField(f))).toEqual([
         "email:required",
         "custom:reason",
       ]);
@@ -95,7 +112,7 @@ describe("buildOrderedFields", () => {
         { reason: textField("Reason"), topics: textField("Topics") },
       );
 
-      expect(result.map((f) => describe_(f))).toEqual([
+      expect(result.map((f) => stringifyField(f))).toEqual([
         "name:optional",
         "email:required",
         "phone:optional",
@@ -112,7 +129,7 @@ describe("buildOrderedFields", () => {
         { reason: textField("Reason") },
       );
 
-      expect(result.map((f) => describe_(f))).toEqual([
+      expect(result.map((f) => stringifyField(f))).toEqual([
         "email:required",
         "custom:reason",
       ]);
@@ -131,31 +148,14 @@ describe("buildOrderedFields", () => {
       const expected = ["email:required", "custom:reason"];
 
       expect(
-        buildOrderedFields(...args, null).map((f) => describe_(f)),
+        buildOrderedFields(...args, null).map((f) => stringifyField(f)),
       ).toEqual(expected);
       expect(
-        buildOrderedFields(...args, undefined).map((f) => describe_(f)),
+        buildOrderedFields(...args, undefined).map((f) => stringifyField(f)),
       ).toEqual(expected);
-      expect(buildOrderedFields(...args, []).map((f) => describe_(f))).toEqual(
-        expected,
-      );
+      expect(
+        buildOrderedFields(...args, []).map((f) => stringifyField(f)),
+      ).toEqual(expected);
     });
   });
 });
-
-// Helper that flattens a descriptor into a stable string for comparison.
-const describe_ = (f: OrderedField): string => {
-  switch (f.kind) {
-    case "name":
-    case "email":
-    case "phone":
-      return `${f.kind}:${f.mode}`;
-    case "custom-identity":
-    case "custom":
-      return `${f.kind}:${f.key}`;
-    default: {
-      const exhaustive: never = f;
-      throw new Error(`unhandled: ${JSON.stringify(exhaustive)}`);
-    }
-  }
-};

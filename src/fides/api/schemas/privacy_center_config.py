@@ -182,9 +182,7 @@ class PrivacyRequestOption(FidesSchema):
         valid_keys = identity_keys | custom_keys
         unknown = [k for k in self.field_order if k not in valid_keys]
         if unknown:
-            raise ValueError(
-                f"field_order references unknown keys: {sorted(unknown)}"
-            )
+            raise ValueError(f"field_order references unknown keys: {sorted(unknown)}")
         # Configured fields not listed in field_order intentionally fall through
         # to legacy ordering at the end of the rendered list. This path matters
         # only for hand-edited YAML — the form builder always emits a complete

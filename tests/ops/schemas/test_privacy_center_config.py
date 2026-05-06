@@ -593,9 +593,10 @@ class TestReorderCustomPrivacyRequestFields:
         }
         result = reorder_custom_privacy_request_fields(config)
         # Customs are reordered to match field_order, filtered to custom keys.
-        assert list(
-            result["actions"][0]["custom_privacy_request_fields"].keys()
-        ) == ["b", "a"]
+        assert list(result["actions"][0]["custom_privacy_request_fields"].keys()) == [
+            "b",
+            "a",
+        ]
         # Deprecated key is stripped; field_order survives untouched.
         assert "custom_privacy_request_field_order" not in result["actions"][0]
         assert result["actions"][0]["field_order"] == ["b", "email", "a"]
@@ -618,9 +619,10 @@ class TestReorderCustomPrivacyRequestFields:
         }
         result = reorder_custom_privacy_request_fields(config)
         # No custom keys in field_order → fall back to existing dict order.
-        assert list(
-            result["actions"][0]["custom_privacy_request_fields"].keys()
-        ) == ["a", "b"]
+        assert list(result["actions"][0]["custom_privacy_request_fields"].keys()) == [
+            "a",
+            "b",
+        ]
 
 
 class TestPrivacyRequestOptionFieldOrder:
@@ -652,9 +654,7 @@ class TestPrivacyRequestOptionFieldOrder:
 
     def test_valid_mixed_field_order_round_trips(self):
         """field_order mixing identity and custom keys validates and survives a dump."""
-        payload = self._base_payload(
-            field_order=["email", "reason", "name", "topics"]
-        )
+        payload = self._base_payload(field_order=["email", "reason", "name", "topics"])
         option = PrivacyRequestOption.model_validate(payload)
         assert option.field_order == ["email", "reason", "name", "topics"]
         dumped = option.model_dump(by_alias=True, exclude_none=True)
@@ -669,9 +669,7 @@ class TestPrivacyRequestOptionFieldOrder:
 
     def test_unknown_keys_in_field_order_raise(self):
         """Keys not in identity_inputs or custom_privacy_request_fields raise ValidationError."""
-        payload = self._base_payload(
-            field_order=["email", "ghost_field", "reason"]
-        )
+        payload = self._base_payload(field_order=["email", "ghost_field", "reason"])
         with pytest.raises(ValidationError) as exc:
             PrivacyRequestOption.model_validate(payload)
         assert "field_order references unknown keys" in str(exc.value)
