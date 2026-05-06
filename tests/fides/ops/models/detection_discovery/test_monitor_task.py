@@ -539,11 +539,7 @@ class TestMonitorTaskCancellation:
 
         assert task_1.group_id == task_2.group_id == group_id
 
-        siblings = (
-            db.query(MonitorTask)
-            .filter(MonitorTask.group_id == group_id)
-            .all()
-        )
+        siblings = db.query(MonitorTask).filter(MonitorTask.group_id == group_id).all()
         assert len(siblings) == 2
 
         db.delete(task_1)
@@ -553,16 +549,20 @@ class TestMonitorTaskCancellation:
     @pytest.mark.parametrize(
         "status,expected",
         [
-            pytest.param(ExecutionLogStatus.awaiting_processing.value, True, id="awaiting_processing"),
+            pytest.param(
+                ExecutionLogStatus.awaiting_processing.value,
+                True,
+                id="awaiting_processing",
+            ),
             pytest.param(ExecutionLogStatus.pending.value, False, id="pending"),
-            pytest.param(ExecutionLogStatus.in_processing.value, False, id="in_processing"),
+            pytest.param(
+                ExecutionLogStatus.in_processing.value, False, id="in_processing"
+            ),
             pytest.param(ExecutionLogStatus.complete.value, False, id="complete"),
             pytest.param(ExecutionLogStatus.error.value, False, id="error"),
         ],
     )
-    def test_is_cancelled(
-        self, db: Session, monitor_config, status, expected
-    ) -> None:
+    def test_is_cancelled(self, db: Session, monitor_config, status, expected) -> None:
         celery_id = f"celery-is-cancelled-{status}"
         task = MonitorTask.create(
             db=db,
