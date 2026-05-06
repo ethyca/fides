@@ -87,17 +87,17 @@ task_always_eager = true
 
 #### Celery OpenTelemetry-style tracing
 
-By default, trace context crosses Celery boundaries and completed task spans are logged at INFO (without an OTLP collector). Spans use structured Loguru lines with the message `otel.celery.span`, including wall-clock `span_start_unix_ns` / `span_end_unix_ns` (nanoseconds since Unix epoch) and `span_duration_ms` when both timestamps are present.
+By default this is **off**. When enabled, trace context crosses Celery boundaries and completed task spans are logged at INFO (without an OTLP collector). Spans use structured Loguru lines with the message `otel.celery.span`, including wall-clock `span_start_unix_ns` / `span_end_unix_ns` (nanoseconds since Unix epoch) and `span_duration_ms` when both timestamps are present.
 
-To turn tracing off:
+To turn tracing on:
 
 ```toml
 [logging]
-celery_otel_tracing = false
+celery_otel_tracing = true
 ```
 
 ```sh
-export FIDES__LOGGING__CELERY_OTEL_TRACING=false
+export FIDES__LOGGING__CELERY_OTEL_TRACING=true
 ```
 
 ### Credentials

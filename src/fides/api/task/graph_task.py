@@ -2,7 +2,7 @@
 import copy
 import traceback
 from abc import ABC
-from contextlib import nullcontext
+from contextlib import AbstractContextManager, nullcontext
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -300,7 +300,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             return True
         return connection_config.access == AccessLevel.write
 
-    def _dsr_graph_node_connector_span(self, action: str):
+    def _dsr_graph_node_connector_span(
+        self, action: str
+    ) -> AbstractContextManager[Any]:
         """Child OTEL span for SQL or SaaS connector I/O (same trace as the Celery task)."""
         connector = self.connector
         if isinstance(connector, SQLConnector):
@@ -311,11 +313,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             return nullcontext()
 
         cfg = connector.configuration
+        conn_type = cfg.connection_type
+        connection_type_str = (
+            conn_type.value if isinstance(conn_type, ConnectionType) else str(conn_type)
+        )
         attrs: Dict[str, Any] = {
             "dsr.node.action": action,
             "dsr.node.collection": str(self.execution_node.address),
             "dsr.node.connection_key": cfg.key,
-            "dsr.node.connection_type": cfg.connection_type.value,
+            "dsr.node.connection_type": connection_type_str,
             "dsr.connector.family": family,
         }
         if self._saas_version:
