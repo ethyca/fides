@@ -1,4 +1,4 @@
-from enum import Enum, StrEnum
+from enum import StrEnum
 
 from sqlalchemy import Boolean, Column, String, Text
 from sqlalchemy.ext.declarative import declared_attr

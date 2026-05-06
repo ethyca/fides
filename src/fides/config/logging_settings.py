@@ -37,6 +37,10 @@ class LoggingSettings(FidesSettings):
         default=False,
         description="If True, PII values will display unmasked in log output. This variable should always be set to 'False' in production systems.",
     )
+    celery_otel_tracing: bool = Field(
+        default=True,
+        description="When True (default), propagate OpenTelemetry trace context across Celery boundaries and log completed task spans at INFO (requires OpenTelemetry packages). Set to False to disable.",
+    )
 
     @field_validator("destination", mode="before")
     @classmethod
