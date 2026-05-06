@@ -47,7 +47,7 @@ const RelatedRequestsDrawer = ({
     <Drawer
       open={isOpen}
       onClose={onClose}
-      width="50vw"
+      width={640}
       autoFocus={false}
       destroyOnHidden
       title="Related requests"
@@ -64,7 +64,9 @@ const RelatedRequestsDrawer = ({
           data-testid="related-requests-drawer-list"
           dataSource={otherRequests}
           locale={{ emptyText: "No other related requests found." }}
-          renderItem={(item) => <ListItem item={item} showActions={false} />}
+          renderItem={(item) => (
+            <ListItem item={item} showActions={false} compact />
+          )}
         />
       </Spin>
     </Drawer>

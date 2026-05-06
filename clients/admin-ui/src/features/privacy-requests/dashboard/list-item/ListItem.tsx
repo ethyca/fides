@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Flex, formatIsoLocation, isoStringToEntry, List } from "fidesui";
 import { isArray, toString } from "lodash";
 import React from "react";
@@ -16,12 +17,20 @@ interface ListItemProps {
   item: PrivacyRequestResponseExtended;
   checkbox?: React.ReactNode;
   showActions?: boolean;
+  /**
+   * When true, the days-left/received-on cluster always stacks vertically
+   * regardless of viewport width. Use in narrow containers (e.g. drawers)
+   * where the default `2xl:flex-row` viewport-driven media query is
+   * misleading.
+   */
+  compact?: boolean;
 }
 
 export const ListItem = ({
   item,
   checkbox,
   showActions = true,
+  compact = false,
 }: ListItemProps) => {
   const primaryIdentity = getPrimaryIdentity(item.identity);
   const otherIdentities = getOtherIdentities(item.identity, primaryIdentity);
@@ -90,7 +99,12 @@ export const ListItem = ({
           )}
         </Flex>
       </Flex>
-      <div className="flex shrink-0 flex-col items-end gap-2 pr-2 2xl:flex-row 2xl:gap-4">
+      <div
+        className={classNames(
+          "flex shrink-0 flex-col items-end gap-2 pr-2",
+          !compact && "2xl:flex-row 2xl:gap-4",
+        )}
+      >
         <DaysLeft
           daysLeft={item.days_left}
           status={item.status}
