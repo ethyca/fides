@@ -22,6 +22,7 @@ import { debounce } from "~/features/common/utils";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import {
   useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
@@ -166,10 +167,13 @@ export const ConfigureIntegrationForm = ({
     value: d.fides_key,
   }));
 
-  const { patchConnectionDatasetConfig, initialDatasets } =
-    useDatasetConfigField({
-      connectionConfig: connection,
-    });
+  const {
+    patchConnectionDatasetConfig,
+    initialDatasets,
+    dropdownOptions: datasetConfigDropdownOptions,
+  } = useDatasetConfigField({
+    connectionConfig: connection,
+  });
 
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secrets);
@@ -348,7 +352,8 @@ export const ConfigureIntegrationForm = ({
       if (
         connectionPayload &&
         values.dataset &&
-        connectionOption.identifier === ConnectionType.DATAHUB
+        (connectionOption.identifier === ConnectionType.DATAHUB ||
+          (isEditing && connectionOption.type === SystemType.DATABASE))
       ) {
         await patchConnectionDatasetConfig(values, connectionPayload.key, {
           showSuccessAlert: false,
@@ -406,7 +411,8 @@ export const ConfigureIntegrationForm = ({
     if (
       connectionPayload &&
       values.dataset &&
-      connectionOption.identifier === ConnectionType.DATAHUB
+      (connectionOption.identifier === ConnectionType.DATAHUB ||
+        (isEditing && connectionOption.type === SystemType.DATABASE))
     ) {
       await patchConnectionDatasetConfig(values, connectionPayload.key, {
         showSuccessAlert: false,
@@ -533,6 +539,22 @@ export const ConfigureIntegrationForm = ({
                 loading={isLoadingProperties}
                 allowClear
                 placeholder="Select properties..."
+              />
+            </Form.Item>
+          )}
+          {isEditing && connectionOption.type === SystemType.DATABASE && (
+            <Form.Item
+              name="dataset"
+              label="Privacy request datasets"
+              tooltip="Datasets associated with this integration are used during privacy request execution to discover and act on relevant data."
+              className="w-full"
+            >
+              <Select
+                aria-label="Privacy request datasets"
+                data-testid="controlled-select-dataset"
+                mode="multiple"
+                options={datasetConfigDropdownOptions}
+                optionRender={DatasetSelectOption}
               />
             </Form.Item>
           )}
