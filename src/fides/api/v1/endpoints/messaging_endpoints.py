@@ -415,16 +415,22 @@ def update_config_secrets(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
+    ses_failure_reason: str | None = None
     if messaging_config.service_type == MessagingServiceType.aws_ses:
         try:
             ses_provider = AwsSesService(messaging_config)
             ses_provider.validate_email_and_domain_status()
-        except MessageDispatchException:
-            logger.warning("SES identity verification failed during config save")
+        except MessageDispatchException as exc:
+            ses_failure_reason = str(exc)
+            logger.warning(
+                "SES identity verification failed during config save: %s",
+                ses_failure_reason,
+            )
 
     msg = f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
-    # todo- implement test status for messaging service
-    return TestMessagingStatusMessage(msg=msg, test_status=None)
+    return TestMessagingStatusMessage(
+        msg=msg, test_status=None, failure_reason=ses_failure_reason
+    )
 
 
 @router.get(

@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from loguru import logger
@@ -38,6 +39,17 @@ class SESClient:
         pass
 
 
+def _sanitize_aws_error(exc: Exception) -> str:
+    """Strip IAM ARNs and account IDs from AWS error messages to avoid leaking
+    them in API responses. The full error is still logged server-side."""
+    msg = str(exc)
+    # Remove ARNs like arn:aws:iam::123456789:user/some-user
+    msg = re.sub(r"arn:aws:[^\s]+", "<redacted-arn>", msg)
+    # Remove standalone 12-digit account IDs
+    msg = re.sub(r"\b\d{12}\b", "<redacted-account>", msg)
+    return msg
+
+
 class AwsSesService(BaseEmailProviderService):
     """Dispatches email using AWS SES."""
 
@@ -68,14 +80,20 @@ class AwsSesService(BaseEmailProviderService):
             "region_name": self.details.aws_region,
         }
 
-        aws_session = get_aws_session(
-            auth_method=self.secrets.auth_method.value,
-            storage_secrets=storage_secrets,  # type: ignore[arg-type]
-            assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
-                "notifications", {}
-            ).get("aws_ses_assume_role_arn")
-            or self.secrets.aws_assume_role_arn,
-        )
+        try:
+            aws_session = get_aws_session(
+                auth_method=self.secrets.auth_method.value,
+                storage_secrets=storage_secrets,  # type: ignore[arg-type]
+                assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
+                    "notifications", {}
+                ).get("aws_ses_assume_role_arn")
+                or self.secrets.aws_assume_role_arn,
+            )
+        except Exception as exc:
+            logger.error("Failed to create AWS session: {}", str(exc))
+            raise MessageDispatchException(
+                f"Failed to create AWS session: {_sanitize_aws_error(exc)}"
+            ) from exc
         aws_ses_client = aws_session.client("ses", region_name=self.details.aws_region)
 
         self._ses_client = aws_ses_client
@@ -98,9 +116,15 @@ class AwsSesService(BaseEmailProviderService):
             )
 
         ses_client = self.get_ses_client()
-        response = ses_client.get_identity_verification_attributes(
-            Identities=identities
-        )
+        try:
+            response = ses_client.get_identity_verification_attributes(
+                Identities=identities
+            )
+        except Exception as exc:
+            logger.error("SES identity verification failed: {}", str(exc))
+            raise MessageDispatchException(
+                f"SES identity verification failed: {_sanitize_aws_error(exc)}"
+            ) from exc
         attributes = response.get("VerificationAttributes", {})
 
         for identity in identities:
@@ -119,6 +143,10 @@ class AwsSesService(BaseEmailProviderService):
 
         from_address = self.details.email_from
         if not from_address:
+            if not self.details.domain:
+                raise MessageDispatchException(
+                    "AWS SES config must have either email_from or domain set."
+                )
             from_address = f"noreply@{self.details.domain}"
 
         try:
@@ -133,5 +161,5 @@ class AwsSesService(BaseEmailProviderService):
         except Exception as exc:
             logger.error("Email failed to send: {}", str(exc))
             raise MessageDispatchException(
-                f"AWS SES email failed to send due to: {str(exc)}"
+                f"AWS SES email failed to send due to: {_sanitize_aws_error(exc)}"
             )
