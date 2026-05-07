@@ -10,7 +10,6 @@ import { getConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
   FidesCookie,
-  FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
   FidesOverrides,
@@ -77,11 +76,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       OverrideType.OPTIONS,
       config,
     );
-  const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
-    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
-      OverrideType.EXPERIENCE_TRANSLATION,
-      config,
-    );
   // DEFER: not implemented - ability to override Fides consent with OneTrust overrides
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
@@ -92,7 +86,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
-    experienceTranslationOverrides,
   };
   config = {
     ...config,
@@ -178,7 +171,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     fides: this,
     updateExperience,
-    overrides,
     automatedConsentContext,
   });
   Object.assign(this, updatedFides);

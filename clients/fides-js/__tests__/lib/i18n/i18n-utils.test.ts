@@ -1,6 +1,5 @@
 import {
   ExperienceConfig,
-  FidesExperienceTranslationOverrides,
   FidesInitOptions,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
@@ -339,73 +338,12 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
     });
 
-    it("sets overrides experience_config translations when locale matches", () => {
-      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
-        {
-          title: "My override title",
-          description: "My override description",
-          override_language: "en",
-        };
-      loadMessagesFromExperience(
-        mockI18n,
-        mockExperience,
-        experienceTranslationOverrides,
-      );
-      const EXPECTED_NUM_TRANSLATIONS = 2;
-      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      expect(mockI18n.load).toHaveBeenCalledWith("en", {
-        ...mockI18nCatalogLoad[0],
-        ...{
-          "exp.description": experienceTranslationOverrides.description,
-          "exp.title": experienceTranslationOverrides.title,
-        },
-      });
-      expect(mockI18n.load).toHaveBeenCalledWith("es", mockI18nCatalogLoad[1]);
-    });
-
     it("does not set overrides experience_config translations when no locale match", () => {
-      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
-        {
-          title: "My override title",
-          description: "My override description",
-          override_language: "ja",
-        };
-      loadMessagesFromExperience(
-        mockI18n,
-        mockExperience,
-        experienceTranslationOverrides,
-      );
+      loadMessagesFromExperience(mockI18n, mockExperience);
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
       expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
       expect(mockI18n.load).toHaveBeenCalledWith("es", mockI18nCatalogLoad[1]);
-    });
-
-    it("always override privacy_policy_url, even if locale doesn't match", () => {
-      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
-        {
-          title: "My override title",
-          description: "My override description",
-          privacy_policy_url: "https://example.com/privacy",
-          override_language: "ja",
-        };
-      loadMessagesFromExperience(
-        mockI18n,
-        mockExperience,
-        experienceTranslationOverrides,
-      );
-      const EXPECTED_NUM_TRANSLATIONS = 2;
-      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      expect(mockI18n.load).toHaveBeenCalledWith("en", {
-        ...mockI18nCatalogLoad[0],
-        "exp.privacy_policy_url":
-          experienceTranslationOverrides.privacy_policy_url,
-      });
-      expect(mockI18n.load).toHaveBeenCalledWith("es", {
-        ...mockI18nCatalogLoad[1],
-        "exp.privacy_policy_url":
-          experienceTranslationOverrides.privacy_policy_url,
-      });
     });
 
     describe("when loading from a tcf_overlay experience", () => {
