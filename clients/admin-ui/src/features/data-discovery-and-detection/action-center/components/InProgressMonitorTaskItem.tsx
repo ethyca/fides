@@ -33,7 +33,7 @@ import {
 
 const { Paragraph, Text, Title } = Typography;
 
-const formatStatusForDisplay = (status: string): string =>
+const formatStatusForDisplay = (status: string) =>
   status.split("_").map(capitalize).join(" ");
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
@@ -96,10 +96,10 @@ export const InProgressMonitorTaskItem = ({
 
   const taskCount = task.staged_resource_urns?.length || 0;
   const isInProgress = [
-    ExecutionLogStatus.PENDING as string,
-    ExecutionLogStatus.IN_PROCESSING as string,
-    ExecutionLogStatus.RETRYING as string,
-  ].includes((task.status || "").toLowerCase());
+    ExecutionLogStatus.PENDING,
+    ExecutionLogStatus.IN_PROCESSING,
+    ExecutionLogStatus.RETRYING,
+  ].some((status) => status === task.status?.toLowerCase());
   const fieldCount = task.field_count || taskCount;
   const taskTitle = (() => {
     if (
