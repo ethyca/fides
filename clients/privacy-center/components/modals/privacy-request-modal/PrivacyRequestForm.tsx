@@ -42,6 +42,7 @@ const PrivacyRequestForm = ({
       name: nameInput,
       email: emailInput,
       phone: phoneInput,
+      date_of_birth: dateOfBirthInput,
     },
     customIdentityFields,
     customPrivacyRequestFields,
@@ -133,6 +134,28 @@ const PrivacyRequestForm = ({
               }}
               onBlur={handleBlur}
               value={values.phone}
+            />
+          </Form.Item>
+        )}
+        {!!dateOfBirthInput && (
+          <Form.Item
+            validateStatus={
+              touched.date_of_birth && Boolean(errors.date_of_birth)
+                ? "error"
+                : undefined
+            }
+            help={touched.date_of_birth && errors.date_of_birth}
+            required={dateOfBirthInput === "required"}
+            label="Date of Birth"
+            htmlFor="date_of_birth"
+          >
+            <Input
+              id="date_of_birth"
+              name="date_of_birth"
+              type="date"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.date_of_birth}
             />
           </Form.Item>
         )}

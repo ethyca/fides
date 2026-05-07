@@ -9,6 +9,7 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { ModalViews } from "~/components/modals/types";
 import {
+  dateOfBirthValidation,
   emailValidation,
   nameValidation,
   phoneValidation,
@@ -51,12 +52,14 @@ const usePrivacyRequestForm = ({
     phone: phoneInput,
     email: emailInput,
     name: nameInput,
+    date_of_birth: dateOfBirthInput,
     ...customIdentityInputs
   } = action?.identity_inputs ?? DEFAULT_IDENTITY_INPUTS;
   const legacyIdentityFields = {
     phone: phoneInput,
     email: emailInput,
     name: nameInput,
+    date_of_birth: dateOfBirthInput,
     ...Object.fromEntries(
       Object.entries(customIdentityInputs).flatMap(([key, value]) =>
         typeof value === "string" ? [[key, value]] : [],
@@ -275,6 +278,7 @@ const usePrivacyRequestForm = ({
           return true;
         },
       ),
+      date_of_birth: dateOfBirthValidation(dateOfBirthInput),
       ...Object.fromEntries(
         Object.entries(customIdentityFields).flatMap(([key, value]) => {
           return value
