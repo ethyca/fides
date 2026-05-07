@@ -56,7 +56,10 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import PossibleMessagingSecrets
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.service.messaging.message_dispatch_service import (
+    _PROVIDER_MAP,
+    dispatch_message,
+)
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_basic_templates,
     create_or_update_messaging_config,
@@ -67,9 +70,6 @@ from fides.api.service.messaging.messaging_crud_service import (
     get_messaging_config_by_key,
     get_template_by_id,
     update_messaging_config,
-)
-from fides.api.service.messaging.messaging_providers.aws_ses_service import (
-    AwsSesService,
 )
 from fides.api.util.api_router import APIRouter
 from fides.common.scope_registry import (
@@ -415,21 +415,24 @@ def update_config_secrets(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
-    ses_failure_reason: str | None = None
-    if messaging_config.service_type == MessagingServiceType.aws_ses:
+    save_failure_reason: str | None = None
+    provider_cls = _PROVIDER_MAP.get(
+        MessagingServiceType(messaging_config.service_type)
+    )
+    if provider_cls:
         try:
-            ses_provider = AwsSesService(messaging_config)
-            ses_provider.validate_email_and_domain_status()
+            provider = provider_cls(messaging_config)
+            provider.validate_on_save()
         except MessageDispatchException as exc:
-            ses_failure_reason = str(exc)
+            save_failure_reason = str(exc)
             logger.warning(
-                "SES identity verification failed during config save: %s",
-                ses_failure_reason,
+                "Provider validation failed during config save: %s",
+                save_failure_reason,
             )
 
     msg = f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
     return TestMessagingStatusMessage(
-        msg=msg, test_status=None, failure_reason=ses_failure_reason
+        msg=msg, test_status=None, failure_reason=save_failure_reason
     )
 
 

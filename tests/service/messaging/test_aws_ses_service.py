@@ -1,3 +1,5 @@
+from unittest.mock import Mock, patch
+
 import boto3
 import pytest
 from moto import mock_aws
@@ -109,6 +111,30 @@ class TestAwsSesServiceValidation:
     def test_validate_failure_neither_verified(self, messaging_config_ses):
         # Don't verify anything
         service = AwsSesService(messaging_config_ses)
+
+        with pytest.raises(
+            MessageDispatchException, match="test@example.com is not verified in SES."
+        ):
+            service.validate_email_and_domain_status()
+
+    @pytest.mark.parametrize(
+        "status",
+        ["Pending", "Failed", "TemporaryFailure", "NotStarted"],
+        ids=["pending", "failed", "temporary-failure", "not-started"],
+    )
+    @mock_aws
+    def test_validate_failure_non_success_status(self, messaging_config_ses, status):
+        """Real SES can return statuses other than 'Success' for identities that
+        exist but aren't fully verified. Moto always returns 'Success' for
+        verified identities, so we mock the client response directly."""
+        service = AwsSesService(messaging_config_ses)
+        mock_client = Mock()
+        mock_client.get_identity_verification_attributes.return_value = {
+            "VerificationAttributes": {
+                "test@example.com": {"VerificationStatus": status},
+            }
+        }
+        service._ses_client = mock_client
 
         with pytest.raises(
             MessageDispatchException, match="test@example.com is not verified in SES."

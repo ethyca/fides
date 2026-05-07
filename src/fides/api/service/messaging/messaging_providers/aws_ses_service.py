@@ -5,7 +5,6 @@ from loguru import logger
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.messaging import MessagingConfig
-from fides.api.models.property import CONFIG
 from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     MessagingServiceDetailsAWS_SES,
@@ -16,6 +15,7 @@ from fides.api.service.messaging.messaging_providers.base import (
     BaseEmailProviderService,
 )
 from fides.api.util.aws_util import get_aws_session
+from fides.config import CONFIG
 
 
 class SESClient:
@@ -68,6 +68,9 @@ class AwsSesService(BaseEmailProviderService):
     def get_ses_client(self) -> SESClient:
         """Returns a cached AWS SES client, creating one on first call.
 
+        Cache scope is per-instance (i.e., per dispatch_message call) —
+        AwsSesService is instantiated fresh each time.
+
         Supports assume-role with two-source fallback:
         CONFIG.credentials (global) → per-config secret.
         """
@@ -98,6 +101,10 @@ class AwsSesService(BaseEmailProviderService):
 
         self._ses_client = aws_ses_client
         return aws_ses_client
+
+    def validate_on_save(self) -> None:
+        """Verify SES identities when secrets are saved."""
+        self.validate_email_and_domain_status()
 
     def validate_email_and_domain_status(self) -> None:
         """Validate that either the email or domain (or both) are verified in SES.
@@ -130,7 +137,7 @@ class AwsSesService(BaseEmailProviderService):
         for identity in identities:
             status = attributes.get(identity, {}).get("VerificationStatus")
             if status != "Success":
-                logger.error(f"{identity} is not verified in SES.")
+                logger.warning(f"{identity} is not verified in SES.")
                 raise MessageDispatchException(f"{identity} is not verified in SES.")
 
     def send_email(self, to: str, message: EmailForActionType) -> None:

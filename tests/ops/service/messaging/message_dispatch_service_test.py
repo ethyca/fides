@@ -498,7 +498,9 @@ class TestMessageDispatchService:
 
         mock_aws_ses_cls = Mock()
         mock_aws_ses_cls.return_value = Mock(spec=BaseEmailProviderService)
-        with mock.patch.dict(_PROVIDER_MAP, {MessagingServiceType.aws_ses: mock_aws_ses_cls}):
+        with mock.patch.dict(
+            _PROVIDER_MAP, {MessagingServiceType.aws_ses: mock_aws_ses_cls}
+        ):
             dispatch_message(
                 db=db,
                 action_type=MessagingActionType.TEST_MESSAGE,
@@ -523,7 +525,9 @@ class TestMessageDispatchService:
             "AWS SES email failed to send due to: Oops! Something went wrong"
         )
         mock_aws_ses_cls.return_value = mock_instance
-        with mock.patch.dict(_PROVIDER_MAP, {MessagingServiceType.aws_ses: mock_aws_ses_cls}):
+        with mock.patch.dict(
+            _PROVIDER_MAP, {MessagingServiceType.aws_ses: mock_aws_ses_cls}
+        ):
             with pytest.raises(MessageDispatchException) as exc:
                 dispatch_message(
                     db=db,

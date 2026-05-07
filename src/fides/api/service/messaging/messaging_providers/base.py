@@ -48,6 +48,13 @@ class BaseMessageProviderService(ABC):
             logger.error(f"Message failed to send. {error_message}")
             raise MessageDispatchException(error_message)
 
+    def validate_on_save(self) -> None:
+        """Optional hook for config-save-time validation. Default no-op.
+
+        Override in subclasses that need to verify external state (e.g.,
+        SES identity verification) when secrets are saved.
+        """
+
     def _get_detail(self, key: MessagingServiceDetails) -> str | bool:
         """Retrieve a required config detail, raising MessageDispatchException if missing."""
         try:
