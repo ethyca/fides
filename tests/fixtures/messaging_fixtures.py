@@ -1,7 +1,9 @@
 from typing import Generator
+from urllib.parse import parse_qs
 from uuid import uuid4
 
 import pytest
+import requests_mock as requests_mock_lib
 from sqlalchemy.orm import Session
 
 from fides.api.models.messaging import MessagingConfig
@@ -185,6 +187,9 @@ def messaging_config_twilio_email(db: Session) -> Generator:
             "name": name,
             "key": "my_twilio_email_config",
             "service_type": MessagingServiceType.twilio_email.value,
+            "details": {
+                MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@example.com",
+            },
         },
     )
     messaging_config.set_secrets(
@@ -246,3 +251,33 @@ def messaging_config_aws_ses(db: Session) -> Generator:
     )
     yield messaging_config
     messaging_config.delete(db)
+
+
+def mailgun_urls(messaging_config: MessagingConfig) -> tuple[str, str]:
+    """Build the Mailgun template-check and send URLs from a messaging config."""
+    api_version = messaging_config.details[MessagingServiceDetails.API_VERSION.value]
+    domain = messaging_config.details[MessagingServiceDetails.DOMAIN.value]
+    base = "https://api.mailgun.net"
+    return (
+        f"{base}/{api_version}/{domain}/templates/fides",
+        f"{base}/{api_version}/{domain}/messages",
+    )
+
+
+def mailgun_post_body(request_history: list) -> dict:
+    """Parse the URL-encoded form body from the last Mailgun POST request."""
+    post_req = request_history[-1]
+    return parse_qs(post_req.text)
+
+
+@pytest.fixture(scope="function")
+def mock_mailgun_http(messaging_config):
+    """Mock Mailgun HTTP calls so the real MailgunService runs but no network I/O happens.
+
+    Yields the requests_mock Mocker so tests can inspect request_history.
+    """
+    template_url, send_url = mailgun_urls(messaging_config)
+    with requests_mock_lib.Mocker(real_http=True) as m:
+        m.get(template_url, status_code=404)
+        m.post(send_url, json={"message": "Queued"}, status_code=200)
+        yield m

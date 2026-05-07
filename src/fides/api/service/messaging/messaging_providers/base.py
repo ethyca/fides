@@ -1,10 +1,15 @@
 from abc import ABC, abstractmethod
+from typing import ClassVar
 
 from loguru import logger
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.messaging import MessagingConfig
-from fides.api.schemas.messaging.messaging import EmailForActionType
+from fides.api.schemas.messaging.messaging import (
+    EmailForActionType,
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+)
 
 
 class BaseMessageProviderService(ABC):
@@ -14,7 +19,16 @@ class BaseMessageProviderService(ABC):
     messages to identify which provider failed.
     """
 
-    provider_name: str
+    provider_name: ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        super().__init_subclass__(**kwargs)
+        # Skip intermediate ABCs that define their own abstract methods
+        has_abstract = any(
+            getattr(v, "__isabstractmethod__", False) for v in cls.__dict__.values()
+        )
+        if not has_abstract and not getattr(cls, "provider_name", None):
+            raise TypeError(f"{cls.__name__} must define 'provider_name'")
 
     def __init__(self, messaging_config: MessagingConfig):
         self.messaging_config = messaging_config
@@ -33,6 +47,30 @@ class BaseMessageProviderService(ABC):
             )
             logger.error(f"Message failed to send. {error_message}")
             raise MessageDispatchException(error_message)
+
+    def _get_detail(self, key: MessagingServiceDetails) -> str | bool:
+        """Retrieve a required config detail, raising MessageDispatchException if missing."""
+        try:
+            return self.messaging_config.details[key.value]
+        except (KeyError, TypeError) as exc:
+            raise MessageDispatchException(
+                f"{self.provider_name} config is missing required detail: {key.value}"
+            ) from exc
+
+    def _get_secret(self, key: MessagingServiceSecrets) -> str:
+        """Retrieve a required config secret, raising MessageDispatchException if missing."""
+        try:
+            return self.messaging_config.secrets[key.value]
+        except (KeyError, TypeError) as exc:
+            raise MessageDispatchException(
+                f"{self.provider_name} config is missing required secret: {key.value}"
+            ) from exc
+
+    def _get_optional_secret(self, key: MessagingServiceSecrets) -> str | None:
+        """Retrieve an optional config secret, returning None if missing."""
+        if not self.messaging_config.secrets:
+            return None
+        return self.messaging_config.secrets.get(key.value)
 
 
 class BaseEmailProviderService(BaseMessageProviderService):

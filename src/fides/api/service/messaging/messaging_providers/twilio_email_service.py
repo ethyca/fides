@@ -25,12 +25,8 @@ class TwilioEmailService(BaseEmailProviderService):
 
     def __init__(self, messaging_config: MessagingConfig):
         super().__init__(messaging_config)
-        self.api_key = messaging_config.secrets[
-            MessagingServiceSecrets.TWILIO_API_KEY.value
-        ]
-        self.from_email = messaging_config.details[
-            MessagingServiceDetails.TWILIO_EMAIL_FROM.value
-        ]
+        self.api_key = self._get_secret(MessagingServiceSecrets.TWILIO_API_KEY)
+        self.from_email = self._get_detail(MessagingServiceDetails.TWILIO_EMAIL_FROM)
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
         try:
