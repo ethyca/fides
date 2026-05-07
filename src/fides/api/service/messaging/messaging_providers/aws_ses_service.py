@@ -93,7 +93,6 @@ class AwsSesService(BaseEmailProviderService):
                 or self.secrets.aws_assume_role_arn,
             )
         except Exception as exc:
-            logger.error("Failed to create AWS session: {}", str(exc))
             raise MessageDispatchException(
                 f"Failed to create AWS session: {_sanitize_aws_error(exc)}"
             ) from exc
@@ -128,7 +127,6 @@ class AwsSesService(BaseEmailProviderService):
                 Identities=identities
             )
         except Exception as exc:
-            logger.error("SES identity verification failed: {}", str(exc))
             raise MessageDispatchException(
                 f"SES identity verification failed: {_sanitize_aws_error(exc)}"
             ) from exc
