@@ -1,3 +1,4 @@
+import type { AntColorTokenKey } from "fidesui";
 import { antTheme, Card, Flex, Icons, Text, Tooltip } from "fidesui";
 import { useMemo } from "react";
 
@@ -15,16 +16,23 @@ import type {
 
 import styles from "./AssessmentStatusCard.module.scss";
 
+// Threshold for flagging an open assessment as "stalled" in the per-group and
+// per-owner attention rows. Frontend-only heuristic; revisit if the privacy
+// team defines a formal SLA.
+// TODO: replace `useGetPrivacyAssessmentsQuery()` here with a dedicated
+// /privacy-assessments/summary endpoint once available — fetching the full
+// dataset just to produce 4 counters and two top-3 lists is wasteful at scale.
 const STALE_DAYS = 14;
 const TOP_BLOCKED_LIMIT = 3;
 const TOP_OWNERS_LIMIT = 3;
+const UNCATEGORIZED_KEY = "__uncategorized__";
 
 type SegmentKey = "completed" | "pending" | "open" | "risk";
 
 interface SegmentDefinition {
   key: SegmentKey;
   label: string;
-  colorToken: "colorSuccess" | "colorInfo" | "colorWarning" | "colorError";
+  colorToken: AntColorTokenKey;
   href: string;
 }
 
@@ -51,13 +59,12 @@ const SEGMENTS: SegmentDefinition[] = [
     key: "risk",
     label: "Risk",
     colorToken: "colorError",
-    href: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}`,
+    href: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}&risk_level=${RiskLevel.HIGH}`,
   },
 ];
 
 interface BlockedGroup {
   name: string;
-  dataUse: string | null;
   staleCount: number;
   highRiskCount: number;
   totalCount: number;
@@ -69,7 +76,7 @@ interface OwnerStat {
   staleCount: number;
 }
 
-interface AssessmentMetrics {
+export interface AssessmentMetrics {
   total: number;
   bySegment: Record<SegmentKey, number>;
   topBlocked: BlockedGroup[];
@@ -102,66 +109,73 @@ function isStale(
   assessment: PrivacyAssessmentResponse,
   staleBefore: number,
 ): boolean {
-  if (assessment.status === AssessmentStatus.COMPLETED) {
+  // GENERATING rows are still being produced by the backend; treat them as
+  // fresh regardless of timestamps. COMPLETED rows are never stale.
+  if (
+    assessment.status === AssessmentStatus.COMPLETED ||
+    assessment.status === AssessmentStatus.GENERATING
+  ) {
     return false;
   }
   if (!assessment.updated_at) {
-    return true;
+    return false;
   }
   const updatedAt = new Date(assessment.updated_at).getTime();
   return Number.isFinite(updatedAt) && updatedAt < staleBefore;
 }
 
-function computeMetrics(
+function getOrInsert<K, V>(map: Map<K, V>, key: K, factory: () => V): V {
+  const existing = map.get(key);
+  if (existing) {
+    return existing;
+  }
+  const created = factory();
+  map.set(key, created);
+  return created;
+}
+
+export function computeMetrics(
   groups: AssessmentGroupResponse[] | undefined,
+  now: number = Date.now(),
 ): AssessmentMetrics {
   const bySegment = { ...EMPTY_SEGMENT_COUNTS };
   const groupAgg = new Map<string, BlockedGroup>();
+  const ownerAgg = new Map<string, OwnerStat>();
   let total = 0;
 
-  const staleBefore = Date.now() - STALE_DAYS * 24 * 60 * 60 * 1000;
-
-  const ownerAgg = new Map<string, OwnerStat>();
+  const staleBefore = now - STALE_DAYS * 24 * 60 * 60 * 1000;
 
   groups?.forEach((group) => {
-    const groupLabel = group.data_use_name ?? "Uncategorized";
-    let agg = groupAgg.get(groupLabel);
-    if (!agg) {
-      agg = {
-        name: groupLabel,
-        dataUse: group.data_use ?? null,
-        staleCount: 0,
-        highRiskCount: 0,
-        totalCount: 0,
-      };
-      groupAgg.set(groupLabel, agg);
-    }
+    const groupKey = group.data_use ?? UNCATEGORIZED_KEY;
+    const groupName = group.data_use_name ?? "Uncategorized";
+    const aggregate = getOrInsert(groupAgg, groupKey, () => ({
+      name: groupName,
+      staleCount: 0,
+      highRiskCount: 0,
+      totalCount: 0,
+    }));
 
     group.assessments?.forEach((assessment) => {
       total += 1;
-      agg!.totalCount += 1;
+      aggregate.totalCount += 1;
       bySegment[segmentForAssessment(assessment)] += 1;
       if (assessment.risk_level === RiskLevel.HIGH) {
-        agg!.highRiskCount += 1;
+        aggregate.highRiskCount += 1;
       }
       const stale = isStale(assessment, staleBefore);
       if (stale) {
-        agg!.staleCount += 1;
+        aggregate.staleCount += 1;
       }
 
       const isOpen =
         assessment.status === AssessmentStatus.IN_PROGRESS ||
         assessment.status === AssessmentStatus.OUTDATED;
       if (isOpen && assessment.created_by) {
-        let owner = ownerAgg.get(assessment.created_by);
-        if (!owner) {
-          owner = {
-            owner: assessment.created_by,
-            openCount: 0,
-            staleCount: 0,
-          };
-          ownerAgg.set(assessment.created_by, owner);
-        }
+        const owner = getOrInsert(ownerAgg, assessment.created_by, () => ({
+          owner: assessment.created_by!,
+          openCount: 0,
+          staleCount: 0,
+        }));
         owner.openCount += 1;
         if (stale) {
           owner.staleCount += 1;
@@ -207,19 +221,23 @@ export const AssessmentStatusCard = () => {
   return (
     <Card
       title={
-        <Tooltip
-          placement="bottom"
-          title="A snapshot of your privacy assessments program — completion progress, in-flight work, and where risk lives."
+        <Flex
+          style={{ display: "inline-flex" }}
+          align="center"
+          gap={4}
         >
-          <Flex
-            style={{ cursor: "pointer", display: "inline-flex" }}
-            align="center"
-            gap={4}
+          <Text>Assessment Status</Text>
+          <Tooltip
+            placement="bottom"
+            title="A snapshot of your privacy assessments program — completion progress, in-flight work, and where risk lives."
           >
-            <Text>Assessment Status</Text>
-            <Icons.Help size={14} className="opacity-30" />
-          </Flex>
-        </Tooltip>
+            <Icons.Help
+              size={14}
+              className="opacity-30"
+              style={{ cursor: "help" }}
+            />
+          </Tooltip>
+        </Flex>
       }
       loading={isLoading}
       extra={

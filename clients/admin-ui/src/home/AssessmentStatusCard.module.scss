@@ -52,7 +52,7 @@
   align-items: center;
   gap: 6px;
   padding: 2px 4px;
-  border-radius: var(--ant-border-radius, 6px);
+  border-radius: var(--ant-border-radius);
   text-decoration: none;
 
   &:hover {
@@ -84,7 +84,7 @@
   gap: 12px;
   padding: 6px 8px;
   margin: 0 -8px;
-  border-radius: var(--ant-border-radius, 6px);
+  border-radius: var(--ant-border-radius);
   text-decoration: none;
   min-width: 0;
 
@@ -106,7 +106,7 @@
   display: inline-block;
   padding: 4px 8px;
   margin: 4px -8px 0;
-  border-radius: var(--ant-border-radius, 6px);
+  border-radius: var(--ant-border-radius);
   text-decoration: none;
 
   &:hover {
