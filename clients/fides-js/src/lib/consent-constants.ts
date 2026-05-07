@@ -1,7 +1,4 @@
-import {
-  FidesExperienceLanguageValidatorMap,
-  FidesOverrideValidatorMap,
-} from "./consent-types";
+import { FidesOverrideValidatorMap } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 import { parseCommaSeparatedString } from "./shared-consent-utils";
 
@@ -171,38 +168,6 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideType: "string",
       overrideKey: "fides_external_id",
       validationRegex: /.+/,
-    },
-  ];
-
-/**
- * Allows various user-provided experience lang overrides to be validated and mapped to the appropriate Fides variable.
- * overrideName is Fides internal, but overrideKey is the key the user uses to override the option.
- */
-export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: FidesExperienceLanguageValidatorMap[] =
-  [
-    {
-      overrideName: "title",
-      overrideType: "string",
-      overrideKey: "fides_title",
-      validationRegex: /(.*)/,
-    },
-    {
-      overrideName: "description",
-      overrideType: "string",
-      overrideKey: "fides_description",
-      validationRegex: /(.*)/,
-    },
-    {
-      overrideName: "privacy_policy_url",
-      overrideType: "string",
-      overrideKey: "fides_privacy_policy_url",
-      validationRegex: /(.*)/,
-    },
-    {
-      overrideName: "override_language",
-      overrideType: "string",
-      overrideKey: "fides_override_language",
-      validationRegex: LOCALE_REGEX,
     },
   ];
 
