@@ -103,4 +103,57 @@ class ExecutionSettings(FidesSettings):
         default=10,
         description="Minutes between polling Jira for ticket status updates.",
     )
+    terminal_dsr_redis_cache_cleanup_enabled: bool = Field(
+        default=False,
+        description="Application preference: when true, the periodic terminal DSR Redis cache "
+        "cleanup task may run (still requires terminal_dsr_redis_cache_cleanup_interval_minutes "
+        "> 0 for the scheduler job to be registered). Default: off.",
+    )
+    terminal_dsr_redis_cache_cleanup_interval_minutes: int = Field(
+        default=0,
+        description="Minutes between periodic Redis cache cleanups for terminal privacy "
+        "requests (complete/canceled, plus optional statuses). Set to 0 to disable registering "
+        "the scheduler job. When registered, execution also requires "
+        "terminal_dsr_redis_cache_cleanup_enabled.",
+    )
+    terminal_dsr_redis_cache_cleanup_dry_run: bool = Field(
+        default=True,
+        description="When true, the cleanup job re-checks Postgres eligibility but does not "
+        "delete Redis keys (use for rollout).",
+    )
+    terminal_dsr_redis_cache_cleanup_dry_run_probe_redis: bool = Field(
+        default=False,
+        description="When dry_run is true and this is true, count Redis keys per request "
+        "(uses SCAN/get_all_keys; may add load in large batches).",
+    )
+    terminal_dsr_redis_cache_cleanup_staleness_minutes: int = Field(
+        default=30,
+        description="Only privacy requests whose updated_at is older than this many minutes "
+        "are eligible, to reduce races with trailing cache writes.",
+    )
+    terminal_dsr_redis_cache_cleanup_batch_size: int = Field(
+        default=50,
+        description="Max privacy requests to process per database batch (keyset pagination).",
+    )
+    terminal_dsr_redis_cache_cleanup_batch_sleep_seconds: float = Field(
+        default=0.5,
+        description="Base delay between batches; a random jitter up to this value is added.",
+    )
+    terminal_dsr_redis_cache_cleanup_include_denied_and_duplicate: bool = Field(
+        default=True,
+        description="Treat denied and duplicate statuses as terminal for Redis cleanup.",
+    )
+    terminal_dsr_redis_cache_cleanup_include_error: bool = Field(
+        default=False,
+        description="Include error status (clears Redis-only resume/operator context). "
+        "Destructive for workflows that rely on stale error cache—enable only with care.",
+    )
+    terminal_dsr_redis_cache_cleanup_lock_timeout_seconds: int = Field(
+        default=1800,
+        ge=60,
+        description="Redis lock TTL (seconds) for the terminal DSR Redis cache cleanup job "
+        "to prevent overlapping runs. Default 1800 (30 minutes). Override via env "
+        "FIDES__EXECUTION__TERMINAL_DSR_REDIS_CACHE_CLEANUP_LOCK_TIMEOUT_SECONDS or "
+        "application config execution.terminal_dsr_redis_cache_cleanup_lock_timeout_seconds.",
+    )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

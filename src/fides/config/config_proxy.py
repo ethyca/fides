@@ -113,6 +113,8 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     subject_identity_verification_required: bool
     disable_consent_identity_verification: bool
     require_manual_request_approval: bool
+    terminal_dsr_redis_cache_cleanup_enabled: Optional[bool]
+    terminal_dsr_redis_cache_cleanup_lock_timeout_seconds: Optional[int]
 
     def __getattribute__(self, name: str) -> Any:
         """

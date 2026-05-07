@@ -62,6 +62,8 @@ CONFIG_KEY_ALLOWLIST = {
         "subject_identity_verification_required",
         "memory_watchdog_enabled",
         "sql_dry_run",
+        "terminal_dsr_redis_cache_cleanup_enabled",
+        "terminal_dsr_redis_cache_cleanup_lock_timeout_seconds",
     ],
     "storage": [
         "active_default_storage_type",

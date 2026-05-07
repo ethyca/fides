@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from dataclasses import asdict
 from datetime import datetime, timedelta
 from typing import Any, DefaultDict, Dict, Generator, List, Optional, Set, Union
 
@@ -41,6 +42,10 @@ from fides.api.util.cache import (
 )
 from fides.api.util.lock import redis_lock
 from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
+from fides.service.privacy_request.terminal_dsr_redis_cache_cleanup import (
+    run_terminal_dsr_redis_cache_cleanup,
+)
 
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
@@ -51,6 +56,8 @@ ASYNC_TASKS_STATUS_POLLING_LOCK = "async_tasks_status_polling_lock"
 ASYNC_TASKS_STATUS_POLLING_LOCK_TIMEOUT = (
     300  # Starting timeout is shorter because the task goes directly to the workers.
 )
+TERMINAL_DSR_REDIS_CACHE_CLEANUP_JOB = "terminal_dsr_redis_cache_cleanup"
+TERMINAL_DSR_REDIS_CACHE_CLEANUP_LOCK = "terminal_dsr_redis_cache_cleanup_lock"
 
 
 def build_required_privacy_request_kwargs(
@@ -329,6 +336,93 @@ def initiate_polling_task_requeue() -> None:
         coalesce=True,
         replace_existing=True,
         seconds=CONFIG.execution.async_polling_interval_hours * 3600,
+    )
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def cleanup_terminal_dsr_redis_cache(self: DatabaseTask) -> Dict[str, Any]:
+    """Periodic job: clear Redis DSR cache for privacy requests terminal in Postgres.
+
+    Uses ``redis_lock`` (same helper as batch email send / Jira polling) so only one
+    cleanup runs cluster-wide; overlapping scheduler ticks exit early instead of
+    piling up work.
+    """
+    exec_cfg = CONFIG.execution
+    if exec_cfg.terminal_dsr_redis_cache_cleanup_interval_minutes <= 0:
+        return {}
+
+    # Avoid taking the Redis lock when the feature is off (resolved application config).
+    with self.get_new_session() as db:
+        resolved_execution = ConfigProxy(db).execution
+        if not resolved_execution.terminal_dsr_redis_cache_cleanup_enabled:
+            logger.debug(
+                "Terminal DSR Redis cache cleanup skipped "
+                "(execution.terminal_dsr_redis_cache_cleanup_enabled is off)."
+            )
+            return {}
+        lock_override = (
+            resolved_execution.terminal_dsr_redis_cache_cleanup_lock_timeout_seconds
+        )
+
+    lock_timeout = int(
+        lock_override
+        if lock_override is not None
+        else exec_cfg.terminal_dsr_redis_cache_cleanup_lock_timeout_seconds
+    )
+    with redis_lock(
+        lock_key=TERMINAL_DSR_REDIS_CACHE_CLEANUP_LOCK,
+        timeout=lock_timeout,
+    ) as lock:
+        if not lock:
+            logger.info(
+                "Terminal DSR Redis cache cleanup skipped: "
+                "another worker holds the lock (run still in progress)."
+            )
+            return {}
+        with self.get_new_session() as db:
+            # Re-check under the lock in case the preference flipped while waiting.
+            if not ConfigProxy(db).execution.terminal_dsr_redis_cache_cleanup_enabled:
+                logger.debug(
+                    "Terminal DSR Redis cache cleanup skipped "
+                    "(execution.terminal_dsr_redis_cache_cleanup_enabled turned off)."
+                )
+                return {}
+            result = run_terminal_dsr_redis_cache_cleanup(db)
+            return asdict(result)
+
+
+def initiate_terminal_dsr_redis_cache_cleanup() -> None:
+    """Schedule periodic Redis cleanup for terminal privacy requests (APScheduler).
+
+    The Celery task consults resolved ``execution.terminal_dsr_redis_cache_cleanup_enabled``
+    (application preferences / API config) on each run; defaults off.
+
+    Overlap / ``non-greedy`` behavior: the task uses ``redis_lock`` so concurrent ticks
+    skip while a run is in flight; APScheduler also uses ``max_instances=1`` and a tight
+    ``misfire_grace_time`` so late fires are not queued as catch-up bursts.
+    """
+    if CONFIG.test_mode:
+        return
+
+    minutes = CONFIG.execution.terminal_dsr_redis_cache_cleanup_interval_minutes
+    if minutes <= 0:
+        return
+
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot add terminal DSR Redis cache cleanup job."
+    )
+
+    logger.info("Initiating scheduler for terminal DSR Redis cache cleanup")
+    scheduler.add_job(
+        func=cleanup_terminal_dsr_redis_cache,
+        trigger="interval",
+        kwargs={},
+        id=TERMINAL_DSR_REDIS_CACHE_CLEANUP_JOB,
+        coalesce=True,
+        replace_existing=True,
+        max_instances=1,
+        misfire_grace_time=1,
+        minutes=minutes,
     )
 
 

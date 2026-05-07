@@ -76,6 +76,20 @@ class ExecutionApplicationConfig(FidesSchema):
     require_manual_request_approval: Optional[bool] = None
     memory_watchdog_enabled: Optional[bool] = None
     sql_dry_run: Optional[SqlDryRunMode] = None
+    terminal_dsr_redis_cache_cleanup_enabled: Optional[bool] = Field(
+        default=None,
+        description="Enable periodic Redis cleanup for terminal privacy requests (DSR cache). "
+        "Requires non-zero terminal_dsr_redis_cache_cleanup_interval_minutes in server config. "
+        "Default unset/false in resolved settings.",
+    )
+    terminal_dsr_redis_cache_cleanup_lock_timeout_seconds: Optional[int] = Field(
+        default=None,
+        description="Redis lock TTL (seconds) for the terminal DSR Redis cache cleanup job. "
+        "Unset uses execution.terminal_dsr_redis_cache_cleanup_lock_timeout_seconds from "
+        "server config (default 1800 = 30 minutes).",
+        ge=60,
+        le=604800,  # max 7 days
+    )
 
     # Allow deprecated / unknown fields (e.g. “safe_mode”) to pass through
     model_config = ConfigDict(use_enum_values=True, extra="ignore")
