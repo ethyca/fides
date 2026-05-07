@@ -33,3 +33,16 @@ export const phoneValidation = (option?: string | null) => {
   }
   return validation;
 };
+
+export const dateOfBirthValidation = (option?: string | null) => {
+  let validation = Yup.string().matches(
+    /^\d{4}-\d{2}-\d{2}$/,
+    "Date of birth must be in YYYY-MM-DD format",
+  );
+  if (option === "required") {
+    validation = validation.required("Date of birth is required");
+  } else {
+    validation = validation.optional();
+  }
+  return validation;
+};
