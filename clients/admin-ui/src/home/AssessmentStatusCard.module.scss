@@ -88,16 +88,18 @@
 
 .attentionDivider {
   flex: 0 0 auto;
-  border-left: 1px dotted var(--ant-color-border);
+  width: 0;
+  border-left: 2px dotted var(--ant-color-split);
   align-self: stretch;
 }
 
 @container (max-width: 519px) {
   .attentionDivider {
     flex: 1 0 100%;
-    border-left: none;
-    border-top: 1px dotted var(--ant-color-border);
+    width: auto;
     height: 0;
+    border-left: none;
+    border-top: 2px dotted var(--ant-color-split);
     align-self: auto;
   }
 }
