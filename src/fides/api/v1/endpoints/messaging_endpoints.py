@@ -128,12 +128,17 @@ def post_config(
             db=db, config=messaging_config_request
         )
         if messaging_config_request.secrets:
-            update_config_secrets(
+            secrets_result = update_config_secrets(
                 db,
                 messaging_config,
                 unvalidated_messaging_secrets=messaging_config_request.secrets,
                 messaging_service=messaging_service,
             )
+            if secrets_result.failure_reason:
+                logger.warning(
+                    "Provider validation failed during config creation: {}",
+                    secrets_result.failure_reason,
+                )
 
         # if there is only one messaging config, make it the default
         messaging_config_count = db.query(MessagingConfig).count()
