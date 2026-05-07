@@ -15,6 +15,7 @@ const MONITOR_FILTER_LABEL: Record<APIMonitorType, string> = {
   [APIMonitorType.DATASTORE]: "Data store monitors",
   [APIMonitorType.WEBSITE]: "Website monitors",
   [APIMonitorType.INFRASTRUCTURE]: "Infrastructure monitors",
+  [APIMonitorType.CLOUD_INFRASTRUCTURE]: "Cloud infrastructure monitors",
 };
 
 const MonitorListSearchForm = ({

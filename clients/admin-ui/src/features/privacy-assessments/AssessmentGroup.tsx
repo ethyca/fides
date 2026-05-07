@@ -48,7 +48,7 @@ export const AssessmentGroup = ({
             </Title>
             <Text type="secondary">
               {systemCount} {systemCount === 1 ? "system" : "systems"} •{" "}
-              {assessments.length} active assessments
+              {assessments.length} assessments
             </Text>
           </div>
         </Flex>

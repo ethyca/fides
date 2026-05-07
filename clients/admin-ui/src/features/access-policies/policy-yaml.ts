@@ -124,7 +124,7 @@ export const yamlToNodesAndEdges = (
       fidesKey: policy.fides_key ?? "",
       enabled: policy.enabled ?? true,
       priority: policy.priority ?? 0,
-      controls: policy.controls ?? [],
+      control: policy.control ?? null,
       controlOptions: [],
       actionMessage: policy.action?.message ?? "",
       onNameChange: () => {},
@@ -132,7 +132,7 @@ export const yamlToNodesAndEdges = (
       onFidesKeyChange: () => {},
       onEnabledChange: () => {},
       onPriorityChange: () => {},
-      onControlsChange: () => {},
+      onControlChange: () => {},
       onActionMessageChange: () => {},
     },
   };
@@ -394,7 +394,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     return "";
   }
 
-  const { name, description, fidesKey, enabled, priority, controls } =
+  const { name, description, fidesKey, enabled, priority, control } =
     policyNode.data as PolicyNodeData;
 
   // Find action node (connected from policy)
@@ -421,8 +421,8 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   if (priority !== undefined && priority !== 0) {
     policyYaml.priority = priority;
   }
-  if (controls && controls.length > 0) {
-    policyYaml.controls = controls;
+  if (control) {
+    policyYaml.control = control;
   }
 
   if (!actionNode) {

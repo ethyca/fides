@@ -1,13 +1,5 @@
 import classNames from "classnames";
-import {
-  Button,
-  Flex,
-  Icons,
-  Popover,
-  Spin,
-  Text,
-  useNotification,
-} from "fidesui";
+import { Flex, Icons, Popover, Spin, Text, useNotification } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -16,6 +8,7 @@ import { AssessmentTaskPopoverContent } from "./AssessmentTaskPopoverContent";
 import {
   useGetAssessmentTasksQuery,
   useGetAssessmentTemplatesQuery,
+  useGetPrivacyAssessmentsQuery,
 } from "./privacy-assessments.slice";
 import { TaskStatus } from "./types";
 
@@ -52,6 +45,17 @@ export const AssessmentTaskStatusIndicator = ({
     { page: 1, size: 10 },
     { pollingInterval: ACTIVE_POLL_INTERVAL, skip: !activeTask },
   );
+
+  // Mirror the task poll on the assessments list while a task is active so
+  // freshly-materialized `generating` rows and per-row status flips appear in
+  // the page list within ~15s, instead of waiting for the first LLM call to
+  // finish (which can be minutes for large prompts). Shares the cache key
+  // with the page's `useGetPrivacyAssessmentsQuery()`, so the page list
+  // re-renders automatically when this polling fills the cache.
+  useGetPrivacyAssessmentsQuery(undefined, {
+    pollingInterval: ACTIVE_POLL_INTERVAL,
+    skip: !activeTask,
+  });
 
   const lastCompletedTask = useMemo(
     () =>
@@ -90,38 +94,11 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
-  const completedCount = activeTask?.completed_count ?? 0;
-
-  const prevCompletedCountRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (!activeTask) {
-      prevCompletedCountRef.current = null;
-      return;
-    }
-    if (
-      prevCompletedCountRef.current !== null &&
-      completedCount > prevCompletedCountRef.current
-    ) {
-      notificationApi.success({
-        message: "New assessment results are available",
-        actions: onTaskFinish ? (
-          <Button
-            size="small"
-            onClick={() => {
-              onTaskFinish();
-              notificationApi.destroy();
-            }}
-          >
-            Reload results
-          </Button>
-        ) : undefined,
-        duration: 0,
-      });
-    }
-    prevCompletedCountRef.current = completedCount;
-  }, [activeTask, completedCount, notificationApi, onTaskFinish]);
-
-  // Detect active → idle transition for the final completion or error
+  // Detect active → idle transition for the final completion or error.
+  // The list-poll subscription above stops the moment `activeTask` becomes
+  // null, so the very last row flip (committed at the same time the task
+  // moves to COMPLETE) won't be picked up by polling. Fire one explicit
+  // refetch here to surface that final state.
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
@@ -135,21 +112,10 @@ export const AssessmentTaskStatusIndicator = ({
         });
       } else {
         notificationApi.success({
-          message: "New assessment results are available",
-          actions: onTaskFinish ? (
-            <Button
-              size="small"
-              onClick={() => {
-                onTaskFinish();
-                notificationApi.destroy();
-              }}
-            >
-              Reload results
-            </Button>
-          ) : undefined,
-          duration: 0,
+          message: "Assessment evaluation complete",
         });
       }
+      onTaskFinish?.();
     }
     hadActiveTaskRef.current = activeTask !== null;
   }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
@@ -161,7 +127,9 @@ export const AssessmentTaskStatusIndicator = ({
     if (activeTask) {
       return (
         <Flex align="center" gap="small">
-          <Spin size="small" />
+          <div>
+            <Spin size="small" />
+          </div>
           <Text type="secondary" size="sm">
             Evaluation in progress · {Math.round(activeTask.progress)}%
           </Text>
@@ -183,7 +151,7 @@ export const AssessmentTaskStatusIndicator = ({
         <Flex align="center" gap="small">
           <Icons.CheckmarkFilled size={14} />
           <Text type="secondary" size="sm">
-            Last assessment evaluated {lastAssessmentAgo}
+            Last evaluated {lastAssessmentAgo}
           </Text>
         </Flex>
       );

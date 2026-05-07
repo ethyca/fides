@@ -1,5 +1,13 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
 ARG PYTHON_VERSION="3.13.11"
+############################
+## Build libpbac (Go→C)  ##
+############################
+FROM golang:1.24-bookworm AS libpbac_builder
+WORKDIR /build
+COPY policy-engine/ .
+RUN go build -buildmode=c-shared -o libpbac.so ./cmd/libpbac/
+
 #########################
 ## Compile Python Deps ##
 #########################
@@ -70,6 +78,7 @@ USER fidesuser
 ENV USER=fidesuser
 
 COPY --chown=fidesuser:fidesgroup . /fides
+COPY --from=libpbac_builder --chown=fidesuser:fidesgroup /build/libpbac.so /fides/src/fides/bin/libpbac.so
 WORKDIR /fides
 
 # Immediately flush to stdout, globally

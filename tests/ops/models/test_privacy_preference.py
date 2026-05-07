@@ -121,9 +121,24 @@ class TestPrivacyPreference:
 class TestConsentIdentitiesHashMixin:
     def test_hash_value_null(self):
         assert ConsentIdentitiesMixin.hash_value("") is None
+        assert ConsentIdentitiesMixin.hash_value(None) is None
 
     def test_hash_value_not_null(self):
         assert ConsentIdentitiesMixin.hash_value("customer_one@example.com") is not None
+
+    def test_hash_value_bool_not_dropped(self):
+        """`False` must hash (not be treated as empty) so checkbox values persist."""
+        assert ConsentIdentitiesMixin.hash_value(False) is not None
+        assert ConsentIdentitiesMixin.hash_value(True) is not None
+
+    def test_bcrypt_hash_value_null(self):
+        assert ConsentIdentitiesMixin.bcrypt_hash_value("") is None
+
+    def test_bcrypt_hash_value_not_null(self):
+        assert (
+            ConsentIdentitiesMixin.bcrypt_hash_value("customer_one@example.com")
+            is not None
+        )
 
 
 class TestServedNoticeHistory:

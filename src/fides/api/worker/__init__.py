@@ -22,6 +22,7 @@ from fides.api.tasks import (
     PRIVACY_PREFERENCES_QUEUE_NAME,
     celery_app,
 )
+from fides.config import CONFIG
 
 
 class _PythonAndYamlFilter(DefaultFilter):
@@ -37,15 +38,29 @@ class _PythonAndYamlFilter(DefaultFilter):
 
 def _run_celery_worker(worker_queues: str) -> None:
     """Run the Celery worker process. Extracted so it can be used as a watchfiles target."""
-    celery_app.worker_main(
-        argv=[
-            "--quiet",  # Disable Celery startup banner
-            "worker",
-            "--loglevel=info",
-            "--concurrency=2",
-            f"--queues={worker_queues}",
-        ]
-    )
+    argv = [
+        "--quiet",  # Disable Celery startup banner
+        "worker",
+        "--loglevel=info",
+        f"--concurrency={CONFIG.celery.worker_concurrency}",
+        f"--queues={worker_queues}",
+    ]
+    without_flags = []
+    if CONFIG.celery.worker_disable_heartbeat:
+        without_flags.append("--without-heartbeat")
+    if CONFIG.celery.worker_disable_gossip:
+        without_flags.append("--without-gossip")
+    if CONFIG.celery.worker_disable_mingle:
+        without_flags.append("--without-mingle")
+    if without_flags:
+        argv += without_flags
+        logger.info(
+            f"Worker started with {' '.join(without_flags)} "
+            f"(FIDES__CELERY__WORKER_DISABLE_HEARTBEAT={CONFIG.celery.worker_disable_heartbeat}, "
+            f"FIDES__CELERY__WORKER_DISABLE_GOSSIP={CONFIG.celery.worker_disable_gossip}, "
+            f"FIDES__CELERY__WORKER_DISABLE_MINGLE={CONFIG.celery.worker_disable_mingle})"
+        )
+    celery_app.worker_main(argv=argv)
 
 
 def start_worker(

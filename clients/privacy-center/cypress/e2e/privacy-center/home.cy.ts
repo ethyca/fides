@@ -77,14 +77,14 @@ describe("Home", () => {
       cy.visit("/");
       cy.getByTestId("home");
       cy.dispatch({ type: "config/loadConfig", payload: undefined });
-      cy.contains("an unexpected error occurred");
+      cy.contains("The Privacy Center is currently unavailable");
     });
 
     it("renders an error page if configuration is invalid", () => {
       cy.visit("/");
       cy.getByTestId("home");
       cy.loadConfigFixture("config/config_error.json").then(() => {
-        cy.contains("an unexpected error occurred");
+        cy.contains("The Privacy Center is currently unavailable");
       });
     });
 

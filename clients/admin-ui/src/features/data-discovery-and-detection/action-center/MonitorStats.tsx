@@ -13,15 +13,25 @@ export interface MonitorStatsProps {
   monitorType?: APIMonitorType;
 }
 
+// Statistics widgets are not yet enabled for cloud infrastructure monitors
+const STATS_EXCLUDED_TYPES: Set<APIMonitorType> = new Set([
+  APIMonitorType.CLOUD_INFRASTRUCTURE,
+]);
+
 const MonitorStats = ({ monitorId, monitorType }: MonitorStatsProps) => {
   const {
     flags: { heliosInsights },
   } = useFlags();
 
+  if (monitorType && STATS_EXCLUDED_TYPES.has(monitorType)) {
+    return null;
+  }
+
   return (
     heliosInsights && (
       <Flex className={classNames("w-full")} gap="middle">
         {Object.values(monitorType ? [monitorType] : APIMonitorType)
+          .filter((mType) => !STATS_EXCLUDED_TYPES.has(mType))
           .toReversed()
           .map((mType) => (
             <MonitorProgressWidget
