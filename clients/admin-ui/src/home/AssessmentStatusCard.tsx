@@ -221,11 +221,7 @@ export const AssessmentStatusCard = () => {
   return (
     <Card
       title={
-        <Flex
-          style={{ display: "inline-flex" }}
-          align="center"
-          gap={4}
-        >
+        <Flex style={{ display: "inline-flex" }} align="center" gap={4}>
           <Text>Assessment Status</Text>
           <Tooltip
             placement="bottom"

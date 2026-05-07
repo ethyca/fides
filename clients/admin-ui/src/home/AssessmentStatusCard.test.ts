@@ -1,9 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import {
-  AssessmentStatus,
-  RiskLevel,
-} from "~/features/privacy-assessments";
+import { AssessmentStatus, RiskLevel } from "~/features/privacy-assessments";
 import type {
   AssessmentGroupResponse,
   PrivacyAssessmentResponse,
