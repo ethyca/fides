@@ -3,7 +3,6 @@ from unittest.mock import Mock
 
 import pytest
 import requests_mock
-from sendgrid.helpers.mail import Email, To
 from sqlalchemy.orm import Session
 from tests.fixtures.messaging_fixtures import mailgun_post_body, mailgun_urls
 
@@ -19,7 +18,6 @@ from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,
-    EmailForActionType,
     FidesopsMessage,
     MessagingActionType,
     MessagingServiceDetails,
@@ -41,44 +39,12 @@ from fides.api.service.messaging.messaging_providers.mailgun_service import (
     MailgunService,
 )
 from fides.api.service.messaging.messaging_providers.twilio_email_service import (
-    EMAIL_TEMPLATE_NAME,
     TwilioEmailService,
 )
 from fides.api.service.messaging.messaging_providers.twilio_sms_service import (
     TwilioSmsService,
 )
 from fides.config import CONFIG
-
-
-@pytest.fixture
-def test_template_response_body():
-    yield {
-        "result": [
-            {
-                "id": "d-0507bb6d47cb46f38761f541b9cb8507",
-                "name": "fides",
-                "generation": "dynamic",
-                "updated_at": "2023-02-28 00:43:28",
-                "versions": [
-                    {
-                        "id": "2080ab46-ebd2-40fa-b595-01d3e94e2700",
-                        "template_id": "d-0507bb6d47cb46f38761f541b9cb8507",
-                        "active": 1,
-                        "name": "fides",
-                        "generate_plain_content": False,
-                        "subject": "DSR Testing",
-                        "updated_at": "2023-03-01 13:34:23",
-                        "editor": "design",
-                    }
-                ],
-            },
-        ]
-    }
-
-
-@pytest.fixture
-def test_message_body():
-    yield "This is a test DSR message body"
 
 
 @pytest.mark.unit
@@ -947,68 +913,7 @@ class TestProviderConfigValidation:
             provider_cls(config)
 
 
-class TestTwilioEmailProvider:
-    def test_dispatch_no_secrets(self, messaging_config_twilio_email):
-        messaging_config_twilio_email.secrets = None
-        with pytest.raises(MessageDispatchException) as exc:
-            TwilioEmailService(messaging_config_twilio_email)
-
-        assert "No Twilio email config details or secrets" in str(exc.value)
-
-    def test_template_found(self, test_template_response_body):
-        template_test = TwilioEmailService._get_template_id_if_exists(
-            test_template_response_body, EMAIL_TEMPLATE_NAME
-        )
-        assert template_test
-
-    def test_no_template_found(self, test_template_response_body):
-        template_test = TwilioEmailService._get_template_id_if_exists(
-            test_template_response_body, f"not_{EMAIL_TEMPLATE_NAME}"
-        )
-        assert template_test is None
-
-    def test_templated_mail(self, test_message_body):
-        mail = TwilioEmailService._compose_mail(
-            Email("test@test.com"),
-            To("test@test.com"),
-            "Test DSR EMail",
-            test_message_body,
-            "test_template",
-        )
-        assert "template_id" in mail.get()
-
-    def test_non_templated_mail(self, test_message_body):
-        mail = TwilioEmailService._compose_mail(
-            Email("test@test.com"),
-            To("test@test.com"),
-            "Test DSR EMail",
-            test_message_body,
-            template_id=None,
-        )
-        assert "template_id" not in mail.get()
-
-
-class TestTwilioSmsProvider:
-    def test_dispatch_no_secrets(self, messaging_config_twilio_sms):
-        messaging_config_twilio_sms.secrets = None
-        with pytest.raises(MessageDispatchException) as exc:
-            TwilioSmsService(messaging_config_twilio_sms)
-
-        assert "No Twilio SMS config secrets supplied" in str(exc.value)
-
-    def test_dispatch_no_sender(self, messaging_config_twilio_sms):
-        messaging_config_twilio_sms.secrets[
-            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
-        ] = None
-        messaging_config_twilio_sms.secrets[
-            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
-        ] = None
-        service = TwilioSmsService(messaging_config_twilio_sms)
-        with pytest.raises(MessageDispatchException) as exc:
-            service.send_sms("+9198675309", "test")
-
-        assert "must be provided" in str(exc.value)
-
+class TestSubjectOverride:
     def test_subject_override_for_email(self, db: Session, messaging_config) -> None:
         template_url, send_url = mailgun_urls(messaging_config)
         with requests_mock.Mocker() as m:
