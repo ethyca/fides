@@ -56,10 +56,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import PossibleMessagingSecrets
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import (
-    _PROVIDER_MAP,
-    dispatch_message,
-)
+from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_basic_templates,
     create_or_update_messaging_config,
@@ -415,25 +412,9 @@ def update_config_secrets(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
-    save_failure_reason: str | None = None
-    provider_cls = _PROVIDER_MAP.get(
-        MessagingServiceType(messaging_config.service_type)
-    )
-    if provider_cls:
-        try:
-            provider = provider_cls(messaging_config)
-            provider.validate_on_save()
-        except MessageDispatchException as exc:
-            save_failure_reason = str(exc)
-            logger.warning(
-                "Provider validation failed during config save: %s",
-                save_failure_reason,
-            )
-
     msg = f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
-    return TestMessagingStatusMessage(
-        msg=msg, test_status=None, failure_reason=save_failure_reason
-    )
+    # todo- implement test status for messaging service
+    return TestMessagingStatusMessage(msg=msg, test_status=None)
 
 
 @router.get(
