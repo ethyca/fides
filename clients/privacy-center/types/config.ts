@@ -6,6 +6,7 @@ type DefaultIdentities = {
   name?: LegacyIdentityConfigProps; // here for legacy purposes, we don't treat it as an identity or pass it along in the privacy request
   email?: LegacyIdentityConfigProps;
   phone?: LegacyIdentityConfigProps;
+  date_of_birth?: LegacyIdentityConfigProps;
 };
 
 export type DefaultIdentityKeys = keyof DefaultIdentities;
