@@ -1,9 +1,9 @@
 import json
 import os
 from json import JSONDecodeError
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Set
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
@@ -27,6 +27,20 @@ class CelerySettings(FidesSettings):
         description="If true, tasks are executed locally instead of being sent to the queue.  "
         "If False, tasks are sent to the queue.",
     )
+    eager_task_queues: Set[str] = Field(
+        default_factory=set,
+        description="Set of queue names that should always run eagerly (synchronously), "
+        "regardless of task_always_eager. Can be configured as a comma-separated string via "
+        "FIDES__CELERY__EAGER_TASK_QUEUES (e.g. 'fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification').",
+    )
+
+    @field_validator("eager_task_queues", mode="before")
+    @classmethod
+    def parse_eager_task_queues(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            return {q.strip() for q in v.split(",") if q.strip()}
+        return v
+
     healthcheck_port: int = Field(
         default=9000, description="The port to use for the health check endpoint"
     )
