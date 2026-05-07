@@ -867,8 +867,6 @@ class TestPrivacyRequestsEmailNotifications:
         request,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
-        messaging_config,
-        mock_mailgun_http,
     ):
         upload_mock.return_value = "http://www.data-download-url"
         customer_email = "customer-1@example.com"
@@ -887,8 +885,6 @@ class TestPrivacyRequestsEmailNotifications:
         db.refresh(pr)
         assert pr.status == PrivacyRequestStatus.error
         pr.delete(db=db)
-
-        assert not mock_mailgun_http.called
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration

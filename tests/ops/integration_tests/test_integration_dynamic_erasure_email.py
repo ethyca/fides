@@ -188,8 +188,8 @@ async def test_erasure_email_multiple_requests(
     assert len(post_requests) == 2
 
     # verify the privacy requesta were queued for further processing
-    mock_requeue_privacy_requests.assert_called()
-    assert mock_requeue_privacy_requests.call_count == 2
+    # requeue is called once per batch with a query containing all privacy requests
+    mock_requeue_privacy_requests.assert_called_once()
 
 
 @pytest.mark.integration
@@ -283,8 +283,8 @@ async def test_erasure_email_multiple_requests_same_email_different_vendor(
     assert len(post_requests) == 2
 
     # verify the privacy requesta were queued for further processing
-    mock_requeue_privacy_requests.assert_called()
-    assert mock_requeue_privacy_requests.call_count == 2
+    # requeue is called once per batch with a query containing all privacy requests
+    mock_requeue_privacy_requests.assert_called_once()
 
 
 @pytest.mark.integration

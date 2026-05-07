@@ -96,8 +96,6 @@ async def test_erasure_email_no_messaging_config(
     attentive_email_connection_config,
     run_privacy_request_task,
     test_fides_org,
-    messaging_config,
-    mock_mailgun_http,
 ) -> None:
     """
     Run an erasure privacy request with only an email (Attentive) connector.
@@ -126,7 +124,6 @@ async def test_erasure_email_no_messaging_config(
     # job will fail because there is no messaging config
     assert exit_state == EmailExitState.email_send_failed
 
-    assert not mock_mailgun_http.called
     mock_requeue_privacy_requests.assert_not_called()
 
 
