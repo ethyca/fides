@@ -46,7 +46,7 @@ def _sanitize_aws_error(exc: Exception) -> str:
     # Remove ARNs like arn:aws:iam::123456789:user/some-user
     msg = re.sub(r"arn:aws:[^\s]+", "<redacted-arn>", msg)
     # Remove standalone 12-digit account IDs
-    msg = re.sub(r"\b\d{12}\b", "<redacted-account>", msg)
+    msg = re.sub(r"(?<!\d)\d{12}(?!\d)", "<redacted-account>", msg)
     return msg
 
 
@@ -167,4 +167,4 @@ class AwsSesService(BaseEmailProviderService):
             logger.error("Email failed to send: {}", str(exc))
             raise MessageDispatchException(
                 f"AWS SES email failed to send due to: {_sanitize_aws_error(exc)}"
-            )
+            ) from exc
