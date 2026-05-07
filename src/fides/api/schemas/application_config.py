@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum, StrEnum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import ConfigDict, Field, SerializeAsAny, field_validator, model_validator
 
@@ -70,26 +70,63 @@ class NotificationApplicationConfig(FidesSchema):
         return value
 
 
+class DsrCacheSweeperApplicationConfig(FidesSchema):
+    """API overrides for ``execution.dsr_cache_sweeper``."""
+
+    enabled: Optional[bool] = Field(
+        default=None,
+        description="Enable periodic DSR cache sweeper for terminal privacy requests. "
+        "Requires non-zero execution.dsr_cache_sweeper.interval_minutes in server "
+        "config. Default unset/false in resolved settings.",
+    )
+    lock_timeout_seconds: Optional[int] = Field(
+        default=None,
+        description="Redis lock TTL (seconds) for the DSR cache sweeper job. "
+        "Unset uses execution.dsr_cache_sweeper.lock_timeout_seconds from "
+        "server config (default 1800 = 30 minutes).",
+        ge=60,
+        le=604800,  # max 7 days
+    )
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class ExecutionApplicationConfig(FidesSchema):
     subject_identity_verification_required: Optional[bool] = None
     disable_consent_identity_verification: Optional[bool] = None
     require_manual_request_approval: Optional[bool] = None
     memory_watchdog_enabled: Optional[bool] = None
     sql_dry_run: Optional[SqlDryRunMode] = None
-    terminal_dsr_redis_cache_cleanup_enabled: Optional[bool] = Field(
-        default=None,
-        description="Enable periodic Redis cleanup for terminal privacy requests (DSR cache). "
-        "Requires non-zero terminal_dsr_redis_cache_cleanup_interval_minutes in server config. "
-        "Default unset/false in resolved settings.",
-    )
-    terminal_dsr_redis_cache_cleanup_lock_timeout_seconds: Optional[int] = Field(
-        default=None,
-        description="Redis lock TTL (seconds) for the terminal DSR Redis cache cleanup job. "
-        "Unset uses execution.terminal_dsr_redis_cache_cleanup_lock_timeout_seconds from "
-        "server config (default 1800 = 30 minutes).",
-        ge=60,
-        le=604800,  # max 7 days
-    )
+    dsr_cache_sweeper: Optional[DsrCacheSweeperApplicationConfig] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_dsr_cache_sweeper_api_fields(cls, data: Any) -> Any:
+        """Accept legacy execution.terminal_dsr_redis_cache_cleanup* PATCH shapes."""
+        if not isinstance(data, dict):
+            return data
+
+        merged: dict[str, Any] = {}
+        if isinstance(data.get("dsr_cache_sweeper"), dict):
+            merged.update(data["dsr_cache_sweeper"])
+
+        legacy_nested = data.pop("terminal_dsr_redis_cache_cleanup", None)
+        if isinstance(legacy_nested, dict):
+            merged = {**legacy_nested, **merged}
+
+        for prefix in ("terminal_dsr_redis_cache_cleanup_", "dsr_cache_sweeper_"):
+            for key in list(data.keys()):
+                if key.startswith(prefix) and key not in (
+                    "terminal_dsr_redis_cache_cleanup",
+                    "dsr_cache_sweeper",
+                ):
+                    suffix = key[len(prefix) :]
+                    if suffix in ("enabled", "lock_timeout_seconds"):
+                        merged[suffix] = data.pop(key)
+
+        if merged:
+            data["dsr_cache_sweeper"] = merged
+        return data
 
     # Allow deprecated / unknown fields (e.g. “safe_mode”) to pass through
     model_config = ConfigDict(use_enum_values=True, extra="ignore")

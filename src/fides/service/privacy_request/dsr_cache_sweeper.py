@@ -1,13 +1,13 @@
-"""Periodic cleanup of Redis cache keys for terminal privacy requests.
+"""Periodic DSR cache sweeper: clears Redis cache keys for terminal privacy requests.
 
 Eligible rows are selected from Postgres by terminal status and staleness on
 ``updated_at``. For each id we re-read ``status`` immediately before clearing to
 avoid races with status transitions, then call ``get_dsr_cache_store(id).clear()``
 (same effect as ``PrivacyRequest.clear_cached_values``).
 
-The Celery entrypoint gates on resolved ``execution.terminal_dsr_redis_cache_cleanup_enabled``
-(application preference, default off). See ``ExecutionSettings`` keys prefixed with
-``terminal_dsr_redis_cache_cleanup_*``.
+The Celery entrypoint gates on resolved ``execution.dsr_cache_sweeper.enabled``
+(application preference, default off). Server tuning lives under
+``execution.dsr_cache_sweeper`` (see ``DsrCacheSweeperSettings``).
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from fides.config import CONFIG
 
 
 @dataclass(frozen=True)
-class TerminalDsrRedisCacheCleanupResult:
+class DsrCacheSweeperResult:
     rows_scanned: int
     redis_clear_attempts: int
     rows_skipped_status_mismatch: int
@@ -41,12 +41,12 @@ class TerminalDsrRedisCacheCleanupResult:
     dry_run: bool
 
 
-def build_terminal_privacy_request_statuses_for_redis_cleanup(
+def build_dsr_cache_sweeper_statuses(
     *,
     include_denied_and_duplicate: bool,
     include_error: bool,
 ) -> FrozenSet[PrivacyRequestStatus]:
-    """Statuses whose Redis DSR cache may be cleared by the periodic job.
+    """Statuses whose Redis DSR cache may be cleared by the sweeper.
 
     Always excludes :data:`ACTIVE_REQUEST_STATUSES` by construction (those are
     never added to the allowlist).
@@ -68,28 +68,26 @@ def build_terminal_privacy_request_statuses_for_redis_cleanup(
     overlap = statuses & ACTIVE_REQUEST_STATUSES
     if overlap:
         raise RuntimeError(
-            "Terminal DSR Redis cleanup allowlist overlaps ACTIVE_REQUEST_STATUSES: "
+            "DSR cache sweeper status allowlist overlaps ACTIVE_REQUEST_STATUSES: "
             f"{overlap}"
         )
     return frozenset(statuses)
 
 
-def run_terminal_dsr_redis_cache_cleanup(
+def run_dsr_cache_sweeper(
     db: Session,
-) -> TerminalDsrRedisCacheCleanupResult:
+) -> DsrCacheSweeperResult:
     """Scan Postgres for stale terminal privacy requests and clear Redis DSR cache."""
-    exec_cfg = CONFIG.execution
-    terminal_statuses = build_terminal_privacy_request_statuses_for_redis_cleanup(
-        include_denied_and_duplicate=(
-            exec_cfg.terminal_dsr_redis_cache_cleanup_include_denied_and_duplicate
-        ),
-        include_error=exec_cfg.terminal_dsr_redis_cache_cleanup_include_error,
+    tc = CONFIG.execution.dsr_cache_sweeper
+    terminal_statuses = build_dsr_cache_sweeper_statuses(
+        include_denied_and_duplicate=tc.include_denied_and_duplicate,
+        include_error=tc.include_error,
     )
-    staleness_minutes = exec_cfg.terminal_dsr_redis_cache_cleanup_staleness_minutes
-    batch_size = max(1, int(exec_cfg.terminal_dsr_redis_cache_cleanup_batch_size))
-    batch_sleep = float(exec_cfg.terminal_dsr_redis_cache_cleanup_batch_sleep_seconds)
-    dry_run = exec_cfg.terminal_dsr_redis_cache_cleanup_dry_run
-    dry_run_probe = exec_cfg.terminal_dsr_redis_cache_cleanup_dry_run_probe_redis
+    staleness_minutes = tc.staleness_minutes
+    batch_size = max(1, int(tc.batch_size))
+    batch_sleep = float(tc.batch_sleep_seconds)
+    dry_run = tc.dry_run
+    dry_run_probe = tc.dry_run_probe_redis
 
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=staleness_minutes)
 
@@ -129,7 +127,7 @@ def run_terminal_dsr_redis_cache_cleanup(
             if current is None or current not in terminal_statuses:
                 rows_skipped_status_mismatch += 1
                 logger.debug(
-                    "Skipping terminal DSR Redis cleanup for privacy_request_id={}: "
+                    "Skipping DSR cache sweeper for privacy_request_id={}: "
                     "status no longer eligible (batch had {}, current={})",
                     pr_id,
                     initial_status.value,
@@ -167,7 +165,7 @@ def run_terminal_dsr_redis_cache_cleanup(
 
             if dry_run:
                 logger.info(
-                    "Dry-run terminal DSR Redis cleanup privacy_request_id={} status={} "
+                    "Dry-run DSR cache sweeper privacy_request_id={} status={} "
                     "cutoff_age_minutes={} keys_visible={}",
                     pr_id,
                     current.value,
@@ -207,7 +205,7 @@ def run_terminal_dsr_redis_cache_cleanup(
 
     duration = time.perf_counter() - started
     logger.info(
-        "Terminal DSR Redis cache cleanup finished dry_run={} rows_scanned={} "
+        "DSR cache sweeper finished dry_run={} rows_scanned={} "
         "redis_clear_attempts={} skipped_status_mismatch={} redis_errors={} "
         "keys_deleted_estimate={} duration_s={:.3f}",
         dry_run,
@@ -218,7 +216,7 @@ def run_terminal_dsr_redis_cache_cleanup(
         keys_deleted_estimate,
         duration,
     )
-    return TerminalDsrRedisCacheCleanupResult(
+    return DsrCacheSweeperResult(
         rows_scanned=rows_scanned,
         redis_clear_attempts=redis_clear_attempts,
         rows_skipped_status_mismatch=rows_skipped_status_mismatch,

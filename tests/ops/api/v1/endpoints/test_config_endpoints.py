@@ -1426,8 +1426,7 @@ class TestGetConfig:
                             "memory_watchdog_enabled",
                             "ignore_dsr_celery_task_results",
                             "sql_dry_run",
-                            "terminal_dsr_redis_cache_cleanup_enabled",
-                            "terminal_dsr_redis_cache_cleanup_lock_timeout_seconds",
+                            "dsr_cache_sweeper",
                         ]
                     )
                 )

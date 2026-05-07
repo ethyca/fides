@@ -1,16 +1,14 @@
-"""Unit tests for terminal privacy-request Redis cache cleanup helpers."""
+"""Unit tests for DSR cache sweeper status helpers."""
 
 from fides.api.schemas.privacy_request import (
     ACTIVE_REQUEST_STATUSES,
     PrivacyRequestStatus,
 )
-from fides.service.privacy_request.terminal_dsr_redis_cache_cleanup import (
-    build_terminal_privacy_request_statuses_for_redis_cleanup,
-)
+from fides.service.privacy_request.dsr_cache_sweeper import build_dsr_cache_sweeper_statuses
 
 
 def test_build_terminal_statuses_complete_and_canceled_only() -> None:
-    statuses = build_terminal_privacy_request_statuses_for_redis_cleanup(
+    statuses = build_dsr_cache_sweeper_statuses(
         include_denied_and_duplicate=False,
         include_error=False,
     )
@@ -21,7 +19,7 @@ def test_build_terminal_statuses_complete_and_canceled_only() -> None:
 
 
 def test_build_terminal_statuses_includes_denied_duplicate_when_enabled() -> None:
-    statuses = build_terminal_privacy_request_statuses_for_redis_cleanup(
+    statuses = build_dsr_cache_sweeper_statuses(
         include_denied_and_duplicate=True,
         include_error=False,
     )
@@ -30,7 +28,7 @@ def test_build_terminal_statuses_includes_denied_duplicate_when_enabled() -> Non
 
 
 def test_build_terminal_statuses_includes_error_when_enabled() -> None:
-    statuses = build_terminal_privacy_request_statuses_for_redis_cleanup(
+    statuses = build_dsr_cache_sweeper_statuses(
         include_denied_and_duplicate=False,
         include_error=True,
     )
@@ -38,7 +36,7 @@ def test_build_terminal_statuses_includes_error_when_enabled() -> None:
 
 
 def test_terminal_allowlist_never_overlaps_active() -> None:
-    statuses = build_terminal_privacy_request_statuses_for_redis_cleanup(
+    statuses = build_dsr_cache_sweeper_statuses(
         include_denied_and_duplicate=True,
         include_error=True,
     )

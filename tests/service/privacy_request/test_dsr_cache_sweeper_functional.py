@@ -1,4 +1,4 @@
-"""Functional tests for terminal DSR Redis cache cleanup (real Redis + Postgres).
+"""Functional tests for DSR cache sweeper (real Redis + Postgres).
 
 Uses the live ``get_cache()`` connection like other integration-style tests (via the
 session ``cache`` fixture).
@@ -19,30 +19,31 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.util.cache import get_dsr_cache_store
 from fides.config import CONFIG
-from fides.service.privacy_request import (
-    terminal_dsr_redis_cache_cleanup as terminal_cleanup,
-)
-from fides.service.privacy_request.terminal_dsr_redis_cache_cleanup import (
-    run_terminal_dsr_redis_cache_cleanup,
-)
+from fides.service.privacy_request import dsr_cache_sweeper as sweeper_module
+from fides.service.privacy_request.dsr_cache_sweeper import run_dsr_cache_sweeper
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 _TTL = 3600
 
 
-def _patch_terminal_cleanup_execution(
+def _patch_dsr_cache_sweeper_execution(
     monkeypatch: pytest.MonkeyPatch, **overrides: Any
 ) -> None:
-    updates: dict[str, Any] = {
-        "terminal_dsr_redis_cache_cleanup_dry_run": False,
-        "terminal_dsr_redis_cache_cleanup_batch_sleep_seconds": 0.0,
-        "terminal_dsr_redis_cache_cleanup_staleness_minutes": 30,
-        "terminal_dsr_redis_cache_cleanup_batch_size": 50,
+    nested_updates: dict[str, Any] = {
+        "dry_run": False,
+        "batch_sleep_seconds": 0.0,
+        "staleness_minutes": 30,
+        "batch_size": 50,
     }
-    updates.update(overrides)
-    execution = CONFIG.execution.model_copy(update=updates)
+    nested_updates.update(overrides)
+    tc = CONFIG.execution.dsr_cache_sweeper.model_copy(
+        update=nested_updates
+    )
+    execution = CONFIG.execution.model_copy(
+        update={"dsr_cache_sweeper": tc}
+    )
     monkeypatch.setattr(
-        terminal_cleanup, "CONFIG", SimpleNamespace(execution=execution)
+        sweeper_module, "CONFIG", SimpleNamespace(execution=execution)
     )
 
 
@@ -59,7 +60,7 @@ def _force_stale_updated_at(db: Session, privacy_request_id: str) -> None:
 @pytest.mark.integration
 @pytest.mark.integration_postgres
 @pytest.mark.usefixtures("cache")
-class TestTerminalDsrRedisCacheCleanupFunctional:
+class TestDsrCacheSweeperFunctional:
     def test_clears_real_redis_keys_for_stale_terminal_request(
         self,
         db: Session,
@@ -67,7 +68,7 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Eligible terminal PR with stale updated_at triggers clear(); Redis keys removed."""
-        _patch_terminal_cleanup_execution(monkeypatch)
+        _patch_dsr_cache_sweeper_execution(monkeypatch)
 
         pr = _create_privacy_request_for_policy(
             db,
@@ -81,7 +82,7 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
             store.write_async_execution(b"task-under-test", _TTL)
             assert len(store.get_all_keys()) >= 1
 
-            result = run_terminal_dsr_redis_cache_cleanup(db)
+            result = run_dsr_cache_sweeper(db)
 
             assert result.rows_scanned >= 1
             assert result.redis_clear_attempts >= 1
@@ -97,10 +98,10 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
         policy: Policy,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _patch_terminal_cleanup_execution(
+        _patch_dsr_cache_sweeper_execution(
             monkeypatch,
-            terminal_dsr_redis_cache_cleanup_dry_run=True,
-            terminal_dsr_redis_cache_cleanup_dry_run_probe_redis=False,
+            dry_run=True,
+            dry_run_probe_redis=False,
         )
 
         pr = _create_privacy_request_for_policy(
@@ -116,7 +117,7 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
             keys_before = len(store.get_all_keys())
             assert keys_before >= 1
 
-            result = run_terminal_dsr_redis_cache_cleanup(db)
+            result = run_dsr_cache_sweeper(db)
 
             assert result.dry_run is True
             assert len(store.get_all_keys()) == keys_before
@@ -131,7 +132,7 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """updated_at within staleness window should not be selected."""
-        _patch_terminal_cleanup_execution(monkeypatch)
+        _patch_dsr_cache_sweeper_execution(monkeypatch)
 
         pr = _create_privacy_request_for_policy(
             db,
@@ -143,7 +144,7 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
             store.write_async_execution(b"recent-task", _TTL)
             keys_before = len(store.get_all_keys())
 
-            result = run_terminal_dsr_redis_cache_cleanup(db)
+            result = run_dsr_cache_sweeper(db)
 
             assert result.rows_scanned == 0
             assert len(store.get_all_keys()) == keys_before
@@ -157,7 +158,7 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
         policy: Policy,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _patch_terminal_cleanup_execution(monkeypatch)
+        _patch_dsr_cache_sweeper_execution(monkeypatch)
 
         pr = _create_privacy_request_for_policy(
             db,
@@ -171,7 +172,7 @@ class TestTerminalDsrRedisCacheCleanupFunctional:
             store.write_async_execution(b"active-task", _TTL)
             keys_before = len(store.get_all_keys())
 
-            result = run_terminal_dsr_redis_cache_cleanup(db)
+            result = run_dsr_cache_sweeper(db)
 
             assert result.rows_scanned == 0
             assert len(store.get_all_keys()) == keys_before
