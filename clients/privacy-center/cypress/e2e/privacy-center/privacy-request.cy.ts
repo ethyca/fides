@@ -355,6 +355,48 @@ describe("Privacy Request with multiselect custom fields", () => {
   });
 });
 
+describe("Privacy Request with date of birth identity field", () => {
+  beforeEach(() => {
+    cy.intercept("GET", `${API_URL}/id-verification/config`, {
+      body: {
+        identity_verification_required: false,
+      },
+    }).as("getVerificationConfig");
+    cy.intercept("POST", `${API_URL}/privacy-request`, {
+      statusCode: 200,
+      fixture: "privacy-request/success",
+    }).as("postPrivacyRequest");
+  });
+
+  it("renders the date of birth field when configured", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request.json").then(() => {
+      cy.getByTestId("privacy-request-form")
+        .find("#date_of_birth")
+        .should("be.visible");
+    });
+  });
+
+  it("submits date_of_birth as a plain string in the identity payload", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request.json").then(() => {
+      cy.getByTestId("privacy-request-form").within(() => {
+        cy.get("#email").type("test@example.com");
+        cy.get("#date_of_birth").type("1990-01-15");
+        cy.get("button[type='submit']").click();
+
+        cy.wait("@postPrivacyRequest").then((interception) => {
+          const identity = interception.request.body[0].identity;
+          expect(identity.email).to.equal("test@example.com");
+          expect(identity.date_of_birth).to.equal("1990-01-15");
+        });
+      });
+    });
+  });
+});
+
 describe("Privacy Request Verification Flow", () => {
   beforeEach(() => {
     cy.intercept("GET", `${API_URL}/id-verification/config`, {
