@@ -145,4 +145,34 @@ describe("PrivacyRequestForm Multiselect Logic", () => {
   });
 });
 
+import * as Yup from "yup";
+
+import { dateOfBirthValidation } from "~/components/modals/validation";
+
+describe("dateOfBirthValidation", () => {
+  it("accepts a valid YYYY-MM-DD date", async () => {
+    const schema = Yup.object({ dob: dateOfBirthValidation("required") });
+    await expect(schema.validate({ dob: "1990-01-15" })).resolves.toBeTruthy();
+  });
+
+  it("rejects a date in MM/DD/YYYY format", async () => {
+    const schema = Yup.object({ dob: dateOfBirthValidation("required") });
+    await expect(
+      schema.validate({ dob: "01/15/1990" }),
+    ).rejects.toThrow("Date of birth must be in YYYY-MM-DD format");
+  });
+
+  it("requires a value when configured as required", async () => {
+    const schema = Yup.object({ dob: dateOfBirthValidation("required") });
+    await expect(schema.validate({ dob: "" })).rejects.toThrow(
+      "Date of birth is required",
+    );
+  });
+
+  it("allows empty value when configured as optional", async () => {
+    const schema = Yup.object({ dob: dateOfBirthValidation("optional") });
+    await expect(schema.validate({ dob: "" })).resolves.toBeTruthy();
+  });
+});
+
 export {};
