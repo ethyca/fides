@@ -462,6 +462,12 @@ class TestFilesMagicBytes:
     def test_candidates_returns_empty_set_for_unknown(self):
         assert FilesMagicBytes.candidates(b"not a real file") == set()
 
+    def test_candidates_data_shorter_than_magic_does_not_raise(self):
+        # Truncated data must not raise; Python slice never exceeds the
+        # buffer so a partial match cannot fire.
+        assert FilesMagicBytes.candidates(b"%PD") == set()
+        assert FilesMagicBytes.candidates(b"") == set()
+
     def test_default_public_upload_allowed_file_types(self):
         assert AllowedFileType.default_public_upload_allowed_file_types() == {
             "pdf",
