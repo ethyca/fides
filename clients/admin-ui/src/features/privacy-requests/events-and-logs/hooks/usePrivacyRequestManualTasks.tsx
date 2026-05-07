@@ -5,6 +5,7 @@ import { isRootUserId } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { formatUser } from "~/features/common/utils";
 import { useGetTasksQuery } from "~/features/manual-tasks/manual-tasks.slice";
+import { userTimelineIcon } from "~/features/privacy-requests/events-and-logs/timelineDisplay";
 import {
   ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
@@ -84,6 +85,7 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
             isPolling: false,
             id: `manual-task-${task.manual_field_id}`,
             attachments: attachments as { id: string; file_name: string }[],
+            icon: userTimelineIcon,
           };
         });
 

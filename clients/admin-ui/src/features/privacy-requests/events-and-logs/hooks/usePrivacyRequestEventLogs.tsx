@@ -1,3 +1,7 @@
+import { useMemo } from "react";
+
+import { connectionLogoFromConfiguration } from "~/features/datastore-connections/ConnectionTypeLogo";
+import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import {
   hasAwaitingProcessing,
   hasPolling,
@@ -5,11 +9,16 @@ import {
   hasUnresolvedError,
 } from "~/features/privacy-requests/events-and-logs/helpers";
 import {
+  humanizeIdentifier,
+  systemEventIcon,
+} from "~/features/privacy-requests/events-and-logs/timelineDisplay";
+import {
   ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
   ExecutionLogStatus,
   PrivacyRequestResults,
 } from "~/features/privacy-requests/types";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 
 /**
  * Hook for processing privacy request event logs.
@@ -23,8 +32,22 @@ export const usePrivacyRequestEventLogs = (
   results?: PrivacyRequestResults,
   taskStatusByDataset?: Record<string, string>,
 ) => {
-  // Determine if results are loading
-  const isLoading = !results;
+  const { data: connectionsResponse, isLoading: isConnectionsLoading } =
+    useGetAllDatastoreConnectionsQuery({ size: 1000 });
+
+  const connectionsByKey = useMemo(() => {
+    const map = new Map<string, ConnectionConfigurationResponse>();
+    connectionsResponse?.items?.forEach((conn) => {
+      if (conn.key) {
+        map.set(conn.key, conn);
+      }
+    });
+    return map;
+  }, [connectionsResponse]);
+
+  // We don't block the timeline on connections — if the lookup hasn't resolved
+  // we just fall back to humanized keys.
+  const isLoading = !results || isConnectionsLoading;
 
   // Map from source events to ActivityTimelineItems
   const eventItems: ActivityTimelineItem[] = !results
@@ -52,9 +75,27 @@ export const usePrivacyRequestEventLogs = (
             ? taskStatus === ExecutionLogStatus.POLLING
             : hasPolling(logs);
 
+        const firstLog = logs[0];
+        const connectionKey = firstLog?.connection_key;
+        const connection = connectionKey
+          ? connectionsByKey.get(connectionKey)
+          : undefined;
+
+        let title: string;
+        let connectionLogo: ActivityTimelineItem["connectionLogo"];
+        let icon: ActivityTimelineItem["icon"];
+
+        if (connection) {
+          title = connection.name || humanizeIdentifier(connection.key);
+          connectionLogo = connectionLogoFromConfiguration(connection);
+        } else {
+          title = humanizeIdentifier(key);
+          icon = systemEventIcon(key, firstLog?.status ?? "");
+        }
+
         return {
           author: "Fides",
-          title: key,
+          title,
           date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
           onClick: () => {}, // This will be overridden in the component
@@ -64,6 +105,9 @@ export const usePrivacyRequestEventLogs = (
           isPolling: hasPollingStatus,
           id: `request-${key}`,
           logCount: logs.length,
+          connectionLogo,
+          icon,
+          resultsKey: key,
         };
       });
 

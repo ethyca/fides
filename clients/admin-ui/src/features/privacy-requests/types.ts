@@ -1,5 +1,7 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
+import { ReactNode } from "react";
 
+import { ConnectionLogoSource } from "~/features/datastore-connections/ConnectionTypeLogo";
 import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
 import { ExecutionAndAuditLogResponse } from "~/types/api/models/ExecutionAndAuditLogResponse";
 import { PrivacyRequestUser } from "~/types/api/models/PrivacyRequestUser";
@@ -237,7 +239,7 @@ export interface ConfigMessagingSecretsRequest {
 }
 
 export enum ActivityTimelineItemTypeEnum {
-  REQUEST_UPDATE = "Request update",
+  REQUEST_UPDATE = "Automatically updated",
   INTERNAL_COMMENT = "Internal comment",
   MANUAL_TASK = "Manual task",
 }
@@ -265,4 +267,12 @@ export interface ActivityTimelineItem {
   isPolling: boolean;
   id: string;
   attachments?: { id: string; file_name: string }[];
+  // When set, the entry renders the integration's logo at the start.
+  connectionLogo?: ConnectionLogoSource;
+  // Pre-rendered icon (used for users, system events, etc.) when no
+  // connectionLogo applies.
+  icon?: ReactNode;
+  // The original key used to look up logs in PrivacyRequestResults; preserved
+  // separately from `title` so the title can be a friendly display name.
+  resultsKey?: string;
 }

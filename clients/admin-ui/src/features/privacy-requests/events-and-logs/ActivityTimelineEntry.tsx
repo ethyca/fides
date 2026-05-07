@@ -3,6 +3,7 @@ import { Icons, Tag, Tooltip, Typography } from "fidesui";
 import React from "react";
 
 import { formatDate, pluralize } from "~/features/common/utils";
+import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 
 import {
   ActivityTimelineItem,
@@ -11,6 +12,8 @@ import {
 } from "../types";
 import styles from "./ActivityTimelineEntry.module.scss";
 import { AttachmentDisplay } from "./AttachmentDisplay";
+
+const TIMELINE_ICON_SIZE = 20;
 
 interface ActivityTimelineEntryProps {
   item: ActivityTimelineItem;
@@ -29,6 +32,8 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     description,
     attachments,
     logCount = 0,
+    connectionLogo,
+    icon,
   } = item;
 
   // Format the date for display
@@ -39,12 +44,33 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
 
   const hasAttachments = attachments && attachments.length > 0;
 
+  // The "Fides" author label is implied by the system icon, so we only
+  // surface a name for entries authored by an actual user (comments, manual
+  // task completions, etc.).
+  const showAuthorName = author && author !== "Fides";
+
+  const leadingIcon = connectionLogo ? (
+    <ConnectionTypeLogo data={connectionLogo} size={TIMELINE_ICON_SIZE} />
+  ) : (
+    icon
+  );
+
   const content = (
     <>
       <div className={styles.header}>
-        <span className={styles.author} data-testid="activity-timeline-author">
-          {author}:
-        </span>
+        {leadingIcon && (
+          <span className={styles.icon} data-testid="activity-timeline-icon">
+            {leadingIcon}
+          </span>
+        )}
+        {showAuthorName && (
+          <span
+            className={styles.author}
+            data-testid="activity-timeline-author"
+          >
+            {author}:
+          </span>
+        )}
         {title && (
           <Typography.Text
             className={classNames(styles.title, {

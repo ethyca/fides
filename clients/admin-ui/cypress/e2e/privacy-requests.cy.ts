@@ -94,21 +94,19 @@ describe("Privacy Requests", () => {
         cy.getByTestId("activity-timeline-item")
           .first()
           .within(() => {
-            cy.getByTestId("activity-timeline-author").should(
-              "contain",
-              "Fides:",
-            );
+            cy.getByTestId("activity-timeline-icon").should("exist");
+            cy.getByTestId("activity-timeline-author").should("not.exist");
             cy.getByTestId("activity-timeline-title").should("exist");
             cy.getByTestId("activity-timeline-timestamp").should("exist");
             cy.getByTestId("activity-timeline-type").should(
               "contain",
-              "Request update",
+              "Automatically updated",
             );
           });
 
         // Check the item with error has View Log
         cy.getByTestId("activity-timeline-item")
-          .contains("klavyio_klaviyo_api")
+          .contains("Klavyio klaviyo api")
           .parent()
           .within(() => {
             cy.getByTestId("activity-timeline-view-logs").should(
@@ -121,7 +119,7 @@ describe("Privacy Requests", () => {
       it("opens and closes the log details drawer", () => {
         // Click on the item with error to open drawer
         cy.getByTestId("activity-timeline-item")
-          .contains("klavyio_klaviyo_api")
+          .contains("Klavyio klaviyo api")
           .click();
 
         // Verify drawer opens with correct content

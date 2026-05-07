@@ -453,6 +453,17 @@ export const stubPrivacyRequests = (
     },
     { body: null },
   ).as("privacyRequestNotification");
+
+  // The activity timeline looks up integration display names via the
+  // connection list; default to an empty list so titles fall back to the
+  // humanized dataset key.
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/connection",
+    },
+    { body: { items: [], total: 0, page: 1, size: 0 } },
+  ).as("getConnections");
 };
 
 export const stubDatamap = () => {

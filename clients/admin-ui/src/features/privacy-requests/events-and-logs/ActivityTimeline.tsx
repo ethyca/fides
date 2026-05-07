@@ -21,6 +21,7 @@ import {
   usePrivacyRequestManualTasks,
 } from "./hooks";
 import LogDrawer from "./LogDrawer";
+import { requestReceivedIcon } from "./timelineDisplay";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequestEntity;
@@ -110,8 +111,12 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
   const timelineItems = useMemo(() => {
     const eventItemsWithClickHandler = eventItems.map((item) => {
-      if (item.type === "Request update" && item.title && results) {
-        const key = item.title;
+      if (
+        item.type === ActivityTimelineItemTypeEnum.REQUEST_UPDATE &&
+        item.resultsKey &&
+        results
+      ) {
+        const key = item.resultsKey;
         if (results[key]) {
           return {
             ...item,
@@ -134,6 +139,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       isAwaitingInput: false,
       isPolling: false,
       id: "initial-request",
+      icon: requestReceivedIcon,
     };
 
     const allItems = [

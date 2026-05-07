@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import { useGetCommentsQuery } from "~/features/privacy-requests/comments/privacy-request-comments.slice";
+import { userTimelineIcon } from "~/features/privacy-requests/events-and-logs/timelineDisplay";
 import {
   ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
@@ -59,6 +60,7 @@ export const usePrivacyRequestComments = (privacyRequestId: string) => {
           isAwaitingInput: false,
           isPolling: false,
           id: `comment-${comment.id}`,
+          icon: userTimelineIcon,
         };
       });
 
