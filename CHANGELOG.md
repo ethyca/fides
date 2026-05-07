@@ -78,6 +78,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrate var(--fidesui-*) consumers to --ant-* and delete Sass var generation [#8065](https://github.com/ethyca/fides/pull/8065)
 - Rename Ant cssVar prefix to fidesui and migrate all var(--ant-*) consumers [#8066](https://github.com/ethyca/fides/pull/8066)
 - Upgrade ESLint and fix no-unused-vars errors for mapped types in admin-ui [#8050](https://github.com/ethyca/fides/pull/8050)
+- Bundle policy-engine Go source in the ethyca-fides wheel and build libpbac in the Docker image for in-process PBAC evaluation [#8093](https://github.com/ethyca/fides/pull/8093)
 
 ### Docs
 - Updated FidesJS JSDoc links to match the new fidesdocs domain-based structure [#8038](https://github.com/ethyca/fides/pull/8038)
