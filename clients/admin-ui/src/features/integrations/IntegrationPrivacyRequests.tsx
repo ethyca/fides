@@ -148,6 +148,10 @@ const IntegrationPrivacyRequests = ({
     setLinkModalOpen(true);
   };
 
+  // PUT /connection/{key}/datasetconfig is a bulk endpoint: it returns 200 OK
+  // even when individual entries fail validation, surfacing those failures in
+  // the `failed` array of the response body. Treat any non-empty `failed` as
+  // a user-facing error and bail before showing a success toast.
   const handleLinkDataset = async (datasetKey: string) => {
     if (!datasetKey || !connection.key) {
       return;
@@ -160,6 +164,11 @@ const IntegrationPrivacyRequests = ({
       messageApi.error(getErrorMessage(result.error));
       return;
     }
+    const firstFailure = result.data?.failed?.[0];
+    if (firstFailure) {
+      messageApi.error(firstFailure.message);
+      return;
+    }
     messageApi.success("Dataset linked successfully");
     closeLinkModal();
   };
@@ -170,9 +179,14 @@ const IntegrationPrivacyRequests = ({
     );
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
-    } else {
-      messageApi.success("Dataset unlinked successfully");
+      return;
     }
+    const firstFailure = result.data?.failed?.[0];
+    if (firstFailure) {
+      messageApi.error(firstFailure.message);
+      return;
+    }
+    messageApi.success("Dataset unlinked successfully");
   };
 
   const handleUnlinkClicked = (datasetKey: string, datasetName: string) => {
