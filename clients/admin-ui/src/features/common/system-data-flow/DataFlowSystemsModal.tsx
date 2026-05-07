@@ -1,16 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraFlex as Flex,
-  ChakraFormControl as FormControl,
-  ChakraFormLabel as FormLabel,
-  ChakraStack as Stack,
-  ChakraText as Text,
-  Modal,
-  Switch,
-  Tag,
-} from "fidesui";
-import { useFormikContext } from "formik";
+import { Button, Flex, Modal, Switch, Tag, Text } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
@@ -40,7 +28,6 @@ const DataFlowSystemsModal = ({
   onDataFlowSystemChange,
   flowType,
 }: { isOpen: boolean; onClose: () => void } & Props) => {
-  const { setFieldValue } = useFormikContext();
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedDataFlows, setSelectedDataFlows] =
     useState<DataFlow[]>(dataFlowSystems);
@@ -68,8 +55,6 @@ const DataFlowSystemsModal = ({
         fides_key: fs.fides_key,
         type: "system",
       }));
-
-      setFieldValue("dataFlowSystems", updatedDataFlows);
       setSelectedDataFlows(updatedDataFlows);
     } else {
       setSelectedDataFlows([]);
@@ -118,25 +103,26 @@ const DataFlowSystemsModal = ({
         {emptySystems ? (
           <Text>No systems found</Text>
         ) : (
-          <Stack spacing={4}>
-            <Flex justifyContent="space-between">
-              <Text fontSize="sm" flexGrow={1} fontWeight="medium">
+          <Flex vertical gap={16}>
+            <Flex justify="space-between" align="center">
+              <Text className="flex-1 text-sm font-medium">
                 Add or remove destination systems from your data map
               </Text>
-              <Box>
-                <FormControl display="flex" alignItems="center">
-                  <FormLabel fontSize="sm" htmlFor="assign-all-systems" mb="0">
-                    Assign all systems
-                  </FormLabel>
-                  <Switch
-                    size="small"
-                    id="assign-all-systems"
-                    checked={allSystemsAssigned}
-                    onChange={handleToggleAllSystems}
-                    data-testid="assign-all-systems-toggle"
-                  />
-                </FormControl>
-              </Box>
+              <Flex align="center" gap="small">
+                <label
+                  htmlFor="assign-all-systems"
+                  className="text-sm leading-none"
+                >
+                  Assign all systems
+                </label>
+                <Switch
+                  size="small"
+                  id="assign-all-systems"
+                  checked={allSystemsAssigned}
+                  onChange={handleToggleAllSystems}
+                  data-testid="assign-all-systems-toggle"
+                />
+              </Flex>
             </Flex>
             <SearchInput
               value={searchFilter}
@@ -150,7 +136,7 @@ const DataFlowSystemsModal = ({
               dataFlowSystems={selectedDataFlows}
               onChange={setSelectedDataFlows}
             />
-          </Stack>
+          </Flex>
         )}
       </div>
     </Modal>
