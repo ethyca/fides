@@ -164,9 +164,7 @@ describe("Privacy center form builder", () => {
       ).find((a: { policy_key?: string }) => a.policy_key === POLICY_KEY);
       expect(action.field_order).to.deep.equal(["email", "reason", "phone"]);
       // Deprecated key should not be re-emitted on save.
-      expect(action).not.to.have.property(
-        "custom_privacy_request_field_order",
-      );
+      expect(action).not.to.have.property("custom_privacy_request_field_order");
     });
   });
 
