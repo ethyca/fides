@@ -89,6 +89,14 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Whether the memory watchdog is enabled to monitor and gracefully terminate tasks that approach memory limits.",
     )
+    ignore_dsr_celery_task_results: bool = Field(
+        default=False,
+        description=(
+            "When true, DSR-queue Celery publishes pass ignore_result=True (no result-backend "
+            "tombstones for run_privacy_request or queue_request_task dispatches). Default false "
+            "preserves current result storage. Set via FIDES__EXECUTION__IGNORE_DSR_CELERY_TASK_RESULTS."
+        ),
+    )
     use_legacy_traversal: bool = Field(
         default=False,
         description="When enabled, falls back to the legacy traversal algorithm. Intended as a temporary safety net in case of regressions with the optimized traversal.",
