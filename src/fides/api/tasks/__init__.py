@@ -57,7 +57,13 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     _task_engine = None
     _sessionmaker = None
 
-    def apply_async(self, args=None, kwargs=None, queue=None, **options):  # type: ignore[override]
+    def apply_async(
+        self,
+        args: Optional[Any] = None,
+        kwargs: Optional[Dict[str, Any]] = None,
+        queue: Optional[str] = None,
+        **options: Any,
+    ) -> Any:  # type: ignore[override]
         """Dispatch the task, running it eagerly if the target queue is in the configured
         eager_task_queues or if task_always_eager is enabled globally."""
         effective_queue = (

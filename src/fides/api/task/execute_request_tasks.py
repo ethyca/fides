@@ -1,5 +1,5 @@
 import time
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from celery.app.task import Task
 from loguru import logger
@@ -625,7 +625,7 @@ def queue_request_task(
 ) -> None:
     """Queues the RequestTask in Celery and caches the Celery Task ID"""
     celery_task_fn: Task = mapping[request_task.action_type]
-    apply_async_kwargs = {
+    apply_async_kwargs: Dict[str, Any] = {
         "queue": DSR_QUEUE_NAME,
         "kwargs": {
             "privacy_request_id": request_task.privacy_request_id,

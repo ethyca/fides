@@ -1019,7 +1019,7 @@ def queue_privacy_request(
     )
 
     try:
-        apply_async_kwargs = {
+        apply_async_kwargs: Dict[str, Any] = {
             "queue": DSR_QUEUE_NAME,
             "kwargs": {
                 "privacy_request_id": privacy_request_id,
