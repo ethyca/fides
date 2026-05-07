@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from celery import VERSION_BANNER
 from celery.apps.worker import Worker
@@ -36,8 +36,47 @@ class _PythonAndYamlFilter(DefaultFilter):
         return path.endswith(self.allowed_extensions)
 
 
-def _run_celery_worker(worker_queues: str) -> None:
+def _parse_prefetch_map(known_queues: List[str]) -> Dict[str, int]:
+    """
+    Parse FIDES__CELERY__QUEUE_PREFETCH_MULTIPLIER into a {queue: int} dict.
+
+    - The string has already been validated so all values are parseable integers.
+    - Warns for any queue name not present in known_queues but still includes the entry
+      (it simply will never match any active worker queue).
+    - Returns an empty dict if the setting is unset.
+    """
+    raw = CONFIG.celery.queue_prefetch_multiplier
+    if not raw:
+        return {}
+
+    result: Dict[str, int] = {}
+    for pair in raw.split(","):
+        pair = pair.strip()
+        if not pair or "=" not in pair:
+            continue
+        queue, _, value = pair.partition("=")
+        queue = queue.strip()
+        if queue not in known_queues:
+            logger.warning(
+                f"queue_prefetch_multiplier references unknown queue {queue!r}. "
+                f"Known queues: {known_queues}. This entry will have no effect."
+            )
+        result[queue] = int(value.strip())
+
+    return result
+
+
+def _run_celery_worker(worker_queues: str, prefetch_map: Dict[str, int]) -> None:
     """Run the Celery worker process. Extracted so it can be used as a watchfiles target."""
+    active_queues = [q.strip() for q in worker_queues.split(",")]
+
+    # Resolve prefetch multiplier — first matching queue wins
+    prefetch: Optional[int] = None
+    for queue in active_queues:
+        if queue in prefetch_map:
+            prefetch = prefetch_map[queue]
+            break
+
     argv = [
         "--quiet",  # Disable Celery startup banner
         "worker",
@@ -45,6 +84,9 @@ def _run_celery_worker(worker_queues: str) -> None:
         f"--concurrency={CONFIG.celery.worker_concurrency}",
         f"--queues={worker_queues}",
     ]
+    if prefetch is not None:
+        argv.append(f"--prefetch-multiplier={prefetch}")
+
     without_flags = []
     if CONFIG.celery.worker_disable_heartbeat:
         without_flags.append("--without-heartbeat")
@@ -60,6 +102,14 @@ def _run_celery_worker(worker_queues: str) -> None:
             f"FIDES__CELERY__WORKER_DISABLE_GOSSIP={CONFIG.celery.worker_disable_gossip}, "
             f"FIDES__CELERY__WORKER_DISABLE_MINGLE={CONFIG.celery.worker_disable_mingle})"
         )
+
+    eager = CONFIG.celery.task_always_eager
+    logger.info(
+        f"Worker starting | queues={worker_queues} | "
+        f"task_always_eager={eager} | "
+        f"prefetch_multiplier={prefetch if prefetch is not None else 'default (4)'}"
+    )
+
     celery_app.worker_main(argv=argv)
 
 
@@ -117,17 +167,19 @@ def start_worker(
 
     logger.info(f"Running Celery worker for queues: {worker_queues}")
 
+    prefetch_map = _parse_prefetch_map(all_queues)
+
     if reload:
         watch_dirs = reload_dirs or ["src", "data"]
         logger.info(f"Hot-reload enabled, watching directories: {watch_dirs}")
         run_process(
             *watch_dirs,
             target=_run_celery_worker,
-            args=(worker_queues,),
+            args=(worker_queues, prefetch_map),
             watch_filter=_PythonAndYamlFilter(),
         )
     else:
-        _run_celery_worker(worker_queues)
+        _run_celery_worker(worker_queues, prefetch_map)
 
 
 def validate_queues(queues_string: str, known_queues: List[str]) -> None:

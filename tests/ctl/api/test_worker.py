@@ -2,7 +2,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from fides.api.worker import start_worker
+from fides.api.worker import _parse_prefetch_map, start_worker
+from fides.config.celery_settings import CelerySettings
 
 
 @patch("fides.api.worker.celery_app.worker_main")
@@ -242,3 +243,168 @@ class TestWorkerConcurrency:
         start_worker()
         argv = worker_main_mock.call_args.kwargs["argv"]
         assert f"--concurrency={concurrency}" in argv
+
+
+class TestQueuePrefetchMultiplierValidator:
+    """Tests for CelerySettings.validate_queue_prefetch_multiplier.
+
+    The validator runs at construction time and either passes the string through
+    unchanged (all values are valid integers) or returns None (any value is not
+    a parseable integer, or an entry is missing '=').
+    """
+
+    def test_none_is_accepted(self):
+        settings = CelerySettings(queue_prefetch_multiplier=None)
+        assert settings.queue_prefetch_multiplier is None
+
+    def test_valid_single_entry(self):
+        settings = CelerySettings(queue_prefetch_multiplier="fides.dsr=8")
+        assert settings.queue_prefetch_multiplier == "fides.dsr=8"
+
+    def test_valid_multiple_entries(self):
+        settings = CelerySettings(
+            queue_prefetch_multiplier="fides.dsr=8,fidesops.messaging=4"
+        )
+        assert settings.queue_prefetch_multiplier == "fides.dsr=8,fidesops.messaging=4"
+
+    def test_non_integer_value_rejects_entire_string(self):
+        settings = CelerySettings(queue_prefetch_multiplier="fides.dsr=8,foo=asd")
+        assert settings.queue_prefetch_multiplier is None
+
+    def test_single_bad_value_among_valid_rejects_all(self):
+        """One bad entry causes the entire string to be discarded."""
+        settings = CelerySettings(
+            queue_prefetch_multiplier="fides.dsr=123,fidesops.messaging=4,bad.queue=notanint"
+        )
+        assert settings.queue_prefetch_multiplier is None
+
+    def test_missing_equals_sign_rejects_entire_string(self):
+        settings = CelerySettings(queue_prefetch_multiplier="nodequals")
+        assert settings.queue_prefetch_multiplier is None
+
+    def test_whitespace_around_value_is_tolerated(self):
+        """int() strips surrounding whitespace, so 'queue= 8 ' passes validation."""
+        settings = CelerySettings(queue_prefetch_multiplier="fides.dsr= 8 ")
+        assert settings.queue_prefetch_multiplier == "fides.dsr= 8 "
+
+    def test_unknown_queue_names_pass_validation(self):
+        """The validator only checks integer-ness; unknown queue names are not its concern."""
+        settings = CelerySettings(
+            queue_prefetch_multiplier="nonexistent.queue=5,another.unknown=10"
+        )
+        assert (
+            settings.queue_prefetch_multiplier
+            == "nonexistent.queue=5,another.unknown=10"
+        )
+
+
+class TestParsePrefetchMap:
+    """Tests for _parse_prefetch_map — the function that converts the validated
+    config string into a {queue: int} dict at worker startup."""
+
+    KNOWN_QUEUES = ["fides.dsr", "fidesops.messaging", "fides.privacy_preferences"]
+
+    def _mock_config(self, value):
+        """Return a mock CONFIG with queue_prefetch_multiplier set to *value*."""
+        mock_config = MagicMock()
+        mock_config.celery.queue_prefetch_multiplier = value
+        return mock_config
+
+    def test_returns_empty_dict_when_not_set(self):
+        with patch("fides.api.worker.CONFIG", self._mock_config(None)):
+            result = _parse_prefetch_map(self.KNOWN_QUEUES)
+        assert result == {}
+
+    def test_returns_empty_dict_for_empty_string(self):
+        with patch("fides.api.worker.CONFIG", self._mock_config("")):
+            result = _parse_prefetch_map(self.KNOWN_QUEUES)
+        assert result == {}
+
+    def test_parses_single_known_queue(self):
+        with patch("fides.api.worker.CONFIG", self._mock_config("fides.dsr=8")):
+            result = _parse_prefetch_map(self.KNOWN_QUEUES)
+        assert result == {"fides.dsr": 8}
+
+    def test_parses_multiple_known_queues(self):
+        with patch(
+            "fides.api.worker.CONFIG",
+            self._mock_config("fides.dsr=8,fidesops.messaging=4"),
+        ):
+            result = _parse_prefetch_map(self.KNOWN_QUEUES)
+        assert result == {"fides.dsr": 8, "fidesops.messaging": 4}
+
+    def test_unknown_queue_is_included_despite_warning(self):
+        """An unknown queue name is still inserted into the map (it simply never
+        matches an active worker queue). The warning is tested elsewhere."""
+        with patch(
+            "fides.api.worker.CONFIG",
+            self._mock_config("fides.dsr=8,nonexistent.queue=16"),
+        ):
+            result = _parse_prefetch_map(self.KNOWN_QUEUES)
+        assert result == {"fides.dsr": 8, "nonexistent.queue": 16}
+
+    def test_all_unknown_queues_still_returns_populated_map(self):
+        with patch(
+            "fides.api.worker.CONFIG",
+            self._mock_config("totally.unknown=99"),
+        ):
+            result = _parse_prefetch_map(self.KNOWN_QUEUES)
+        assert result == {"totally.unknown": 99}
+
+
+class TestPrefetchMultiplierWorkerArgv:
+    """Integration tests verifying that _run_celery_worker appends (or omits)
+    --prefetch-multiplier in the argv it passes to celery_app.worker_main."""
+
+    @pytest.fixture(autouse=True)
+    def mock_celery_config(self):
+        mock_config = MagicMock()
+        mock_config.celery.worker_disable_heartbeat = False
+        mock_config.celery.worker_disable_gossip = False
+        mock_config.celery.worker_disable_mingle = False
+        mock_config.celery.worker_concurrency = 2
+        mock_config.celery.task_always_eager = False
+        mock_config.celery.queue_prefetch_multiplier = None
+        with patch("fides.api.worker.CONFIG", mock_config):
+            yield mock_config
+
+    @pytest.fixture
+    def worker_main_mock(self):
+        with patch("fides.api.worker.celery_app.worker_main") as mock:
+            yield mock
+
+    def test_prefetch_arg_added_when_queue_matches(
+        self, mock_celery_config, worker_main_mock
+    ):
+        mock_celery_config.celery.queue_prefetch_multiplier = "fides.dsr=8"
+        start_worker(queues="fides.dsr")
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert "--prefetch-multiplier=8" in argv
+
+    def test_prefetch_arg_absent_when_queue_does_not_match(
+        self, mock_celery_config, worker_main_mock
+    ):
+        mock_celery_config.celery.queue_prefetch_multiplier = "fides.dsr=8"
+        start_worker(queues="fidesops.messaging")
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert not any(arg.startswith("--prefetch-multiplier") for arg in argv)
+
+    def test_prefetch_arg_absent_when_setting_not_set(
+        self, mock_celery_config, worker_main_mock
+    ):
+        mock_celery_config.celery.queue_prefetch_multiplier = None
+        start_worker(queues="fides.dsr")
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert not any(arg.startswith("--prefetch-multiplier") for arg in argv)
+
+    def test_first_matching_queue_wins(self, mock_celery_config, worker_main_mock):
+        """When a worker handles multiple queues, the first one with a prefetch
+        entry in the map is used; subsequent matches are ignored."""
+        mock_celery_config.celery.queue_prefetch_multiplier = (
+            "fides.dsr=8,fidesops.messaging=4"
+        )
+        # fides.dsr appears first in the comma-separated queues arg
+        start_worker(queues="fides.dsr,fidesops.messaging")
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert "--prefetch-multiplier=8" in argv
+        assert "--prefetch-multiplier=4" not in argv

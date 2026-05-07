@@ -3,6 +3,7 @@ import os
 from json import JSONDecodeError
 from typing import Any, Dict, Optional, Set
 
+from loguru import logger
 from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
@@ -67,6 +68,46 @@ class CelerySettings(FidesSettings):
         ge=1,
         description="Number of worker processes/threads passed to `celery worker --concurrency`.",
     )
+    queue_prefetch_multiplier: Optional[str] = Field(
+        default=None,
+        description=(
+            "Per-queue worker prefetch multiplier as a comma-separated queue=int mapping. "
+            "E.g. 'fides.dsr=8,fidesops.messaging=4'. If any value is not a valid integer "
+            "the entire setting is ignored. Unknown queue names produce a warning at worker "
+            "startup but do not prevent valid entries from being applied."
+        ),
+    )
+
+    @field_validator("queue_prefetch_multiplier")
+    @classmethod
+    def validate_queue_prefetch_multiplier(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that every entry in the comma-separated string is in `key=integer` form.
+        If any value is not a parseable integer, the entire setting is rejected (returns None).
+        """
+        if v is None:
+            return None
+        for pair in v.split(","):
+            pair = pair.strip()
+            if not pair:
+                continue
+            if "=" not in pair:
+                logger.warning(
+                    f"queue_prefetch_multiplier is malformed (entry missing '='): {pair!r}. "
+                    "The entire setting will be ignored."
+                )
+                return None
+            queue, _, value = pair.partition("=")
+            try:
+                int(value.strip())
+            except ValueError:
+                logger.warning(
+                    f"queue_prefetch_multiplier has non-integer value for queue "
+                    f"{queue.strip()!r}: {value.strip()!r}. The entire setting will be ignored."
+                )
+                return None
+        return v
+
     broker_url: Optional[str] = Field(
         default=None,
         description="Celery broker URL. When set, overrides the default. With redis.cluster_enabled, "
