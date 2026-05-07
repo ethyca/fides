@@ -75,6 +75,13 @@ _PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = {
 }
 
 
+def get_provider_class(
+    service_type: MessagingServiceType,
+) -> type[BaseMessageProviderService] | None:
+    """Public accessor for the provider map. Returns the provider class or None."""
+    return _PROVIDER_MAP.get(service_type)
+
+
 @celery_app.task(
     base=DatabaseTask,
     bind=True,
