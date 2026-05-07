@@ -71,11 +71,35 @@
   flex-shrink: 0;
 }
 
+.attentionGrid {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  container-type: inline-size;
+}
+
 .attentionColumn {
   flex: 1 1 240px;
   min-width: 0;
   border-top: 1px solid var(--ant-color-border);
   padding-top: 12px;
+}
+
+.attentionDivider {
+  flex: 0 0 auto;
+  border-left: 1px dotted var(--ant-color-border);
+  align-self: stretch;
+}
+
+@container (max-width: 519px) {
+  .attentionDivider {
+    flex: 1 0 100%;
+    border-left: none;
+    border-top: 1px dotted var(--ant-color-border);
+    height: 0;
+    align-self: auto;
+  }
 }
 
 .attentionRow {

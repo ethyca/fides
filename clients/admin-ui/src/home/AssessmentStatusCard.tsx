@@ -303,7 +303,7 @@ export const AssessmentStatusCard = () => {
           </Flex>
         </Flex>
 
-        <Flex gap="large" align="stretch" wrap="wrap">
+        <div className={styles.attentionGrid}>
           <div className={styles.attentionColumn}>
             <Text strong className="mb-2 block text-xs">
               Owners with open work
@@ -345,6 +345,8 @@ export const AssessmentStatusCard = () => {
               </Flex>
             )}
           </div>
+
+          <div className={styles.attentionDivider} aria-hidden="true" />
 
           <div className={styles.attentionColumn}>
             <Text strong className="mb-2 block text-xs">
@@ -393,7 +395,7 @@ export const AssessmentStatusCard = () => {
               </Flex>
             )}
           </div>
-        </Flex>
+        </div>
       </Flex>
     </Card>
   );
