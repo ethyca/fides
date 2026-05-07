@@ -239,7 +239,15 @@ export const ConfigureIntegrationForm = ({
           description: values.description,
           secrets: undefined,
         }
-      : {
+      : // enabled_actions is intentionally omitted here. Both
+        // POST /connection/instantiate/{type} and PATCH /connection drop unknown
+        // fields, so connections created from this form land with
+        // enabled_actions=NULL. The DSR runner treats NULL as "all actions
+        // enabled" for access/erasure but disables consent. SaaS consent
+        // integrations created through this form need request types set via the
+        // System → Integrations form until we expose the field on the Privacy
+        // requests tab (deferred — needs a base-schema addition).
+        {
           name: values.name,
           key: formatKey(values.name),
           connection_type: (isSaas
