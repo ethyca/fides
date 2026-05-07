@@ -121,16 +121,21 @@ class TestMessageDispatchService:
         messaging_config,
         set_property_specific_messaging_enabled,
     ) -> None:
-        dispatch_message(
-            db=db,
-            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-            to_identity=Identity(**{"email": "test@email.com"}),
-            service_type=MessagingServiceType.mailgun.value,
-            message_body_params=SubjectIdentityVerificationBodyParams(
-                verification_code="2348", verification_code_ttl_seconds=600
-            ),
-            property_id=None,
-        )
+        template_url, send_url = mailgun_urls(messaging_config)
+        with requests_mock.Mocker() as m:
+            m.get(template_url, status_code=404)
+            m.post(send_url, json={"message": "Queued"}, status_code=200)
+            dispatch_message(
+                db=db,
+                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                to_identity=Identity(**{"email": "test@email.com"}),
+                service_type=MessagingServiceType.mailgun.value,
+                message_body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code="2348", verification_code_ttl_seconds=600
+                ),
+                property_id=None,
+            )
+            assert not m.called
 
     """
     Test scenario:
@@ -279,16 +284,21 @@ class TestMessageDispatchService:
         messaging_template_no_property,
         property_a,
     ) -> None:
-        dispatch_message(
-            db=db,
-            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-            to_identity=Identity(**{"email": "test@email.com"}),
-            service_type=MessagingServiceType.mailgun.value,
-            message_body_params=SubjectIdentityVerificationBodyParams(
-                verification_code="2348", verification_code_ttl_seconds=600
-            ),
-            property_id=property_a.id,
-        )
+        template_url, send_url = mailgun_urls(messaging_config)
+        with requests_mock.Mocker() as m:
+            m.get(template_url, status_code=404)
+            m.post(send_url, json={"message": "Queued"}, status_code=200)
+            dispatch_message(
+                db=db,
+                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                to_identity=Identity(**{"email": "test@email.com"}),
+                service_type=MessagingServiceType.mailgun.value,
+                message_body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code="2348", verification_code_ttl_seconds=600
+                ),
+                property_id=property_a.id,
+            )
+            assert not m.called
 
     """
    Test scenario:

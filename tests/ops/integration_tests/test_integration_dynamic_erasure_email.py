@@ -186,6 +186,11 @@ async def test_erasure_email_multiple_requests(
     # verify the emails were sent
     post_requests = [r for r in mock_mailgun_http.request_history if r.method == "POST"]
     assert len(post_requests) == 2
+    bodies = [mailgun_post_body([r]) for r in post_requests]
+    recipients = {b["to"][0] for b in bodies}
+    assert recipients == {"test@test.com", "test2@test.com"}
+    for b in bodies:
+        assert b["subject"] == ["Notification of user erasure requests from Test Org"]
 
     # verify the privacy requesta were queued for further processing
     # requeue is called once per batch with a query containing all privacy requests
@@ -273,14 +278,13 @@ async def test_erasure_email_multiple_requests_same_email_different_vendor(
     exit_state = send_email_batch.delay().get()
     assert exit_state == EmailExitState.complete
 
-    # verify the email was sent
-    erasure_email_template = get_email_template(
-        MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
-    )
-
-    # verify the emails were sent
+    # verify the emails were sent — same recipient, different vendors
     post_requests = [r for r in mock_mailgun_http.request_history if r.method == "POST"]
     assert len(post_requests) == 2
+    bodies = [mailgun_post_body([r]) for r in post_requests]
+    assert all(b["to"] == ["test@test.com"] for b in bodies)
+    for b in bodies:
+        assert b["subject"] == ["Notification of user erasure requests from Test Org"]
 
     # verify the privacy requesta were queued for further processing
     # requeue is called once per batch with a query containing all privacy requests

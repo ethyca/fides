@@ -54,7 +54,12 @@ class MailchimpTransactionalService(BaseEmailProviderService):
                 f"Email failed to send with status code {response.status_code}"
             )
 
-        send_data = response.json()[0]
+        results = response.json()
+        if not isinstance(results, list) or not results:
+            raise MessageDispatchException(
+                "Unexpected empty response from Mailchimp Transactional"
+            )
+        send_data = results[0]
         email_rejected = send_data.get("status", "rejected") == "rejected"
         if email_rejected:
             reason = send_data.get("reject_reason", "Fides Error")

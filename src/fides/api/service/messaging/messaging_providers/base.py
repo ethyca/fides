@@ -48,7 +48,7 @@ class BaseMessageProviderService(ABC):
             logger.error(f"Message failed to send. {error_message}")
             raise MessageDispatchException(error_message)
 
-    def _get_detail(self, key: MessagingServiceDetails) -> str:
+    def _get_detail(self, key: MessagingServiceDetails) -> str | bool:
         """Retrieve a required config detail, raising MessageDispatchException if missing."""
         try:
             return self.messaging_config.details[key.value]
