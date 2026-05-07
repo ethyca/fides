@@ -61,6 +61,7 @@ CONFIG_KEY_ALLOWLIST = {
         "require_manual_request_approval",
         "subject_identity_verification_required",
         "memory_watchdog_enabled",
+        "ignore_dsr_celery_task_results",
         "sql_dry_run",
         "terminal_dsr_redis_cache_cleanup_enabled",
         "terminal_dsr_redis_cache_cleanup_lock_timeout_seconds",
@@ -69,6 +70,10 @@ CONFIG_KEY_ALLOWLIST = {
         "active_default_storage_type",
     ],
     "consent": ["override_vendor_purposes"],
+    "celery": [
+        "eager_task_queues",
+        "queue_prefetch_multiplier",
+    ],
     "admin_ui": ["enabled", "url", "error_notification_mode", "consent_module_enabled"],
     "privacy_center": ["url"],
     "privacy_request_duplicate_detection": [

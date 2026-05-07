@@ -14,6 +14,7 @@ from fides.api.tasks import (
     DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
     NEW_SESSION_RETRIES,
     DatabaseTask,
+    celery_app,
 )
 from fides.config import CONFIG
 
@@ -77,11 +78,18 @@ class TestDatabaseTaskApplyAsync:
         """Ensure eager_task_queues is empty and task_always_eager is False by default."""
         original_eager_queues = CONFIG.celery.eager_task_queues
         original_always_eager = CONFIG.celery.task_always_eager
+        original_app_always_eager = celery_app.conf["task_always_eager"]
+        probe_task = DatabaseTask()
+        original_runtime_always_eager = probe_task.app.conf["task_always_eager"]
         CONFIG.celery.eager_task_queues = set()
         CONFIG.celery.task_always_eager = False
+        celery_app.conf["task_always_eager"] = False
+        probe_task.app.conf["task_always_eager"] = False
         yield
         CONFIG.celery.eager_task_queues = original_eager_queues
         CONFIG.celery.task_always_eager = original_always_eager
+        celery_app.conf["task_always_eager"] = original_app_always_eager
+        probe_task.app.conf["task_always_eager"] = original_runtime_always_eager
 
     def _make_task(self, task_queue=None):
         task = DatabaseTask()
@@ -104,7 +112,9 @@ class TestDatabaseTaskApplyAsync:
     def test_always_eager_true_calls_apply(self):
         """task_always_eager=True runs task synchronously via apply()."""
         CONFIG.celery.task_always_eager = True
+        celery_app.conf["task_always_eager"] = True
         task = self._make_task()
+        task.app.conf["task_always_eager"] = True
         with mock.patch.object(
             task, "apply", return_value="eager_result"
         ) as mock_apply:
