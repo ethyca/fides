@@ -68,6 +68,7 @@ class Identity(IdentityBase):
         default=None, title="Fides user device ID"
     )
     external_id: Optional[str] = Field(default=None, title="External ID")
+    date_of_birth: Optional[str] = Field(default=None, title="Date of birth")
 
     model_config = ConfigDict(extra="allow")
 
