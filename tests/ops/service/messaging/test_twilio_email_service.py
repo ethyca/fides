@@ -141,3 +141,21 @@ class TestTwilioEmailProvider:
                 "test@email.com",
                 EmailForActionType(subject="Test", body="body"),
             )
+
+    @mock.patch(
+        "fides.api.service.messaging.messaging_providers.twilio_email_service.sendgrid.SendGridAPIClient",
+    )
+    def test_send_email_generic_exception(
+        self, mock_sendgrid_cls, messaging_config_twilio_email
+    ):
+        mock_client = mock_sendgrid_cls.return_value
+        mock_client.client.templates.get.side_effect = ConnectionError(
+            "Connection refused"
+        )
+
+        service = TwilioEmailService(messaging_config_twilio_email)
+        with pytest.raises(MessageDispatchException, match="Connection refused"):
+            service.send_email(
+                "test@email.com",
+                EmailForActionType(subject="Test", body="body"),
+            )

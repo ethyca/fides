@@ -18,6 +18,7 @@ from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,
+    EmailForActionType,
     FidesopsMessage,
     MessagingActionType,
     MessagingServiceDetails,
@@ -32,6 +33,9 @@ from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistory
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.service.messaging.messaging_providers.base import (
+    BaseMessageProviderService,
+)
 from fides.api.service.messaging.messaging_providers.mailchimp_transactional_service import (
     MailchimpTransactionalService,
 )
@@ -871,6 +875,31 @@ class TestMessageDispatchService:
             body = mailgun_post_body(m.request_history)
             assert body["to"] == ["test@example.com"]
             assert body["subject"] == ["Welcome to Fides"]
+
+
+class TestMailgunServiceErrors:
+    def test_send_email_generic_exception(self, messaging_config):
+        from fides.api.service.messaging.messaging_providers.mailgun_service import (
+            MailgunService,
+        )
+
+        service = MailgunService(messaging_config)
+        with requests_mock.Mocker() as m:
+            m.get(requests_mock.ANY, exc=ConnectionError("DNS resolution failed"))
+            with pytest.raises(MessageDispatchException, match="DNS resolution failed"):
+                service.send_email(
+                    "test@email.com",
+                    EmailForActionType(subject="Test", body="body"),
+                )
+
+
+class TestInitSubclassGuard:
+    def test_missing_provider_name_raises_type_error(self):
+        with pytest.raises(TypeError, match="must define 'provider_name'"):
+
+            class BadProvider(BaseMessageProviderService):
+                def validate_config(self) -> None:
+                    pass
 
 
 class TestProviderConfigValidation:
