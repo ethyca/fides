@@ -34,6 +34,7 @@ from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_providers.base import (
+    BaseEmailProviderService,
     BaseMessageProviderService,
 )
 from fides.api.service.messaging.messaging_providers.mailchimp_transactional_service import (
@@ -490,50 +491,50 @@ class TestMessageDispatchService:
         call_kwargs = mock_client.messages.create.call_args[1]
         assert call_kwargs["to"] == "+19198675309"
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.AwsSesService",
-        autospec=True,
-    )
     def test_email_dispatch_aws_ses_email_test_message(
-        self, mock_aws_ses_service, db, messaging_config_aws_ses
+        self, db, messaging_config_aws_ses
     ):
-        dispatch_message(
-            db=db,
-            action_type=MessagingActionType.TEST_MESSAGE,
-            to_identity=Identity(email="test@email.com"),
-            service_type=MessagingServiceType.aws_ses.value,
-        )
-        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
-        mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
-        call_args = mock_aws_ses_service.return_value.send_email.call_args
-        assert call_args[0][0] == "test@email.com"
-        assert call_args[0][1].subject == "Test message from fides"
-        assert call_args[0][1].body == body
+        from fides.api.service.messaging.message_dispatch_service import _PROVIDER_MAP
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.AwsSesService",
-        autospec=True,
-    )
-    def test_email_dispatch_aws_ses_email_raises_exception(
-        self, mock_aws_ses_service, db, messaging_config_aws_ses
-    ):
-        mock_aws_ses_service.return_value.send_email.side_effect = (
-            MessageDispatchException(
-                "AWS SES email failed to send due to: Oops! Something went wrong"
-            )
-        )
-
-        with pytest.raises(MessageDispatchException) as exc:
+        mock_aws_ses_cls = Mock()
+        mock_aws_ses_cls.return_value = Mock(spec=BaseEmailProviderService)
+        with mock.patch.dict(_PROVIDER_MAP, {MessagingServiceType.aws_ses: mock_aws_ses_cls}):
             dispatch_message(
                 db=db,
                 action_type=MessagingActionType.TEST_MESSAGE,
                 to_identity=Identity(email="test@email.com"),
                 service_type=MessagingServiceType.aws_ses.value,
             )
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        mock_aws_ses_cls.assert_called_once_with(messaging_config_aws_ses)
+        call_args = mock_aws_ses_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1].subject == "Test message from fides"
+        assert call_args[0][1].body == body
+
+    def test_email_dispatch_aws_ses_email_raises_exception(
+        self, db, messaging_config_aws_ses
+    ):
+        from fides.api.service.messaging.message_dispatch_service import _PROVIDER_MAP
+
+        mock_aws_ses_cls = Mock()
+        mock_instance = Mock(spec=BaseEmailProviderService)
+        mock_instance.send_email.side_effect = MessageDispatchException(
+            "AWS SES email failed to send due to: Oops! Something went wrong"
+        )
+        mock_aws_ses_cls.return_value = mock_instance
+        with mock.patch.dict(_PROVIDER_MAP, {MessagingServiceType.aws_ses: mock_aws_ses_cls}):
+            with pytest.raises(MessageDispatchException) as exc:
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.TEST_MESSAGE,
+                    to_identity=Identity(email="test@email.com"),
+                    service_type=MessagingServiceType.aws_ses.value,
+                )
 
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
-        mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
-        call_args = mock_aws_ses_service.return_value.send_email.call_args
+        mock_aws_ses_cls.assert_called_once_with(messaging_config_aws_ses)
+        call_args = mock_instance.send_email.call_args
         assert call_args[0][0] == "test@email.com"
         assert call_args[0][1].subject == "Test message from fides"
         assert call_args[0][1].body == body
