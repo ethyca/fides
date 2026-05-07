@@ -641,23 +641,6 @@ You're not viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Celery">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#celery-opentelemetry-style-tracing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Celery OpenTelemetry-style tracing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
           <li class="md-nav__item">
@@ -1574,23 +1557,6 @@ You're not viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Celery">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#celery-opentelemetry-style-tracing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Celery OpenTelemetry-style tracing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
           <li class="md-nav__item">
@@ -1694,15 +1660,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="n">event_queue_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fides_worker&quot;</span>
 <span class="n">task_default_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fides&quot;</span>
 <span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</code></pre></div></td></tr></table></div>
-<h4 id="celery-opentelemetry-style-tracing">Celery OpenTelemetry-style tracing</h4>
-<p>By default this is <strong>off</strong>. When enabled, trace context crosses Celery boundaries and completed task spans are logged at INFO (without an OTLP collector). Spans use structured Loguru lines with the message <code>otel.celery.span</code>, including wall-clock <code>span_start_unix_ns</code> / <code>span_end_unix_ns</code> (nanoseconds since Unix epoch) and <code>span_duration_ms</code> when both timestamps are present.</p>
-<p>To turn tracing on:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[logging]</span>
-<span class="n">celery_otel_tracing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</code></pre></div></td></tr></table></div>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__LOGGING__CELERY_OTEL_TRACING</span><span class="o">=</span><span class="nb">true</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="credentials">Credentials</h3>
 <p>The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like <code>fides scan dataset db --credentials-id app_postgres</code>. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if <code>fides scan system okta</code> is used, it will expect the object to contain orgUrl, clientId, and privateKey key/value pairs for OAuth2 authentication. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:</p>
@@ -2329,12 +2286,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">615</span>
 <span class="normal">616</span>
 <span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">618</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2690,11 +2642,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># If True, PII values will display unmasked in log output. This</span>
 <span class="c1"># variable should always be set to &#39;False&#39; in production systems.</span>
 <span class="n">log_pii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
-
-<span class="c1"># When True, propagate OpenTelemetry trace context across Celery</span>
-<span class="c1"># boundaries and log completed task spans at INFO (requires</span>
-<span class="c1"># OpenTelemetry packages). Defaults to False; set to True to enable.</span>
-<span class="n">celery_otel_tracing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#-------------------#</span>
 <span class="c1">#-- NOTIFICATIONS --#</span>
