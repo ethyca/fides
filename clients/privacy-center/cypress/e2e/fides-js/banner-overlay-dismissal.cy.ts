@@ -1,5 +1,6 @@
 import { CONSENT_COOKIE_NAME, ConsentMethod, FidesCookie } from "fides-js";
 
+import { mockCookie } from "../../support/mocks";
 import { stubConfig, stubTCFExperience } from "../../support/stubs";
 
 describe("Banner and modal dismissal", () => {
@@ -245,4 +246,43 @@ describe("Banner and modal dismissal", () => {
       });
     },
   );
+
+  // When a currently-served notice key is also stored in the saved cookie's
+  // `non_applicable_notice_keys`, that notice already represents a known
+  // prior decision and should not force the banner to resurface after the
+  // user has dismissed it.
+  describe("when a served notice is also in non_applicable_notice_keys", () => {
+    beforeEach(() => {
+      cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
+        const experienceItem = config.experience;
+        experienceItem.experience_config.dismissable = true;
+
+        // Pre-seed the cookie with a non-applicable notice key that is also
+        // actively served by the experience (`advertising`). The user has
+        // dismissed the banner previously, so consentMethod is DISMISS and
+        // there is no per-notice consent recorded.
+        const cookie = mockCookie({
+          consent: {},
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: "2024-01-01T12:00:00.000Z",
+            updatedAt: "2024-01-01T12:00:00.000Z",
+            consentMethod: ConsentMethod.DISMISS,
+          },
+          non_applicable_notice_keys: ["advertising", "essential"],
+        });
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+        stubConfig({
+          options: { tcfEnabled: false },
+          experience: experienceItem,
+        });
+      });
+    });
+
+    it("does not resurface the banner on page load", () => {
+      cy.waitUntilFidesInitialized();
+      cy.get("#fides-banner").should("not.be.visible");
+    });
+  });
 });

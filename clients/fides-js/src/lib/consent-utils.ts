@@ -322,11 +322,17 @@ export const shouldResurfaceBanner = (
     return true;
   }
   // Lastly, if we do have a prior consent state, resurface if we find *any*
-  // notices that don't have prior consent in that state
+  // notices that don't have prior consent in that state. A notice that was
+  // recorded as non-applicable in a previous experience also counts as a
+  // known prior decision, so it should not force the banner to resurface
+  // when it later becomes applicable.
+  const nonApplicableNoticeKeys = cookie?.non_applicable_notice_keys ?? [];
   const hasConsentInCookie = (
     experience as PrivacyExperience
-  ).privacy_notices?.every((notice) =>
-    noticeHasConsentInCookie(notice, savedConsent),
+  ).privacy_notices?.every(
+    (notice) =>
+      noticeHasConsentInCookie(notice, savedConsent) ||
+      nonApplicableNoticeKeys.includes(notice.notice_key),
   );
   return !hasConsentInCookie;
 };

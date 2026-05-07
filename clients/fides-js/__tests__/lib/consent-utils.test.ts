@@ -441,6 +441,30 @@ describe("shouldResurfaceBanner", () => {
     },
     {
       label:
+        "returns false when notice is missing from savedConsent but present in non_applicable_notice_keys",
+      experience: mockExperience,
+      cookie: {
+        ...mockCookie,
+        non_applicable_notice_keys: ["notice1"],
+      },
+      savedConsent: {},
+      options: {},
+      expected: false,
+    },
+    {
+      label:
+        "returns true when notice is missing from both savedConsent and non_applicable_notice_keys",
+      experience: mockExperience,
+      cookie: {
+        ...mockCookie,
+        non_applicable_notice_keys: ["some_other_notice"],
+      },
+      savedConsent: { unrelated: true },
+      options: {},
+      expected: true,
+    },
+    {
+      label:
         "returns true when user rejected and resurface_behavior includes reject",
       experience: {
         ...mockExperience,
