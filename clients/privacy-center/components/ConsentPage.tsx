@@ -261,15 +261,9 @@ const ConsentPage: NextPage = () => {
       return;
     }
 
-    initializeI18n(
-      i18n,
-      window?.navigator,
-      experience as PrivacyExperience,
-      {
-        debug: process.env.NODE_ENV === "development",
-      },
-      {},
-    );
+    initializeI18n(i18n, window?.navigator, experience as PrivacyExperience, {
+      debug: process.env.NODE_ENV === "development",
+    });
 
     setI18nInstance(i18n);
     setIsI18nInitialized(true);
