@@ -229,8 +229,7 @@ const IntegrationPrivacyRequests = ({
             </Button>
           </Flex>
           <Paragraph type="secondary" className="m-0">
-            Datasets associated with this integration are used to traverse and
-            fulfill privacy requests.
+            Datasets that use this integration to fulfill privacy requests.
           </Paragraph>
 
           <Modal
@@ -299,15 +298,20 @@ const IntegrationPrivacyRequests = ({
                     >
                       <List.Item.Meta
                         title={
-                          <Flex align="center" gap={8} className="w-full">
+                          <Flex
+                            vertical
+                            align="flex-start"
+                            gap={4}
+                            className="w-full"
+                          >
                             <Text
-                              className="min-w-0 flex-1 truncate"
+                              className="w-full"
                               ellipsis={{ tooltip: displayName }}
                             >
                               {displayName}
                             </Text>
                             {showFidesKey && (
-                              <Tag className="max-w-72 shrink-0 truncate font-mono text-xs">
+                              <Tag className="max-w-full truncate font-mono text-xs">
                                 {dataset.fides_key}
                               </Tag>
                             )}
@@ -373,32 +377,31 @@ const IntegrationPrivacyRequests = ({
                     <List.Item.Meta
                       title={
                         <Flex
-                          gap={8}
-                          align="center"
+                          vertical
+                          align="flex-start"
+                          gap={4}
                           className="w-full font-normal"
                         >
-                          <Flex className="min-w-0 flex-1">
-                            <RouterLink
-                              href={DATASET_DETAIL_ROUTE.replace(
-                                "[datasetId]",
-                                datasetConfig.fides_key,
-                              )}
-                              variant="primary"
-                              ellipsis
-                              onClick={(e) => e.stopPropagation()}
+                          <RouterLink
+                            href={DATASET_DETAIL_ROUTE.replace(
+                              "[datasetId]",
+                              datasetConfig.fides_key,
+                            )}
+                            variant="primary"
+                            ellipsis
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Text
+                              unStyled
+                              ellipsis={{
+                                tooltip: datasetName,
+                              }}
                             >
-                              <Text
-                                unStyled
-                                ellipsis={{
-                                  tooltip: datasetName,
-                                }}
-                              >
-                                {datasetName}
-                              </Text>
-                            </RouterLink>
-                          </Flex>
+                              {datasetName}
+                            </Text>
+                          </RouterLink>
                           {showFidesKey && (
-                            <Tag className="max-w-72 shrink-0 truncate font-mono text-xs">
+                            <Tag className="max-w-full truncate font-mono text-xs">
                               {datasetConfig.fides_key}
                             </Tag>
                           )}

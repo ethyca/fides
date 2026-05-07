@@ -174,19 +174,6 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    if (supportsPrivacyRequests) {
-      tabItems.push({
-        label: "Privacy requests",
-        key: "privacy-requests",
-        children: (
-          <IntegrationPrivacyRequests
-            connection={connection!}
-            integrationOption={integrationOption}
-          />
-        ),
-      });
-    }
-
     // Add conditional tabs based on enabled features
     if (enabledFeatures?.includes(IntegrationFeature.DATA_SYNC)) {
       tabItems.push({
@@ -203,6 +190,21 @@ export const useFeatureBasedTabs = ({
         children: (
           <MonitorConfigTab
             integration={connection!}
+            integrationOption={integrationOption}
+          />
+        ),
+      });
+    }
+
+    // "Privacy requests" is positioned after Data discovery — discovery
+    // surfaces the data; privacy requests act on it.
+    if (supportsPrivacyRequests) {
+      tabItems.push({
+        label: "Privacy requests",
+        key: "privacy-requests",
+        children: (
+          <IntegrationPrivacyRequests
+            connection={connection!}
             integrationOption={integrationOption}
           />
         ),
