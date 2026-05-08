@@ -12,10 +12,9 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
 )
 from fides.api.service.messaging.messaging_providers.base import (
+    EMAIL_TEMPLATE_NAME,
     BaseEmailProviderService,
 )
-
-EMAIL_TEMPLATE_NAME = "fides"
 
 
 class TwilioEmailService(BaseEmailProviderService):
