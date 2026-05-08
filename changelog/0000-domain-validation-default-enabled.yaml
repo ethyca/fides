@@ -1,0 +1,4 @@
+type: Changed
+description: Default enforcement level for domain validation (`FIDES__SECURITY__DOMAIN_VALIDATION_MODE`) changed from `monitor` to `enabled`. Disallowed domains will now be blocked instead of only logged.
+pr: 0000
+labels: ["high-risk"]
