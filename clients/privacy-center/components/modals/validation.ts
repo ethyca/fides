@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import * as Yup from "yup";
 
 import { CustomDateField } from "~/types/config";
@@ -7,9 +8,10 @@ export const dateFieldValidation = (
   label: string,
   isRequired: boolean,
 ) => {
-  let schema = Yup.string().matches(
-    /^\d{4}-\d{2}-\d{2}$/,
+  let schema = Yup.string().test(
+    "valid-date",
     `${label} must be a valid date (YYYY-MM-DD)`,
+    (v) => !v || dayjs(v, "YYYY-MM-DD", true).isValid(),
   );
   if (field.max) {
     schema = schema.test(
