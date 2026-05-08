@@ -11,6 +11,8 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
 )
 
+EMAIL_TEMPLATE_NAME = "fides"
+
 
 class BaseMessageProviderService(ABC):
     """Base class for all messaging provider services.
@@ -21,16 +23,9 @@ class BaseMessageProviderService(ABC):
 
     provider_name: ClassVar[str]
 
-    def __init_subclass__(cls, **kwargs: object) -> None:
-        super().__init_subclass__(**kwargs)
-        # Skip intermediate ABCs that define their own abstract methods
-        has_abstract = any(
-            getattr(v, "__isabstractmethod__", False) for v in cls.__dict__.values()
-        )
-        if not has_abstract and not getattr(cls, "provider_name", None):
-            raise TypeError(f"{cls.__name__} must define 'provider_name'")
-
     def __init__(self, messaging_config: MessagingConfig):
+        if not getattr(self, "provider_name", None):
+            raise TypeError(f"{type(self).__name__} must define 'provider_name'")
         self.messaging_config = messaging_config
         self.validate_config()
 
@@ -55,7 +50,7 @@ class BaseMessageProviderService(ABC):
         SES identity verification) when secrets are saved.
         """
 
-    def _get_detail(self, key: MessagingServiceDetails) -> str | bool:
+    def _get_detail(self, key: MessagingServiceDetails) -> str:
         """Retrieve a required config detail, raising MessageDispatchException if missing."""
         try:
             return self.messaging_config.details[key.value]

@@ -21,6 +21,7 @@ from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     FidesopsMessage,
     MessagingActionType,
+    MessagingMethod,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
@@ -58,24 +59,21 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-            )
-            assert m.called
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Your one-time code is 2348"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+        )
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Your one-time code is 2348"]
 
     """
     Test scenario:
@@ -90,23 +88,20 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
         set_property_specific_messaging_enabled,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-                property_id=None,
-            )
-            assert not m.called
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=None,
+        )
+        assert not mock_mailgun_http.called
 
     """
     Test scenario:
@@ -120,25 +115,22 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
         messaging_template_no_property,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-                property_id=None,
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Here is your code 2348"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=None,
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Here is your code 2348"]
 
     """
     Test scenario:
@@ -152,24 +144,21 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-                property_id=None,
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Your one-time code is 2348"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=None,
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Your one-time code is 2348"]
 
     """
     Test scenario:
@@ -214,28 +203,25 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
         set_property_specific_messaging_enabled,
         # The property created by the below fixture gets implicitly marked as the default as it's the first created
         messaging_template_subject_identity_verification,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-                property_id=None,
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            # this text is built from the property-specific messaging template
-            assert body["subject"] == ["Here is your code 2348"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=None,
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        # this text is built from the property-specific messaging template
+        assert body["subject"] == ["Here is your code 2348"]
 
     """
     Test scenario:
@@ -251,25 +237,22 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
         set_property_specific_messaging_enabled,
         messaging_template_no_property,
         property_a,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-                property_id=property_a.id,
-            )
-            assert not m.called
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=property_a.id,
+        )
+        assert not mock_mailgun_http.called
 
     """
    Test scenario:
@@ -285,90 +268,75 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
         set_property_specific_messaging_enabled,
         property_a,
         messaging_template_subject_identity_verification,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-                property_id=property_a.id,
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            # this text is built from the property-specific messaging template
-            assert body["subject"] == ["Here is your code 2348"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=property_a.id,
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        # this text is built from the property-specific messaging template
+        assert body["subject"] == ["Here is your code 2348"]
 
     def test_email_dispatch_mailgun_privacy_request_complete_access(
-        self, db: Session, messaging_config
+        self, db: Session, messaging_config, mock_mailgun_http
     ) -> None:
         download_link = "https://localhost"
         days = 5
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=AccessRequestCompleteBodyParams(
-                    download_links=[download_link],
-                    subject_request_download_time_in_days=days,
-                ),
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Your data is ready to be downloaded"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=AccessRequestCompleteBodyParams(
+                download_links=[download_link],
+                subject_request_download_time_in_days=days,
+            ),
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Your data is ready to be downloaded"]
 
     def test_email_dispatch_mailgun_privacy_request_complete_consent(
-        self, db: Session, messaging_config
+        self, db: Session, messaging_config, mock_mailgun_http
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=None,
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Your consent preferences have been saved"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=None,
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Your consent preferences have been saved"]
 
     def test_email_dispatch_mailgun_privacy_request_review_deny(
-        self, db: Session, messaging_config
+        self, db: Session, messaging_config, mock_mailgun_http
     ) -> None:
         denial_reason = "Accounts with an unpaid balance cannot be deleted."
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=RequestReviewDenyBodyParams(
-                    rejection_reason=denial_reason
-                ),
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Your privacy request has been denied"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=RequestReviewDenyBodyParams(
+                rejection_reason=denial_reason
+            ),
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Your privacy request has been denied"]
 
     def test_email_dispatch_mailgun_config_not_found(self, db: Session) -> None:
         with pytest.raises(MessageDispatchException) as exc:
@@ -441,20 +409,18 @@ class TestMessageDispatchService:
                 )
             assert exc.value.args[0] == "Email failed to send with status code 403"
 
-    def test_email_dispatch_mailgun_test_message(self, db, messaging_config):
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.TEST_MESSAGE,
-                to_identity=Identity(email="test@email.com"),
-                service_type=MessagingServiceType.mailgun.value,
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Test message from fides"]
+    def test_email_dispatch_mailgun_test_message(
+        self, db, messaging_config, mock_mailgun_http
+    ):
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=Identity(email="test@email.com"),
+            service_type=MessagingServiceType.mailgun.value,
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Test message from fides"]
 
     @mock.patch(
         "fides.api.service.messaging.messaging_providers.twilio_email_service.sendgrid.SendGridAPIClient",
@@ -767,87 +733,75 @@ class TestMessageDispatchService:
             dispatch_message(db, "bad", to_identity=None, service_type=None)
 
     def test_email_dispatch_consent_request_email_fulfillment_for_sovrn_old_workflow(
-        self, db: Session, messaging_config
+        self, db: Session, messaging_config, mock_mailgun_http
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
-                to_identity=Identity(**{"email": "sovrn_test@example.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=ConsentEmailFulfillmentBodyParams(
-                    controller="Test Organization",
-                    third_party_vendor_name="Sovrn",
-                    required_identities=["ljt_readerID"],
-                    requested_changes=[
-                        ConsentPreferencesByUser(
-                            identities={"ljt_readerID": "test_user_id"},
-                            consent_preferences=[
-                                Consent(data_use="marketing.advertising", opt_in=False),
-                                Consent(
-                                    data_use="marketing.advertising.first_party",
-                                    opt_in=True,
-                                ),
-                            ],
-                            privacy_preferences=[],
-                        )
-                    ],
-                ),
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["sovrn_test@example.com"]
-            assert body["subject"] == [
-                "Notification of users' consent preference changes"
-            ]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
+            to_identity=Identity(**{"email": "sovrn_test@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=ConsentEmailFulfillmentBodyParams(
+                controller="Test Organization",
+                third_party_vendor_name="Sovrn",
+                required_identities=["ljt_readerID"],
+                requested_changes=[
+                    ConsentPreferencesByUser(
+                        identities={"ljt_readerID": "test_user_id"},
+                        consent_preferences=[
+                            Consent(data_use="marketing.advertising", opt_in=False),
+                            Consent(
+                                data_use="marketing.advertising.first_party",
+                                opt_in=True,
+                            ),
+                        ],
+                        privacy_preferences=[],
+                    )
+                ],
+            ),
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["sovrn_test@example.com"]
+        assert body["subject"] == ["Notification of users' consent preference changes"]
 
     def test_email_dispatch_consent_request_email_fulfillment_for_sovrn_new_workflow(
-        self, db: Session, messaging_config
+        self, db: Session, messaging_config, mock_mailgun_http
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
-                to_identity=Identity(**{"email": "sovrn_test@example.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=ConsentEmailFulfillmentBodyParams(
-                    controller="Test Organization",
-                    third_party_vendor_name="Sovrn",
-                    required_identities=["ljt_readerID"],
-                    requested_changes=[
-                        ConsentPreferencesByUser(
-                            identities={"ljt_readerID": "test_user_id"},
-                            consent_preferences=[],
-                            privacy_preferences=[
-                                MinimalPrivacyPreferenceHistorySchema(
-                                    id="test_privacy_preference_3",
-                                    preference=UserConsentPreference.opt_out,
-                                    privacy_notice_history=PrivacyNoticeHistorySchema(
-                                        name="Analytics",
-                                        notice_key="analytics",
-                                        id="test_3",
-                                        translation_id="39391",
-                                        consent_mechanism=ConsentMechanism.opt_in,
-                                        data_uses=["functional.service.improve"],
-                                        enforcement_level=EnforcementLevel.system_wide,
-                                        version=1.0,
-                                    ),
-                                )
-                            ],
-                        )
-                    ],
-                ),
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["sovrn_test@example.com"]
-            assert body["subject"] == [
-                "Notification of users' consent preference changes"
-            ]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
+            to_identity=Identity(**{"email": "sovrn_test@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=ConsentEmailFulfillmentBodyParams(
+                controller="Test Organization",
+                third_party_vendor_name="Sovrn",
+                required_identities=["ljt_readerID"],
+                requested_changes=[
+                    ConsentPreferencesByUser(
+                        identities={"ljt_readerID": "test_user_id"},
+                        consent_preferences=[],
+                        privacy_preferences=[
+                            MinimalPrivacyPreferenceHistorySchema(
+                                id="test_privacy_preference_3",
+                                preference=UserConsentPreference.opt_out,
+                                privacy_notice_history=PrivacyNoticeHistorySchema(
+                                    name="Analytics",
+                                    notice_key="analytics",
+                                    id="test_3",
+                                    translation_id="39391",
+                                    consent_mechanism=ConsentMechanism.opt_in,
+                                    data_uses=["functional.service.improve"],
+                                    enforcement_level=EnforcementLevel.system_wide,
+                                    version=1.0,
+                                ),
+                            )
+                        ],
+                    )
+                ],
+            ),
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["sovrn_test@example.com"]
+        assert body["subject"] == ["Notification of users' consent preference changes"]
 
     @pytest.fixture
     def mock_config_admin_ui_url(self, db):
@@ -863,23 +817,20 @@ class TestMessageDispatchService:
         self,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.USER_INVITE,
-                to_identity=Identity(**{"email": "test@example.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=UserInviteBodyParams(
-                    username="test", invite_code="123"
-                ),
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@example.com"]
-            assert body["subject"] == ["Welcome to Fides"]
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.USER_INVITE,
+            to_identity=Identity(**{"email": "test@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=UserInviteBodyParams(
+                username="test", invite_code="123"
+            ),
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@example.com"]
+        assert body["subject"] == ["Welcome to Fides"]
 
 
 class TestMailgunServiceErrors:
@@ -898,13 +849,14 @@ class TestMailgunServiceErrors:
                 )
 
 
-class TestInitSubclassGuard:
-    def test_missing_provider_name_raises_type_error(self):
-        with pytest.raises(TypeError, match="must define 'provider_name'"):
+class TestInitGuard:
+    def test_missing_provider_name_raises_type_error(self, messaging_config):
+        class BadProvider(BaseMessageProviderService):
+            def validate_config(self) -> None:
+                pass
 
-            class BadProvider(BaseMessageProviderService):
-                def validate_config(self) -> None:
-                    pass
+        with pytest.raises(TypeError, match="must define 'provider_name'"):
+            BadProvider(messaging_config)
 
 
 class TestProviderConfigValidation:
@@ -950,25 +902,112 @@ class TestProviderConfigValidation:
             provider_cls(config)
 
 
+_DISPATCH_MODULE = "fides.api.service.messaging.message_dispatch_service"
+
+
+class TestDispatchGuards:
+    """Tests for defensive guards in the provider dispatch path."""
+
+    @mock.patch(f"{_DISPATCH_MODULE}._aws_ses_dispatcher")
+    def test_aws_ses_rejects_non_email_message(
+        self, mock_ses, db: Session, messaging_config_aws_ses
+    ):
+        """AWS SES guard rejects a non-EmailForActionType message."""
+        with (
+            mock.patch(f"{_DISPATCH_MODULE}._build_sms", return_value="plain text"),
+            mock.patch(
+                f"{_DISPATCH_MODULE}.get_messaging_method",
+                return_value=MessagingMethod.SMS,
+            ),
+        ):
+            with pytest.raises(
+                MessageDispatchException, match="AWS SES requires an email message body"
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.TEST_MESSAGE,
+                    to_identity=Identity(phone_number="+15551234567"),
+                    service_type=MessagingServiceType.aws_ses.value,
+                )
+        mock_ses.assert_not_called()
+
+    def test_unknown_service_type_raises(self, db: Session, messaging_config):
+        """Provider map guard rejects an unmapped service type."""
+        with mock.patch(f"{_DISPATCH_MODULE}._PROVIDER_MAP", {}):
+            with pytest.raises(
+                MessageDispatchException,
+                match="Dispatcher has not been implemented",
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                    to_identity=Identity(email="test@email.com"),
+                    service_type=MessagingServiceType.mailgun.value,
+                    message_body_params=SubjectIdentityVerificationBodyParams(
+                        verification_code="2348", verification_code_ttl_seconds=600
+                    ),
+                )
+
+    def test_email_provider_rejects_str_body(self, db: Session, messaging_config):
+        """Email provider guard rejects a str message body."""
+        with mock.patch(f"{_DISPATCH_MODULE}._build_email", return_value="plain text"):
+            with pytest.raises(
+                MessageDispatchException,
+                match="Expected EmailForActionType for email provider",
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                    to_identity=Identity(email="test@email.com"),
+                    service_type=MessagingServiceType.mailgun.value,
+                    message_body_params=SubjectIdentityVerificationBodyParams(
+                        verification_code="2348", verification_code_ttl_seconds=600
+                    ),
+                )
+
+    @mock.patch(
+        "fides.api.service.messaging.messaging_providers.twilio_sms_service.Client",
+        autospec=True,
+    )
+    def test_sms_provider_rejects_email_body(
+        self, mock_twilio_client_cls, db: Session, messaging_config_twilio_sms
+    ):
+        """SMS provider guard rejects an EmailForActionType message body."""
+        with mock.patch(
+            f"{_DISPATCH_MODULE}._build_sms",
+            return_value=EmailForActionType(subject="oops", body="wrong type"),
+        ):
+            with pytest.raises(
+                MessageDispatchException, match="Expected str body for SMS provider"
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                    to_identity=Identity(phone_number="+15551234567"),
+                    service_type=MessagingServiceType.twilio_text.value,
+                    message_body_params=SubjectIdentityVerificationBodyParams(
+                        verification_code="2348", verification_code_ttl_seconds=600
+                    ),
+                )
+
+
 class TestSubjectOverride:
-    def test_subject_override_for_email(self, db: Session, messaging_config) -> None:
-        template_url, send_url = mailgun_urls(messaging_config)
-        with requests_mock.Mocker() as m:
-            m.get(template_url, status_code=404)
-            m.post(send_url, json={"message": "Queued"}, status_code=200)
-            dispatch_message(
-                db=db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.mailgun.value,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code="2348", verification_code_ttl_seconds=600
-                ),
-                subject_override="Testing subject override",
-            )
-            body = mailgun_post_body(m.request_history)
-            assert body["to"] == ["test@email.com"]
-            assert body["subject"] == ["Testing subject override"]
+    def test_subject_override_for_email(
+        self, db: Session, messaging_config, mock_mailgun_http
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            subject_override="Testing subject override",
+        )
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        assert body["to"] == ["test@email.com"]
+        assert body["subject"] == ["Testing subject override"]
 
     @mock.patch(
         "fides.api.service.messaging.messaging_providers.twilio_sms_service.Client",
