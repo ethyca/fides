@@ -1,4 +1,3 @@
-
 class FidesLifecycleManager {
   private servedNoticeHistoryId: string | null = null;
 
