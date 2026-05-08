@@ -86,7 +86,9 @@ export const ChatPane = ({
         ))}
         {isStreaming && (
           <div
-            data-role="assistant-thinking"
+            role="status"
+            aria-live="polite"
+            aria-label="Assistant is thinking"
             style={{
               padding: 8,
               display: "flex",
@@ -95,7 +97,6 @@ export const ChatPane = ({
             }}
           >
             <Spin size="small" />
-            <span>Thinking…</span>
           </div>
         )}
       </div>

@@ -28,7 +28,9 @@ describe("ChatPane", () => {
         onAbort={jest.fn()}
       />,
     );
-    expect(screen.getByText(/thinking/i)).toBeInTheDocument();
+    const status = screen.getByRole("status", { name: /thinking/i });
+    expect(status).toBeInTheDocument();
+    expect(status.querySelector('[aria-busy="true"]')).toBeInTheDocument();
   });
 
   it("does not show a thinking indicator when idle", () => {
@@ -41,7 +43,9 @@ describe("ChatPane", () => {
         onAbort={jest.fn()}
       />,
     );
-    expect(screen.queryByText(/thinking/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("status", { name: /thinking/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("calls onSend with the typed text and clears input", async () => {
