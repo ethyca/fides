@@ -17,13 +17,13 @@ import ssl
 from copy import deepcopy
 from typing import Any, Callable, Dict, Optional
 
-import asyncpg
-import psycopg2
+import asyncpg  # type: ignore[import-untyped]
+import psycopg2  # type: ignore[import-untyped]
 from sqlalchemy.dialects.postgresql.asyncpg import (
     AsyncAdapt_asyncpg_connection,
     AsyncAdapt_asyncpg_dbapi,
 )
-from sqlalchemy.util.concurrency import await_only
+from sqlalchemy.util.concurrency import await_only  # type: ignore[import-untyped]
 
 from fides.config import CONFIG
 

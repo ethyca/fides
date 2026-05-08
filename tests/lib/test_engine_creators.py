@@ -1,0 +1,171 @@
+"""Tests for engine creator factories and credential helpers."""
+
+import ssl
+
+import psycopg2  # type: ignore[import-untyped]
+import pytest
+from sqlalchemy import create_engine, text
+from sqlalchemy.ext.asyncio import create_async_engine
+
+from fides.common.engine_creators import (
+    _build_ssl_context,
+    _convert_asyncpg_params,
+    get_db_credentials,
+    get_readonly_db_credentials,
+    make_async_creator,
+    make_sync_creator,
+)
+from fides.config import CONFIG
+from fides.config.database_settings import DatabaseSettings
+
+
+class TestGetDbCredentials:
+    def test_returns_expected_fields(self) -> None:
+        creds = get_db_credentials()
+        assert set(creds.keys()) == {"host", "port", "user", "password", "dbname"}
+
+    def test_port_is_int(self) -> None:
+        creds = get_db_credentials()
+        assert isinstance(creds["port"], int)
+
+    def test_password_is_unescaped(self) -> None:
+        """raw_password should reverse the quote_plus escaping."""
+        creds = get_db_credentials()
+        # The raw password should not contain URL-encoded characters
+        # unless the original password literally contains them
+        assert creds["password"] == CONFIG.database.raw_password
+
+    def test_uses_test_db_in_test_mode(self) -> None:
+        creds = get_db_credentials()
+        if CONFIG.test_mode:
+            assert creds["dbname"] == CONFIG.database.test_db
+        else:
+            assert creds["dbname"] == CONFIG.database.db
+
+
+class TestGetReadonlyDbCredentials:
+    def test_returns_none_when_not_configured(self) -> None:
+        if not CONFIG.database.readonly_server:
+            assert get_readonly_db_credentials() is None
+
+
+class TestRawPassword:
+    """Verify raw_password round-trips passwords with special characters."""
+
+    @pytest.mark.parametrize(
+        "password",
+        [
+            "simple",
+            "p@ssw0rd",
+            "pass#word",
+            "pass%word",
+            "pass/word",
+            "p@ss#w%rd/123",
+            "has spaces",
+            "has+plus",
+        ],
+    )
+    def test_raw_password_round_trip(self, password: str) -> None:
+        """Constructing DatabaseSettings with special-char passwords
+        should produce a raw_password that matches the original."""
+        settings = DatabaseSettings(password=password)
+        assert settings.raw_password == password
+
+
+class TestConvertAsyncpgParams:
+    def test_converts_sslmode_to_ssl(self) -> None:
+        params = {"sslmode": "require", "other": "value"}
+        result = _convert_asyncpg_params(params)
+        assert "sslmode" not in result
+        assert result["ssl"] == "require"
+        assert result["other"] == "value"
+
+    def test_drops_sslrootcert(self) -> None:
+        params = {"sslrootcert": "/path/to/cert.pem", "other": "value"}
+        result = _convert_asyncpg_params(params)
+        assert "sslrootcert" not in result
+        assert result["other"] == "value"
+
+    def test_does_not_mutate_input(self) -> None:
+        params = {"sslmode": "require", "sslrootcert": "/path"}
+        _convert_asyncpg_params(params)
+        assert "sslmode" in params
+        assert "sslrootcert" in params
+
+    def test_empty_params(self) -> None:
+        assert _convert_asyncpg_params({}) == {}
+
+
+class TestBuildSslContext:
+    def test_returns_none_without_sslrootcert(self) -> None:
+        assert _build_ssl_context({}) is None
+        assert _build_ssl_context({"sslmode": "require"}) is None
+
+    def test_returns_context_with_sslrootcert(self, tmp_path) -> None:
+        # Create a dummy cert file (doesn't need to be valid for construction)
+        cert_file = tmp_path / "ca.pem"
+        cert_file.write_text("dummy")
+        # _build_ssl_context will fail on an invalid cert, but we can test
+        # that it attempts to create the context
+        with pytest.raises(ssl.SSLError):
+            _build_ssl_context({"sslrootcert": str(cert_file)})
+
+
+class TestMakeSyncCreator:
+    def test_returns_callable(self) -> None:
+        creator = make_sync_creator()
+        assert callable(creator)
+
+    def test_creator_opens_working_connection(self) -> None:
+        """The sync creator should produce a real psycopg2 connection."""
+        creator = make_sync_creator()
+        conn = creator()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT 1")
+            assert cur.fetchone() == (1,)
+        finally:
+            conn.close()
+
+    def test_creator_with_connect_args(self) -> None:
+        """connect_args like keepalives should be forwarded."""
+        creator = make_sync_creator(
+            connect_args={"keepalives": 1, "keepalives_idle": 30}
+        )
+        conn = creator()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT 1")
+            assert cur.fetchone() == (1,)
+        finally:
+            conn.close()
+
+    def test_engine_with_sync_creator(self) -> None:
+        """A full engine using the sync creator can execute queries."""
+        creator = make_sync_creator()
+        engine = create_engine("postgresql+psycopg2://", creator=creator, pool_size=1)
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT 1"))
+                assert result.scalar() == 1
+        finally:
+            engine.dispose()
+
+
+class TestMakeAsyncCreator:
+    def test_returns_callable(self) -> None:
+        creator = make_async_creator()
+        assert callable(creator)
+
+    async def test_engine_with_async_creator(self) -> None:
+        """A full async engine using the async creator can execute queries."""
+        creator = make_async_creator()
+        engine = create_async_engine(
+            "postgresql+asyncpg://", creator=creator, pool_size=1
+        )
+        try:
+            async with engine.connect() as conn:
+                result = await conn.execute(text("SELECT 1"))
+                assert result.scalar() == 1
+        finally:
+            await engine.dispose()
