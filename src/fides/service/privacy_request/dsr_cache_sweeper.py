@@ -19,11 +19,10 @@ Tuning lives under ``execution.dsr_cache_sweeper`` (``DsrCacheSweeperSettings``)
 from __future__ import annotations
 
 import random
-import re
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any, FrozenSet, Iterable, Optional, Set
+from typing import Any, FrozenSet, Iterable, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -33,21 +32,13 @@ from fides.api.schemas.privacy_request import (
     ACTIVE_REQUEST_STATUSES,
     PrivacyRequestStatus,
 )
-from fides.api.util.cache import (
-    _is_redis_cluster,
-    get_dsr_cache_store,
-    get_redis_cache_manager,
-    iter_redis_scan_batches,
+from fides.api.util.cache import get_dsr_cache_store, get_redis_cache_manager
+from fides.common.cache.dsr_store import (
+    candidate_privacy_request_ids_for_sweep,
+    decode_dsr_redis_key,
+    redis_key_is_dsr_cache_key_for_id,
 )
 from fides.config import CONFIG
-
-# Canonical 8-4-4-4-12 UUID tokens (case-insensitive). Privacy request ids are typically
-# ``pri_<uuid>``; we extract uuid substrings then expand to both bare and ``pri_`` forms
-# for SISMEMBER against the staging set (which stores the DB id string).
-_UUID_RE = re.compile(
-    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-    re.IGNORECASE,
-)
 
 
 @dataclass(frozen=True)
@@ -104,69 +95,6 @@ def build_dsr_cache_sweeper_statuses(
     return frozenset(statuses)
 
 
-def _normalize_uuid_token(token: str) -> str:
-    return token.lower()
-
-
-def _decode_redis_key(raw: Any) -> str:
-    if isinstance(raw, bytes):
-        return raw.decode("utf-8", errors="replace")
-    return str(raw)
-
-
-def _logical_body_targets_dsr(body: str, dsr_id_lower: str) -> bool:
-    """True if ``body`` matches a known DSR logical/encoded-object key shape for this id."""
-    if body.startswith(f"{dsr_id_lower}__"):
-        return True
-    if body.startswith(f"WEBHOOK_MANUAL_ACCESS_INPUT__{dsr_id_lower}__"):
-        return True
-    if body.startswith(f"WEBHOOK_MANUAL_ERASURE_INPUT__{dsr_id_lower}__"):
-        return True
-    if body == f"DATA_USE_MAP__{dsr_id_lower}":
-        return True
-    if body.startswith(f"EMAIL_INFORMATION__{dsr_id_lower}__"):
-        return True
-    if body == f"PAUSED_LOCATION__{dsr_id_lower}":
-        return True
-    if body == f"FAILED_LOCATION__{dsr_id_lower}":
-        return True
-    if body.startswith(f"PLACEHOLDER_RESULTS__{dsr_id_lower}__"):
-        return True
-    return False
-
-
-def redis_key_is_dsr_cache_key_for_id(key: str, dsr_id_lower: str) -> bool:
-    """
-    Return True if ``key`` is a known Fides DSR cache Redis key for ``dsr_id_lower``.
-
-    Conservative: avoids deleting unrelated keys that merely embed a UUID substring
-    unless they match ``dsr:`` / index / migration / legacy ``id-`` / ``EN_`` logical
-    patterns documented in ``KeyMapper`` and ``DSRCacheStore``.
-    """
-    if key.startswith(f"dsr:{dsr_id_lower}:"):
-        return True
-    if key == f"__idx:dsr:{dsr_id_lower}":
-        return True
-    if key == f"__migrated:{dsr_id_lower}":
-        return True
-    if key.startswith(f"id-{dsr_id_lower}-"):
-        return True
-    if key.startswith("EN_"):
-        return _logical_body_targets_dsr(key[3:], dsr_id_lower)
-    return _logical_body_targets_dsr(key, dsr_id_lower)
-
-
-def _candidate_privacy_request_ids_in_key(key: str) -> Set[str]:
-    """Candidate ids to check with SISMEMBER (normalized lowercase)."""
-    out: set[str] = set()
-    for m in _UUID_RE.findall(key):
-        u = _normalize_uuid_token(m)
-        out.add(u)
-        # Product privacy request ids are ``pri_<uuid>`` (see DSR package link validation).
-        out.add(f"pri_{u}")
-    return out
-
-
 def _sadd_many(
     redis: Any, set_key: str, members: Iterable[str], *, chunk: int = 2000
 ) -> None:
@@ -184,37 +112,27 @@ def _unlink_batch(redis: Any, keys: list[str], *, cluster: bool) -> tuple[int, i
     """Return (deleted_count, error_count)."""
     if not keys:
         return 0, 0
-    client = getattr(redis, "_client", redis)
     deleted = 0
     errors = 0
-
-    def _one(k: str) -> None:
-        nonlocal deleted, errors
-        try:
-            if hasattr(client, "unlink"):
-                client.unlink(k)
-            else:
-                client.delete(k)
-            deleted += 1
-        except Exception:  # noqa: BLE001
-            errors += 1
-
     if cluster:
         for key in keys:
-            _one(key)
+            try:
+                redis.unlink(key)
+                deleted += 1
+            except Exception:  # noqa: BLE001
+                errors += 1
         return deleted, errors
-
-    if hasattr(client, "unlink"):
-        try:
-            client.unlink(*keys)
-            return len(keys), 0
-        except Exception:  # noqa: BLE001
-            deleted = 0
-            errors = 0
-
-    for key in keys:
-        _one(key)
-    return deleted, errors
+    try:
+        redis.unlink(*keys)
+        return len(keys), 0
+    except Exception:  # noqa: BLE001
+        for key in keys:
+            try:
+                redis.unlink(key)
+                deleted += 1
+            except Exception:  # noqa: BLE001
+                errors += 1
+        return deleted, errors
 
 
 def _run_dsr_cache_sweeper_legacy(
@@ -396,7 +314,7 @@ def run_dsr_cache_sweeper(
                 )
                 continue
 
-            eligible_ids.append(_normalize_uuid_token(str(pr_id)))
+            eligible_ids.append(str(pr_id).lower())
 
         last_id = batch_rows[-1][0]
 
@@ -443,7 +361,7 @@ def run_dsr_cache_sweeper(
     scan_count = int(tc.redis_scan_count)
     del_batch = max(1, int(tc.redis_delete_batch_size))
 
-    cluster = _is_redis_cluster(getattr(redis, "_client", redis))
+    cluster = redis.is_cluster
 
     sweep_started = time.perf_counter()
     try:
@@ -466,11 +384,11 @@ def run_dsr_cache_sweeper(
                 redis_delete_errors += err
                 redis_errors += err
 
-        for key_batch in iter_redis_scan_batches(redis, count=scan_count):
+        for key_batch in redis.iter_scan_batches(count=scan_count):
             for raw_key in key_batch:
                 redis_keys_scanned += 1
-                key_str = _decode_redis_key(raw_key)
-                candidates = _candidate_privacy_request_ids_in_key(key_str)
+                key_str = decode_dsr_redis_key(raw_key)
+                candidates = candidate_privacy_request_ids_for_sweep(key_str)
                 delete_this_key = False
                 matched_id: Optional[str] = None
                 for uid in candidates:

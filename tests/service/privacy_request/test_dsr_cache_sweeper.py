@@ -4,10 +4,12 @@ from fides.api.schemas.privacy_request import (
     ACTIVE_REQUEST_STATUSES,
     PrivacyRequestStatus,
 )
-from fides.service.privacy_request.dsr_cache_sweeper import (
-    _candidate_privacy_request_ids_in_key,
-    build_dsr_cache_sweeper_statuses,
+from fides.common.cache.dsr_store import (
+    candidate_privacy_request_ids_for_sweep,
     redis_key_is_dsr_cache_key_for_id,
+)
+from fides.service.privacy_request.dsr_cache_sweeper import (
+    build_dsr_cache_sweeper_statuses,
 )
 
 
@@ -71,5 +73,5 @@ def test_redis_key_shape_rejects_decoy_with_uuid() -> None:
 def test_candidate_privacy_request_ids_expand_pri_prefix() -> None:
     uid = "AAAAAAAA-BBBB-4CCC-DDDD-EEEEEEEEEEEE"
     u = uid.lower()
-    found = _candidate_privacy_request_ids_in_key(f"prefix-{uid}-suffix")
+    found = candidate_privacy_request_ids_for_sweep(f"prefix-{uid}-suffix")
     assert found == {u, f"pri_{u}"}
