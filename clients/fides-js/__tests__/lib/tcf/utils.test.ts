@@ -20,7 +20,6 @@ const MOCK_DATE = "2023-01-01T12:00:00.000Z";
 jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 
 // crypto.randomUUID is mocked globally in __tests__/setup.ts
-const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
 
 // Setup mock js-cookie
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
