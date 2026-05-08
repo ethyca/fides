@@ -1,5 +1,4 @@
 import { useState } from "preact/hooks";
-import { v4 as uuidv4 } from "uuid";
 
 /**
  * Custom hook that generates a UUIDv4.
@@ -7,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
  * @returns The generated UUIDv4.
  */
 const useUUID4 = () => {
-  const [uuid] = useState<string>(uuidv4());
+  const [uuid] = useState<string>(() => crypto.randomUUID());
 
   return uuid;
 };

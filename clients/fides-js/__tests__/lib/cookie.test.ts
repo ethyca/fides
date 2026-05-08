@@ -1,5 +1,4 @@
 import { CookieAttributes } from "js-cookie";
-import * as uuid from "uuid";
 
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
@@ -35,11 +34,8 @@ import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
 jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 
-// Setup mock uuid
+// crypto.randomUUID is mocked globally in __tests__/setup.ts
 const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
-jest.mock("uuid");
-const mockUuid = jest.mocked(uuid);
-mockUuid.v4.mockReturnValue(MOCK_UUID);
 
 // Setup mock js-cookie
 const mockGetCookie = jest.fn(

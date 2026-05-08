@@ -29,9 +29,7 @@ import {
   setupI18n,
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
-import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import messagesTcfEn from "~/lib/tcf/i18n/locales/en/messages-tcf.json";
-import messagesTcfEs from "~/lib/tcf/i18n/locales/es/messages-tcf.json";
 import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
@@ -59,13 +57,15 @@ describe("i18n-utils", () => {
     "exp.gpc_status_overridden_label":
       messagesEn["static.gpc.status.overridden"],
   };
+  // Since only English static messages are bundled, non-English locales fall
+  // back to English GPC text when the experience API doesn't provide them
   const mockGpcFallbacksEs = {
-    "exp.gpc_label": messagesEs["static.gpc"],
-    "exp.gpc_title": messagesEs["static.gpc.title"],
-    "exp.gpc_description": messagesEs["static.gpc.description"],
-    "exp.gpc_status_applied_label": messagesEs["static.gpc.status.applied"],
+    "exp.gpc_label": messagesEn["static.gpc"],
+    "exp.gpc_title": messagesEn["static.gpc.title"],
+    "exp.gpc_description": messagesEn["static.gpc.description"],
+    "exp.gpc_status_applied_label": messagesEn["static.gpc.status.applied"],
     "exp.gpc_status_overridden_label":
-      messagesEs["static.gpc.status.overridden"],
+      messagesEn["static.gpc.status.overridden"],
   };
 
   const mockI18nCatalogLoad = [
@@ -157,11 +157,11 @@ describe("i18n-utils", () => {
       };
 
       initializeI18n(mockI18n, mockNavigator, mockExperience);
+      // Only English static messages are bundled; Spanish comes from the experience API
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
-      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
 
-      // Expect that messages are loaded from both static files & experience API
+      // Expect that English messages are loaded from both static files & experience API
       const loadCallsEn = mockI18n.load.mock.calls.filter((e) => e[0] === "en");
       expect(loadCallsEn).toHaveLength(2);
       const fileMessagesEn = loadCallsEn[0][1];
@@ -185,7 +185,6 @@ describe("i18n-utils", () => {
 
       initializeI18n(mockI18n, mockNavigator, mockExpNoAutoDetect);
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
-      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.activate).toHaveBeenCalledWith("en");
     });
 
@@ -204,7 +203,6 @@ describe("i18n-utils", () => {
 
       initializeI18n(mockI18n, mockNavigator, mockExpDifferentDefault);
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
-      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.setDefaultLocale).toHaveBeenCalledWith("es");
       expect(mockI18n.setAvailableLanguages).toHaveBeenCalledWith(
         mockAvailableLanguages,
@@ -225,70 +223,54 @@ describe("i18n-utils", () => {
   });
 
   describe("loadMessagesFromFiles", () => {
-    it("reads all static messages from source and loads into the i18n catalog", () => {
+    it("reads default (English) static messages from source and loads into the i18n catalog", () => {
       const updatedLocales = loadMessagesFromFiles(mockI18n);
 
-      // Check the updated locales list is what we expect
-      const EXPECTED_NUM_STATIC_LOCALES = 42; // NOTE: manually update this as new locales added
-      expect(updatedLocales).toHaveLength(EXPECTED_NUM_STATIC_LOCALES);
+      // Only the default locale (en) is bundled statically; other locales
+      // get their translations from the experience API at runtime
+      expect(updatedLocales).toHaveLength(1);
       expect(updatedLocales).toContain("en");
-      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
+      expect(mockI18n.load).toHaveBeenCalledTimes(1);
 
-      // Verify a few of our expected locales match their expected catalogues, too
+      // Verify English messages are loaded correctly
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesEn);
-      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
 
       // Sanity-check a few of the loaded messages match our expected static strings
       const [, loadedMessagesEn] =
         mockI18n.load.mock.calls.find(([locale]) => locale === "en") || [];
-      const [, loadedMessagesEs] =
-        mockI18n.load.mock.calls.find(([locale]) => locale === "es") || [];
       expect(loadedMessagesEn).toMatchObject({
         "static.gpc": "Global Privacy Control",
         "static.gpc.status.applied": "Applied",
       });
-      expect(loadedMessagesEs).toMatchObject({
-        "static.gpc": "Control de privacidad global",
-        "static.gpc.status.applied": "Aplicado",
-      });
 
       // Check that TCF strings are not loaded
       expect(loadedMessagesEn).not.toHaveProperty(["static.tcf.consent"]);
-      expect(loadedMessagesEs).not.toHaveProperty(["static.tcf.consent"]);
     });
   });
 
   describe("loadTcfMessagesFromFiles", () => {
-    it("reads all TCF-specific static messages from source and loads into the i18n catalog", () => {
+    it("reads default (English) TCF-specific static messages from source and loads into the i18n catalog", () => {
       const updatedLocales = loadTcfMessagesFromFiles(mockI18n);
 
-      // Check the updated locales list is what we expect
-      const EXPECTED_NUM_STATIC_LOCALES = 42; // NOTE: manually update this as new locales added
-      expect(updatedLocales).toHaveLength(EXPECTED_NUM_STATIC_LOCALES);
+      // Only the default locale (en) is bundled statically; other locales
+      // get their translations from the experience API at runtime
+      expect(updatedLocales).toHaveLength(1);
       expect(updatedLocales).toContain("en");
-      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
+      expect(mockI18n.load).toHaveBeenCalledTimes(1);
 
-      // Verify a few of our expected locales match their expected catalogues, too
+      // Verify English TCF messages are loaded correctly
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesTcfEn);
-      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesTcfEs);
 
       // Sanity-check a few of the loaded messages match our expected static strings
       const [, loadedMessagesEn] =
         mockI18n.load.mock.calls.find(([locale]) => locale === "en") || [];
-      const [, loadedMessagesEs] =
-        mockI18n.load.mock.calls.find(([locale]) => locale === "es") || [];
       expect(loadedMessagesEn).toMatchObject({
         "static.tcf.consent": "Consent",
         "static.tcf.features": "Features",
       });
-      expect(loadedMessagesEs).toMatchObject({
-        "static.tcf.consent": "Consentimiento",
-        "static.tcf.features": "Características",
-      });
 
       // Check that regular static strings are not loaded
       expect(loadedMessagesEn).not.toHaveProperty(["static.gpc"]);
-      expect(loadedMessagesEs).not.toHaveProperty(["static.gpc"]);
     });
   });
 

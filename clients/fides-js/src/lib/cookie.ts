@@ -1,6 +1,4 @@
-import { decode as base64_decode, encode as base64_encode } from "base-64";
 import Cookies, { CookiesStatic } from "js-cookie";
-import { v4 as uuidv4 } from "uuid";
 
 import { ConsentContext } from "./consent-context";
 import {
@@ -133,7 +131,7 @@ export const tcfCookieIsProperlySet = (
  * generated UUID to prevent it from being identifiable (without matching it to
  * some other identity data!)
  */
-const generateFidesUserDeviceId = (): string => uuidv4();
+const generateFidesUserDeviceId = (): string => crypto.randomUUID();
 const userDeviceId = generateFidesUserDeviceId();
 
 /**
@@ -325,7 +323,7 @@ export const getFidesConsentCookie = async (
   } catch {
     try {
       // Fallback: try base64-encoded JSON (legacy format)
-      return JSON.parse(base64_decode(cookieString));
+      return JSON.parse(atob(cookieString));
     } catch (e) {
       fidesDebugger(`Unable to read consent cookie`, e);
       return undefined;
@@ -478,7 +476,7 @@ export const saveFidesCookie = async (
   if (validatedCompression === "gzip") {
     encodedCookie = await compressCookie(encodedCookie);
   } else if (base64Cookie) {
-    encodedCookie = base64_encode(encodedCookie);
+    encodedCookie = btoa(encodedCookie);
   }
 
   const hostnameParts = window.location.hostname.split(".");
