@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUserLocation } from "~/features/consent/consent.slice";
+import { dateFieldValidation } from "~/components/modals/validation";
 import { CustomConfigField, CustomDateField } from "~/types/config";
 
 interface UseCustomFieldsFormProps {
@@ -75,30 +76,9 @@ export const useCustomFieldsForm = ({
               ];
             }
             if (field_type === "date") {
-              const dateField = field as CustomDateField;
-              let dateSchema = Yup.string().matches(
-                /^\d{4}-\d{2}-\d{2}$/,
-                `${label} must be a valid date (YYYY-MM-DD)`,
-              );
-              if (dateField.max) {
-                dateSchema = dateSchema.test(
-                  "not-after-max",
-                  `${label} must be on or before ${dateField.max}`,
-                  (v) => !v || v <= dateField.max!,
-                );
-              }
-              if (dateField.min) {
-                dateSchema = dateSchema.test(
-                  "not-before-min",
-                  `${label} must be on or after ${dateField.min}`,
-                  (v) => !v || v >= dateField.min!,
-                );
-              }
               return [
                 key,
-                isRequired
-                  ? dateSchema.required(`${label} is required`)
-                  : dateSchema,
+                dateFieldValidation(field as CustomDateField, label, isRequired),
               ];
             }
             return [

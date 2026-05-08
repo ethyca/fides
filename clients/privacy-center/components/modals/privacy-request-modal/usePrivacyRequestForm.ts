@@ -9,6 +9,7 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { ModalViews } from "~/components/modals/types";
 import {
+  dateFieldValidation,
   emailValidation,
   nameValidation,
   phoneValidation,
@@ -279,25 +280,7 @@ const usePrivacyRequestForm = ({
         Object.entries(customIdentityFields).flatMap(([key, value]) => {
           if (!value) return [];
           if (value.field_type === "date") {
-            let dateSchema = Yup.string().matches(
-              /^\d{4}-\d{2}-\d{2}$/,
-              `${value.label} must be a valid date (YYYY-MM-DD)`,
-            );
-            if (value.max) {
-              dateSchema = dateSchema.test(
-                "not-after-max",
-                `${value.label} must be on or before ${value.max}`,
-                (v) => !v || v <= value.max!,
-              );
-            }
-            if (value.min) {
-              dateSchema = dateSchema.test(
-                "not-before-min",
-                `${value.label} must be on or after ${value.min}`,
-                (v) => !v || v >= value.min!,
-              );
-            }
-            return [[key, dateSchema.required(`${value.label} is required`)]];
+            return [[key, dateFieldValidation(value, value.label, true)]];
           }
           return [[key, Yup.string().required(`${value.label} is required`)]];
         }),
