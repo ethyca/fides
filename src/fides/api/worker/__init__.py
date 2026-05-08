@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, List, Optional
 
 from celery import VERSION_BANNER
@@ -68,49 +69,60 @@ def _parse_prefetch_map(known_queues: List[str]) -> Dict[str, int]:
 
 def _run_celery_worker(worker_queues: str, prefetch_map: Dict[str, int]) -> None:
     """Run the Celery worker process. Extracted so it can be used as a watchfiles target."""
-    active_queues = [q.strip() for q in worker_queues.split(",")]
+    previous_worker_flag = os.environ.get("FIDES_CELERY_WORKER")
+    previous_task_always_eager = celery_app.conf.task_always_eager
+    os.environ["FIDES_CELERY_WORKER"] = "1"
+    celery_app.conf.task_always_eager = CONFIG.celery.task_always_eager
+    try:
+        active_queues = [q.strip() for q in worker_queues.split(",")]
 
-    # Resolve prefetch multiplier — first matching queue wins
-    prefetch: Optional[int] = None
-    for queue in active_queues:
-        if queue in prefetch_map:
-            prefetch = prefetch_map[queue]
-            break
+        # Resolve prefetch multiplier — first matching queue wins
+        prefetch: Optional[int] = None
+        for queue in active_queues:
+            if queue in prefetch_map:
+                prefetch = prefetch_map[queue]
+                break
 
-    argv = [
-        "--quiet",  # Disable Celery startup banner
-        "worker",
-        "--loglevel=info",
-        f"--concurrency={CONFIG.celery.worker_concurrency}",
-        f"--queues={worker_queues}",
-    ]
-    if prefetch is not None:
-        argv.append(f"--prefetch-multiplier={prefetch}")
+        argv = [
+            "--quiet",  # Disable Celery startup banner
+            "worker",
+            "--loglevel=info",
+            f"--concurrency={CONFIG.celery.worker_concurrency}",
+            f"--queues={worker_queues}",
+        ]
+        if prefetch is not None:
+            argv.append(f"--prefetch-multiplier={prefetch}")
 
-    without_flags = []
-    if CONFIG.celery.worker_disable_heartbeat:
-        without_flags.append("--without-heartbeat")
-    if CONFIG.celery.worker_disable_gossip:
-        without_flags.append("--without-gossip")
-    if CONFIG.celery.worker_disable_mingle:
-        without_flags.append("--without-mingle")
-    if without_flags:
-        argv += without_flags
+        without_flags = []
+        if CONFIG.celery.worker_disable_heartbeat:
+            without_flags.append("--without-heartbeat")
+        if CONFIG.celery.worker_disable_gossip:
+            without_flags.append("--without-gossip")
+        if CONFIG.celery.worker_disable_mingle:
+            without_flags.append("--without-mingle")
+        if without_flags:
+            argv += without_flags
+            logger.info(
+                f"Worker started with {' '.join(without_flags)} "
+                f"(FIDES__CELERY__WORKER_DISABLE_HEARTBEAT={CONFIG.celery.worker_disable_heartbeat}, "
+                f"FIDES__CELERY__WORKER_DISABLE_GOSSIP={CONFIG.celery.worker_disable_gossip}, "
+                f"FIDES__CELERY__WORKER_DISABLE_MINGLE={CONFIG.celery.worker_disable_mingle})"
+            )
+
+        eager = CONFIG.celery.task_always_eager
         logger.info(
-            f"Worker started with {' '.join(without_flags)} "
-            f"(FIDES__CELERY__WORKER_DISABLE_HEARTBEAT={CONFIG.celery.worker_disable_heartbeat}, "
-            f"FIDES__CELERY__WORKER_DISABLE_GOSSIP={CONFIG.celery.worker_disable_gossip}, "
-            f"FIDES__CELERY__WORKER_DISABLE_MINGLE={CONFIG.celery.worker_disable_mingle})"
+            f"Worker starting | queues={worker_queues} | "
+            f"task_always_eager={eager} | "
+            f"prefetch_multiplier={prefetch if prefetch is not None else 'default (4)'}"
         )
 
-    eager = CONFIG.celery.task_always_eager
-    logger.info(
-        f"Worker starting | queues={worker_queues} | "
-        f"task_always_eager={eager} | "
-        f"prefetch_multiplier={prefetch if prefetch is not None else 'default (4)'}"
-    )
-
-    celery_app.worker_main(argv=argv)
+        celery_app.worker_main(argv=argv)
+    finally:
+        if previous_worker_flag is None:
+            os.environ.pop("FIDES_CELERY_WORKER", None)
+        else:
+            os.environ["FIDES_CELERY_WORKER"] = previous_worker_flag
+        celery_app.conf.task_always_eager = previous_task_always_eager
 
 
 def start_worker(

@@ -323,7 +323,9 @@ async def workers_health() -> Dict:
         workers_enabled=False, workers=[], queue_counts={}
     ).model_dump(mode="json")
 
-    fides_is_using_workers = not celery_app.conf["task_always_eager"]
+    # API process forces ``celery_app.conf.task_always_eager`` false so tasks publish to the
+    # broker; deployment intent still lives on ``CONFIG.celery``.
+    fides_is_using_workers = not CONFIG.celery.task_always_eager
     if fides_is_using_workers:
         response["workers_enabled"] = True
         # Figure out a way to make this faster

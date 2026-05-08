@@ -1,3 +1,4 @@
+import os
 from typing import Any, ContextManager, Dict, List, Optional
 
 import celery_redis_cluster_backend  # type: ignore[import-untyped]  # noqa: F401 - registers redis+cluster/rediss+cluster backends
@@ -35,6 +36,19 @@ BULK_CONSENT_IMPORT_QUEUE_NAME = "fidesplus.bulk_consent_import"  # This queue i
 
 NEW_SESSION_RETRIES = 5
 
+
+def _honor_configured_celery_eager_execution() -> bool:
+    """True when CONFIG-driven eager execution may run in the current process.
+
+    The web API always publishes tasks to the broker. Celery worker entrypoints
+    set ``FIDES_CELERY_WORKER`` so eager settings apply there; tests keep
+    ``FIDES__TEST_MODE`` behavior unchanged.
+    """
+    if CONFIG.test_mode:
+        return True
+    return os.environ.get("FIDES_CELERY_WORKER") == "1"
+
+
 autodiscover_task_locations: List[str] = [
     "fides.api.tasks",
     "fides.api.tasks.scheduled",
@@ -65,12 +79,17 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         **options: Any,
     ) -> Any:  # type: ignore[override]
         """Dispatch the task, running it eagerly if the target queue is in the configured
-        eager_task_queues or if task_always_eager is enabled globally."""
+        eager_task_queues or if task_always_eager is enabled globally.
+
+        Eager routing is only honored in Celery worker processes (and in test mode),
+        never in the API server process."""
         effective_queue = (
             queue or getattr(self, "queue", None) or self.app.conf.task_default_queue
         )
         eager_queues = CONFIG.celery.eager_task_queues
-        if effective_queue in eager_queues or self.app.conf.task_always_eager:
+        if _honor_configured_celery_eager_execution() and (
+            effective_queue in eager_queues or self.app.conf.task_always_eager
+        ):
             return self.apply(args, kwargs, **options)
         return super().apply_async(args, kwargs, queue=queue, **options)
 
@@ -186,6 +205,11 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     app.conf.update(celery_config)
 
     app.autodiscover_tasks(autodiscover_task_locations)
+
+    # Non-worker processes (e.g. the FastAPI app) must not execute tasks eagerly in-process;
+    # ``fides.api.worker`` sets ``FIDES_CELERY_WORKER`` and syncs ``task_always_eager`` from CONFIG.
+    if not config.test_mode and os.environ.get("FIDES_CELERY_WORKER") != "1":
+        app.conf.task_always_eager = False
 
     return app
 
