@@ -247,12 +247,14 @@ const PagedVendorData = ({
   vendors,
   enabledIds,
   onChange,
+  attDenied = false,
 }: {
   activeTab: string;
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
   onChange: (newIds: string[], vendor: VendorRecord) => void;
+  attDenied?: boolean;
 }) => {
   const { i18n } = useI18n();
   const { activeChunk, ...paging } = usePaging(vendors);
@@ -269,14 +271,20 @@ const PagedVendorData = ({
     nonGVLVendors: VendorRecord[];
   } = useMemo(
     () => ({
-      nonGVLVendors: activeChunk?.filter((v) => !v.isGvl),
-      consentGvlVendors: activeChunk?.filter((v) => v.isGvl && v.isConsent),
-      legintGvlVendors: activeChunk?.filter((v) => v.isGvl && v.isLegint),
-      specialPurposeGvlVendors: activeChunk?.filter(
-        (v) => v.isGvl && v.isSpecial && !v.isLegint,
-      ),
+      nonGVLVendors: activeChunk
+        ?.filter((v) => !v.isGvl)
+        .map((v) => ({ ...v, disabled: attDenied })),
+      consentGvlVendors: activeChunk
+        ?.filter((v) => v.isGvl && v.isConsent)
+        .map((v) => ({ ...v, disabled: attDenied })),
+      legintGvlVendors: activeChunk
+        ?.filter((v) => v.isGvl && v.isLegint)
+        .map((v) => ({ ...v, disabled: attDenied })),
+      specialPurposeGvlVendors: activeChunk
+        ?.filter((v) => v.isGvl && v.isSpecial && !v.isLegint)
+        .map((v) => ({ ...v, disabled: attDenied })),
     }),
-    [activeChunk],
+    [activeChunk, attDenied],
   );
 
   if (!activeChunk) {
@@ -377,6 +385,7 @@ const TcfVendors = ({
   experience,
   enabledIds,
   onChange,
+  attDenied = false,
 }: {
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
@@ -384,6 +393,7 @@ const TcfVendors = ({
     payload: UpdateEnabledIds,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
+  attDenied?: boolean;
 }) => {
   const {
     vendorsConsent: enabledVendorConsentIds,
@@ -437,6 +447,7 @@ const TcfVendors = ({
         activeTab={activeLegalBasisOption.value}
         experience={experience}
         vendors={filteredVendors}
+        attDenied={attDenied}
         enabledIds={
           activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
             ? enabledVendorConsentIds

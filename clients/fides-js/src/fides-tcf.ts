@@ -14,7 +14,6 @@ import { FidesCookie, isNewFidesCookie } from "./fides";
 import { getConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
-  FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
   FidesOverrides,
@@ -119,11 +118,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       true,
   });
 
-  const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
-    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
-      OverrideType.EXPERIENCE_TRANSLATION,
-      config,
-    );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // if we don't already have a fidesString override, use fidesString from consent prefs if they exist
@@ -133,7 +127,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
-    experienceTranslationOverrides,
   };
   // eslint-disable-next-line no-param-reassign
   config = {
@@ -236,7 +229,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     initOverlay,
     renderOverlay,
     updateExperience: updateTCFExperience,
-    overrides,
     automatedConsentContext,
   });
   Object.assign(this, updatedFides);
