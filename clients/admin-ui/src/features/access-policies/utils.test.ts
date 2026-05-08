@@ -1,4 +1,8 @@
-import { extractPolicyFields, updateYamlField } from "./policy-yaml";
+import {
+  diffPolicies,
+  extractPolicyFields,
+  updateYamlField,
+} from "./policy-yaml";
 import { formatRelativeTime } from "./utils";
 
 describe("formatRelativeTime", () => {
@@ -102,5 +106,152 @@ describe("updateYamlField", () => {
     expect(result).toContain("fides_key: test");
     expect(result).toContain("name: Test Policy");
     expect(result).toContain("enabled: true");
+  });
+});
+
+describe("diffPolicies", () => {
+  const baseYaml = [
+    "name: Sample",
+    "decision: ALLOW",
+    "match:",
+    "  data_use:",
+    "    any:",
+    "      - marketing",
+    "",
+  ].join("\n");
+
+  it("returns no changes when both yamls are identical", () => {
+    const diff = diffPolicies(baseYaml, baseYaml);
+    expect(diff.hasChanges).toBe(false);
+    expect(diff.summary).toEqual({ added: [], modified: [], removed: [] });
+    expect(diff.policyMetadata).toBe("unchanged");
+    expect(diff.action).toBe("unchanged");
+  });
+
+  it("treats every section as added when oldYaml is undefined", () => {
+    const diff = diffPolicies(undefined, baseYaml);
+    expect(diff.hasChanges).toBe(true);
+    expect(diff.policyMetadata).toBe("added");
+    expect(diff.action).toBe("added");
+    expect(diff.conditions.data_use).toBe("added");
+    expect(diff.summary.added).toContain("policy details");
+    expect(diff.summary.added).toContain("decision");
+    expect(diff.summary.added).toContain("data use condition");
+  });
+
+  it("flags a newly added condition", () => {
+    const newYaml = baseYaml.replace(
+      "match:\n  data_use:\n    any:\n      - marketing",
+      [
+        "match:",
+        "  data_use:",
+        "    any:",
+        "      - marketing",
+        "  data_category:",
+        "    all:",
+        "      - user.behavior",
+      ].join("\n"),
+    );
+    const diff = diffPolicies(baseYaml, newYaml);
+    expect(diff.hasChanges).toBe(true);
+    expect(diff.conditions.data_category).toBe("added");
+    expect(diff.conditions.data_use).toBe("unchanged");
+    expect(diff.summary.added).toContain("data category condition");
+  });
+
+  it("flags a removed condition via removedConditionProperties", () => {
+    const dualYaml = [
+      "name: Sample",
+      "decision: ALLOW",
+      "match:",
+      "  data_use:",
+      "    any:",
+      "      - marketing",
+      "  data_category:",
+      "    all:",
+      "      - user.behavior",
+      "",
+    ].join("\n");
+    const diff = diffPolicies(dualYaml, baseYaml);
+    expect(diff.removedConditionProperties).toContain("data_category");
+    expect(diff.summary.removed).toContain("data category condition");
+  });
+
+  it("flags a modified condition when values change", () => {
+    const newYaml = baseYaml.replace("- marketing", "- analytics");
+    const diff = diffPolicies(baseYaml, newYaml);
+    expect(diff.conditions.data_use).toBe("modified");
+    expect(diff.summary.modified).toContain("data use condition");
+  });
+
+  it("flags a modified condition when operator changes from any to all", () => {
+    const newYaml = baseYaml.replace(
+      "  data_use:\n    any:\n      - marketing",
+      "  data_use:\n    all:\n      - marketing",
+    );
+    const diff = diffPolicies(baseYaml, newYaml);
+    expect(diff.conditions.data_use).toBe("modified");
+  });
+
+  it("flags an added geo_location constraint", () => {
+    const newYaml = `${baseYaml}unless:\n  - type: geo_location\n    field: environment.geo_location\n    operator: in\n    values:\n      - US-CA\n`;
+    const diff = diffPolicies(baseYaml, newYaml);
+    expect(diff.constraints).toEqual([
+      { matchKey: "geo_location:environment.geo_location", status: "added" },
+    ]);
+    expect(diff.summary.added).toContain("geo_location constraint");
+  });
+
+  it("flags a modified consent constraint when requirement changes", () => {
+    const oldWithConsent = `${baseYaml}unless:\n  - type: consent\n    privacy_notice_key: marketing\n    requirement: opt_in\n`;
+    const newWithConsent = `${baseYaml}unless:\n  - type: consent\n    privacy_notice_key: marketing\n    requirement: opt_out\n`;
+    const diff = diffPolicies(oldWithConsent, newWithConsent);
+    expect(diff.constraints).toEqual([
+      { matchKey: "consent:marketing", status: "modified" },
+    ]);
+    expect(diff.summary.modified).toContain("consent constraint (marketing)");
+  });
+
+  it("flags a removed constraint when it disappears", () => {
+    const oldWithConstraint = `${baseYaml}unless:\n  - type: geo_location\n    field: environment.geo_location\n    operator: in\n    values:\n      - US-CA\n`;
+    const diff = diffPolicies(oldWithConstraint, baseYaml);
+    expect(diff.removedConstraintKeys).toContain(
+      "geo_location:environment.geo_location",
+    );
+    expect(diff.summary.removed).toContain("geo_location constraint");
+  });
+
+  it("flags policy metadata change when the name changes", () => {
+    const newYaml = baseYaml.replace("name: Sample", "name: Renamed");
+    const diff = diffPolicies(baseYaml, newYaml);
+    expect(diff.policyMetadata).toBe("modified");
+    expect(diff.summary.modified).toContain("policy details");
+  });
+
+  it("flags action message change", () => {
+    const oldDeny = [
+      "name: Sample",
+      "decision: DENY",
+      "match:",
+      "  data_use:",
+      "    any:",
+      "      - marketing",
+      "action:",
+      "  message: Old reason",
+      "",
+    ].join("\n");
+    const newDeny = oldDeny.replace("Old reason", "New reason");
+    const diff = diffPolicies(oldDeny, newDeny);
+    expect(diff.action).toBe("modified");
+    expect(diff.summary.modified).toContain("action message");
+  });
+
+  it("flags decision flip ALLOW → DENY", () => {
+    const newDeny = baseYaml.replace("decision: ALLOW", "decision: DENY");
+    const diff = diffPolicies(baseYaml, newDeny);
+    expect(diff.action).toBe("modified");
+    expect(diff.summary.modified.some((s) => s.includes("ALLOW → DENY"))).toBe(
+      true,
+    );
   });
 });

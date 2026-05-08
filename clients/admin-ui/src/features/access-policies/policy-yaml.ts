@@ -470,6 +470,483 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   return yaml.dump(policyYaml, { lineWidth: 120 });
 };
 
+// ---------------------------------------------------------------------------
+// Policy diff: structural comparison of two parsed AccessPolicyYaml objects.
+// Drives the agent-update transition (per-node CSS state, ghost-removed
+// nodes during the hold phase, and the textual summary in the chat bubble).
+// ---------------------------------------------------------------------------
+
+export type ChangeStatus = "added" | "removed" | "modified" | "unchanged";
+
+export interface PolicyDiffSummary {
+  added: string[];
+  modified: string[];
+  removed: string[];
+}
+
+export interface PolicyDiff {
+  policyMetadata: ChangeStatus;
+  action: ChangeStatus;
+  conditions: Partial<Record<ConditionProperty, ChangeStatus>>;
+  constraints: Array<{ matchKey: string; status: ChangeStatus }>;
+  removedConditionProperties: ConditionProperty[];
+  removedConstraintKeys: string[];
+  hasChanges: boolean;
+  summary: PolicyDiffSummary;
+}
+
+const constraintMatchKey = (item: UnlessItem): string => {
+  if (item.type === "consent") {
+    return `consent:${item.privacy_notice_key ?? ""}`;
+  }
+  if (item.type === "geo_location") {
+    return `geo_location:${item.field ?? ""}`;
+  }
+  return `data_flow:${item.direction ?? ""}`;
+};
+
+const constraintMatchKeyFromNode = (
+  data: ConstraintNodeData,
+): string | null => {
+  if (data.constraintType === ConstraintType.CONSENT) {
+    return `consent:${data.privacyNoticeKey ?? ""}`;
+  }
+  if (data.constraintType === ConstraintType.GEO_LOCATION) {
+    return `geo_location:${data.geoField ?? ""}`;
+  }
+  if (data.constraintType === ConstraintType.DATA_FLOW) {
+    return `data_flow:${data.dataFlowDirection ?? ""}`;
+  }
+  return null;
+};
+
+const constraintLabel = (item: UnlessItem): string => {
+  if (item.type === "consent") {
+    return item.privacy_notice_key
+      ? `consent constraint (${item.privacy_notice_key})`
+      : "consent constraint";
+  }
+  if (item.type === "geo_location") {
+    return "geo_location constraint";
+  }
+  return "data_flow constraint";
+};
+
+const CONDITION_LABELS: Record<ConditionProperty, string> = {
+  [ConditionProperty.DATA_USE]: "data use condition",
+  [ConditionProperty.DATA_CATEGORIES]: "data category condition",
+  [ConditionProperty.DATA_SUBJECTS]: "data subject condition",
+};
+
+const dimensionsEqual = (
+  a: MatchDimension | undefined,
+  b: MatchDimension | undefined,
+): boolean => {
+  if (!a && !b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  const aOp = a.any !== undefined ? "any" : "all";
+  const bOp = b.any !== undefined ? "any" : "all";
+  if (aOp !== bOp) {
+    return false;
+  }
+  const aVals = a.any ?? a.all ?? [];
+  const bVals = b.any ?? b.all ?? [];
+  if (aVals.length !== bVals.length) {
+    return false;
+  }
+  return aVals.every((v, i) => v === bVals[i]);
+};
+
+const constraintContentEqual = (a: UnlessItem, b: UnlessItem): boolean => {
+  if (a.type !== b.type) {
+    return false;
+  }
+  if (a.type === "consent" && b.type === "consent") {
+    return (
+      a.privacy_notice_key === b.privacy_notice_key &&
+      a.requirement === b.requirement
+    );
+  }
+  if (a.type === "geo_location" && b.type === "geo_location") {
+    if (a.field !== b.field || a.operator !== b.operator) {
+      return false;
+    }
+    if ((a.values?.length ?? 0) !== (b.values?.length ?? 0)) {
+      return false;
+    }
+    return (a.values ?? []).every((v, i) => v === (b.values ?? [])[i]);
+  }
+  if (a.type === "data_flow" && b.type === "data_flow") {
+    if (a.direction !== b.direction || a.operator !== b.operator) {
+      return false;
+    }
+    if ((a.systems?.length ?? 0) !== (b.systems?.length ?? 0)) {
+      return false;
+    }
+    return (a.systems ?? []).every((v, i) => v === (b.systems ?? [])[i]);
+  }
+  return false;
+};
+
+const metadataEqual = (a: AccessPolicyYaml, b: AccessPolicyYaml): boolean =>
+  (a.fides_key ?? "") === (b.fides_key ?? "") &&
+  (a.name ?? "") === (b.name ?? "") &&
+  (a.description ?? "") === (b.description ?? "") &&
+  (a.enabled ?? true) === (b.enabled ?? true) &&
+  (a.priority ?? 0) === (b.priority ?? 0) &&
+  (a.control ?? null) === (b.control ?? null);
+
+const hasMetadata = (p: AccessPolicyYaml): boolean =>
+  !!(
+    p.fides_key ||
+    p.name ||
+    p.description ||
+    p.enabled === false ||
+    (p.priority && p.priority !== 0) ||
+    p.control
+  );
+
+const emptyDiff = (): PolicyDiff => ({
+  policyMetadata: "unchanged",
+  action: "unchanged",
+  conditions: {},
+  constraints: [],
+  removedConditionProperties: [],
+  removedConstraintKeys: [],
+  hasChanges: false,
+  summary: { added: [], modified: [], removed: [] },
+});
+
+export const diffPolicies = (
+  oldYaml: string | undefined,
+  newYaml: string,
+): PolicyDiff => {
+  const newPolicy = parseYaml(newYaml);
+  if (!newPolicy) {
+    return emptyDiff();
+  }
+  const oldPolicy = oldYaml ? parseYaml(oldYaml) : null;
+
+  const summary: PolicyDiffSummary = { added: [], modified: [], removed: [] };
+
+  // --- Policy metadata ---
+  let policyMetadata: ChangeStatus = "unchanged";
+  if (!oldPolicy) {
+    if (hasMetadata(newPolicy)) {
+      policyMetadata = "added";
+      summary.added.push("policy details");
+    }
+  } else if (!metadataEqual(oldPolicy, newPolicy)) {
+    policyMetadata = "modified";
+    summary.modified.push("policy details");
+  }
+
+  // --- Action ---
+  const oldDecision = oldPolicy?.decision;
+  const newDecision = newPolicy.decision;
+  const oldMessage = oldPolicy?.action?.message ?? "";
+  const newMessage = newPolicy.action?.message ?? "";
+
+  let actionStatus: ChangeStatus = "unchanged";
+  if (!oldPolicy) {
+    if (newDecision) {
+      actionStatus = "added";
+      summary.added.push("decision");
+    }
+  } else if (!oldDecision && newDecision) {
+    actionStatus = "added";
+    summary.added.push("decision");
+  } else if (oldDecision && !newDecision) {
+    actionStatus = "removed";
+    summary.removed.push("decision");
+  } else if (oldDecision !== newDecision || oldMessage !== newMessage) {
+    actionStatus = "modified";
+    if (oldDecision !== newDecision) {
+      summary.modified.push(`decision (${oldDecision} → ${newDecision})`);
+    }
+    if (oldMessage !== newMessage) {
+      summary.modified.push("action message");
+    }
+  }
+
+  // --- Conditions (keyed by property) ---
+  const conditions: Partial<Record<ConditionProperty, ChangeStatus>> = {};
+  const removedConditionProperties: ConditionProperty[] = [];
+  const oldMatch: MatchBlock = oldPolicy?.match ?? {};
+  const newMatch: MatchBlock = newPolicy.match ?? {};
+
+  CONDITION_PROPERTY_KEYS.forEach((property) => {
+    const oldDim = oldMatch[property];
+    const newDim = newMatch[property];
+    if (!oldDim && newDim) {
+      conditions[property] = "added";
+      summary.added.push(CONDITION_LABELS[property]);
+    } else if (oldDim && !newDim) {
+      removedConditionProperties.push(property);
+      summary.removed.push(CONDITION_LABELS[property]);
+    } else if (oldDim && newDim) {
+      if (dimensionsEqual(oldDim, newDim)) {
+        conditions[property] = "unchanged";
+      } else {
+        conditions[property] = "modified";
+        summary.modified.push(CONDITION_LABELS[property]);
+      }
+    }
+  });
+
+  // --- Constraints (matched by content key) ---
+  const oldUnless = oldPolicy?.unless ?? [];
+  const newUnless = newPolicy.unless ?? [];
+  const oldByKey = new Map<string, UnlessItem>();
+  oldUnless.forEach((item) => {
+    const key = constraintMatchKey(item);
+    if (!oldByKey.has(key)) {
+      oldByKey.set(key, item);
+    }
+  });
+  const usedOldKeys = new Set<string>();
+
+  const constraints: Array<{ matchKey: string; status: ChangeStatus }> = [];
+  newUnless.forEach((newItem) => {
+    const key = constraintMatchKey(newItem);
+    const oldItem = oldByKey.get(key);
+    if (!oldItem) {
+      constraints.push({ matchKey: key, status: "added" });
+      summary.added.push(constraintLabel(newItem));
+    } else if (constraintContentEqual(oldItem, newItem)) {
+      constraints.push({ matchKey: key, status: "unchanged" });
+      usedOldKeys.add(key);
+    } else {
+      constraints.push({ matchKey: key, status: "modified" });
+      summary.modified.push(constraintLabel(newItem));
+      usedOldKeys.add(key);
+    }
+  });
+
+  const removedConstraintKeys: string[] = [];
+  oldByKey.forEach((item, key) => {
+    if (!usedOldKeys.has(key)) {
+      removedConstraintKeys.push(key);
+      summary.removed.push(constraintLabel(item));
+    }
+  });
+
+  const hasChanges =
+    policyMetadata !== "unchanged" ||
+    actionStatus !== "unchanged" ||
+    Object.values(conditions).some((s) => s === "added" || s === "modified") ||
+    removedConditionProperties.length > 0 ||
+    constraints.some((c) => c.status === "added" || c.status === "modified") ||
+    removedConstraintKeys.length > 0;
+
+  return {
+    policyMetadata,
+    action: actionStatus,
+    conditions,
+    constraints,
+    removedConditionProperties,
+    removedConstraintKeys,
+    hasChanges,
+    summary,
+  };
+};
+
+/**
+ * Tag each node and edge with `_diffStatus` and `_diffKey` based on the diff,
+ * so node components can drive CSS animations. Bumping `_diffKey` on a fresh
+ * diff cycle restarts the CSS animation even if the status is the same.
+ */
+const resolveNodeStatus = (
+  node: Node,
+  diff: PolicyDiff,
+): ChangeStatus | undefined => {
+  if (node.id.startsWith("removed-")) {
+    return "removed";
+  }
+  if (node.id === POLICY_NODE_ID) {
+    return diff.policyMetadata !== "unchanged"
+      ? diff.policyMetadata
+      : undefined;
+  }
+  if (node.type === "actionNode") {
+    return diff.action !== "unchanged" ? diff.action : undefined;
+  }
+  if (node.type === "conditionNode") {
+    const { property } = node.data as ConditionNodeData;
+    if (!property) {
+      return undefined;
+    }
+    const s = diff.conditions[property];
+    return s && s !== "unchanged" ? s : undefined;
+  }
+  if (node.type === "constraintNode") {
+    const matchKey = constraintMatchKeyFromNode(
+      node.data as ConstraintNodeData,
+    );
+    if (!matchKey) {
+      return undefined;
+    }
+    const c = diff.constraints.find((x) => x.matchKey === matchKey);
+    return c && c.status !== "unchanged" ? c.status : undefined;
+  }
+  return undefined;
+};
+
+export const tagNodesWithDiff = (
+  nodes: Node[],
+  edges: Edge[],
+  diff: PolicyDiff,
+  diffKey: number,
+): { nodes: Node[]; edges: Edge[] } => {
+  const statusById = new Map<string, ChangeStatus>();
+  const taggedNodes = nodes.map((node) => {
+    const status = resolveNodeStatus(node, diff);
+    if (!status) {
+      return node;
+    }
+    statusById.set(node.id, status);
+    // The className flows through to the React Flow node wrapper, allowing
+    // diff styling to live in module SCSS without each node component needing
+    // to know about the diff status. The diffKey is appended so changing it
+    // forces a class swap and restarts the CSS animation.
+    const className = [
+      node.className,
+      `diffStatus-${status}`,
+      `diffKey-${diffKey}`,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return { ...node, className };
+  });
+
+  const taggedEdges = edges.map((edge) => {
+    const sourceStatus = statusById.get(edge.source);
+    const targetStatus = statusById.get(edge.target);
+    let edgeStatus: ChangeStatus | undefined;
+    if (sourceStatus === "removed" || targetStatus === "removed") {
+      edgeStatus = "removed";
+    } else if (sourceStatus === "added" || targetStatus === "added") {
+      edgeStatus = "added";
+    }
+    if (!edgeStatus) {
+      return edge;
+    }
+    const className = [edge.className, `diffStatus-${edgeStatus}`]
+      .filter(Boolean)
+      .join(" ");
+    return { ...edge, className };
+  });
+
+  return { nodes: taggedNodes, edges: taggedEdges };
+};
+
+/**
+ * Build a transient graph that overlays the new YAML's nodes with ghost
+ * copies of the conditions/constraints removed from the old YAML. Ghost
+ * nodes are prefixed with `removed-` so they don't collide with the manual
+ * id counter regex in PolicyCanvasPanel.syncCounters.
+ */
+export const buildUnionGraph = (
+  oldYaml: string | undefined,
+  newYaml: string,
+  diff: PolicyDiff,
+): { nodes: Node[]; edges: Edge[] } => {
+  const newGraph = yamlToNodesAndEdges(newYaml);
+  if (!newGraph) {
+    return { nodes: [], edges: [] };
+  }
+  if (
+    !oldYaml ||
+    (diff.removedConditionProperties.length === 0 &&
+      diff.removedConstraintKeys.length === 0)
+  ) {
+    return newGraph;
+  }
+  const oldGraph = yamlToNodesAndEdges(oldYaml);
+  if (!oldGraph) {
+    return newGraph;
+  }
+
+  const ghostNodes: Node[] = [];
+  const ghostEdges: Edge[] = [];
+
+  const newActionNode = newGraph.nodes.find((n) => n.type === "actionNode");
+  const newFirstCondition = newGraph.nodes.find(
+    (n) => n.type === "conditionNode",
+  );
+
+  diff.removedConditionProperties.forEach((property) => {
+    const oldNode = oldGraph.nodes.find(
+      (n) =>
+        n.type === "conditionNode" &&
+        (n.data as ConditionNodeData).property === property,
+    );
+    if (!oldNode) {
+      return;
+    }
+    const ghostId = `removed-condition-${property}`;
+    ghostNodes.push({
+      ...oldNode,
+      id: ghostId,
+      position: { x: 0, y: 0 },
+      selectable: false,
+      draggable: false,
+    });
+    if (newActionNode) {
+      ghostEdges.push({
+        id: `e-ghost-${newActionNode.id}-${ghostId}`,
+        source: newActionNode.id,
+        target: ghostId,
+        type: "labeledEdge",
+        data: { label: "when" },
+      });
+    }
+  });
+
+  diff.removedConstraintKeys.forEach((key) => {
+    const oldNode = oldGraph.nodes.find((n) => {
+      if (n.type !== "constraintNode") {
+        return false;
+      }
+      const k = constraintMatchKeyFromNode(n.data as ConstraintNodeData);
+      return k === key;
+    });
+    if (!oldNode) {
+      return;
+    }
+    const sanitized = key.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const ghostId = `removed-constraint-${sanitized}`;
+    ghostNodes.push({
+      ...oldNode,
+      id: ghostId,
+      position: { x: 0, y: 0 },
+      selectable: false,
+      draggable: false,
+    });
+    const sourceId =
+      newFirstCondition?.id ??
+      ghostNodes.find((n) => n.type === "conditionNode")?.id;
+    if (sourceId) {
+      ghostEdges.push({
+        id: `e-ghost-${sourceId}-${ghostId}`,
+        source: sourceId,
+        target: ghostId,
+        type: "labeledEdge",
+        data: { label: "unless" },
+      });
+    }
+  });
+
+  return {
+    nodes: [...newGraph.nodes, ...ghostNodes],
+    edges: [...newGraph.edges, ...ghostEdges],
+  };
+};
+
 /**
  * Derive fan-out edges from display edges for dagre positioning.
  * Dagre uses these to assign same-rank to same-type sibling nodes,

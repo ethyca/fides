@@ -26,15 +26,23 @@ import { getLayoutedElements } from "~/features/datamap/layout-utils";
 import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
 import styles from "./AccessPolicyEditor.module.scss";
 import AgentChatPanel from "./AgentChatPanel";
+import {
+  DIFF_FIT_DURATION_MS,
+  DIFF_HIGHLIGHT_MS,
+  DIFF_HOLD_MS,
+} from "./constants";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
 import ConditionNode, { ConditionNodeType } from "./MatchNode";
 import {
+  buildUnionGraph,
   deriveLayoutEdges,
   nodesToYaml,
   parseYaml,
   POLICY_NODE_ID,
+  PolicyDiff,
+  tagNodesWithDiff,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
 import PolicyEditorPanel from "./PolicyEditorPanel";
@@ -80,6 +88,13 @@ const edgeTypes: EdgeTypes = {
   labeledEdge: LabeledEdge,
 };
 
+interface PendingTransition {
+  phase: "ghost-hold" | "settling";
+  diff: PolicyDiff;
+  oldYaml: string;
+  epoch: number;
+}
+
 interface PolicyCanvasPanelProps {
   control: string | null;
   controlOptions: NonNullable<SelectProps["options"]>;
@@ -87,6 +102,7 @@ interface PolicyCanvasPanelProps {
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
   syncKey?: number;
+  pendingTransition?: PendingTransition | null;
 }
 
 const DEFAULT_ZOOM = 1;
@@ -228,6 +244,46 @@ const findFirstOfType = (
   );
 };
 
+const DiffViewportController = ({
+  pendingTransition,
+  layoutedNodes,
+}: {
+  pendingTransition: PendingTransition | null | undefined;
+  layoutedNodes: Node[];
+}) => {
+  const { fitView } = useReactFlow();
+  const lastSeenRef = useRef<{ phase: string; epoch: number } | null>(null);
+
+  useEffect(() => {
+    if (!pendingTransition) {
+      lastSeenRef.current = null;
+      return undefined;
+    }
+    const { phase, epoch } = pendingTransition;
+    if (
+      lastSeenRef.current?.phase === phase &&
+      lastSeenRef.current?.epoch === epoch
+    ) {
+      return undefined;
+    }
+    const allMeasured =
+      layoutedNodes.length > 0 &&
+      layoutedNodes.every(
+        (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
+      );
+    if (!allMeasured) {
+      return undefined;
+    }
+    lastSeenRef.current = { phase, epoch };
+    const timer = setTimeout(() => {
+      fitView({ duration: DIFF_FIT_DURATION_MS, padding: 0.3 });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [pendingTransition, layoutedNodes, fitView]);
+
+  return null;
+};
+
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
     control,
@@ -236,6 +292,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     onYamlChange,
     initialYaml,
     syncKey,
+    pendingTransition,
   } = props;
 
   const initialResult = useMemo(
@@ -284,23 +341,46 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When syncKey increments (Code → Builder switch), re-parse initialYaml
+  // When syncKey increments, re-parse initialYaml. If a pendingTransition is
+  // active, build the union graph (with ghost-removed nodes) during ghost-hold
+  // and tag nodes/edges with their _diffStatus so node components can drive
+  // CSS animations.
   const prevSyncKeyRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (syncKey === undefined || syncKey === prevSyncKeyRef.current) {
       return;
     }
     prevSyncKeyRef.current = syncKey;
-    const parsed = initialYaml ? yamlToNodesAndEdges(initialYaml) : null;
-    if (parsed) {
-      setNodes(parsed.nodes);
-      setEdges(parsed.edges);
-      syncCounters(parsed.nodes);
-    } else {
+    if (!initialYaml) {
       setNodes(createPolicyNode(props));
       setEdges([]);
       nextIdRef.current = { action: 1, condition: 1, constraint: 1 };
+      return;
     }
+    let built: { nodes: Node[]; edges: Edge[] } | null;
+    if (pendingTransition?.phase === "ghost-hold") {
+      built = buildUnionGraph(
+        pendingTransition.oldYaml,
+        initialYaml,
+        pendingTransition.diff,
+      );
+    } else {
+      built = yamlToNodesAndEdges(initialYaml);
+    }
+    if (!built) {
+      return;
+    }
+    if (pendingTransition?.diff) {
+      built = tagNodesWithDiff(
+        built.nodes,
+        built.edges,
+        pendingTransition.diff,
+        syncKey,
+      );
+    }
+    setNodes(built.nodes);
+    setEdges(built.edges);
+    syncCounters(built.nodes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncKey]);
 
@@ -443,14 +523,16 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData, onControlChange],
   );
 
-  // Derive YAML from nodes/edges
+  // Derive YAML from nodes/edges. Skipped while a transition is active so the
+  // ghost-hold's transient nodes don't get serialized back into yamlValue and
+  // resurrect themselves when the settling phase re-parses from it.
   useEffect(() => {
-    if (!onYamlChange) {
+    if (!onYamlChange || pendingTransition) {
       return;
     }
     const derived = nodesToYaml(nodes, edges);
     onYamlChange(derived);
-  }, [nodes, edges, onYamlChange]);
+  }, [nodes, edges, onYamlChange, pendingTransition]);
 
   const layoutEdges = useMemo(
     () => deriveLayoutEdges(nodes, edges),
@@ -749,7 +831,11 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
 
   return (
-    <div className={styles.canvasContainer}>
+    <div
+      className={`${styles.canvasContainer}${
+        pendingTransition ? ` ${styles.transitioning}` : ""
+      }`}
+    >
       <ReactFlow
         nodes={nodesWithCallbacks}
         edges={edges}
@@ -769,6 +855,10 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           lastCreatedNodeId={lastCreatedNodeId}
           layoutedNodes={layoutedNodes}
           onCentered={clearLastCreatedNodeId}
+        />
+        <DiffViewportController
+          pendingTransition={pendingTransition}
+          layoutedNodes={layoutedNodes}
         />
       </ReactFlow>
     </div>
@@ -803,6 +893,15 @@ const AccessPolicyEditor = ({
     initialValues?.control ?? null,
   );
   const [syncKey, setSyncKey] = useState(0);
+  const [pendingTransition, setPendingTransition] =
+    useState<PendingTransition | null>(null);
+  const transitionEpochRef = useRef(0);
+  const transitionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const clearTransitionTimers = useCallback(() => {
+    transitionTimersRef.current.forEach((t) => clearTimeout(t));
+    transitionTimersRef.current = [];
+  }, []);
+  useEffect(() => () => clearTransitionTimers(), [clearTransitionTimers]);
   const [chatVisible, setChatVisible] = useLocalStorage<boolean>(
     "access-policies:chat-visible",
     true,
@@ -817,9 +916,14 @@ const AccessPolicyEditor = ({
       if (mode === EditorMode.Code && newMode !== EditorMode.Code) {
         setSyncKey((k) => k + 1);
       }
+      // Code mode shouldn't render ghosts — drop any active transition.
+      if (newMode === EditorMode.Code && pendingTransition) {
+        clearTransitionTimers();
+        setPendingTransition(null);
+      }
       setMode(newMode);
     },
-    [mode],
+    [mode, pendingTransition, clearTransitionTimers],
   );
 
   const handleYamlChange = useCallback((derivedYaml: string) => {
@@ -848,14 +952,46 @@ const AccessPolicyEditor = ({
     [],
   );
 
-  const handleYamlProposed = useCallback((newYaml: string) => {
-    setYamlValue(newYaml);
-    setSyncKey((k) => k + 1);
-    const parsed = parseYaml(newYaml);
-    if (parsed?.control !== undefined) {
-      setControl(parsed.control ?? null);
-    }
-  }, []);
+  const handleYamlProposed = useCallback(
+    (newYaml: string, diff?: PolicyDiff) => {
+      const oldYaml = yamlValue;
+      setYamlValue(newYaml);
+      const parsed = parseYaml(newYaml);
+      if (parsed?.control !== undefined) {
+        setControl(parsed.control ?? null);
+      }
+
+      // Cancel any in-flight transition before starting a new one.
+      clearTransitionTimers();
+
+      if (!diff || !diff.hasChanges) {
+        setPendingTransition(null);
+        setSyncKey((k) => k + 1);
+        return;
+      }
+
+      transitionEpochRef.current += 1;
+      const epoch = transitionEpochRef.current;
+
+      setPendingTransition({ phase: "ghost-hold", diff, oldYaml, epoch });
+      setSyncKey((k) => k + 1);
+
+      const settleTimer = setTimeout(() => {
+        setPendingTransition((prev) =>
+          prev?.epoch === epoch ? { ...prev, phase: "settling" } : prev,
+        );
+        setSyncKey((k) => k + 1);
+      }, DIFF_HOLD_MS);
+
+      const cleanupTimer = setTimeout(() => {
+        setPendingTransition((prev) => (prev?.epoch === epoch ? null : prev));
+        setSyncKey((k) => k + 1);
+      }, DIFF_HIGHLIGHT_MS);
+
+      transitionTimersRef.current = [settleTimer, cleanupTimer];
+    },
+    [yamlValue, clearTransitionTimers],
+  );
 
   const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
   const displayName = parsedForDisplay?.name ?? "";
@@ -883,6 +1019,7 @@ const AccessPolicyEditor = ({
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
+      pendingTransition={pendingTransition}
     />
   );
 

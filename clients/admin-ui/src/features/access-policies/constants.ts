@@ -66,3 +66,9 @@ export const DATA_FLOW_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
   { value: DataFlowOperator.ANY_OF, label: "Any of" },
   { value: DataFlowOperator.NONE_OF, label: "None of" },
 ];
+
+// Timings (ms) for the agent-update animated transition. See
+// AccessPolicyEditor.handleYamlProposed for the phase machine.
+export const DIFF_HOLD_MS = 2000;
+export const DIFF_HIGHLIGHT_MS = 5000;
+export const DIFF_FIT_DURATION_MS = 800;
