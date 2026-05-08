@@ -15,7 +15,6 @@ from fides.api.models.detection_discovery.core import (
     SharedMonitorConfig,
     StagedResource,
     StagedResourceAncestor,
-    fetch_staged_resources_by_type_query,
 )
 from fides.api.models.detection_discovery.monitor_task import (
     MonitorTask,
@@ -247,66 +246,6 @@ class TestStagedResourceModel:
                 "classification_paradigm": "content",
             },
         ]
-
-    def test_fetch_staged_resources_by_type_query(
-        self,
-        db: Session,
-        create_staged_resource,
-        create_staged_database,
-        create_staged_schema,
-    ) -> None:
-        """
-        Tests that the fetch_staged_resources_by_type_query works as expected
-        """
-        query = fetch_staged_resources_by_type_query("Table")
-        resources = db.execute(query).all()
-        assert len(resources) == 1
-        assert resources[0][0].resource_type == "Table"
-        assert resources[0][0].urn == create_staged_resource.urn
-
-        query = fetch_staged_resources_by_type_query("Schema")
-        resources = db.execute(query).all()
-        assert len(resources) == 1
-
-        query = fetch_staged_resources_by_type_query("Database")
-        resources = db.execute(query).all()
-        assert len(resources) == 1
-        assert resources[0][0].urn == create_staged_database.urn
-
-        database = StagedResource.get_urn(db, create_staged_database.urn)
-        database.diff_status = None
-        database.save(db)
-        query = fetch_staged_resources_by_type_query("Database")
-        resources = db.execute(query).all()
-        assert len(resources) == 1
-
-    def test_fetch_staged_resources_by_type_query_with_monitor_config_ids(
-        self,
-        db: Session,
-        create_staged_resource,
-        create_staged_schema,
-    ):
-        """
-        Tests that the fetch_staged_resources_by_type_query works as expected with monitor config IDs
-        """
-        query = fetch_staged_resources_by_type_query("Table")
-        resources = db.execute(query).all()
-        assert len(resources) == 1
-        assert resources[0][0].resource_type == "Table"
-        assert resources[0][0].urn == create_staged_resource.urn
-
-        query = fetch_staged_resources_by_type_query("Schema")
-        resources = db.execute(query).all()
-        assert len(resources) == 1
-        assert resources[0][0].urn == create_staged_schema.urn
-
-        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_1"])
-        resources = db.execute(query).all()
-        assert len(resources) == 1
-
-        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_2"])
-        resources = db.execute(query).all()
-        assert len(resources) == 0
 
 
 class TestStagedResourceModelWebMonitorResults:
