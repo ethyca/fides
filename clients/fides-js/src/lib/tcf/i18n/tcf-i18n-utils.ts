@@ -13,10 +13,7 @@ import { STATIC_MESSAGES_TCF } from "./locales";
  */
 export function loadTcfMessagesFromFiles(i18n: I18n): Locale[] {
   Object.keys(STATIC_MESSAGES_TCF).forEach((locale) => {
-    const messages = STATIC_MESSAGES_TCF[locale];
-    if (messages) {
-      i18n.load(locale, messages);
-    }
+    i18n.load(locale, STATIC_MESSAGES_TCF[locale]);
   });
   return Object.keys(STATIC_MESSAGES_TCF);
 }

@@ -30,6 +30,7 @@ import {
 } from "~/lib/i18n";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesTcfEn from "~/lib/tcf/i18n/locales/en/messages-tcf.json";
+import messagesTcfEs from "~/lib/tcf/i18n/locales/es/messages-tcf.json";
 import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
@@ -249,28 +250,36 @@ describe("i18n-utils", () => {
   });
 
   describe("loadTcfMessagesFromFiles", () => {
-    it("reads default (English) TCF-specific static messages from source and loads into the i18n catalog", () => {
+    it("reads all TCF-specific static messages from source and loads into the i18n catalog", () => {
       const updatedLocales = loadTcfMessagesFromFiles(mockI18n);
 
-      // Only the default locale (en) is bundled statically; other locales
-      // get their translations from the experience API at runtime
-      expect(updatedLocales).toHaveLength(1);
+      // Check the updated locales list is what we expect
+      const EXPECTED_NUM_STATIC_LOCALES = 42; // NOTE: manually update this as new locales added
+      expect(updatedLocales).toHaveLength(EXPECTED_NUM_STATIC_LOCALES);
       expect(updatedLocales).toContain("en");
-      expect(mockI18n.load).toHaveBeenCalledTimes(1);
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
 
-      // Verify English TCF messages are loaded correctly
+      // Verify a few of our expected locales match their expected catalogues, too
       expect(mockI18n.load).toHaveBeenCalledWith("en", messagesTcfEn);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", messagesTcfEs);
 
       // Sanity-check a few of the loaded messages match our expected static strings
       const [, loadedMessagesEn] =
         mockI18n.load.mock.calls.find(([locale]) => locale === "en") || [];
+      const [, loadedMessagesEs] =
+        mockI18n.load.mock.calls.find(([locale]) => locale === "es") || [];
       expect(loadedMessagesEn).toMatchObject({
         "static.tcf.consent": "Consent",
         "static.tcf.features": "Features",
       });
+      expect(loadedMessagesEs).toMatchObject({
+        "static.tcf.consent": "Consentimiento",
+        "static.tcf.features": "Características",
+      });
 
       // Check that regular static strings are not loaded
       expect(loadedMessagesEn).not.toHaveProperty(["static.gpc"]);
+      expect(loadedMessagesEs).not.toHaveProperty(["static.gpc"]);
     });
   });
 
