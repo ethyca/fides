@@ -845,7 +845,7 @@ describe("cookies", () => {
   });
 
   describe("updateCookieFromExperience", () => {
-    it("merges saved non_applicable_notice_keys with experience data", () => {
+    it("updates cookie with experience data and preserves non_applicable_notice_keys", () => {
       const cookie = makeFidesCookie();
       cookie.non_applicable_notice_keys = ["old_na_notice"];
 
@@ -869,25 +869,9 @@ describe("cookies", () => {
         one: true,
         two: false,
       });
-      expect(updatedCookie.non_applicable_notice_keys?.sort()).toEqual(
-        ["new_na_notice", "old_na_notice"].sort(),
-      );
-    });
-
-    it("deduplicates overlapping non_applicable_notice_keys", () => {
-      const cookie = makeFidesCookie();
-      cookie.non_applicable_notice_keys = ["shared_notice", "cookie_only"];
-
-      const experience = {
-        privacy_notices: [],
-        non_applicable_privacy_notices: ["shared_notice", "experience_only"],
-      } as unknown as PrivacyExperience;
-
-      const updatedCookie = updateCookieFromExperience({ cookie, experience });
-
-      expect(updatedCookie.non_applicable_notice_keys?.sort()).toEqual(
-        ["cookie_only", "experience_only", "shared_notice"].sort(),
-      );
+      expect(updatedCookie.non_applicable_notice_keys).toEqual([
+        "new_na_notice",
+      ]);
     });
 
     it("preserves existing non_applicable_notice_keys when experience has none", () => {

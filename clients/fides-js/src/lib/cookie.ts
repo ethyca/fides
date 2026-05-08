@@ -749,20 +749,12 @@ export const updateCookieFromExperience = ({
   experience: PrivacyExperience;
 }): FidesCookie => {
   const consent = getConsentStateFromExperience(experience);
-  // Union the saved non-applicable notice keys with the current experience's
-  // list. Replacing instead of merging would erase the record that the user
-  // has already been informed of notices that were non-applicable in a prior
-  // region, which can incorrectly cause the banner to resurface when one of
-  // those notices later becomes applicable.
-  const mergedNonApplicableNoticeKeys = Array.from(
-    new Set([
-      ...(cookie.non_applicable_notice_keys ?? []),
-      ...(experience.non_applicable_privacy_notices ?? []),
-    ]),
-  );
   return {
     ...cookie,
     consent,
-    non_applicable_notice_keys: mergedNonApplicableNoticeKeys,
+    non_applicable_notice_keys:
+      experience.non_applicable_privacy_notices ||
+      cookie.non_applicable_notice_keys ||
+      [],
   };
 };
