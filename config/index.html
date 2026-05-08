@@ -2286,7 +2286,14 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">615</span>
 <span class="normal">616</span>
 <span class="normal">617</span>
-<span class="normal">618</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2602,6 +2609,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Whether the memory watchdog is enabled to monitor and gracefully</span>
 <span class="c1"># terminate tasks that approach memory limits.</span>
 <span class="n">memory_watchdog_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># When true, DSR-queue Celery publishes pass ignore_result=True (no</span>
+<span class="c1"># result-backend tombstones for run_privacy_request or</span>
+<span class="c1"># queue_request_task dispatches). Default false preserves current</span>
+<span class="c1"># result storage. Set via</span>
+<span class="c1"># FIDES__EXECUTION__IGNORE_DSR_CELERY_TASK_RESULTS.</span>
+<span class="n">ignore_dsr_celery_task_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># When enabled, falls back to the legacy traversal algorithm. Intended</span>
 <span class="c1"># as a temporary safety net in case of regressions with the optimized</span>

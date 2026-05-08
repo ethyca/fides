@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.84.5"
+    "version": "2.84.7a0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -27318,6 +27318,40 @@
         "title": "DryRunDatasetResponse",
         "description": "Response model for dataset dry run"
       },
+      "DsrCacheSweeperApplicationConfig": {
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled",
+            "description": "Enable periodic DSR cache sweeper for terminal privacy requests. Requires non-zero execution.dsr_cache_sweeper.interval_minutes in server config. Default unset/false in resolved settings."
+          },
+          "lock_timeout_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 604800.0,
+                "minimum": 60.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lock Timeout Seconds",
+            "description": "Redis lock TTL (seconds) for the DSR cache sweeper job. Unset uses execution.dsr_cache_sweeper.lock_timeout_seconds from server config (default 1800 = 30 minutes)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DsrCacheSweeperApplicationConfig",
+        "description": "API overrides for ``execution.dsr_cache_sweeper``."
+      },
       "DuplicateDetectionApplicationConfig": {
         "properties": {
           "enabled": {
@@ -27800,6 +27834,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/SqlDryRunMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dsr_cache_sweeper": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DsrCacheSweeperApplicationConfig"
               },
               {
                 "type": "null"

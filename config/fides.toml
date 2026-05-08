@@ -315,6 +315,13 @@ email_send_timezone = "US/Eastern" # string
 # terminate tasks that approach memory limits.
 memory_watchdog_enabled = false # boolean
 
+# When true, DSR-queue Celery publishes pass ignore_result=True (no
+# result-backend tombstones for run_privacy_request or
+# queue_request_task dispatches). Default false preserves current
+# result storage. Set via
+# FIDES__EXECUTION__IGNORE_DSR_CELERY_TASK_RESULTS.
+ignore_dsr_celery_task_results = false # boolean
+
 # When enabled, falls back to the legacy traversal algorithm. Intended
 # as a temporary safety net in case of regressions with the optimized
 # traversal.
