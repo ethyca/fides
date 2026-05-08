@@ -212,7 +212,9 @@ const IntegrationPrivacyRequests = ({
   return (
     <Flex vertical gap="large">
       <Flex vertical gap="small">
-        <Typography.Title level={5}>Status</Typography.Title>
+        <Typography.Title level={5}>
+          Privacy request automation
+        </Typography.Title>
         <Flex align="center" gap="middle">
           <Switch
             checked={enabled}
@@ -220,11 +222,11 @@ const IntegrationPrivacyRequests = ({
             loading={isPatchingStatus}
             data-testid="toggle-enabled"
           />
-          <Text>Enable for privacy requests</Text>
+          <Text>Automate privacy requests with this integration</Text>
         </Flex>
         <Paragraph type="secondary" className="m-0">
-          When enabled, this integration is used during privacy request
-          execution.
+          When off, Fides won&apos;t run privacy requests against data from this
+          integration.
         </Paragraph>
       </Flex>
 
@@ -232,7 +234,7 @@ const IntegrationPrivacyRequests = ({
         <Flex vertical gap="small">
           <Flex justify="space-between" align="center">
             <Typography.Title level={5} className="m-0">
-              Datasets
+              Linked datasets
             </Typography.Title>
             <Button
               type="primary"
@@ -243,7 +245,8 @@ const IntegrationPrivacyRequests = ({
             </Button>
           </Flex>
           <Paragraph type="secondary" className="m-0">
-            Datasets that use this integration to fulfill privacy requests.
+            Choose which datasets Fides traverses when fulfilling a request.
+            Each dataset can be linked to one integration.
           </Paragraph>
 
           <Modal
