@@ -152,6 +152,7 @@ const CustomFieldRenderer = ({
         <DatePicker
           id={fieldKey}
           data-testid={`date-${fieldKey}`}
+          placeholder={label}
           value={props.value ? dayjs(props.value) : null}
           onChange={(date) =>
             props.onChange(date ? date.format("YYYY-MM-DD") : "")
@@ -164,7 +165,7 @@ const CustomFieldRenderer = ({
           aria-label={label}
           aria-describedby={`${fieldKey}-error`}
           aria-required={required !== false}
-          style={{ width: "100%" }}
+          className="w-full"
         />
       );
 
