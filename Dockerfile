@@ -90,10 +90,19 @@ RUN git rm --cached -r .
 # This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
 RUN git config --global --add safe.directory /fides
 
-# Export the version to a file for frontend use (hatch-vcs from git tags)
+# Export the version to a file for frontend use (hatch-vcs from git tags).
+# `.dockerignore` excludes files that the host's `.git/index` tracks, so the
+# COPYed tree always looks dirty to setuptools-scm — without intervention,
+# tagged release builds get bumped to `<next>.devN+g<sha>.d<date>`.
+# When HEAD is exactly on a tag, force setuptools-scm to use that tag verbatim
+# via `SETUPTOOLS_SCM_PRETEND_VERSION` (same approach used by the wheel build
+# in .github/workflows/publish_package.yaml).
 RUN uv venv /tmp/hatch-env && \
     uv pip install --python /tmp/hatch-env/bin/python "virtualenv<21" hatch hatch-vcs && \
-    cd /fides && /tmp/hatch-env/bin/hatch version > /fides/version.txt && \
+    cd /fides && \
+    EXACT_TAG=$(git describe --tags --exact-match 2>/dev/null || true) && \
+    if [ -n "$EXACT_TAG" ]; then export SETUPTOOLS_SCM_PRETEND_VERSION="$EXACT_TAG"; fi && \
+    /tmp/hatch-env/bin/hatch version > /fides/version.txt && \
     /opt/fides/bin/python -c "import json; v=open('/fides/version.txt').read().strip(); print(json.dumps({'version': v}))" > /fides/version.json && rm /fides/version.txt && rm -rf /tmp/hatch-env
 
 # Enable detection of running within Docker
