@@ -1,9 +1,10 @@
 import json
 import os
 from json import JSONDecodeError
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Set
 
-from pydantic import Field
+from loguru import logger
+from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
@@ -27,6 +28,20 @@ class CelerySettings(FidesSettings):
         description="If true, tasks are executed locally instead of being sent to the queue.  "
         "If False, tasks are sent to the queue.",
     )
+    eager_task_queues: Set[str] = Field(
+        default_factory=set,
+        description="Set of queue names that should always run eagerly (synchronously), "
+        "regardless of task_always_eager. Can be configured as a comma-separated string via "
+        "FIDES__CELERY__EAGER_TASK_QUEUES (e.g. 'fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification').",
+    )
+
+    @field_validator("eager_task_queues", mode="before")
+    @classmethod
+    def parse_eager_task_queues(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            return {q.strip() for q in v.split(",") if q.strip()}
+        return v
+
     healthcheck_port: int = Field(
         default=9000, description="The port to use for the health check endpoint"
     )
@@ -53,6 +68,46 @@ class CelerySettings(FidesSettings):
         ge=1,
         description="Number of worker processes/threads passed to `celery worker --concurrency`.",
     )
+    queue_prefetch_multiplier: Optional[str] = Field(
+        default=None,
+        description=(
+            "Per-queue worker prefetch multiplier as a comma-separated queue=int mapping. "
+            "E.g. 'fides.dsr=8,fidesops.messaging=4'. If any value is not a valid integer "
+            "the entire setting is ignored. Unknown queue names produce a warning at worker "
+            "startup but do not prevent valid entries from being applied."
+        ),
+    )
+
+    @field_validator("queue_prefetch_multiplier")
+    @classmethod
+    def validate_queue_prefetch_multiplier(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Validate that every entry in the comma-separated string is in `key=integer` form.
+        If any value is not a parseable integer, the entire setting is rejected (returns None).
+        """
+        if v is None:
+            return None
+        for pair in v.split(","):
+            pair = pair.strip()
+            if not pair:
+                continue
+            if "=" not in pair:
+                logger.warning(
+                    f"queue_prefetch_multiplier is malformed (entry missing '='): {pair!r}. "
+                    "The entire setting will be ignored."
+                )
+                return None
+            queue, _, value = pair.partition("=")
+            try:
+                int(value.strip())
+            except ValueError:
+                logger.warning(
+                    f"queue_prefetch_multiplier has non-integer value for queue "
+                    f"{queue.strip()!r}: {value.strip()!r}. The entire setting will be ignored."
+                )
+                return None
+        return v
+
     broker_url: Optional[str] = Field(
         default=None,
         description="Celery broker URL. When set, overrides the default. With redis.cluster_enabled, "

@@ -1348,6 +1348,7 @@ class TestGetConfig:
             "execution",
             "storage",
             "consent",
+            "celery",
             "privacy_center",
             "privacy_request_duplicate_detection",
         }
@@ -1423,6 +1424,24 @@ class TestGetConfig:
                             "require_manual_request_approval",
                             "subject_identity_verification_required",
                             "memory_watchdog_enabled",
+                            "ignore_dsr_celery_task_results",
+                            "sql_dry_run",
+                            "dsr_cache_sweeper",
+                        ]
+                    )
+                )
+            )
+            == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        celery_keys = set(config["celery"].keys())
+        assert (
+            len(
+                celery_keys.difference(
+                    set(
+                        [
+                            "eager_task_queues",
+                            "queue_prefetch_multiplier",
                         ]
                     )
                 )

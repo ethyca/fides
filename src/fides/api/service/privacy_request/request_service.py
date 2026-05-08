@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from dataclasses import asdict
 from datetime import datetime, timedelta
 from typing import Any, DefaultDict, Dict, Generator, List, Optional, Set, Union
 
@@ -41,6 +42,8 @@ from fides.api.util.cache import (
 )
 from fides.api.util.lock import redis_lock
 from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
+from fides.service.privacy_request.dsr_cache_sweeper import run_dsr_cache_sweeper
 
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
@@ -51,6 +54,8 @@ ASYNC_TASKS_STATUS_POLLING_LOCK = "async_tasks_status_polling_lock"
 ASYNC_TASKS_STATUS_POLLING_LOCK_TIMEOUT = (
     300  # Starting timeout is shorter because the task goes directly to the workers.
 )
+DSR_CACHE_SWEEPER_JOB = "dsr_cache_sweeper"
+DSR_CACHE_SWEEPER_LOCK = "dsr_cache_sweeper_lock"
 
 
 def build_required_privacy_request_kwargs(
@@ -329,6 +334,98 @@ def initiate_polling_task_requeue() -> None:
         coalesce=True,
         replace_existing=True,
         seconds=CONFIG.execution.async_polling_interval_hours * 3600,
+    )
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def cleanup_dsr_cache_sweeper(self: DatabaseTask) -> Dict[str, Any]:
+    """Periodic job: DSR cache sweeper clears Redis DSR cache for terminal privacy requests.
+
+    Uses ``redis_lock`` (same helper as batch email send / Jira polling) so only one
+    sweep runs cluster-wide; overlapping scheduler ticks exit early instead of
+    piling up work.
+    """
+    exec_cfg = CONFIG.execution
+    sweeper = exec_cfg.dsr_cache_sweeper
+    if sweeper.interval_minutes <= 0:
+        return {}
+
+    # Avoid taking the Redis lock when the feature is off (resolved application config).
+    with self.get_new_session() as db:
+        resolved_sweeper = ConfigProxy(db).execution.dsr_cache_sweeper
+        if not resolved_sweeper.enabled:
+            logger.debug(
+                "DSR cache sweeper skipped "
+                "(execution.dsr_cache_sweeper.enabled is off)."
+            )
+            return {}
+        lock_override = resolved_sweeper.lock_timeout_seconds
+
+    if lock_override is not None and lock_override < 60:
+        logger.warning(
+            "DSR cache sweeper lock_timeout_seconds override is {}s, which looks too low "
+            "(minimum recommended 60s). Check execution.dsr_cache_sweeper.lock_timeout_seconds "
+            "in server config and application settings in the database.",
+            lock_override,
+        )
+
+    lock_timeout = int(
+        lock_override if lock_override is not None else sweeper.lock_timeout_seconds
+    )
+    with redis_lock(
+        lock_key=DSR_CACHE_SWEEPER_LOCK,
+        timeout=lock_timeout,
+    ) as lock:
+        if not lock:
+            logger.info(
+                "DSR cache sweeper skipped: "
+                "another worker holds the lock (run still in progress)."
+            )
+            return {}
+        with self.get_new_session() as db:
+            # Re-check under the lock in case the preference flipped while waiting.
+            if not ConfigProxy(db).execution.dsr_cache_sweeper.enabled:
+                logger.debug(
+                    "DSR cache sweeper skipped "
+                    "(execution.dsr_cache_sweeper.enabled turned off)."
+                )
+                return {}
+            result = run_dsr_cache_sweeper(db)
+            return asdict(result)
+
+
+def initiate_dsr_cache_sweeper() -> None:
+    """Schedule the DSR cache sweeper (APScheduler).
+
+    The Celery task consults resolved ``execution.dsr_cache_sweeper.enabled``
+    (application preferences / API config) on each run; defaults off.
+
+    Overlap / ``non-greedy`` behavior: the task uses ``redis_lock`` so concurrent ticks
+    skip while a run is in flight; APScheduler also uses ``max_instances=1`` and a tight
+    ``misfire_grace_time`` so late fires are not queued as catch-up bursts.
+    """
+    if CONFIG.test_mode:
+        return
+
+    minutes = CONFIG.execution.dsr_cache_sweeper.interval_minutes
+    if minutes <= 0:
+        return
+
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot add DSR cache sweeper job."
+    )
+
+    logger.info("Initiating scheduler for DSR cache sweeper")
+    scheduler.add_job(
+        func=cleanup_dsr_cache_sweeper,
+        trigger="interval",
+        kwargs={},
+        id=DSR_CACHE_SWEEPER_JOB,
+        coalesce=True,
+        replace_existing=True,
+        max_instances=1,
+        misfire_grace_time=1,
+        minutes=minutes,
     )
 
 

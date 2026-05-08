@@ -63,6 +63,7 @@ from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.session_management import get_autoclose_db_session
+from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (
     MessagingService,
@@ -1018,14 +1019,17 @@ def queue_privacy_request(
     )
 
     try:
-        task = run_privacy_request.apply_async(
-            queue=DSR_QUEUE_NAME,
-            kwargs={
+        apply_async_kwargs: Dict[str, Any] = {
+            "queue": DSR_QUEUE_NAME,
+            "kwargs": {
                 "privacy_request_id": privacy_request_id,
                 "from_webhook_id": from_webhook_id,
                 "from_step": from_step,
             },
-        )
+        }
+        if CONFIG.execution.ignore_dsr_celery_task_results:
+            apply_async_kwargs["ignore_result"] = True
+        task = run_privacy_request.apply_async(**apply_async_kwargs)
         cache_task_tracking_key(privacy_request_id, task.task_id)
 
         # Clear any previous scheduling failure in the activity timeline

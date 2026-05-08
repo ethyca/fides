@@ -57,6 +57,23 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     _task_engine = None
     _sessionmaker = None
 
+    def apply_async(
+        self,
+        args: Optional[Any] = None,
+        kwargs: Optional[Dict[str, Any]] = None,
+        queue: Optional[str] = None,
+        **options: Any,
+    ) -> Any:  # type: ignore[override]
+        """Dispatch the task, running it eagerly if the target queue is in the configured
+        eager_task_queues or if task_always_eager is enabled globally."""
+        effective_queue = (
+            queue or getattr(self, "queue", None) or self.app.conf.task_default_queue
+        )
+        eager_queues = CONFIG.celery.eager_task_queues
+        if effective_queue in eager_queues or self.app.conf.task_always_eager:
+            return self.apply(args, kwargs, **options)
+        return super().apply_async(args, kwargs, queue=queue, **options)
+
     # This retry will attempt to connect 5 times with an exponential backoff (2, 4, 8, 16 seconds between each attempt).
     # The original error will be re-raised if the retries are successful. All attempts are shown in the logs.
     @retry(

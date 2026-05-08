@@ -1,5 +1,5 @@
 import time
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from celery.app.task import Task
 from loguru import logger
@@ -39,6 +39,7 @@ from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
+from fides.config import CONFIG
 
 # DSR 3.0 task functions
 
@@ -624,14 +625,17 @@ def queue_request_task(
 ) -> None:
     """Queues the RequestTask in Celery and caches the Celery Task ID"""
     celery_task_fn: Task = mapping[request_task.action_type]
-    celery_task = celery_task_fn.apply_async(
-        queue=DSR_QUEUE_NAME,
-        kwargs={
+    apply_async_kwargs: Dict[str, Any] = {
+        "queue": DSR_QUEUE_NAME,
+        "kwargs": {
             "privacy_request_id": request_task.privacy_request_id,
             "privacy_request_task_id": request_task.id,
             "privacy_request_proceed": privacy_request_proceed,
         },
-    )
+    }
+    if CONFIG.execution.ignore_dsr_celery_task_results:
+        apply_async_kwargs["ignore_result"] = True
+    celery_task = celery_task_fn.apply_async(**apply_async_kwargs)
     cache_task_tracking_key(request_task.id, celery_task.task_id)
 
 

@@ -107,6 +107,15 @@ class NotificationSettingsProxy(ConfigProxyBase):
     privacy_assessments_channel: Optional[str]
 
 
+class DsrCacheSweeperSettingsProxy(ConfigProxyBase):
+    """Resolved api-set overrides for ``execution.dsr_cache_sweeper``."""
+
+    prefix = "execution.dsr_cache_sweeper"
+
+    enabled: Optional[bool]
+    lock_timeout_seconds: Optional[int]
+
+
 class ExecutionSettingsProxy(ConfigProxyBase):
     prefix = "execution"
 
@@ -121,6 +130,10 @@ class ExecutionSettingsProxy(ConfigProxyBase):
         'subject_identity_verification_required' only when no explicit value is provided,
         preserving None for unset cases.
         """
+        if name == "dsr_cache_sweeper":
+            db = object.__getattribute__(self, "_db")
+            return DsrCacheSweeperSettingsProxy(db)
+
         if name == "disable_consent_identity_verification":
             value = super().__getattribute__("disable_consent_identity_verification")
             if value is None:
