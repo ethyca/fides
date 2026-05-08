@@ -1,5 +1,4 @@
-"""
-DSR cache store: single place for all DSR (privacy request) cache access.
+"""DSR cache store: single place for all DSR (privacy request) cache access.
 
 Enforces:
 - Key naming: dsr:{dsr_id}:{part} for every key (part = field_type:field_key)
@@ -14,14 +13,21 @@ whole DSR and a different storage shape; can introduce a hash-backed backend
 later if we want to avoid index consistency concerns.
 """
 
-from typing import Any, Callable, Dict, Optional, Union
+import re
+from typing import Any, Callable, Dict, Optional, Set, Union
 
 from redis import Redis
 
 from fides.common.cache.key_mapping import DSR_KEY_PREFIX, KeyMapper
 from fides.common.cache.manager import RedisCacheManager, RedisValue
 
-__all__ = ["DSR_KEY_PREFIX", "DSRCacheStore"]
+__all__ = [
+    "DSR_KEY_PREFIX",
+    "DSRCacheStore",
+    "candidate_privacy_request_ids_for_sweep",
+    "decode_dsr_redis_key",
+    "redis_key_is_dsr_cache_key_for_id",
+]
 
 
 def _dsr_key(dsr_id: str, part: str) -> str:
@@ -32,6 +38,79 @@ def _dsr_key(dsr_id: str, part: str) -> str:
 def _dsr_index_prefix(dsr_id: str) -> str:
     """Index prefix for this DSR; index set is __idx:dsr:{dsr_id}."""
     return f"{DSR_KEY_PREFIX}{dsr_id}"
+
+
+# Canonical 8-4-4-4-12 UUID tokens (case-insensitive). Privacy request ids are typically
+# ``pri_<uuid>``; sweepers extract uuid substrings then expand to both bare and ``pri_``
+# forms for membership checks against DB ids.
+_DSR_REDIS_KEY_SWEEP_UUID_RE = re.compile(
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+    re.IGNORECASE,
+)
+
+
+def decode_dsr_redis_key(raw: Any) -> str:
+    """Decode a Redis key from SCAN/MGET for consistent string handling."""
+    if isinstance(raw, bytes):
+        return raw.decode("utf-8", errors="replace")
+    return str(raw)
+
+
+def _normalize_uuid_token(token: str) -> str:
+    return token.lower()
+
+
+def _dsr_logical_body_matches_cache_id(body: str, dsr_id_lower: str) -> bool:
+    """True if ``body`` matches a known DSR logical/encoded-object key shape for this id."""
+    if body.startswith(f"{dsr_id_lower}__"):
+        return True
+    if body.startswith(f"WEBHOOK_MANUAL_ACCESS_INPUT__{dsr_id_lower}__"):
+        return True
+    if body.startswith(f"WEBHOOK_MANUAL_ERASURE_INPUT__{dsr_id_lower}__"):
+        return True
+    if body == f"DATA_USE_MAP__{dsr_id_lower}":
+        return True
+    if body.startswith(f"EMAIL_INFORMATION__{dsr_id_lower}__"):
+        return True
+    if body == f"PAUSED_LOCATION__{dsr_id_lower}":
+        return True
+    if body == f"FAILED_LOCATION__{dsr_id_lower}":
+        return True
+    if body.startswith(f"PLACEHOLDER_RESULTS__{dsr_id_lower}__"):
+        return True
+    return False
+
+
+def redis_key_is_dsr_cache_key_for_id(key: str, dsr_id_lower: str) -> bool:
+    """
+    Return True if ``key`` is a known Fides DSR cache Redis key for ``dsr_id_lower``.
+
+    Conservative: avoids deleting unrelated keys that merely embed a UUID substring
+    unless they match ``dsr:`` / index / migration / legacy ``id-`` / ``EN_`` logical
+    patterns documented in ``KeyMapper`` and ``DSRCacheStore``.
+    """
+    if key.startswith(f"dsr:{dsr_id_lower}:"):
+        return True
+    if key == f"__idx:dsr:{dsr_id_lower}":
+        return True
+    if key == f"__migrated:{dsr_id_lower}":
+        return True
+    if key.startswith(f"id-{dsr_id_lower}-"):
+        return True
+    if key.startswith("EN_"):
+        return _dsr_logical_body_matches_cache_id(key[3:], dsr_id_lower)
+    return _dsr_logical_body_matches_cache_id(key, dsr_id_lower)
+
+
+def candidate_privacy_request_ids_for_sweep(key: str) -> Set[str]:
+    """Candidate ids to check with SISMEMBER (normalized lowercase)."""
+    out: set[str] = set()
+    for m in _DSR_REDIS_KEY_SWEEP_UUID_RE.findall(key):
+        u = _normalize_uuid_token(m)
+        out.add(u)
+        # Product privacy request ids are ``pri_<uuid>`` (see DSR package link validation).
+        out.add(f"pri_{u}")
+    return out
 
 
 class DSRCacheStore:

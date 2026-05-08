@@ -65,6 +65,42 @@ class DsrCacheSweeperSettings(BaseModel):
             "FIDES__EXECUTION__DSR_CACHE_SWEEPER_* are still accepted via model validation."
         ),
     )
+    single_pass_redis_sweep: bool = Field(
+        default=True,
+        description=(
+            "When true (default), use one Redis SCAN over the keyspace plus a temporary "
+            "maintenance set for eligible IDs. Set false to fall back to per-request "
+            "``DSRCacheStore.clear()`` (legacy, more Redis round-trips)."
+        ),
+    )
+    maintenance_set_ttl_seconds: int = Field(
+        default=14400,
+        ge=300,
+        description=(
+            "TTL (seconds) on the Redis staging set of eligible privacy request IDs. "
+            "Should exceed worst-case sweep duration and the Celery lock TTL so a crashed "
+            "worker does not leave the set forever. Default 4 hours."
+        ),
+    )
+    maintenance_set_key: str = Field(
+        default="__maintenance:dsr_cache_sweeper:eligible_ids",
+        description=(
+            "Redis key for the temporary eligible-ID set (SADD/SISMEMBER). Override for "
+            "multi-tenant or test isolation."
+        ),
+    )
+    redis_scan_count: int = Field(
+        default=750,
+        ge=10,
+        le=10000,
+        description="Hint passed to Redis SCAN COUNT per iteration (single-pass mode).",
+    )
+    redis_delete_batch_size: int = Field(
+        default=500,
+        ge=1,
+        le=10000,
+        description="Max keys per pipeline UNLINK/DEL batch in single-pass mode.",
+    )
 
 
 class ExecutionSettings(FidesSettings):

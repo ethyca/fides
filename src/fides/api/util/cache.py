@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
@@ -64,6 +64,98 @@ class FidesopsRedis:
         """Delegate attribute lookups to the underlying Redis client."""
         return getattr(self._client, name)
 
+    @property
+    def is_cluster(self) -> bool:
+        """True when the backing client is Redis Cluster."""
+        return _is_redis_cluster(self._client)
+
+    def iter_scan_batches(
+        self,
+        *,
+        count: int,
+        match: Optional[str] = None,
+    ) -> Iterator[List[Any]]:
+        """
+        Yield batches of keys from Redis SCAN (cluster-aware).
+
+        When ``match`` is None, the full keyspace is scanned (no MATCH filter).
+        """
+        scan_kwargs: Dict[str, Any] = {"count": count}
+        if match is not None:
+            scan_kwargs["match"] = match
+
+        if _is_redis_cluster(self._client):
+            cluster = cast(Any, self._client)
+            for node in cluster.get_primaries():
+                conn = node.redis_connection
+                cursor = 0
+                while True:
+                    cursor, keys = conn.scan(cursor=cursor, **scan_kwargs)
+                    if keys:
+                        yield list(keys)
+                    if cursor == 0:
+                        break
+        else:
+            scan_cursor: Union[int, str] = "0"
+            while True:
+                cursor_arg = (
+                    int(scan_cursor) if isinstance(scan_cursor, str) else scan_cursor
+                )
+                scan_cursor, keys = self._client.scan(cursor=cursor_arg, **scan_kwargs)
+                if keys:
+                    yield list(keys)
+                if scan_cursor == 0 or scan_cursor == "0":
+                    break
+
+    def sadd_members_chunked(
+        self,
+        key: str,
+        members: Iterable[Any],
+        *,
+        chunk_size: int = 2000,
+    ) -> None:
+        """
+        Add many members to a Redis SET using bounded ``SADD`` calls.
+
+        Avoids sending an unbounded variadic ``SADD`` when ``members`` is huge.
+        """
+        batch: list[Any] = []
+        for m in members:
+            batch.append(m)
+            if len(batch) >= chunk_size:
+                self._client.sadd(key, *batch)
+                batch.clear()
+        if batch:
+            self._client.sadd(key, *batch)
+
+    def unlink_many(self, keys: List[str]) -> tuple[int, int]:
+        """
+        UNLINK many keys. Cluster-safe (per-key on cluster). Returns ``(deleted, errors)``.
+        """
+        if not keys:
+            return 0, 0
+        deleted = 0
+        errors = 0
+        if self.is_cluster:
+            for k in keys:
+                try:
+                    self._client.unlink(k)
+                    deleted += 1
+                except Exception:  # noqa: BLE001
+                    errors += 1
+            return deleted, errors
+        try:
+            self._client.unlink(*keys)
+            return len(keys), 0
+        except Exception:  # noqa: BLE001
+            for k in keys:
+                try:
+                    self._client.unlink(k)
+                    deleted += 1
+                except Exception:  # noqa: BLE001
+                    errors += 1
+            return deleted, errors
+
     def set_with_autoexpire(
         self,
         key: str,
@@ -79,32 +171,8 @@ class FidesopsRedis:
         """Retrieve all keys that match a given prefix. Cluster-aware (scans all nodes)."""
         out: List[str] = []
         match = f"{prefix}*"
-        if _is_redis_cluster(self._client):
-            # Redis Cluster: SCAN must run per node; iterate primaries
-            cluster = cast(Any, self._client)
-            for node in cluster.get_primaries():
-                conn = node.redis_connection
-                cursor = 0
-                while True:
-                    cursor, keys = conn.scan(
-                        cursor=cursor, match=match, count=chunk_size
-                    )
-                    out.extend(keys)
-                    if cursor == 0:
-                        break
-        else:
-            # Standalone Redis: scan returns cursor as str when decode_responses=True
-            scan_cursor: Union[int, str] = "0"
-            while True:
-                cursor_arg = (
-                    int(scan_cursor) if isinstance(scan_cursor, str) else scan_cursor
-                )
-                scan_cursor, keys = self._client.scan(
-                    cursor=cursor_arg, match=match, count=chunk_size
-                )
-                out.extend(keys)
-                if scan_cursor == 0 or scan_cursor == "0":
-                    break
+        for batch in self.iter_scan_batches(count=chunk_size, match=match):
+            out.extend(batch)
         return out
 
     def delete_keys_by_prefix(self, prefix: str) -> None:
