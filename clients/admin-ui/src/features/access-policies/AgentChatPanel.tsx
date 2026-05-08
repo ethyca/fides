@@ -165,7 +165,7 @@ const AgentChatPanel = ({
   return (
     <Flex vertical className={styles.panel} data-testid="agent-chat-panel">
       <Flex align="center" gap="small" className={styles.header}>
-        <Typography.Title level={3}>Policy builder agent</Typography.Title>
+        <Typography.Title level={3}>Policy agent</Typography.Title>
       </Flex>
 
       <div className={styles.body}>
