@@ -23,7 +23,6 @@ import styles from "./AssessmentStatusCard.module.scss";
 // /privacy-assessments/summary endpoint once available — fetching the full
 // dataset just to produce 4 counters and two top-3 lists is wasteful at scale.
 const STALE_DAYS = 14;
-const TOP_BLOCKED_LIMIT = 3;
 const TOP_OWNERS_LIMIT = 3;
 const UNCATEGORIZED_KEY = "__uncategorized__";
 
@@ -79,8 +78,7 @@ interface OwnerStat {
 export interface AssessmentMetrics {
   total: number;
   bySegment: Record<SegmentKey, number>;
-  topBlocked: BlockedGroup[];
-  blockedGroupOverflow: number;
+  blockedGroups: BlockedGroup[];
   topOwners: OwnerStat[];
   ownerOverflow: number;
 }
@@ -184,17 +182,12 @@ export function computeMetrics(
     });
   });
 
-  const sortedBlocked = Array.from(groupAgg.values())
+  const blockedGroups = Array.from(groupAgg.values())
     .filter((g) => g.staleCount > 0 || g.highRiskCount > 0)
     .sort(
       (a, b) =>
         b.staleCount + b.highRiskCount - (a.staleCount + a.highRiskCount),
     );
-  const topBlocked = sortedBlocked.slice(0, TOP_BLOCKED_LIMIT);
-  const blockedGroupOverflow = Math.max(
-    sortedBlocked.length - TOP_BLOCKED_LIMIT,
-    0,
-  );
 
   const sortedOwners = Array.from(ownerAgg.values()).sort(
     (a, b) => b.openCount - a.openCount,
@@ -205,8 +198,7 @@ export function computeMetrics(
   return {
     total,
     bySegment,
-    topBlocked,
-    blockedGroupOverflow,
+    blockedGroups,
     topOwners,
     ownerOverflow,
   };
@@ -251,7 +243,7 @@ export const AssessmentStatusCard = () => {
       variant="borderless"
       className={styles.cardContainer}
     >
-      <Flex vertical gap="large">
+      <Flex vertical gap="large" className="min-h-0 flex-1">
         <Flex vertical gap={12}>
           <div className={styles.segmentBar}>
             {metrics.total === 0 ? (
@@ -306,6 +298,42 @@ export const AssessmentStatusCard = () => {
         <div className={styles.attentionGrid}>
           <div className={styles.attentionColumn}>
             <Text strong className="mb-2 block text-xs">
+              Purposes
+            </Text>
+            {metrics.blockedGroups.length === 0 ? (
+              <Text type="secondary" className="text-sm">
+                No stalled or high-risk assessments.
+              </Text>
+            ) : (
+              <Flex vertical gap={2} className={styles.attentionList}>
+                {metrics.blockedGroups.map((group) => {
+                  const parts: string[] = [];
+                  if (group.highRiskCount > 0) {
+                    parts.push(`${group.highRiskCount} risk`);
+                  }
+                  if (group.staleCount > 0) {
+                    parts.push(`${group.staleCount} stalled`);
+                  }
+                  return (
+                    <RouterLink
+                      key={group.name}
+                      unstyled
+                      href={PRIVACY_ASSESSMENTS_ROUTE}
+                      className={styles.attentionRow}
+                    >
+                      <Text className="truncate text-sm">{group.name}</Text>
+                      <Text type="secondary" className="shrink-0 text-xs">
+                        {parts.join(" · ")}
+                      </Text>
+                    </RouterLink>
+                  );
+                })}
+              </Flex>
+            )}
+          </div>
+
+          <div className={styles.attentionColumn}>
+            <Text strong className="mb-2 block text-xs">
               Owners with open work
             </Text>
             {metrics.topOwners.length === 0 ? (
@@ -313,7 +341,7 @@ export const AssessmentStatusCard = () => {
                 No open assessments assigned.
               </Text>
             ) : (
-              <Flex vertical gap={2}>
+              <Flex vertical gap={2} className={styles.attentionList}>
                 {metrics.topOwners.map((owner) => (
                   <RouterLink
                     key={owner.owner}
@@ -339,56 +367,6 @@ export const AssessmentStatusCard = () => {
                     <Text type="secondary" className="text-xs">
                       + {metrics.ownerOverflow} more owner
                       {metrics.ownerOverflow === 1 ? "" : "s"}
-                    </Text>
-                  </RouterLink>
-                )}
-              </Flex>
-            )}
-          </div>
-
-          <div className={styles.attentionDivider} aria-hidden="true" />
-
-          <div className={styles.attentionColumn}>
-            <Text strong className="mb-2 block text-xs">
-              Groups needing attention
-            </Text>
-            {metrics.topBlocked.length === 0 ? (
-              <Text type="secondary" className="text-sm">
-                No stalled or high-risk assessments.
-              </Text>
-            ) : (
-              <Flex vertical gap={2}>
-                {metrics.topBlocked.map((group) => {
-                  const parts: string[] = [];
-                  if (group.highRiskCount > 0) {
-                    parts.push(`${group.highRiskCount} risk`);
-                  }
-                  if (group.staleCount > 0) {
-                    parts.push(`${group.staleCount} stalled`);
-                  }
-                  return (
-                    <RouterLink
-                      key={group.name}
-                      unstyled
-                      href={PRIVACY_ASSESSMENTS_ROUTE}
-                      className={styles.attentionRow}
-                    >
-                      <Text className="truncate text-sm">{group.name}</Text>
-                      <Text type="secondary" className="shrink-0 text-xs">
-                        {parts.join(" · ")}
-                      </Text>
-                    </RouterLink>
-                  );
-                })}
-                {metrics.blockedGroupOverflow > 0 && (
-                  <RouterLink
-                    unstyled
-                    href={PRIVACY_ASSESSMENTS_ROUTE}
-                    className={styles.attentionOverflow}
-                  >
-                    <Text type="secondary" className="text-xs">
-                      + {metrics.blockedGroupOverflow} more group
-                      {metrics.blockedGroupOverflow === 1 ? "" : "s"}
                     </Text>
                   </RouterLink>
                 )}

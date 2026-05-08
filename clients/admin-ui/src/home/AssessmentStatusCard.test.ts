@@ -46,8 +46,7 @@ describe("computeMetrics", () => {
     expect(computeMetrics(undefined, NOW)).toEqual({
       total: 0,
       bySegment: { completed: 0, pending: 0, open: 0, risk: 0 },
-      topBlocked: [],
-      blockedGroupOverflow: 0,
+      blockedGroups: [],
       topOwners: [],
       ownerOverflow: 0,
     });
@@ -127,10 +126,10 @@ describe("computeMetrics", () => {
     ];
 
     const metrics = computeMetrics(groups, NOW);
-    expect(metrics.topBlocked).toHaveLength(1);
-    expect(metrics.topBlocked[0].staleCount).toBe(1);
+    expect(metrics.blockedGroups).toHaveLength(1);
+    expect(metrics.blockedGroups[0].staleCount).toBe(1);
     // 3 total flagged for the group: 2 high-risk + 1 stale
-    expect(metrics.topBlocked[0].highRiskCount).toBe(2);
+    expect(metrics.blockedGroups[0].highRiskCount).toBe(2);
   });
 
   it("aggregates groups by stable data_use key, not display name", () => {
@@ -168,15 +167,15 @@ describe("computeMetrics", () => {
       ]),
     ];
 
-    const { topBlocked } = computeMetrics(groups, NOW);
-    expect(topBlocked).toHaveLength(3);
-    const names = topBlocked.map((g) => g.name).sort();
+    const { blockedGroups } = computeMetrics(groups, NOW);
+    expect(blockedGroups).toHaveLength(3);
+    const names = blockedGroups.map((g) => g.name).sort();
     expect(names).toEqual(["Advertising", "Advertising", "Uncategorized"]);
-    const uncat = topBlocked.find((g) => g.name === "Uncategorized");
+    const uncat = blockedGroups.find((g) => g.name === "Uncategorized");
     expect(uncat?.totalCount).toBe(2);
   });
 
-  it("ranks blocked groups by stale + high-risk and reports overflow", () => {
+  it("ranks blocked groups by stale + high-risk descending", () => {
     const groups = Array.from({ length: 5 }, (_, i) =>
       makeGroup(`u${i}`, `Group ${i}`, [
         // Each subsequent group has fewer attention signals.
@@ -190,14 +189,14 @@ describe("computeMetrics", () => {
       ]),
     );
 
-    const { topBlocked, blockedGroupOverflow } = computeMetrics(groups, NOW);
-    expect(topBlocked).toHaveLength(3);
-    expect(topBlocked.map((g) => g.name)).toEqual([
+    const { blockedGroups } = computeMetrics(groups, NOW);
+    expect(blockedGroups.map((g) => g.name)).toEqual([
       "Group 0",
       "Group 1",
       "Group 2",
+      "Group 3",
+      "Group 4",
     ]);
-    expect(blockedGroupOverflow).toBe(2);
   });
 
   it("aggregates owners only for open assessments and reports overflow", () => {
