@@ -1,7 +1,12 @@
+import type { Node } from "@xyflow/react";
+
 import {
-  diffPolicies,
+  buildUnionGraph,
   extractPolicyFields,
+  nodeContentId,
+  tagNodesWithDiff,
   updateYamlField,
+  yamlToNodesAndEdges,
 } from "./policy-yaml";
 import { formatRelativeTime } from "./utils";
 
@@ -109,149 +114,179 @@ describe("updateYamlField", () => {
   });
 });
 
-describe("diffPolicies", () => {
-  const baseYaml = [
-    "name: Sample",
-    "decision: ALLOW",
-    "match:",
-    "  data_use:",
-    "    any:",
-    "      - marketing",
-    "",
-  ].join("\n");
+const BASE_YAML = [
+  "name: Sample",
+  "decision: ALLOW",
+  "match:",
+  "  data_use:",
+  "    any:",
+  "      - marketing",
+  "unless:",
+  "  - type: geo_location",
+  "    field: data_subject.geo_location",
+  "    operator: in",
+  "    values:",
+  "      - us_ca",
+  "",
+].join("\n");
 
-  it("returns no changes when both yamls are identical", () => {
-    const diff = diffPolicies(baseYaml, baseYaml);
-    expect(diff.hasChanges).toBe(false);
-    expect(diff.summary).toEqual({ added: [], modified: [], removed: [] });
-    expect(diff.policyMetadata).toBe("unchanged");
-    expect(diff.action).toBe("unchanged");
+describe("nodeContentId", () => {
+  const built = yamlToNodesAndEdges(BASE_YAML)!;
+
+  it("returns 'policy' for the policy node", () => {
+    const policy = built.nodes.find((n) => n.type === "policyNode")!;
+    expect(nodeContentId(policy)).toBe("policy");
   });
 
-  it("treats every section as added when oldYaml is undefined", () => {
-    const diff = diffPolicies(undefined, baseYaml);
-    expect(diff.hasChanges).toBe(true);
-    expect(diff.policyMetadata).toBe("added");
-    expect(diff.action).toBe("added");
-    expect(diff.conditions.data_use).toBe("added");
-    expect(diff.summary.added).toContain("policy details");
-    expect(diff.summary.added).toContain("decision");
-    expect(diff.summary.added).toContain("data use condition");
+  it("returns 'action' for the action node", () => {
+    const action = built.nodes.find((n) => n.type === "actionNode")!;
+    expect(nodeContentId(action)).toBe("action");
   });
 
-  it("flags a newly added condition", () => {
-    const newYaml = baseYaml.replace(
-      "match:\n  data_use:\n    any:\n      - marketing",
-      [
-        "match:",
-        "  data_use:",
-        "    any:",
-        "      - marketing",
-        "  data_category:",
-        "    all:",
-        "      - user.behavior",
-      ].join("\n"),
+  it("returns 'condition:<dimension>' for a condition node", () => {
+    const condition = built.nodes.find((n) => n.type === "conditionNode")!;
+    expect(nodeContentId(condition)).toBe("condition:data_use");
+  });
+
+  it("returns 'constraint:<type>:<discriminator>' for a constraint node", () => {
+    const constraint = built.nodes.find((n) => n.type === "constraintNode")!;
+    expect(nodeContentId(constraint)).toBe(
+      "constraint:geo_location:data_subject.geo_location",
     );
-    const diff = diffPolicies(baseYaml, newYaml);
-    expect(diff.hasChanges).toBe(true);
-    expect(diff.conditions.data_category).toBe("added");
-    expect(diff.conditions.data_use).toBe("unchanged");
-    expect(diff.summary.added).toContain("data category condition");
   });
 
-  it("flags a removed condition via removedConditionProperties", () => {
-    const dualYaml = [
+  it("returns null when a constraint node has no constraintType yet", () => {
+    const blank: Node = {
+      id: "constraint-99",
+      type: "constraintNode",
+      position: { x: 0, y: 0 },
+      data: {},
+    };
+    expect(nodeContentId(blank)).toBeNull();
+  });
+});
+
+describe("tagNodesWithDiff", () => {
+  const built = yamlToNodesAndEdges(BASE_YAML)!;
+
+  it("does not mutate nodes when no ids match", () => {
+    const tagged = tagNodesWithDiff(built.nodes, built.edges, [], [], 1);
+    tagged.nodes.forEach((n, i) => {
+      expect(n.className).toBe(built.nodes[i].className);
+    });
+  });
+
+  it("applies diffStatus-added to nodes whose content id is in `added`", () => {
+    const tagged = tagNodesWithDiff(
+      built.nodes,
+      built.edges,
+      ["constraint:geo_location:data_subject.geo_location"],
+      [],
+      3,
+    );
+    const constraint = tagged.nodes.find((n) => n.type === "constraintNode")!;
+    expect(constraint.className).toContain("diffStatus-added");
+    expect(constraint.className).toContain("diffKey-3");
+  });
+
+  it("applies diffStatus-modified for ids in `changed`", () => {
+    const tagged = tagNodesWithDiff(
+      built.nodes,
+      built.edges,
+      [],
+      ["condition:data_use"],
+      5,
+    );
+    const condition = tagged.nodes.find((n) => n.type === "conditionNode")!;
+    expect(condition.className).toContain("diffStatus-modified");
+    expect(condition.className).toContain("diffKey-5");
+  });
+
+  it("applies diffStatus-removed to ghost nodes (id starting with 'removed-')", () => {
+    const ghost: Node = {
+      id: "removed-condition-data_use",
+      type: "conditionNode",
+      position: { x: 0, y: 0 },
+      data: { property: "data_use" },
+    };
+    const tagged = tagNodesWithDiff([ghost], [], [], [], 1);
+    expect(tagged.nodes[0].className).toContain("diffStatus-removed");
+  });
+
+  it("propagates removed status to incident edges", () => {
+    const ghost: Node = {
+      id: "removed-condition-data_use",
+      type: "conditionNode",
+      position: { x: 0, y: 0 },
+      data: { property: "data_use" },
+    };
+    const tagged = tagNodesWithDiff(
+      [ghost],
+      [
+        {
+          id: "e-x",
+          source: "action-1",
+          target: "removed-condition-data_use",
+        },
+      ],
+      [],
+      [],
+      1,
+    );
+    expect(tagged.edges[0].className).toContain("diffStatus-removed");
+  });
+});
+
+describe("buildUnionGraph", () => {
+  it("returns the new graph as-is when there are no removed ids", () => {
+    const built = buildUnionGraph(BASE_YAML, BASE_YAML, []);
+    expect(built.nodes.every((n) => !n.id.startsWith("removed-"))).toBe(true);
+  });
+
+  it("synthesizes ghost nodes for removed condition ids", () => {
+    const oldYaml = `${BASE_YAML}\n# trailing`;
+    const newYamlWithoutCondition = [
+      "name: Sample",
+      "decision: ALLOW",
+      "match:",
+      "  data_category:",
+      "    all:",
+      "      - user.behavior",
+      "",
+    ].join("\n");
+    const built = buildUnionGraph(oldYaml, newYamlWithoutCondition, [
+      "condition:data_use",
+    ]);
+    const ghost = built.nodes.find((n) =>
+      n.id.startsWith("removed-condition_data_use"),
+    );
+    expect(ghost).toBeDefined();
+    expect(ghost?.selectable).toBe(false);
+  });
+
+  it("synthesizes ghost nodes for removed constraint ids", () => {
+    const newYaml = [
       "name: Sample",
       "decision: ALLOW",
       "match:",
       "  data_use:",
       "    any:",
       "      - marketing",
-      "  data_category:",
-      "    all:",
-      "      - user.behavior",
       "",
     ].join("\n");
-    const diff = diffPolicies(dualYaml, baseYaml);
-    expect(diff.removedConditionProperties).toContain("data_category");
-    expect(diff.summary.removed).toContain("data category condition");
-  });
-
-  it("flags a modified condition when values change", () => {
-    const newYaml = baseYaml.replace("- marketing", "- analytics");
-    const diff = diffPolicies(baseYaml, newYaml);
-    expect(diff.conditions.data_use).toBe("modified");
-    expect(diff.summary.modified).toContain("data use condition");
-  });
-
-  it("flags a modified condition when operator changes from any to all", () => {
-    const newYaml = baseYaml.replace(
-      "  data_use:\n    any:\n      - marketing",
-      "  data_use:\n    all:\n      - marketing",
-    );
-    const diff = diffPolicies(baseYaml, newYaml);
-    expect(diff.conditions.data_use).toBe("modified");
-  });
-
-  it("flags an added geo_location constraint", () => {
-    const newYaml = `${baseYaml}unless:\n  - type: geo_location\n    field: environment.geo_location\n    operator: in\n    values:\n      - US-CA\n`;
-    const diff = diffPolicies(baseYaml, newYaml);
-    expect(diff.constraints).toEqual([
-      { matchKey: "geo_location:environment.geo_location", status: "added" },
+    const built = buildUnionGraph(BASE_YAML, newYaml, [
+      "constraint:geo_location:data_subject.geo_location",
     ]);
-    expect(diff.summary.added).toContain("geo_location constraint");
-  });
-
-  it("flags a modified consent constraint when requirement changes", () => {
-    const oldWithConsent = `${baseYaml}unless:\n  - type: consent\n    privacy_notice_key: marketing\n    requirement: opt_in\n`;
-    const newWithConsent = `${baseYaml}unless:\n  - type: consent\n    privacy_notice_key: marketing\n    requirement: opt_out\n`;
-    const diff = diffPolicies(oldWithConsent, newWithConsent);
-    expect(diff.constraints).toEqual([
-      { matchKey: "consent:marketing", status: "modified" },
-    ]);
-    expect(diff.summary.modified).toContain("consent constraint (marketing)");
-  });
-
-  it("flags a removed constraint when it disappears", () => {
-    const oldWithConstraint = `${baseYaml}unless:\n  - type: geo_location\n    field: environment.geo_location\n    operator: in\n    values:\n      - US-CA\n`;
-    const diff = diffPolicies(oldWithConstraint, baseYaml);
-    expect(diff.removedConstraintKeys).toContain(
-      "geo_location:environment.geo_location",
-    );
-    expect(diff.summary.removed).toContain("geo_location constraint");
-  });
-
-  it("flags policy metadata change when the name changes", () => {
-    const newYaml = baseYaml.replace("name: Sample", "name: Renamed");
-    const diff = diffPolicies(baseYaml, newYaml);
-    expect(diff.policyMetadata).toBe("modified");
-    expect(diff.summary.modified).toContain("policy details");
-  });
-
-  it("flags action message change", () => {
-    const oldDeny = [
-      "name: Sample",
-      "decision: DENY",
-      "match:",
-      "  data_use:",
-      "    any:",
-      "      - marketing",
-      "action:",
-      "  message: Old reason",
-      "",
-    ].join("\n");
-    const newDeny = oldDeny.replace("Old reason", "New reason");
-    const diff = diffPolicies(oldDeny, newDeny);
-    expect(diff.action).toBe("modified");
-    expect(diff.summary.modified).toContain("action message");
-  });
-
-  it("flags decision flip ALLOW → DENY", () => {
-    const newDeny = baseYaml.replace("decision: ALLOW", "decision: DENY");
-    const diff = diffPolicies(baseYaml, newDeny);
-    expect(diff.action).toBe("modified");
-    expect(diff.summary.modified.some((s) => s.includes("ALLOW → DENY"))).toBe(
+    expect(built.nodes.some((n) => n.id.startsWith("removed-constraint"))).toBe(
       true,
     );
+  });
+
+  it("ignores unknown removed ids without throwing", () => {
+    const built = buildUnionGraph(BASE_YAML, BASE_YAML, [
+      "constraint:consent:nonexistent",
+      "garbage",
+    ]);
+    expect(built.nodes.every((n) => !n.id.startsWith("removed-"))).toBe(true);
   });
 });

@@ -14,13 +14,15 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Image from "~/features/common/Image";
 import { RTKErrorResult } from "~/types/errors";
 
-import { useSendAccessPolicyChatMessageMutation } from "./agent-chat.slice";
+import {
+  PolicyUpdate,
+  useSendAccessPolicyChatMessageMutation,
+} from "./agent-chat.slice";
 import styles from "./AgentChatPanel.module.scss";
-import { diffPolicies, PolicyDiff, PolicyDiffSummary } from "./policy-yaml";
 
 interface AgentChatPanelProps {
   currentYaml: string;
-  onYamlProposed: (yaml: string, diff?: PolicyDiff) => void;
+  onPolicyUpdate: (update: PolicyUpdate) => void;
 }
 
 interface ChatMessage {
@@ -28,7 +30,6 @@ interface ChatMessage {
   role: "user" | "agent";
   content: string;
   yamlApplied?: boolean;
-  diffSummary?: PolicyDiffSummary;
 }
 
 const AgentLogoMark = ({ size = 20 }: { size?: number }) => (
@@ -51,7 +52,7 @@ const AgentAvatar = () => (
 
 const AgentChatPanel = ({
   currentYaml,
-  onYamlProposed,
+  onPolicyUpdate,
 }: AgentChatPanelProps) => {
   const messageApi = useMessage();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -91,23 +92,17 @@ const AgentChatPanel = ({
 
         setChatHistoryId(response.chat_history_id);
 
-        let diff: PolicyDiff | undefined;
-        if (response.new_policy_yaml) {
-          diff = diffPolicies(currentYaml, response.new_policy_yaml);
-        }
-
         const agentMsg: ChatMessage = {
           key: nextKey("agent"),
           role: "agent",
           content: response.message,
-          yamlApplied: !!response.new_policy_yaml,
-          diffSummary: diff?.hasChanges ? diff.summary : undefined,
+          yamlApplied: !!response.policy_update,
         };
 
         setMessages((prev) => [...prev, agentMsg]);
 
-        if (response.new_policy_yaml) {
-          onYamlProposed(response.new_policy_yaml, diff);
+        if (response.policy_update) {
+          onPolicyUpdate(response.policy_update);
         }
       } catch (error) {
         messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
@@ -127,7 +122,7 @@ const AgentChatPanel = ({
       chatHistoryId,
       currentYaml,
       sendMessage,
-      onYamlProposed,
+      onPolicyUpdate,
       messageApi,
     ],
   );
@@ -139,45 +134,13 @@ const AgentChatPanel = ({
         role: msg.role === "user" ? "user" : "ai",
         content: msg.content,
         footer: msg.yamlApplied ? (
-          <Flex vertical gap={4} className={styles.diffFooter}>
-            <Flex align="center" gap="small">
-              <Icons.CheckmarkFilled
-                style={{ color: "var(--fidesui-color-success)" }}
-              />
-              <Typography.Text type="secondary">
-                The policy was updated
-              </Typography.Text>
-            </Flex>
-            {msg.diffSummary &&
-              msg.diffSummary.added.map((label) => (
-                <Typography.Text
-                  key={`add-${label}`}
-                  type="secondary"
-                  className={styles.diffAdded}
-                >
-                  + Added {label}
-                </Typography.Text>
-              ))}
-            {msg.diffSummary &&
-              msg.diffSummary.modified.map((label) => (
-                <Typography.Text
-                  key={`mod-${label}`}
-                  type="secondary"
-                  className={styles.diffModified}
-                >
-                  ~ Modified {label}
-                </Typography.Text>
-              ))}
-            {msg.diffSummary &&
-              msg.diffSummary.removed.map((label) => (
-                <Typography.Text
-                  key={`rem-${label}`}
-                  type="secondary"
-                  className={styles.diffRemoved}
-                >
-                  − Removed {label}
-                </Typography.Text>
-              ))}
+          <Flex align="center" gap="small">
+            <Icons.CheckmarkFilled
+              style={{ color: "var(--fidesui-color-success)" }}
+            />
+            <Typography.Text type="secondary">
+              The policy was updated
+            </Typography.Text>
           </Flex>
         ) : undefined,
       })),

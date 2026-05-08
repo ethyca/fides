@@ -40,21 +40,3 @@
 .agentAvatar {
   padding: 2px;
 }
-
-.diffFooter {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.diffAdded {
-  color: var(--fidesui-color-success) !important;
-}
-
-.diffModified {
-  color: var(--fidesui-color-warning) !important;
-}
-
-.diffRemoved {
-  color: var(--fidesui-color-error) !important;
-}

@@ -25,6 +25,7 @@ import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
 import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
 import styles from "./AccessPolicyEditor.module.scss";
+import { PolicyUpdate } from "./agent-chat.slice";
 import AgentChatPanel from "./AgentChatPanel";
 import {
   DIFF_FIT_DURATION_MS,
@@ -41,7 +42,6 @@ import {
   nodesToYaml,
   parseYaml,
   POLICY_NODE_ID,
-  PolicyDiff,
   tagNodesWithDiff,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
@@ -90,7 +90,7 @@ const edgeTypes: EdgeTypes = {
 
 interface PendingTransition {
   phase: "ghost-hold" | "settling";
-  diff: PolicyDiff;
+  update: PolicyUpdate;
   oldYaml: string;
   epoch: number;
 }
@@ -362,7 +362,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       built = buildUnionGraph(
         pendingTransition.oldYaml,
         initialYaml,
-        pendingTransition.diff,
+        pendingTransition.update.removed,
       );
     } else {
       built = yamlToNodesAndEdges(initialYaml);
@@ -370,11 +370,12 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     if (!built) {
       return;
     }
-    if (pendingTransition?.diff) {
+    if (pendingTransition?.update) {
       built = tagNodesWithDiff(
         built.nodes,
         built.edges,
-        pendingTransition.diff,
+        pendingTransition.update.added,
+        pendingTransition.update.changed,
         syncKey,
       );
     }
@@ -952,11 +953,11 @@ const AccessPolicyEditor = ({
     [],
   );
 
-  const handleYamlProposed = useCallback(
-    (newYaml: string, diff?: PolicyDiff) => {
+  const handlePolicyUpdate = useCallback(
+    (update: PolicyUpdate) => {
       const oldYaml = yamlValue;
-      setYamlValue(newYaml);
-      const parsed = parseYaml(newYaml);
+      setYamlValue(update.yaml);
+      const parsed = parseYaml(update.yaml);
       if (parsed?.control !== undefined) {
         setControl(parsed.control ?? null);
       }
@@ -964,7 +965,11 @@ const AccessPolicyEditor = ({
       // Cancel any in-flight transition before starting a new one.
       clearTransitionTimers();
 
-      if (!diff || !diff.hasChanges) {
+      const hasHighlights =
+        update.added.length > 0 ||
+        update.changed.length > 0 ||
+        update.removed.length > 0;
+      if (!hasHighlights) {
         setPendingTransition(null);
         setSyncKey((k) => k + 1);
         return;
@@ -973,7 +978,7 @@ const AccessPolicyEditor = ({
       transitionEpochRef.current += 1;
       const epoch = transitionEpochRef.current;
 
-      setPendingTransition({ phase: "ghost-hold", diff, oldYaml, epoch });
+      setPendingTransition({ phase: "ghost-hold", update, oldYaml, epoch });
       setSyncKey((k) => k + 1);
 
       const settleTimer = setTimeout(() => {
@@ -1122,7 +1127,7 @@ const AccessPolicyEditor = ({
           <div className={`h-full pb-2 ${styles.chatWrapper}`}>
             <AgentChatPanel
               currentYaml={yamlValue}
-              onYamlProposed={handleYamlProposed}
+              onPolicyUpdate={handlePolicyUpdate}
             />
           </div>
         )}
