@@ -106,6 +106,12 @@ class WorkerHealthCheck(BaseModel):
     queue_counts: Dict[str, int]
 
 
+class QueueHealthCheck(BaseModel):
+    """Celery queue depth healthcheck (queue sizes only)."""
+
+    queue_counts: Dict[str, int]
+
+
 def get_cache_health() -> str:
     """Checks if the cache is reachable"""
 
@@ -328,6 +334,43 @@ async def workers_health() -> Dict:
         response["workers_enabled"] = True
         # Figure out a way to make this faster
         response["workers"] = get_worker_ids()
+        response["queue_counts"] = get_queue_counts()
+
+    return response
+
+
+@HEALTH_ROUTER.get(
+    "/health/queues",
+    response_model=QueueHealthCheck,
+    responses={
+        status.HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "queue_counts": {"fides": 0, "fides.dsr": 0},
+                    }
+                }
+            }
+        },
+        status.HTTP_503_SERVICE_UNAVAILABLE: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": {
+                            "queue_counts": {"fides": 0, "fides.dsr": 0},
+                        }
+                    }
+                }
+            }
+        },
+    },
+)
+async def queues_health() -> Dict:
+    """Return Celery queue depths when workers are enabled; empty counts otherwise."""
+    response = QueueHealthCheck(queue_counts={}).model_dump(mode="json")
+
+    fides_is_using_workers = not celery_app.conf["task_always_eager"]
+    if fides_is_using_workers:
         response["queue_counts"] = get_queue_counts()
 
     return response

@@ -3665,6 +3665,36 @@ class TestHealthchecks:
             },
         }
 
+    def test_queue_healthcheck(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Test the queue depth healthcheck when workers are disabled (eager)."""
+        response = test_client.get(test_config.cli.server_url + "/health/queues")
+        assert response.status_code == 200
+        assert response.json() == {"queue_counts": {}}
+
+    @pytest.mark.usefixtures("enable_celery_worker")
+    def test_queue_health_check_with_workers_enabled(self, test_config, test_client):
+        response = test_client.get(test_config.cli.server_url + "/health/queues")
+        assert response.status_code == 200
+        assert response.json() == {
+            "queue_counts": {
+                "fides.dsr": 0,
+                "fidesops.messaging": 0,
+                "fides.privacy_preferences": 0,
+                "fides.privacy_request_exports": 0,
+                "fides.privacy_request_ingestion": 0,
+                "fidesplus.consent_webhooks": 0,
+                "fidesplus.discovery_monitors_classification": 0,
+                "fidesplus.discovery_monitors_detection": 0,
+                "fidesplus.discovery_monitors_promotion": 0,
+                "fidesplus.bulk_consent_import": 0,
+                "fides": 0,
+            },
+        }
+
 
 @pytest.mark.integration
 @pytest.mark.parametrize("endpoint_name", [f"{API_PREFIX}/organization", "/health"])
