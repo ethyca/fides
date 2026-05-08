@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, Iterator, List, Optional, Union, cast
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
@@ -106,6 +106,55 @@ class FidesopsRedis:
                     yield list(keys)
                 if scan_cursor == 0 or scan_cursor == "0":
                     break
+
+    def sadd_members_chunked(
+        self,
+        key: str,
+        members: Iterable[Any],
+        *,
+        chunk_size: int = 2000,
+    ) -> None:
+        """
+        Add many members to a Redis SET using bounded ``SADD`` calls.
+
+        Avoids sending an unbounded variadic ``SADD`` when ``members`` is huge.
+        """
+        batch: list[Any] = []
+        for m in members:
+            batch.append(m)
+            if len(batch) >= chunk_size:
+                self._client.sadd(key, *batch)
+                batch.clear()
+        if batch:
+            self._client.sadd(key, *batch)
+
+    def unlink_many(self, keys: List[str]) -> tuple[int, int]:
+        """
+        UNLINK many keys. Cluster-safe (per-key on cluster). Returns ``(deleted, errors)``.
+        """
+        if not keys:
+            return 0, 0
+        deleted = 0
+        errors = 0
+        if self.is_cluster:
+            for k in keys:
+                try:
+                    self._client.unlink(k)
+                    deleted += 1
+                except Exception:  # noqa: BLE001
+                    errors += 1
+            return deleted, errors
+        try:
+            self._client.unlink(*keys)
+            return len(keys), 0
+        except Exception:  # noqa: BLE001
+            for k in keys:
+                try:
+                    self._client.unlink(k)
+                    deleted += 1
+                except Exception:  # noqa: BLE001
+                    errors += 1
+            return deleted, errors
 
     def set_with_autoexpire(
         self,

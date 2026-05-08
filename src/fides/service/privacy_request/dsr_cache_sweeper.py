@@ -22,7 +22,7 @@ import random
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any, FrozenSet, Iterable, Optional
+from typing import Any, FrozenSet, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -93,46 +93,6 @@ def build_dsr_cache_sweeper_statuses(
             f"{overlap}"
         )
     return frozenset(statuses)
-
-
-def _sadd_many(
-    redis: Any, set_key: str, members: Iterable[str], *, chunk: int = 2000
-) -> None:
-    batch: list[str] = []
-    for m in members:
-        batch.append(m)
-        if len(batch) >= chunk:
-            redis.sadd(set_key, *batch)
-            batch.clear()
-    if batch:
-        redis.sadd(set_key, *batch)
-
-
-def _unlink_batch(redis: Any, keys: list[str], *, cluster: bool) -> tuple[int, int]:
-    """Return (deleted_count, error_count)."""
-    if not keys:
-        return 0, 0
-    deleted = 0
-    errors = 0
-    if cluster:
-        for key in keys:
-            try:
-                redis.unlink(key)
-                deleted += 1
-            except Exception:  # noqa: BLE001
-                errors += 1
-        return deleted, errors
-    try:
-        redis.unlink(*keys)
-        return len(keys), 0
-    except Exception:  # noqa: BLE001
-        for key in keys:
-            try:
-                redis.unlink(key)
-                deleted += 1
-            except Exception:  # noqa: BLE001
-                errors += 1
-        return deleted, errors
 
 
 def _run_dsr_cache_sweeper_legacy(
@@ -361,13 +321,11 @@ def run_dsr_cache_sweeper(
     scan_count = int(tc.redis_scan_count)
     del_batch = max(1, int(tc.redis_delete_batch_size))
 
-    cluster = redis.is_cluster
-
     sweep_started = time.perf_counter()
     try:
         # Fresh staging set for this run
         redis.delete(set_key)
-        _sadd_many(redis, set_key, eligible_ids)
+        redis.sadd_members_chunked(set_key, eligible_ids)
         redis.expire(set_key, ttl)
 
         pending_delete: list[str] = []
@@ -378,7 +336,7 @@ def run_dsr_cache_sweeper(
                 return
             chunk = pending_delete[:]
             pending_delete.clear()
-            deleted, err = _unlink_batch(redis, chunk, cluster=cluster)
+            deleted, err = redis.unlink_many(chunk)
             redis_keys_deleted += deleted
             if err:
                 redis_delete_errors += err
