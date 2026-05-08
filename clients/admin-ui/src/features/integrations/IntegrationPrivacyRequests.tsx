@@ -1,11 +1,13 @@
 import {
   Button,
+  ColumnsType,
   Flex,
   Input,
   List,
   Modal,
   Spin,
   Switch,
+  Table,
   Tag,
   Typography,
   useMessage,
@@ -26,6 +28,7 @@ import {
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  Dataset,
   SystemType,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -75,6 +78,8 @@ const IntegrationPrivacyRequests = ({
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState("");
   const [datasetSearchValue, setDatasetSearchValue] = useState("");
+  const [selectedDatasetKeys, setSelectedDatasetKeys] = useState<string[]>([]);
+  const [isLinkingSelected, setIsLinkingSelected] = useState(false);
 
   const { data: linkedDatasetsPage, isLoading: isLoadingLinkedDatasets } =
     useGetConnectionConfigDatasetConfigsQuery(connection.key, {
@@ -124,7 +129,8 @@ const IntegrationPrivacyRequests = ({
     return list.filter(
       (d) =>
         d.fides_key.toLowerCase().includes(term) ||
-        (d.name ?? "").toLowerCase().includes(term),
+        (d.name ?? "").toLowerCase().includes(term) ||
+        (d.description ?? "").toLowerCase().includes(term),
     );
   }, [unlinkedDatasets, datasetSearchValue]);
 
@@ -140,37 +146,49 @@ const IntegrationPrivacyRequests = ({
     setLinkModalOpen(false);
     setSearchInputValue("");
     setDatasetSearchValue("");
+    setSelectedDatasetKeys([]);
   };
 
   const openLinkModal = () => {
     setSearchInputValue("");
     setDatasetSearchValue("");
+    setSelectedDatasetKeys([]);
     setLinkModalOpen(true);
   };
 
   // PUT /connection/{key}/datasetconfig is a bulk endpoint: it returns 200 OK
   // even when individual entries fail validation, surfacing those failures in
   // the `failed` array of the response body. Treat any non-empty `failed` as
-  // a user-facing error and bail before showing a success toast.
-  const handleLinkDataset = async (datasetKey: string) => {
-    if (!datasetKey || !connection.key) {
+  // a user-facing error and bail before showing a success toast — leaving the
+  // modal open so the user can adjust their selection and retry.
+  const handleLinkSelected = async () => {
+    if (!connection.key || selectedDatasetKeys.length === 0) {
       return;
     }
-    const result = await writeLinkedDatasetKeys([
-      ...linkedDatasetKeys,
-      datasetKey,
-    ]);
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      return;
+    setIsLinkingSelected(true);
+    try {
+      const result = await writeLinkedDatasetKeys([
+        ...linkedDatasetKeys,
+        ...selectedDatasetKeys,
+      ]);
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+      const firstFailure = result.data?.failed?.[0];
+      if (firstFailure) {
+        messageApi.error(firstFailure.message);
+        return;
+      }
+      messageApi.success(
+        selectedDatasetKeys.length === 1
+          ? "Dataset linked successfully"
+          : `${selectedDatasetKeys.length} datasets linked successfully`,
+      );
+      closeLinkModal();
+    } finally {
+      setIsLinkingSelected(false);
     }
-    const firstFailure = result.data?.failed?.[0];
-    if (firstFailure) {
-      messageApi.error(firstFailure.message);
-      return;
-    }
-    messageApi.success("Dataset linked successfully");
-    closeLinkModal();
   };
 
   const handleConfirmUnlink = async (datasetKey: string) => {
@@ -206,6 +224,55 @@ const IntegrationPrivacyRequests = ({
       centered: true,
     });
   };
+
+  const linkDatasetColumns: ColumnsType<Dataset> = useMemo(
+    () => [
+      {
+        title: "Dataset",
+        dataIndex: "name",
+        key: "name",
+        ellipsis: { showTitle: false },
+        render: (name: string | null | undefined, row: Dataset) => {
+          const display = name ?? row.fides_key;
+          return (
+            <Text strong ellipsis={{ tooltip: display }}>
+              {display}
+            </Text>
+          );
+        },
+      },
+      {
+        title: "Fides key",
+        dataIndex: "fides_key",
+        key: "fides_key",
+        ellipsis: { showTitle: false },
+        render: (fidesKey: string) => (
+          <Text
+            type="secondary"
+            className="font-mono text-xs"
+            ellipsis={{ tooltip: fidesKey }}
+          >
+            {fidesKey}
+          </Text>
+        ),
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        ellipsis: { showTitle: false },
+        render: (description: string | null | undefined) =>
+          description ? (
+            <Text type="secondary" ellipsis={{ tooltip: description }}>
+              {description}
+            </Text>
+          ) : (
+            <Text type="secondary">—</Text>
+          ),
+      },
+    ],
+    [],
+  );
 
   // -------------------------------------------------------------------------
 
@@ -252,21 +319,46 @@ const IntegrationPrivacyRequests = ({
           <Modal
             open={linkModalOpen}
             onCancel={closeLinkModal}
-            title="Link dataset"
-            footer={
-              <Button
-                onClick={closeLinkModal}
-                data-testid="cancel-link-dataset-button"
-              >
-                Cancel
-              </Button>
+            title={
+              <Flex justify="space-between" align="center" gap="small">
+                <span>Link datasets</span>
+                {selectedDatasetKeys.length > 0 && (
+                  <Tag
+                    className="mr-6"
+                    data-testid="link-dataset-selected-count"
+                  >
+                    {selectedDatasetKeys.length} selected
+                  </Tag>
+                )}
+              </Flex>
             }
-            width={520}
+            footer={
+              <Flex justify="flex-end" gap="small">
+                <Button
+                  onClick={closeLinkModal}
+                  data-testid="cancel-link-dataset-button"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  disabled={selectedDatasetKeys.length === 0}
+                  loading={isLinkingSelected}
+                  onClick={handleLinkSelected}
+                  data-testid="confirm-link-datasets-button"
+                >
+                  {selectedDatasetKeys.length <= 1
+                    ? "Link dataset"
+                    : `Link ${selectedDatasetKeys.length} datasets`}
+                </Button>
+              </Flex>
+            }
+            width={720}
             wrapProps={{ "data-testid": "link-dataset-modal" }}
           >
-            <Flex vertical gap="medium" className="max-h-96">
+            <Flex vertical gap="medium">
               <Input.Search
-                placeholder="Search..."
+                placeholder="Search datasets..."
                 allowClear
                 value={searchInputValue}
                 onChange={({ target: { value } }) => {
@@ -280,9 +372,25 @@ const IntegrationPrivacyRequests = ({
                 aria-label="Search datasets"
                 data-testid="link-dataset-search"
               />
-              <List
-                dataSource={filteredUnlinkedDatasets}
+              <Table
+                rowKey="fides_key"
+                size="small"
                 loading={isUnlinkedFetching}
+                dataSource={filteredUnlinkedDatasets}
+                columns={linkDatasetColumns}
+                rowSelection={{
+                  type: "checkbox",
+                  selectedRowKeys: selectedDatasetKeys,
+                  // Selection is preserved across search filtering, so a user
+                  // can search → select → search → select → confirm. The
+                  // returned `keys` are just the currently-visible page's
+                  // selection, so merge with anything previously selected
+                  // that's no longer in view.
+                  preserveSelectedRowKeys: true,
+                  onChange: (keys) => setSelectedDatasetKeys(keys as string[]),
+                }}
+                pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                scroll={{ y: 320 }}
                 locale={{
                   emptyText: (
                     <div className="py-6 text-center">
@@ -294,52 +402,6 @@ const IntegrationPrivacyRequests = ({
                     </div>
                   ),
                 }}
-                renderItem={(dataset) => {
-                  const displayName = dataset.name ?? dataset.fides_key;
-                  const showFidesKey = displayName !== dataset.fides_key;
-                  return (
-                    <List.Item
-                      key={dataset.fides_key}
-                      actions={[
-                        <Button
-                          key="link"
-                          type="link"
-                          size="small"
-                          onClick={() => handleLinkDataset(dataset.fides_key)}
-                          data-testid={`link-dataset-option-${dataset.fides_key}`}
-                          aria-label={`Link dataset: ${displayName}`}
-                        >
-                          Link
-                        </Button>,
-                      ]}
-                    >
-                      <List.Item.Meta
-                        title={
-                          <Flex
-                            vertical
-                            align="flex-start"
-                            gap={4}
-                            className="w-full"
-                          >
-                            <Text
-                              className="w-full"
-                              ellipsis={{ tooltip: displayName }}
-                            >
-                              {displayName}
-                            </Text>
-                            {showFidesKey && (
-                              <Tag className="max-w-full truncate font-mono text-xs">
-                                {dataset.fides_key}
-                              </Tag>
-                            )}
-                          </Flex>
-                        }
-                        description={dataset.description ?? undefined}
-                      />
-                    </List.Item>
-                  );
-                }}
-                className="overflow-y-auto"
               />
             </Flex>
           </Modal>
