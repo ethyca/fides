@@ -41,9 +41,6 @@ export const ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
   "/data-discovery/action-center/cloud_infrastructure/[monitorId]/activity";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
 
-// End-to-end datasets
-export const DATA_CATALOG_ROUTE = "/data-catalog";
-
 // Privacy requests group
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;

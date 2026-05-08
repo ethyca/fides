@@ -79,13 +79,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         tabs: ACTION_CENTER_TAB_ITEMS,
       },
       {
-        title: "Data catalog",
-        path: routes.DATA_CATALOG_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresFlag: "dataCatalog",
-        requiresPlus: true,
-      },
-      {
         title: "Access control",
         path: routes.ACCESS_CONTROL_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],

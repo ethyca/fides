@@ -317,24 +317,6 @@ describe("configureNavGroups", () => {
         { title: "Action center", path: routes.ACTION_CENTER_ROUTE },
       ]);
     });
-
-    it("includes feature flagged routes when enabled", () => {
-      const navGroups = configureNavGroups({
-        config: NAV_CONFIG,
-        userScopes: ALL_SCOPES,
-        flags: {
-          dataCatalog: true,
-        },
-        hasPlus: true,
-      });
-
-      expect(
-        findGroup(navGroups, "Detection & Discovery").children,
-      ).toMatchObject([
-        { title: "Action center", path: routes.ACTION_CENTER_ROUTE },
-        { title: "Data catalog", path: routes.DATA_CATALOG_ROUTE },
-      ]);
-    });
   });
 });
 
