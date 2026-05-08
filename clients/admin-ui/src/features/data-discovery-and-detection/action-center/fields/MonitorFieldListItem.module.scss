@@ -2,8 +2,17 @@
   &__title {
     white-space: nowrap;
     font-weight: normal; // overrides Ant default title font weight
+    min-width: 0; // allow flex children to shrink below their intrinsic size
     & button {
       font-weight: 600;
+    }
+  }
+  &__name {
+    min-width: 0;
+    overflow: hidden;
+    & > span {
+      max-width: 100%;
+      overflow: hidden;
     }
   }
   &__breadcrumb {

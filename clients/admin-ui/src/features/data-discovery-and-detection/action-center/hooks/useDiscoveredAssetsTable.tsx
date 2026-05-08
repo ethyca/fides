@@ -59,6 +59,7 @@ import isConsentCategory from "../utils/isConsentCategory";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
+import { useConfirmPromotion } from "./useConfirmPromotion";
 
 interface UseDiscoveredAssetsTableConfig {
   monitorId: string;
@@ -128,6 +129,7 @@ export const useDiscoveredAssetsTable = ({
 
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
+  const { confirmPromotion, isCheckingImpact } = useConfirmPromotion();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultAssetsMutation();
   const [addMonitorResultSystemsMutation, { isLoading: isAddingAllResults }] =
@@ -143,6 +145,7 @@ export const useDiscoveredAssetsTable = ({
 
   const anyBulkActionIsLoading =
     isAddingResults ||
+    isCheckingImpact ||
     isIgnoringResults ||
     isAddingAllResults ||
     isBulkUpdatingSystem ||
@@ -450,6 +453,10 @@ export const useDiscoveredAssetsTable = ({
   }, [data, systemId, systemName]);
 
   const handleBulkAdd = useCallback(async () => {
+    const confirmed = await confirmPromotion(selectedUrns);
+    if (!confirmed) {
+      return;
+    }
     const result = await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
@@ -479,6 +486,7 @@ export const useDiscoveredAssetsTable = ({
       resetSelections();
     }
   }, [
+    confirmPromotion,
     addMonitorResultAssetsMutation,
     selectedUrns,
     selectedRows,

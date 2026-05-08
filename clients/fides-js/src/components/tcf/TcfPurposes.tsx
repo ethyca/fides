@@ -77,6 +77,7 @@ const TcfPurposes = ({
   allSpecialPurposes = [],
   enabledIds,
   onChange,
+  attDenied = false,
 }: {
   allPurposesConsent?: TCFPurposeConsentRecord[];
   allCustomPurposesConsent?: Array<PrivacyNoticeWithBestTranslation>;
@@ -87,6 +88,7 @@ const TcfPurposes = ({
     payload: UpdateEnabledIds,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
+  attDenied?: boolean;
 }) => {
   const {
     purposesConsent: enabledPurposeConsentIds,
@@ -125,12 +127,14 @@ const TcfPurposes = ({
       .map((p) => ({
         ...p,
         vendors: allPurposesConsent.find((q) => q.id === p.id)?.vendors,
+        disabled: attDenied,
       }));
     const legintPurposes: PurposeRecord[] = uniquePurposes
       .filter((p) => p.isLegint)
       .map((p) => ({
         ...p,
         vendors: allPurposesLegint.find((q) => q.id === p.id)?.vendors,
+        disabled: attDenied,
       }));
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       return {
@@ -168,6 +172,7 @@ const TcfPurposes = ({
     allCustomPurposesConsent,
     enabledPurposeConsentIds,
     enabledCustomPurposeConsentIds,
+    attDenied,
   ]);
 
   /**

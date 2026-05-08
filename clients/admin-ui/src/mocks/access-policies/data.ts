@@ -72,7 +72,7 @@ export const mockAccessPolicies: AccessPolicy[] = [
       "Limits access to Know Your Customer identity documents and verification records to compliance and onboarding teams only",
     control: "eea_uk_gdpr",
     is_recommendation: true,
-    yaml: "fides_key: kyc_data_role_restriction\nname: KYC Data Role Restriction\ndescription: Limits access to KYC identity documents\nenabled: true\npriority: 150\ncontrols:\n  - eea_uk_gdpr\n  - us_glba_ccpa\ndecision: DENY\nmatch:\n  data_use:\n    any:\n      - essential.service.payment_processing\n  data_category:\n    any:\n      - user.government_id\n      - user.financial\naction:\n  message: KYC data access restricted to compliance team.\n",
+    yaml: "fides_key: kyc_data_role_restriction\nname: KYC Data Role Restriction\ndescription: Limits access to KYC identity documents\nenabled: true\npriority: 150\ncontrols:\n  - eea_uk_gdpr\ndecision: DENY\nmatch:\n  data_use:\n    any:\n      - essential.service.payment_processing\n  data_category:\n    any:\n      - user.government_id\n      - user.financial\naction:\n  message: KYC data access restricted to compliance team.\n",
     created_at: "2026-02-10T09:00:00Z",
     updated_at: "2026-03-23T16:20:00Z",
   },
@@ -92,7 +92,7 @@ export const mockAccessPolicies: AccessPolicy[] = [
     description:
       "Restricts access to detokenized card numbers and CVVs to PCI-certified service accounts within the payment processing environment",
     control: "us_glba_ccpa",
-    yaml: "fides_key: cardholder_data_access\nname: Cardholder Data Access\ndescription: PCI-DSS cardholder data restrictions\nenabled: false\npriority: 500\ncontrols:\n  - us_glba_ccpa\n  - global\ndecision: DENY\nmatch:\n  data_category:\n    any:\n      - user.financial.bank_account\n      - user.payment\naction:\n  message: Cardholder data access requires PCI-certified service account.\n",
+    yaml: "fides_key: cardholder_data_access\nname: Cardholder Data Access\ndescription: PCI-DSS cardholder data restrictions\nenabled: false\npriority: 500\ncontrols:\n  - us_glba_ccpa\ndecision: DENY\nmatch:\n  data_category:\n    any:\n      - user.financial.bank_account\n      - user.payment\naction:\n  message: Cardholder data access requires PCI-certified service account.\n",
     created_at: "2026-03-11T11:00:00Z",
     updated_at: "2026-03-11T11:00:00Z",
   },
@@ -123,7 +123,7 @@ export const mockAccessPolicies: AccessPolicy[] = [
     description:
       "Requires explicit data-sharing agreements before granting partner or vendor systems read access to customer data across borders",
     control: "eea_uk_gdpr",
-    yaml: "fides_key: cross_border_transfer\nname: Cross-Border Data Transfer Policy\ndescription: Cross-border data sharing agreements required\nenabled: true\npriority: 700\ncontrols:\n  - eea_uk_gdpr\n  - apac_pdpa_app\ndecision: DENY\nmatch:\n  data_use:\n    any:\n      - third_party_sharing\nunless:\n  - type: data_flow\n    direction: egress\n    operator: any_of\n    systems:\n      - approved-partner-a\n      - approved-partner-b\naction:\n  message: Cross-border transfer requires approved data sharing agreement.\n",
+    yaml: "fides_key: cross_border_transfer\nname: Cross-Border Data Transfer Policy\ndescription: Cross-border data sharing agreements required\nenabled: true\npriority: 700\ncontrols:\n  - eea_uk_gdpr\ndecision: DENY\nmatch:\n  data_use:\n    any:\n      - third_party_sharing\nunless:\n  - type: data_flow\n    direction: egress\n    operator: any_of\n    systems:\n      - approved-partner-a\n      - approved-partner-b\naction:\n  message: Cross-border transfer requires approved data sharing agreement.\n",
     created_at: "2026-03-01T10:00:00Z",
     updated_at: "2026-04-02T12:00:00Z",
   },

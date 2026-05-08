@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed username validation so email addresses can be used as usernames
-pr: 8049
-labels: []
