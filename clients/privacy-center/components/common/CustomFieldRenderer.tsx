@@ -1,7 +1,9 @@
-import { Input, LocationSelect, Select } from "fidesui";
+import dayjs from "dayjs";
+import { DatePicker, Input, LocationSelect, Select } from "fidesui";
 import { ReactNode } from "react";
 
 import {
+  CustomDateField,
   CustomLocationField,
   CustomMultiSelectField,
   CustomSelectField,
@@ -37,11 +39,17 @@ interface ICustomLocationFieldProps
   onChange: (value: string) => void;
 }
 
+interface ICustomDateFieldProps extends CustomDateField, ICustomFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
 export type CustomFieldRendererProps =
   | ICustomTextFieldProps
   | ICustomSelectFieldProps
   | ICustomMultiSelectFieldProps
-  | ICustomLocationFieldProps;
+  | ICustomLocationFieldProps
+  | ICustomDateFieldProps;
 
 const CustomFieldRenderer = ({
   fieldKey,
@@ -136,6 +144,27 @@ const CustomFieldRenderer = ({
           aria-label={label}
           aria-describedby={`${fieldKey}-error`}
           aria-required={required !== false}
+        />
+      );
+
+    case "date":
+      return (
+        <DatePicker
+          id={fieldKey}
+          data-testid={`date-${fieldKey}`}
+          value={props.value ? dayjs(props.value) : null}
+          onChange={(date) =>
+            props.onChange(date ? date.format("YYYY-MM-DD") : "")
+          }
+          onBlur={onBlur}
+          format="YYYY-MM-DD"
+          minDate={props.min ? dayjs(props.min) : undefined}
+          maxDate={props.max ? dayjs(props.max) : undefined}
+          getPopupContainer={() => document.body}
+          aria-label={label}
+          aria-describedby={`${fieldKey}-error`}
+          aria-required={required !== false}
+          style={{ width: "100%" }}
         />
       );
 
