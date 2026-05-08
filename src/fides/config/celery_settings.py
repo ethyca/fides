@@ -26,7 +26,8 @@ class CelerySettings(FidesSettings):
     task_always_eager: bool = Field(
         default=True,
         description="If true, tasks are executed locally instead of being sent to the queue.  "
-        "If False, tasks are sent to the queue.",
+        "If False, tasks are sent to the queue. The web API server always publishes to the "
+        "broker regardless; this flag is honored in Celery worker processes (and in test mode).",
     )
     eager_task_queues: Set[str] = Field(
         default_factory=set,

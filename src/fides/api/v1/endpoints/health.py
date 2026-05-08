@@ -329,6 +329,9 @@ async def workers_health() -> Dict:
         workers_enabled=False, workers=[], queue_counts={}
     ).model_dump(mode="json")
 
+    # Use the Celery app runtime flag (tests may flip it via ``enable_celery_worker``); the
+    # API process also forces ``task_always_eager`` false in ``_create_celery`` when not in
+    # test mode so this reflects broker dispatch vs in-process execution.
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
     if fides_is_using_workers:
         response["workers_enabled"] = True
