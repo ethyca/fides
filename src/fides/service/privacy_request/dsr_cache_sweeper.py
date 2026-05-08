@@ -1,9 +1,10 @@
 """Periodic DSR cache sweeper: clears Redis cache keys for terminal privacy requests.
 
 Eligible rows are selected from Postgres by terminal status and staleness on
-``updated_at``. For each id we re-read ``status`` immediately before clearing to
-avoid races with status transitions, then call ``get_dsr_cache_store(id).clear()``
-(same effect as ``PrivacyRequest.clear_cached_values``).
+``updated_at``, including soft-deleted requests (``deleted_at`` set). For each id
+we re-read ``status`` immediately before clearing to avoid races with status
+transitions, then call ``get_dsr_cache_store(id).clear()`` (same effect as
+``PrivacyRequest.clear_cached_values``).
 
 The Celery entrypoint gates on resolved ``execution.dsr_cache_sweeper.enabled``
 (application preference, default off). Server tuning lives under
@@ -99,7 +100,6 @@ def run_dsr_cache_sweeper(
         batch_rows = (
             db.query(PrivacyRequest.id, PrivacyRequest.status)
             .filter(
-                PrivacyRequest.deleted_at.is_(None),
                 PrivacyRequest.status.in_(list(terminal_statuses)),
                 PrivacyRequest.updated_at < cutoff,
                 PrivacyRequest.id > last_id,

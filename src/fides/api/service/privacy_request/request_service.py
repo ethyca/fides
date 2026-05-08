@@ -361,6 +361,14 @@ def cleanup_dsr_cache_sweeper(self: DatabaseTask) -> Dict[str, Any]:
             return {}
         lock_override = resolved_sweeper.lock_timeout_seconds
 
+    if lock_override is not None and lock_override < 60:
+        logger.warning(
+            "DSR cache sweeper lock_timeout_seconds override is {}s, which looks too low "
+            "(minimum recommended 60s). Check execution.dsr_cache_sweeper.lock_timeout_seconds "
+            "in server config and application settings in the database.",
+            lock_override,
+        )
+
     lock_timeout = int(
         lock_override if lock_override is not None else sweeper.lock_timeout_seconds
     )

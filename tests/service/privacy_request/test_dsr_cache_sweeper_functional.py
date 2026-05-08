@@ -85,6 +85,38 @@ class TestDsrCacheSweeperFunctional:
             get_dsr_cache_store(pr.id).clear()
             pr.delete(db)
 
+    def test_clears_redis_for_soft_deleted_stale_terminal_request(
+        self,
+        db: Session,
+        policy: Policy,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Soft-deleted terminal PR with stale updated_at is still swept."""
+        _patch_dsr_cache_sweeper_execution(monkeypatch)
+
+        pr = _create_privacy_request_for_policy(
+            db,
+            policy,
+            status=PrivacyRequestStatus.complete,
+        )
+        try:
+            store = get_dsr_cache_store(pr.id)
+            store.write_async_execution(b"soft-deleted-task", _TTL)
+            assert len(store.get_all_keys()) >= 1
+
+            pr.soft_delete(db, user_id=None)
+            _force_stale_updated_at(db, pr.id)
+
+            result = run_dsr_cache_sweeper(db)
+
+            assert result.rows_scanned >= 1
+            assert result.redis_clear_attempts >= 1
+            assert result.redis_errors == 0
+            assert len(get_dsr_cache_store(pr.id).get_all_keys()) == 0
+        finally:
+            get_dsr_cache_store(pr.id).clear()
+            pr.delete(db)
+
     def test_recent_terminal_request_is_not_cleaned(
         self,
         db: Session,
