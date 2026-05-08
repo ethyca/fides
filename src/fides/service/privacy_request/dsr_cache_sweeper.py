@@ -1,23 +1,29 @@
 """Periodic DSR cache sweeper: clears Redis cache keys for terminal privacy requests.
 
 Eligible rows are selected from Postgres by terminal status and staleness on
-``updated_at``, including soft-deleted requests (``deleted_at`` set). For each id
-we re-read ``status`` immediately before clearing to avoid races with status
-transitions, then call ``get_dsr_cache_store(id).clear()`` (same effect as
-``PrivacyRequest.clear_cached_values``).
+``updated_at``, including soft-deleted requests (``deleted_at`` set). For each
+eligible id we re-read ``status`` while building the work set (same race semantics
+as the legacy per-row path).
 
-The Celery entrypoint gates on resolved ``execution.dsr_cache_sweeper.enabled``
-(application preference, default off). Server tuning lives under
-``execution.dsr_cache_sweeper`` (see ``DsrCacheSweeperSettings``).
+**Single-pass mode (default):** eligible string IDs are staged in a Redis set
+with a TTL, the keyspace is scanned once in bounded chunks, and keys matching
+known DSR shapes for staged IDs are UNLINKed in batches. The staging set is removed with Redis DEL on success; TTL covers crashed workers.
+
+**Legacy mode:** ``single_pass_redis_sweep=false`` restores per-id
+``get_dsr_cache_store(id).clear()`` (two wide SCANs per id).
+
+The Celery entrypoint gates on resolved ``execution.dsr_cache_sweeper.enabled``.
+Tuning lives under ``execution.dsr_cache_sweeper`` (``DsrCacheSweeperSettings``).
 """
 
 from __future__ import annotations
 
 import random
+import re
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import FrozenSet
+from typing import Any, FrozenSet, Iterable, Optional, Set
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -27,17 +33,42 @@ from fides.api.schemas.privacy_request import (
     ACTIVE_REQUEST_STATUSES,
     PrivacyRequestStatus,
 )
-from fides.api.util.cache import get_dsr_cache_store
+from fides.api.util.cache import (
+    _is_redis_cluster,
+    get_dsr_cache_store,
+    get_redis_cache_manager,
+    iter_redis_scan_batches,
+)
 from fides.config import CONFIG
+
+# Canonical 8-4-4-4-12 UUID tokens (case-insensitive). Privacy request ids are typically
+# ``pri_<uuid>``; we extract uuid substrings then expand to both bare and ``pri_`` forms
+# for SISMEMBER against the staging set (which stores the DB id string).
+_UUID_RE = re.compile(
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
 class DsrCacheSweeperResult:
+    """Summary of one sweeper run."""
+
     rows_scanned: int
-    redis_clear_attempts: int
     rows_skipped_status_mismatch: int
-    redis_errors: int
+    eligible_dsr_count: int
+    redis_keys_scanned: int
+    dsr_ids_seen_in_redis: int
+    redis_keys_deleted: int
+    redis_delete_errors: int
+    redis_errors: int  # legacy clear failures + single-pass batch failures (aggregated)
     duration_seconds: float
+    maintenance_set_deleted: bool
+
+    @property
+    def redis_clear_attempts(self) -> int:
+        """Back-compat alias for ``redis_keys_deleted``."""
+        return self.redis_keys_deleted
 
 
 def build_dsr_cache_sweeper_statuses(
@@ -73,28 +104,135 @@ def build_dsr_cache_sweeper_statuses(
     return frozenset(statuses)
 
 
-def run_dsr_cache_sweeper(
-    db: Session,
-) -> DsrCacheSweeperResult:
-    """Scan Postgres for stale terminal privacy requests and clear Redis DSR cache."""
-    tc = CONFIG.execution.dsr_cache_sweeper
-    terminal_statuses = build_dsr_cache_sweeper_statuses(
-        include_denied_and_duplicate=tc.include_denied_and_duplicate,
-        include_error=tc.include_error,
-    )
-    staleness_minutes = tc.staleness_minutes
-    batch_size = max(1, int(tc.batch_size))
-    batch_sleep = float(tc.batch_sleep_seconds)
+def _normalize_uuid_token(token: str) -> str:
+    return token.lower()
 
+
+def _decode_redis_key(raw: Any) -> str:
+    if isinstance(raw, bytes):
+        return raw.decode("utf-8", errors="replace")
+    return str(raw)
+
+
+def _logical_body_targets_dsr(body: str, dsr_id_lower: str) -> bool:
+    """True if ``body`` matches a known DSR logical/encoded-object key shape for this id."""
+    if body.startswith(f"{dsr_id_lower}__"):
+        return True
+    if body.startswith(f"WEBHOOK_MANUAL_ACCESS_INPUT__{dsr_id_lower}__"):
+        return True
+    if body.startswith(f"WEBHOOK_MANUAL_ERASURE_INPUT__{dsr_id_lower}__"):
+        return True
+    if body == f"DATA_USE_MAP__{dsr_id_lower}":
+        return True
+    if body.startswith(f"EMAIL_INFORMATION__{dsr_id_lower}__"):
+        return True
+    if body == f"PAUSED_LOCATION__{dsr_id_lower}":
+        return True
+    if body == f"FAILED_LOCATION__{dsr_id_lower}":
+        return True
+    if body.startswith(f"PLACEHOLDER_RESULTS__{dsr_id_lower}__"):
+        return True
+    return False
+
+
+def redis_key_is_dsr_cache_key_for_id(key: str, dsr_id_lower: str) -> bool:
+    """
+    Return True if ``key`` is a known Fides DSR cache Redis key for ``dsr_id_lower``.
+
+    Conservative: avoids deleting unrelated keys that merely embed a UUID substring
+    unless they match ``dsr:`` / index / migration / legacy ``id-`` / ``EN_`` logical
+    patterns documented in ``KeyMapper`` and ``DSRCacheStore``.
+    """
+    if key.startswith(f"dsr:{dsr_id_lower}:"):
+        return True
+    if key == f"__idx:dsr:{dsr_id_lower}":
+        return True
+    if key == f"__migrated:{dsr_id_lower}":
+        return True
+    if key.startswith(f"id-{dsr_id_lower}-"):
+        return True
+    if key.startswith("EN_"):
+        return _logical_body_targets_dsr(key[3:], dsr_id_lower)
+    return _logical_body_targets_dsr(key, dsr_id_lower)
+
+
+def _candidate_privacy_request_ids_in_key(key: str) -> Set[str]:
+    """Candidate ids to check with SISMEMBER (normalized lowercase)."""
+    out: set[str] = set()
+    for m in _UUID_RE.findall(key):
+        u = _normalize_uuid_token(m)
+        out.add(u)
+        # Product privacy request ids are ``pri_<uuid>`` (see DSR package link validation).
+        out.add(f"pri_{u}")
+    return out
+
+
+def _sadd_many(
+    redis: Any, set_key: str, members: Iterable[str], *, chunk: int = 2000
+) -> None:
+    batch: list[str] = []
+    for m in members:
+        batch.append(m)
+        if len(batch) >= chunk:
+            redis.sadd(set_key, *batch)
+            batch.clear()
+    if batch:
+        redis.sadd(set_key, *batch)
+
+
+def _unlink_batch(redis: Any, keys: list[str], *, cluster: bool) -> tuple[int, int]:
+    """Return (deleted_count, error_count)."""
+    if not keys:
+        return 0, 0
+    client = getattr(redis, "_client", redis)
+    deleted = 0
+    errors = 0
+
+    def _one(k: str) -> None:
+        nonlocal deleted, errors
+        try:
+            if hasattr(client, "unlink"):
+                client.unlink(k)
+            else:
+                client.delete(k)
+            deleted += 1
+        except Exception:  # noqa: BLE001
+            errors += 1
+
+    if cluster:
+        for key in keys:
+            _one(key)
+        return deleted, errors
+
+    if hasattr(client, "unlink"):
+        try:
+            client.unlink(*keys)
+            return len(keys), 0
+        except Exception:  # noqa: BLE001
+            deleted = 0
+            errors = 0
+
+    for key in keys:
+        _one(key)
+    return deleted, errors
+
+
+def _run_dsr_cache_sweeper_legacy(
+    db: Session,
+    *,
+    terminal_statuses: FrozenSet[PrivacyRequestStatus],
+    staleness_minutes: int,
+    batch_size: int,
+    batch_sleep: float,
+) -> DsrCacheSweeperResult:
+    """Previous behavior: per-id ``clear()`` with two SCANs each."""
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=staleness_minutes)
 
     rows_scanned = 0
-    redis_clear_attempts = 0
     rows_skipped_status_mismatch = 0
     redis_errors = 0
-
+    redis_keys_deleted = 0
     last_id = ""
-    started = time.perf_counter()
 
     while True:
         batch_rows = (
@@ -133,7 +271,7 @@ def run_dsr_cache_sweeper(
             store = get_dsr_cache_store(str(pr_id))
             try:
                 store.clear()
-                redis_clear_attempts += 1
+                redis_keys_deleted += 1
                 logger.info(
                     "Cleared Redis DSR cache privacy_request_id={} status={} "
                     "staleness_minutes={}",
@@ -156,21 +294,250 @@ def run_dsr_cache_sweeper(
             jitter = random.uniform(0.0, batch_sleep)
             time.sleep(batch_sleep + jitter)
 
-    duration = time.perf_counter() - started
-    logger.info(
-        "DSR cache sweeper finished rows_scanned={} "
-        "redis_clear_attempts={} skipped_status_mismatch={} redis_errors={} "
-        "duration_s={:.3f}",
-        rows_scanned,
-        redis_clear_attempts,
-        rows_skipped_status_mismatch,
-        redis_errors,
-        duration,
-    )
     return DsrCacheSweeperResult(
         rows_scanned=rows_scanned,
-        redis_clear_attempts=redis_clear_attempts,
         rows_skipped_status_mismatch=rows_skipped_status_mismatch,
+        eligible_dsr_count=redis_keys_deleted,  # best-effort legacy: one clear per eligible row
+        redis_keys_scanned=0,
+        dsr_ids_seen_in_redis=redis_keys_deleted,
+        redis_keys_deleted=redis_keys_deleted,
+        redis_delete_errors=0,
         redis_errors=redis_errors,
-        duration_seconds=duration,
+        duration_seconds=0.0,
+        maintenance_set_deleted=True,
+    )
+
+
+def run_dsr_cache_sweeper(
+    db: Session,
+) -> DsrCacheSweeperResult:
+    """Scan Postgres for stale terminal privacy requests and clear Redis DSR cache."""
+    tc = CONFIG.execution.dsr_cache_sweeper
+    terminal_statuses = build_dsr_cache_sweeper_statuses(
+        include_denied_and_duplicate=tc.include_denied_and_duplicate,
+        include_error=tc.include_error,
+    )
+    staleness_minutes = tc.staleness_minutes
+    batch_size = max(1, int(tc.batch_size))
+    batch_sleep = float(tc.batch_sleep_seconds)
+
+    started = time.perf_counter()
+
+    if not tc.single_pass_redis_sweep:
+        res = _run_dsr_cache_sweeper_legacy(
+            db,
+            terminal_statuses=terminal_statuses,
+            staleness_minutes=staleness_minutes,
+            batch_size=batch_size,
+            batch_sleep=batch_sleep,
+        )
+        duration = time.perf_counter() - started
+        logger.info(
+            "DSR cache sweeper (legacy) finished rows_scanned={} "
+            "redis_keys_deleted={} skipped_status_mismatch={} redis_errors={} "
+            "duration_s={:.3f}",
+            res.rows_scanned,
+            res.redis_keys_deleted,
+            res.rows_skipped_status_mismatch,
+            res.redis_errors,
+            duration,
+        )
+        return DsrCacheSweeperResult(
+            rows_scanned=res.rows_scanned,
+            rows_skipped_status_mismatch=res.rows_skipped_status_mismatch,
+            eligible_dsr_count=res.eligible_dsr_count,
+            redis_keys_scanned=0,
+            dsr_ids_seen_in_redis=res.dsr_ids_seen_in_redis,
+            redis_keys_deleted=res.redis_keys_deleted,
+            redis_delete_errors=0,
+            redis_errors=res.redis_errors,
+            duration_seconds=duration,
+            maintenance_set_deleted=True,
+        )
+
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=staleness_minutes)
+
+    rows_scanned = 0
+    rows_skipped_status_mismatch = 0
+    eligible_ids: list[str] = []
+    last_id = ""
+
+    while True:
+        batch_rows = (
+            db.query(PrivacyRequest.id, PrivacyRequest.status)
+            .filter(
+                PrivacyRequest.status.in_(list(terminal_statuses)),
+                PrivacyRequest.updated_at < cutoff,
+                PrivacyRequest.id > last_id,
+            )
+            .order_by(PrivacyRequest.id)
+            .limit(batch_size)
+            .all()
+        )
+        if not batch_rows:
+            break
+
+        for pr_id, initial_status in batch_rows:
+            rows_scanned += 1
+
+            current = (
+                db.query(PrivacyRequest.status)
+                .filter(PrivacyRequest.id == pr_id)
+                .scalar()
+            )
+            if current is None or current not in terminal_statuses:
+                rows_skipped_status_mismatch += 1
+                logger.debug(
+                    "Skipping DSR cache sweeper staging for privacy_request_id={}: "
+                    "status no longer eligible (batch had {}, current={})",
+                    pr_id,
+                    initial_status.value,
+                    getattr(current, "value", current),
+                )
+                continue
+
+            eligible_ids.append(_normalize_uuid_token(str(pr_id)))
+
+        last_id = batch_rows[-1][0]
+
+        if batch_sleep > 0:
+            jitter = random.uniform(0.0, batch_sleep)
+            time.sleep(batch_sleep + jitter)
+
+    eligible_dsr_count = len(eligible_ids)
+    redis_keys_scanned = 0
+    dsr_ids_touched: set[str] = set()
+    redis_keys_deleted = 0
+    redis_delete_errors = 0
+    redis_errors = 0
+    maintenance_set_deleted = False
+
+    duration = time.perf_counter() - started
+
+    if eligible_dsr_count == 0:
+        logger.info(
+            "DSR cache sweeper finished eligible_dsr_count=0 rows_scanned={} "
+            "skipped_status_mismatch={} redis_keys_scanned=0 redis_keys_deleted=0 "
+            "duration_s={:.3f} maintenance_set_deleted=n/a",
+            rows_scanned,
+            rows_skipped_status_mismatch,
+            duration,
+        )
+        return DsrCacheSweeperResult(
+            rows_scanned=rows_scanned,
+            rows_skipped_status_mismatch=rows_skipped_status_mismatch,
+            eligible_dsr_count=0,
+            redis_keys_scanned=0,
+            dsr_ids_seen_in_redis=0,
+            redis_keys_deleted=0,
+            redis_delete_errors=0,
+            redis_errors=0,
+            duration_seconds=duration,
+            maintenance_set_deleted=True,
+        )
+
+    manager = get_redis_cache_manager()
+    redis = manager._redis
+    set_key = tc.maintenance_set_key
+    ttl = int(tc.maintenance_set_ttl_seconds)
+    scan_count = int(tc.redis_scan_count)
+    del_batch = max(1, int(tc.redis_delete_batch_size))
+
+    cluster = _is_redis_cluster(getattr(redis, "_client", redis))
+
+    sweep_started = time.perf_counter()
+    try:
+        # Fresh staging set for this run
+        redis.delete(set_key)
+        _sadd_many(redis, set_key, eligible_ids)
+        redis.expire(set_key, ttl)
+
+        pending_delete: list[str] = []
+
+        def flush_pending() -> None:
+            nonlocal redis_keys_deleted, redis_delete_errors, redis_errors
+            if not pending_delete:
+                return
+            chunk = pending_delete[:]
+            pending_delete.clear()
+            deleted, err = _unlink_batch(redis, chunk, cluster=cluster)
+            redis_keys_deleted += deleted
+            if err:
+                redis_delete_errors += err
+                redis_errors += err
+
+        for key_batch in iter_redis_scan_batches(redis, count=scan_count):
+            for raw_key in key_batch:
+                redis_keys_scanned += 1
+                key_str = _decode_redis_key(raw_key)
+                candidates = _candidate_privacy_request_ids_in_key(key_str)
+                delete_this_key = False
+                matched_id: Optional[str] = None
+                for uid in candidates:
+                    try:
+                        if not redis.sismember(set_key, uid):
+                            continue
+                    except Exception:  # noqa: BLE001
+                        redis_errors += 1
+                        continue
+                    if redis_key_is_dsr_cache_key_for_id(key_str, uid):
+                        delete_this_key = True
+                        matched_id = uid
+                        break
+                if delete_this_key and matched_id is not None:
+                    dsr_ids_touched.add(matched_id)
+                    pending_delete.append(key_str)
+                    if len(pending_delete) >= del_batch:
+                        flush_pending()
+
+            logger.debug(
+                "DSR cache sweeper SCAN chunk redis_keys_scanned={} "
+                "pending_delete_queue={}",
+                redis_keys_scanned,
+                len(pending_delete),
+            )
+
+        flush_pending()
+
+        redis.delete(set_key)
+        maintenance_set_deleted = True
+    except Exception as exc:  # noqa: BLE001
+        redis_errors += 1
+        logger.warning(
+            "DSR cache sweeper single-pass error (maintenance set TTL will expire): {}",
+            exc,
+        )
+    finally:
+        sweep_duration = time.perf_counter() - sweep_started
+        total_duration = time.perf_counter() - started
+
+    logger.info(
+        "DSR cache sweeper finished eligible_dsr_count={} rows_scanned={} "
+        "skipped_status_mismatch={} redis_keys_scanned={} dsr_ids_seen_in_redis={} "
+        "redis_keys_deleted={} redis_delete_errors={} redis_errors={} "
+        "duration_s={:.3f} sweep_s={:.3f} maintenance_set_deleted={}",
+        eligible_dsr_count,
+        rows_scanned,
+        rows_skipped_status_mismatch,
+        redis_keys_scanned,
+        len(dsr_ids_touched),
+        redis_keys_deleted,
+        redis_delete_errors,
+        redis_errors,
+        total_duration,
+        sweep_duration,
+        maintenance_set_deleted,
+    )
+
+    return DsrCacheSweeperResult(
+        rows_scanned=rows_scanned,
+        rows_skipped_status_mismatch=rows_skipped_status_mismatch,
+        eligible_dsr_count=eligible_dsr_count,
+        redis_keys_scanned=redis_keys_scanned,
+        dsr_ids_seen_in_redis=len(dsr_ids_touched),
+        redis_keys_deleted=redis_keys_deleted,
+        redis_delete_errors=redis_delete_errors,
+        redis_errors=redis_errors,
+        duration_seconds=total_duration,
+        maintenance_set_deleted=maintenance_set_deleted,
     )

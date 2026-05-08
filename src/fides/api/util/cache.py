@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, Iterator, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
@@ -44,6 +44,48 @@ _read_only_connection = None
 def _is_redis_cluster(client: Any) -> bool:
     """Return True if the client is a Redis Cluster (for cluster-aware behavior)."""
     return RedisCluster is not None and isinstance(client, RedisCluster)
+
+
+def iter_redis_scan_batches(
+    redis_client: Any,
+    *,
+    count: int,
+    match: Optional[str] = None,
+) -> Iterator[List[Any]]:
+    """
+    Yield batches of keys from Redis SCAN (cluster-aware).
+
+    ``redis_client`` may be ``redis.Redis``, ``RedisCluster``, or ``FidesopsRedis``
+    (the latter is unwrapped to ``._client``).
+    When ``match`` is None, the full keyspace is scanned (no MATCH filter).
+    """
+    underlying = getattr(redis_client, "_client", redis_client)
+    scan_kwargs: Dict[str, Any] = {"count": count}
+    if match is not None:
+        scan_kwargs["match"] = match
+
+    if _is_redis_cluster(underlying):
+        cluster = cast(Any, underlying)
+        for node in cluster.get_primaries():
+            conn = node.redis_connection
+            cursor = 0
+            while True:
+                cursor, keys = conn.scan(cursor=cursor, **scan_kwargs)
+                if keys:
+                    yield list(keys)
+                if cursor == 0:
+                    break
+    else:
+        scan_cursor: Union[int, str] = "0"
+        while True:
+            cursor_arg = (
+                int(scan_cursor) if isinstance(scan_cursor, str) else scan_cursor
+            )
+            scan_cursor, keys = underlying.scan(cursor=cursor_arg, **scan_kwargs)
+            if keys:
+                yield list(keys)
+            if scan_cursor == 0 or scan_cursor == "0":
+                break
 
 
 class FidesopsRedis:
