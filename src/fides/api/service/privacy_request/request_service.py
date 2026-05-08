@@ -362,9 +362,7 @@ def cleanup_dsr_cache_sweeper(self: DatabaseTask) -> Dict[str, Any]:
         lock_override = resolved_sweeper.lock_timeout_seconds
 
     lock_timeout = int(
-        lock_override
-        if lock_override is not None
-        else sweeper.lock_timeout_seconds
+        lock_override if lock_override is not None else sweeper.lock_timeout_seconds
     )
     with redis_lock(
         lock_key=DSR_CACHE_SWEEPER_LOCK,

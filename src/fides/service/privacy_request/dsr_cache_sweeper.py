@@ -36,9 +36,7 @@ class DsrCacheSweeperResult:
     redis_clear_attempts: int
     rows_skipped_status_mismatch: int
     redis_errors: int
-    keys_deleted_estimate: int
     duration_seconds: float
-    dry_run: bool
 
 
 def build_dsr_cache_sweeper_statuses(
@@ -86,8 +84,6 @@ def run_dsr_cache_sweeper(
     staleness_minutes = tc.staleness_minutes
     batch_size = max(1, int(tc.batch_size))
     batch_sleep = float(tc.batch_sleep_seconds)
-    dry_run = tc.dry_run
-    dry_run_probe = tc.dry_run_probe_redis
 
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=staleness_minutes)
 
@@ -95,7 +91,6 @@ def run_dsr_cache_sweeper(
     redis_clear_attempts = 0
     rows_skipped_status_mismatch = 0
     redis_errors = 0
-    keys_deleted_estimate = 0
 
     last_id = ""
     started = time.perf_counter()
@@ -136,57 +131,15 @@ def run_dsr_cache_sweeper(
                 continue
 
             store = get_dsr_cache_store(str(pr_id))
-            keys_before = 0
-            if dry_run and dry_run_probe:
-                try:
-                    keys_before = len(store.get_all_keys())
-                except Exception as exc:  # noqa: BLE001
-                    redis_errors += 1
-                    logger.warning(
-                        "Redis probe failed for privacy_request_id={} status={}: {}",
-                        pr_id,
-                        current.value,
-                        exc,
-                    )
-                    continue
-            elif not dry_run:
-                try:
-                    keys_before = len(store.get_all_keys())
-                except Exception as exc:  # noqa: BLE001
-                    redis_errors += 1
-                    logger.warning(
-                        "Redis key listing failed before clear for privacy_request_id={} "
-                        "status={}: {}",
-                        pr_id,
-                        current.value,
-                        exc,
-                    )
-                    continue
-
-            if dry_run:
-                logger.info(
-                    "Dry-run DSR cache sweeper privacy_request_id={} status={} "
-                    "cutoff_age_minutes={} keys_visible={}",
-                    pr_id,
-                    current.value,
-                    staleness_minutes,
-                    keys_before if dry_run_probe else "skipped_probe",
-                )
-                redis_clear_attempts += 1
-                keys_deleted_estimate += keys_before
-                continue
-
             try:
                 store.clear()
                 redis_clear_attempts += 1
-                keys_deleted_estimate += keys_before
                 logger.info(
                     "Cleared Redis DSR cache privacy_request_id={} status={} "
-                    "staleness_minutes={} keys_removed_estimate={}",
+                    "staleness_minutes={}",
                     pr_id,
                     current.value,
                     staleness_minutes,
-                    keys_before,
                 )
             except Exception as exc:  # noqa: BLE001
                 redis_errors += 1
@@ -205,15 +158,13 @@ def run_dsr_cache_sweeper(
 
     duration = time.perf_counter() - started
     logger.info(
-        "DSR cache sweeper finished dry_run={} rows_scanned={} "
+        "DSR cache sweeper finished rows_scanned={} "
         "redis_clear_attempts={} skipped_status_mismatch={} redis_errors={} "
-        "keys_deleted_estimate={} duration_s={:.3f}",
-        dry_run,
+        "duration_s={:.3f}",
         rows_scanned,
         redis_clear_attempts,
         rows_skipped_status_mismatch,
         redis_errors,
-        keys_deleted_estimate,
         duration,
     )
     return DsrCacheSweeperResult(
@@ -221,7 +172,5 @@ def run_dsr_cache_sweeper(
         redis_clear_attempts=redis_clear_attempts,
         rows_skipped_status_mismatch=rows_skipped_status_mismatch,
         redis_errors=redis_errors,
-        keys_deleted_estimate=keys_deleted_estimate,
         duration_seconds=duration,
-        dry_run=dry_run,
     )

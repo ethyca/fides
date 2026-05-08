@@ -124,8 +124,13 @@ class ExecutionApplicationConfig(FidesSchema):
                     if suffix in ("enabled", "lock_timeout_seconds"):
                         merged[suffix] = data.pop(key)
 
+        for _obsolete in ("dry_run", "dry_run_probe_redis"):
+            merged.pop(_obsolete, None)
+
         if merged:
             data["dsr_cache_sweeper"] = merged
+        elif "dsr_cache_sweeper" in data:
+            data.pop("dsr_cache_sweeper", None)
         return data
 
     # Allow deprecated / unknown fields (e.g. “safe_mode”) to pass through

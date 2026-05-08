@@ -4,7 +4,9 @@ from fides.api.schemas.privacy_request import (
     ACTIVE_REQUEST_STATUSES,
     PrivacyRequestStatus,
 )
-from fides.service.privacy_request.dsr_cache_sweeper import build_dsr_cache_sweeper_statuses
+from fides.service.privacy_request.dsr_cache_sweeper import (
+    build_dsr_cache_sweeper_statuses,
+)
 
 
 def test_build_terminal_statuses_complete_and_canceled_only() -> None:

@@ -30,21 +30,14 @@ def _patch_dsr_cache_sweeper_execution(
     monkeypatch: pytest.MonkeyPatch, **overrides: Any
 ) -> None:
     nested_updates: dict[str, Any] = {
-        "dry_run": False,
         "batch_sleep_seconds": 0.0,
         "staleness_minutes": 30,
         "batch_size": 50,
     }
     nested_updates.update(overrides)
-    tc = CONFIG.execution.dsr_cache_sweeper.model_copy(
-        update=nested_updates
-    )
-    execution = CONFIG.execution.model_copy(
-        update={"dsr_cache_sweeper": tc}
-    )
-    monkeypatch.setattr(
-        sweeper_module, "CONFIG", SimpleNamespace(execution=execution)
-    )
+    tc = CONFIG.execution.dsr_cache_sweeper.model_copy(update=nested_updates)
+    execution = CONFIG.execution.model_copy(update={"dsr_cache_sweeper": tc})
+    monkeypatch.setattr(sweeper_module, "CONFIG", SimpleNamespace(execution=execution))
 
 
 def _force_stale_updated_at(db: Session, privacy_request_id: str) -> None:
@@ -88,39 +81,6 @@ class TestDsrCacheSweeperFunctional:
             assert result.redis_clear_attempts >= 1
             assert result.redis_errors == 0
             assert len(get_dsr_cache_store(pr.id).get_all_keys()) == 0
-        finally:
-            get_dsr_cache_store(pr.id).clear()
-            pr.delete(db)
-
-    def test_dry_run_does_not_delete_redis_keys(
-        self,
-        db: Session,
-        policy: Policy,
-        monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        _patch_dsr_cache_sweeper_execution(
-            monkeypatch,
-            dry_run=True,
-            dry_run_probe_redis=False,
-        )
-
-        pr = _create_privacy_request_for_policy(
-            db,
-            policy,
-            status=PrivacyRequestStatus.canceled,
-        )
-        try:
-            _force_stale_updated_at(db, pr.id)
-
-            store = get_dsr_cache_store(pr.id)
-            store.write_encryption("key", "secret-value", _TTL)
-            keys_before = len(store.get_all_keys())
-            assert keys_before >= 1
-
-            result = run_dsr_cache_sweeper(db)
-
-            assert result.dry_run is True
-            assert len(store.get_all_keys()) == keys_before
         finally:
             get_dsr_cache_store(pr.id).clear()
             pr.delete(db)

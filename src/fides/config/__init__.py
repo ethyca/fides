@@ -139,9 +139,7 @@ def censor_config(config: Union[FidesConfig, Dict[str, Any]]) -> Dict[str, Any]:
             filtered[key] = {}
             for field in value:
                 if data and field in data:
-                    if field == "dsr_cache_sweeper" and isinstance(
-                        data[field], dict
-                    ):
+                    if field == "dsr_cache_sweeper" and isinstance(data[field], dict):
                         sub = data[field]
                         filtered[key][field] = {
                             k: sub[k]

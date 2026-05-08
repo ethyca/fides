@@ -28,20 +28,6 @@ class DsrCacheSweeperSettings(BaseModel):
             "the scheduler job. When registered, execution also requires enabled."
         ),
     )
-    dry_run: bool = Field(
-        default=True,
-        description=(
-            "When true, the cleanup job re-checks Postgres eligibility but does not "
-            "delete Redis keys (use for rollout)."
-        ),
-    )
-    dry_run_probe_redis: bool = Field(
-        default=False,
-        description=(
-            "When dry_run is true and this is true, count Redis keys per request "
-            "(uses SCAN/get_all_keys; may add load in large batches)."
-        ),
-    )
     staleness_minutes: int = Field(
         default=30,
         description=(
@@ -221,8 +207,14 @@ class ExecutionSettings(FidesSettings):
                         merged[suffix] = data.pop(key)
                     break
 
+        # Legacy rollout flags removed from the model; drop so extra=forbid passes.
+        for _obsolete in ("dry_run", "dry_run_probe_redis"):
+            merged.pop(_obsolete, None)
+
         if merged:
             data["dsr_cache_sweeper"] = merged
+        else:
+            data.pop("dsr_cache_sweeper", None)
 
         data.pop("terminal_dsr_redis_cache_cleanup", None)
         return data
