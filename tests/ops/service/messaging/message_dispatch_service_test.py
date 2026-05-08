@@ -21,6 +21,7 @@ from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     FidesopsMessage,
     MessagingActionType,
+    MessagingMethod,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
@@ -891,6 +892,95 @@ class TestProviderConfigValidation:
         setattr(config, field, {"wrong_key": "value"})
         with pytest.raises(MessageDispatchException, match=match):
             provider_cls(config)
+
+
+_DISPATCH_MODULE = "fides.api.service.messaging.message_dispatch_service"
+
+
+class TestDispatchGuards:
+    """Tests for defensive guards in the provider dispatch path."""
+
+    @mock.patch(f"{_DISPATCH_MODULE}._aws_ses_dispatcher")
+    def test_aws_ses_rejects_non_email_message(
+        self, mock_ses, db: Session, messaging_config_aws_ses
+    ):
+        """AWS SES guard rejects a non-EmailForActionType message."""
+        with (
+            mock.patch(f"{_DISPATCH_MODULE}._build_sms", return_value="plain text"),
+            mock.patch(
+                f"{_DISPATCH_MODULE}.get_messaging_method",
+                return_value=MessagingMethod.SMS,
+            ),
+        ):
+            with pytest.raises(
+                MessageDispatchException, match="AWS SES requires an email message body"
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.TEST_MESSAGE,
+                    to_identity=Identity(phone_number="+15551234567"),
+                    service_type=MessagingServiceType.aws_ses.value,
+                )
+        mock_ses.assert_not_called()
+
+    def test_unknown_service_type_raises(self, db: Session, messaging_config):
+        """Provider map guard rejects an unmapped service type."""
+        with mock.patch(f"{_DISPATCH_MODULE}._PROVIDER_MAP", {}):
+            with pytest.raises(
+                MessageDispatchException,
+                match="Dispatcher has not been implemented",
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                    to_identity=Identity(email="test@email.com"),
+                    service_type=MessagingServiceType.mailgun.value,
+                    message_body_params=SubjectIdentityVerificationBodyParams(
+                        verification_code="2348", verification_code_ttl_seconds=600
+                    ),
+                )
+
+    def test_email_provider_rejects_str_body(self, db: Session, messaging_config):
+        """Email provider guard rejects a str message body."""
+        with mock.patch(f"{_DISPATCH_MODULE}._build_email", return_value="plain text"):
+            with pytest.raises(
+                MessageDispatchException,
+                match="Expected EmailForActionType for email provider",
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                    to_identity=Identity(email="test@email.com"),
+                    service_type=MessagingServiceType.mailgun.value,
+                    message_body_params=SubjectIdentityVerificationBodyParams(
+                        verification_code="2348", verification_code_ttl_seconds=600
+                    ),
+                )
+
+    @mock.patch(
+        "fides.api.service.messaging.messaging_providers.twilio_sms_service.Client",
+        autospec=True,
+    )
+    def test_sms_provider_rejects_email_body(
+        self, mock_twilio_client_cls, db: Session, messaging_config_twilio_sms
+    ):
+        """SMS provider guard rejects an EmailForActionType message body."""
+        with mock.patch(
+            f"{_DISPATCH_MODULE}._build_sms",
+            return_value=EmailForActionType(subject="oops", body="wrong type"),
+        ):
+            with pytest.raises(
+                MessageDispatchException, match="Expected str body for SMS provider"
+            ):
+                dispatch_message(
+                    db=db,
+                    action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                    to_identity=Identity(phone_number="+15551234567"),
+                    service_type=MessagingServiceType.twilio_text.value,
+                    message_body_params=SubjectIdentityVerificationBodyParams(
+                        verification_code="2348", verification_code_ttl_seconds=600
+                    ),
+                )
 
 
 class TestSubjectOverride:
