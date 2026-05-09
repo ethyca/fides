@@ -1,0 +1,4 @@
+type: Changed
+description: Property form now accepts logo/icon images via drag-and-drop, and the paths editor commits typed paths on blur or via an explicit Add button
+pr: 8151
+labels: []
