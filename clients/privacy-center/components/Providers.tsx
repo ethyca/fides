@@ -27,7 +27,7 @@ const Providers = ({ children, version }: ProvidersProps) => (
           antTheme={defaultAntTheme}
           wave={{ disabled: true }}
         >
-          <ErrorBoundary fallbackRender={Error}>{children}</ErrorBoundary>
+          <ErrorBoundary FallbackComponent={Error}>{children}</ErrorBoundary>
         </FidesUIProvider>
       </PersistGate>
     </I18nProvider>

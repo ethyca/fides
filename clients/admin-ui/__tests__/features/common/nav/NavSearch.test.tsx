@@ -142,6 +142,7 @@ jest.mock("react-hotkeys-hook", () => {
 // Mock useNavSearchItems to return static + dynamic items without Redux
 const mockDynamicItems: FlatNavItem[] = [];
 jest.mock("~/features/common/nav/useNavSearchItems", () => ({
+  ...jest.requireActual("~/features/common/nav/useNavSearchItems"),
   __esModule: true,
   default: (groups: any[]) => {
     const items: any[] = [];

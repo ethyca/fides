@@ -215,7 +215,6 @@ export const initialize = async ({
   initOverlay,
   renderOverlay,
   updateExperience,
-  overrides,
   automatedConsentContext,
 }: InitializeProps): Promise<Partial<FidesGlobal>> => {
   const { config } = fides;
@@ -395,13 +394,7 @@ export const initialize = async ({
 
       // Initialize the i18n singleton before we render the overlay
       const i18n = setupI18n();
-      initializeI18n(
-        i18n,
-        window?.navigator,
-        fides.experience,
-        options,
-        overrides?.experienceTranslationOverrides,
-      );
+      initializeI18n(i18n, window?.navigator, fides.experience, options);
 
       // eslint-disable-next-line no-param-reassign
       fides.locale = i18n.locale || DEFAULT_LOCALE;
