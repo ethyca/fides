@@ -478,6 +478,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         scopes: [],
       },
       {
+        title: "Delphi POC",
+        path: routes.DELPHI_POC_ROUTE,
+        scopes: [],
+      },
+      {
         title: "Fides JS docs",
         path: routes.FIDES_JS_DOCS,
         scopes: [],

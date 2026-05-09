@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 
-import EntryPointGrid from "~/features/poc/entry-point/EntryPointGrid";
+import GovernanceScoreChart from "~/features/poc/entry-point/GovernanceScoreChart";
 
-const EntryPointPage: NextPage = () => <EntryPointGrid />;
+const EntryPointPage: NextPage = () => <GovernanceScoreChart />;
 export default EntryPointPage;

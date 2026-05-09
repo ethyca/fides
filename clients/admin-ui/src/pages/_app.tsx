@@ -25,6 +25,7 @@ import theme from "../theme";
 import ForgotPassword from "./forgot-password";
 import Login from "./login";
 import LoginWithOIDC from "./login/[provider]";
+import PocDelphi from "./poc/delphi";
 import PocEntryPoint from "./poc/entry-point";
 import PocGridMotion from "./poc/grid-motion";
 
@@ -56,7 +57,11 @@ const renderPage = (
     // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
     return <Component {...pageProps} />;
   }
-  if (Component === PocEntryPoint || Component === PocGridMotion) {
+  if (
+    Component === PocEntryPoint ||
+    Component === PocGridMotion ||
+    Component === PocDelphi
+  ) {
     return (
       <ProtectedRoute>
         <CommonSubscriptions />
