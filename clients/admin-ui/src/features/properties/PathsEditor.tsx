@@ -15,12 +15,13 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
     if (!trimmed) {
       return;
     }
-    if (value.includes(trimmed)) {
-      setError(`"${trimmed}" already added`);
+    const normalized = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    if (value.includes(normalized)) {
+      setError(`"${normalized}" already added`);
       return;
     }
     setError(null);
-    onChange([...value, trimmed]);
+    onChange([...value, normalized]);
     setDraft("");
   };
 
@@ -52,7 +53,7 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
           Add
         </Button>
       </Space.Compact>
-      {error && <Alert type="error" message={error} closable />}
+      {error && <Alert type="error" description={error} closable />}
     </Space>
   );
 };
