@@ -11,11 +11,11 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
   const [error, setError] = useState<string | null>(null);
 
   const commitDraft = () => {
-    const trimmed = draft.trim();
-    if (!trimmed) {
+    const cleaned = draft.trim().replace(/^-+|-+$/g, "");
+    if (!cleaned) {
       return;
     }
-    const normalized = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    const normalized = cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
     if (value.includes(normalized)) {
       setError(`"${normalized}" already added`);
       return;
@@ -42,7 +42,7 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
         <Input
           placeholder="Add a path (e.g. /privacy)"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => setDraft(e.target.value.replace(/\s+/g, "-"))}
           onPressEnter={(e) => {
             e.preventDefault();
             commitDraft();
