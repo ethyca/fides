@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { ActionEditModal, ActionFormValues } from "./ActionEditModal";
 import { ActionsTable } from "./ActionsTable";
+import { ImageUploadField } from "./ImageUploadField";
 
 export interface PrivacyCenterConfigValue {
   title?: string;
@@ -131,11 +132,12 @@ export const PrivacyCenterConfigSection = ({
             }
           />
         </Form.Item>
-        <Form.Item label="Logo path">
-          <Input
+        <Form.Item label="Logo">
+          <ImageUploadField
+            ariaLabel="Logo"
             value={value?.logo_path ?? ""}
-            onChange={(e) =>
-              onChange?.({ ...(value ?? {}), logo_path: e.target.value })
+            onChange={(next) =>
+              onChange?.({ ...(value ?? {}), logo_path: next })
             }
           />
         </Form.Item>

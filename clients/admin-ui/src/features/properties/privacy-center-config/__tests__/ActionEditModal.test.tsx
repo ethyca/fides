@@ -15,6 +15,27 @@ jest.mock("~/features/policies/policy.slice", () => ({
   }),
 }));
 
+// ImageUploadField wraps antd Upload.Dragger which uses FileReader and a
+// hidden file input -- both awkward to drive in jsdom. Substitute a plain
+// text input for unit tests so we still exercise the form-submission flow.
+jest.mock("../ImageUploadField", () => ({
+  ImageUploadField: ({
+    value,
+    onChange,
+    ariaLabel,
+  }: {
+    value?: string;
+    onChange?: (next: string) => void;
+    ariaLabel?: string;
+  }) => (
+    <input
+      aria-label={ariaLabel}
+      value={value ?? ""}
+      onChange={(e) => onChange?.(e.target.value)}
+    />
+  ),
+}));
+
 // Test adaptation: antd's Select inside an antd Modal triggers a known jsdom +
 // nwsapi crash ("e.parentElement.querySelectorAll(...).includes is not a
 // function") when the dropdown's virtual list layer mounts. Other tests in this
@@ -74,7 +95,7 @@ describe("ActionEditModal", () => {
       screen.getByLabelText(/description/i),
       "Request a copy.",
     );
-    await userEvent.type(screen.getByLabelText(/icon path/i), "/icon.svg");
+    await userEvent.type(screen.getByLabelText(/^icon$/i), "/icon.svg");
     await userEvent.click(screen.getByRole("button", { name: /save/i }));
 
     expect(onOk).toHaveBeenCalledWith(

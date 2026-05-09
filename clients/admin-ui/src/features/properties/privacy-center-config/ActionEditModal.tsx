@@ -3,6 +3,8 @@ import { useMemo } from "react";
 
 import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 
+import { ImageUploadField } from "./ImageUploadField";
+
 export interface ActionFormValues {
   policy_key: string;
   title: string;
@@ -95,11 +97,11 @@ export const ActionEditModal = ({
           <Input.TextArea autoSize />
         </Form.Item>
         <Form.Item
-          label="Icon path"
+          label="Icon"
           name="icon_path"
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: "Please upload an icon" }]}
         >
-          <Input placeholder="/icon.svg" />
+          <ImageUploadField ariaLabel="Icon" />
         </Form.Item>
       </Form>
     </Modal>

@@ -1,4 +1,4 @@
-import { Alert, Input, Space, Tag } from "fidesui";
+import { Alert, Button, Input, Space, Tag } from "fidesui";
 import { useState } from "react";
 
 interface PathsEditorProps {
@@ -10,7 +10,7 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleAdd = () => {
+  const commitDraft = () => {
     const trimmed = draft.trim();
     if (!trimmed) {
       return;
@@ -29,7 +29,7 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space orientation="vertical" style={{ width: "100%" }}>
       <Space wrap>
         {value.map((path) => (
           <Tag key={path} closable onClose={() => handleRemove(path)}>
@@ -37,15 +37,21 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
           </Tag>
         ))}
       </Space>
-      <Input
-        placeholder="Add a path (e.g. /privacy)"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onPressEnter={(e) => {
-          e.preventDefault();
-          handleAdd();
-        }}
-      />
+      <Space.Compact className="w-full">
+        <Input
+          placeholder="Add a path (e.g. /privacy)"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onPressEnter={(e) => {
+            e.preventDefault();
+            commitDraft();
+          }}
+          onBlur={commitDraft}
+        />
+        <Button onClick={commitDraft} disabled={!draft.trim()}>
+          Add
+        </Button>
+      </Space.Compact>
       {error && <Alert type="error" message={error} closable />}
     </Space>
   );
