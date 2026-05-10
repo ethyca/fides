@@ -1,7 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CardViz } from "./DelphiCardViz";
+import DelphiHeader, { DELPHI_HEADER_HEIGHT } from "./DelphiHeader";
+import DelphiSideNav, { DELPHI_RAIL_WIDTH } from "./DelphiSideNav";
 
 /* -------------------------------------------------------------------------- */
 /* Tokens                                                                      */
@@ -17,7 +19,7 @@ const OLIVE = "#92977D";
 const INK = CORINTH;
 const INK_MUTED = "rgba(43, 45, 52, 0.58)";
 const INK_FAINT = "rgba(43, 45, 52, 0.34)";
-const INK_HAIRLINE = "rgba(43, 45, 52, 0.10)";
+const INK_HAIRLINE = "rgba(43, 45, 52, 0.16)";
 const INK_DOT = "rgba(43, 45, 52, 0.16)";
 
 const SERIF = `'Tiempos Headline', 'Charter', Georgia, 'Times New Roman', serif`;
@@ -821,20 +823,23 @@ const PROMPT_BY_DIMENSION: Record<DimensionId, string> = {
 
 const NARRATIVE_BY_DIMENSION: Record<DimensionId, string> = {
   coverage:
-    "Coverage is strong at 92, up one point this week. Six new data sources were detected; most are managed, but two need owners.",
+    "Coverage holds at 92 — the dimension's strongest position in eleven weeks. Six new data sources entered inventory in the last seven days, four already classified and assigned to owners.\n\nTwo unmanaged S3 buckets surfaced via network logs and need owners. Schema drift is the lighter concern: eighteen new fields appeared in monitored schemas without classification, mostly in growth product tables. Fulfillment connector reach is steady at 91% of inventory.",
   classification:
-    "Classification is at 71 and slipping. Forty-two fields are uncategorized and 18 tags are below review threshold.",
+    "Classification slipped two points to 71. Forty-two fields lack a category across the data map, the bulk concentrated in marketing and product analytics tables. Eighteen low-confidence tags are queued for manual review.\n\nThe bigger signal is structural: nine downstream tables now derive from new upstream sources, and lineage changes mean classification needs revalidation on dim_users, fct_orders, and seven others. Eleven sensitive fields appeared in datasets the data map does not designate sensitive — these read as policy violations under enforcement, but the source-of-truth fix is here.",
   consent:
-    "Consent is at 64. Recent web monitor signals show pre-consent tag fires on three pages.",
+    "Consent is at 64 and slipping. Acceptance rate fell across the EU and UK over the last thirty days, with the largest drop in Germany at minus seven points — aligned with a banner copy change shipped May 1. Three pre-consent tag fires were detected on /checkout, /blog, and /pricing.\n\nFour jurisdictions are missing or running stale consent surfaces: Brazil has no banner deployed, Australia is on a notice version pulled in March, and India and Mexico have partial coverage. Fourteen consent records fail integrity checks today — above the ten-per-day baseline, with timestamp drift accounting for most of the gap.",
   dsr:
-    "DSR fell four points to 76. Twenty-three requests are within 48 hours of SLA breach, concentrated in the Acme connector queue.",
+    "DSR fell four points to 76. Twenty-three requests are within forty-eight hours of SLA breach, most originating from the Acme connector queue where identity verification has stalled. Five fulfillment steps failed in the last forty-eight hours, concentrated on Postgres deletions and HubSpot lookups.\n\nEight stuck requests are awaiting verification or downstream response — the Salesforce connector has not acknowledged in thirty-six hours. Three subjects have escalated after a prior response was rejected, all three relating to the same retention policy on analytics events. The verification queue is fourteen deep with average wait running nineteen hours, above the twelve-hour target.",
   policy:
-    "Policy enforcement is at 58 and trending down. Seven retention violations and eleven unexpected sensitive findings need review.",
+    "Policy Enforcement is at 58 and trending down. Seven datasets contain records that have exceeded their declared retention; the largest is analytics_events with 1.2 million rows past policy. Eleven sensitive fields appeared in datasets the data map does not designate sensitive.\n\nFive third-party tags fired before consent on at least one production page — two are ad-network pixels, one is a session tool. Two AI deployments triggered policy violations: support-bot v3 missing impact assessment, fraud-classifier with a prohibited input category. None of these are passive failures; each maps to an owner and a remediation step.",
   ai:
-    "AI Readiness is at 81. Three new AI systems were detected this week, and four existing systems drifted upward in risk tier.",
+    "AI Readiness is at 81 with three new AI systems detected this week — two internal services and one third-party vendor capability. Four existing systems drifted upward in risk tier since their last review, including two now classified high-risk: fraud-classifier and pricing-optimizer.\n\nOne training dataset contains records flagged sensitive without an explicit lawful basis. Two vendors changed AI usage or training-data terms within the last fourteen days — Zendesk and Notion both warrant a legal review. Six EU AI Act controls have not been refreshed in ninety days, including the Article 10 data governance and Article 13 transparency mappings.",
   assessment:
-    "Assessment coverage holds at 87. Twelve assessments completed this week; none are overdue.",
+    "Assessment Coverage is at 87. Eight assessments are awaiting reviewer pickup, with the oldest at six days — past the five-day SLA. Five assessments are past their declared reassessment date, the oldest being Marketing AI at 124 days.\n\nTwo systems classified high-risk are operating without a current DPIA: fraud-classifier and lead-gen scoring. Both require remediation before the next audit cycle. Five newly detected AI systems are queued for assessment intake — three vendor capabilities, two internal services. Six reassessments fall within the next thirty days; two are inside the seven-day attention window.",
 };
+
+const DEFAULT_NARRATIVE_TEXT =
+  "Your governance posture sits at 84 — strong overall, but three dimensions are trending in the wrong direction. DSR fell four points to 76, Consent dropped one to 64, and Policy Enforcement remains the lowest-scoring dimension at 58.\n\nThe DSR slip is the most actionable: twenty-three requests are within forty-eight hours of statutory breach, concentrated in the Acme connector queue where verification has stalled. Policy Enforcement and Consent are slower drifts — retention violations on analytics_events accumulated this week, and three pre-consent tag fires were detected on production pages. Coverage and AI Readiness held their ground, with six new data sources and three new AI systems entering inventory cleanly.";
 
 /* -------------------------------------------------------------------------- */
 /* Geometry                                                                    */
@@ -1012,130 +1017,6 @@ const SectionLabel = ({
 /* Left rail                                                                   */
 /* -------------------------------------------------------------------------- */
 
-const RailIcon = ({ d }: { d: string }) => (
-  <svg
-    width={18}
-    height={18}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.4}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d={d} />
-  </svg>
-);
-
-const RAIL_ITEMS: { id: string; label: string; icon: string; active?: boolean }[] = [
-  {
-    id: "delphi",
-    label: "Delphi",
-    icon: "M12 3 L12 21 M3 12 L21 12 M5.6 5.6 L18.4 18.4 M5.6 18.4 L18.4 5.6",
-    active: true,
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    icon: "M4 6 L20 6 M4 12 L20 12 M4 18 L14 18",
-  },
-  {
-    id: "dsr",
-    label: "Requests",
-    icon: "M4 7 L20 7 L20 17 L4 17 Z M4 7 L12 13 L20 7",
-  },
-];
-
-const LeftRail = () => (
-  <aside
-    style={{
-      width: 44,
-      flex: "0 0 44px",
-      borderRight: `1px solid ${INK_HAIRLINE}`,
-      background: "transparent",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      paddingTop: 28,
-      paddingBottom: 24,
-      gap: 2,
-      position: "relative",
-      zIndex: 1,
-    }}
-  >
-    <div
-      style={{
-        fontFamily: SERIF,
-        fontSize: 18,
-        color: INK,
-        lineHeight: 1,
-        marginBottom: 28,
-      }}
-    >
-      e
-      <span
-        style={{
-          display: "inline-block",
-          width: 3,
-          height: 3,
-          borderRadius: "50%",
-          background: TERRACOTTA,
-          marginLeft: 1,
-          verticalAlign: "middle",
-          transform: "translateY(-3px)",
-        }}
-      />
-    </div>
-    {RAIL_ITEMS.map((item) => (
-      <button
-        key={item.id}
-        type="button"
-        title={item.label}
-        style={{
-          width: 32,
-          height: 32,
-          border: "none",
-          background: "transparent",
-          color: item.active ? INK : INK_FAINT,
-          borderRadius: 4,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          position: "relative",
-        }}
-      >
-        {item.active ? (
-          <span
-            style={{
-              position: "absolute",
-              left: -6,
-              top: 8,
-              bottom: 8,
-              width: 1.5,
-              background: TERRACOTTA,
-            }}
-          />
-        ) : null}
-        <RailIcon d={item.icon} />
-      </button>
-    ))}
-    <div style={{ flex: 1 }} />
-    <div
-      style={{
-        fontFamily: MONO,
-        fontSize: 10,
-        color: INK_FAINT,
-        letterSpacing: "0.14em",
-        writingMode: "vertical-rl",
-        transform: "rotate(180deg)",
-        marginBottom: 8,
-      }}
-    >
-      KK
-    </div>
-  </aside>
-);
 
 /* -------------------------------------------------------------------------- */
 /* Radial GPS                                                                  */
@@ -1414,8 +1295,7 @@ const GovernanceRadial = ({
 /* Ethyca AI                                                                   */
 /* -------------------------------------------------------------------------- */
 
-const DEFAULT_NARRATIVE =
-  "Your governance posture is strong overall at 84. DSR and Policy Enforcement require attention. Select a dimension to inspect what changed, or ask a question below.";
+const DEFAULT_NARRATIVE = DEFAULT_NARRATIVE_TEXT;
 
 const DEFAULT_PROMPTS = [
   "Why did DSR decline this week?",
@@ -1467,7 +1347,50 @@ const promptsForDimension = (id: DimensionId): string[] => {
   ];
 };
 
-const EthycaAi = ({
+const EthycaNarrative = ({
+  selected,
+}: {
+  selected: DimensionId | null;
+}) => {
+  const narrative = selected
+    ? NARRATIVE_BY_DIMENSION[selected]
+    : DEFAULT_NARRATIVE;
+  const paragraphs = narrative.split("\n\n");
+  return (
+    <div style={{ marginTop: 32 }}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={selected ?? "default"}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.22 }}
+          style={{ maxWidth: 640 }}
+        >
+          {paragraphs.map((p, i) => (
+            <p
+              key={i}
+              style={{
+                fontFamily: SERIF,
+                fontSize: 24,
+                lineHeight: 1.45,
+                color: INK,
+                letterSpacing: "-0.01em",
+                margin: 0,
+                marginTop: i === 0 ? 0 : "1em",
+                fontWeight: 400,
+              }}
+            >
+              {p}
+            </p>
+          ))}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const AskDelphiBar = ({
   selected,
   promptValue,
   onPromptChange,
@@ -1476,147 +1399,129 @@ const EthycaAi = ({
   promptValue: string;
   onPromptChange: (v: string) => void;
 }) => {
-  const narrative = selected
-    ? NARRATIVE_BY_DIMENSION[selected]
-    : DEFAULT_NARRATIVE;
   const suggestions = selected ? promptsForDimension(selected) : DEFAULT_PROMPTS;
-
   return (
-    <div style={{ marginTop: 56 }}>
+    <div
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: DELPHI_RAIL_WIDTH,
+        right: 0,
+        zIndex: 30,
+        pointerEvents: "none",
+      }}
+    >
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 18,
+          maxWidth: 1400,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: "minmax(520px, 45fr) minmax(560px, 55fr)",
         }}
       >
-        <span
+        <div
           style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: TERRACOTTA,
-            display: "inline-block",
-          }}
-        />
-        <SectionLabel>Ethyca AI</SectionLabel>
-      </div>
-
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={selected ?? "default"}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.22 }}
-          style={{
-            fontFamily: SERIF,
-            fontSize: 28,
-            lineHeight: 1.4,
-            color: INK,
-            letterSpacing: "-0.01em",
-            margin: 0,
-            maxWidth: 600,
-            fontWeight: 400,
+            padding: "20px 48px 28px 56px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            pointerEvents: "auto",
           }}
         >
-          {narrative}
-        </motion.p>
-      </AnimatePresence>
-
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 8,
-          marginTop: 18,
-        }}
-      >
-        {suggestions.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => onPromptChange(s)}
+          <div
             style={{
-              fontFamily: SANS,
-              fontSize: 12.5,
-              color: INK_MUTED,
-              background: "transparent",
-              border: `1px solid ${INK_HAIRLINE}`,
-              borderRadius: 999,
-              padding: "6px 12px",
-              cursor: "pointer",
-              letterSpacing: "0.01em",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
             }}
           >
-            {s}
-          </button>
-        ))}
-      </div>
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onPromptChange(s)}
+                style={{
+                  fontFamily: SANS,
+                  fontSize: 12.5,
+                  color: INK_MUTED,
+                  background: "rgba(255, 255, 255, 0.55)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  border: `1px solid ${INK_HAIRLINE}`,
+                  borderRadius: 999,
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
 
-      <div
-        style={{
-          marginTop: 18,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 14px",
-          background: "rgba(251, 250, 246, 0.7)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          border: `1px solid ${INK_HAIRLINE}`,
-          borderRadius: 10,
-          boxShadow: "0 1px 0 rgba(43, 45, 52, 0.02)",
-        }}
-      >
-        <svg
-          width={16}
-          height={16}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={INK_FAINT}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 3 L12 21" />
-          <path d="M3 12 L21 12" />
-          <path d="M5.6 5.6 L18.4 18.4" />
-          <path d="M5.6 18.4 L18.4 5.6" />
-        </svg>
-        <input
-          value={promptValue}
-          onChange={(e) => onPromptChange(e.target.value)}
-          placeholder="Ask Delphi about your governance posture…"
-          style={{
-            flex: 1,
-            background: "transparent",
-            border: "none",
-            outline: "none",
-            fontFamily: SANS,
-            fontSize: 14,
-            color: INK,
-            letterSpacing: "0.005em",
-          }}
-        />
-        <button
-          type="button"
-          style={{
-            fontFamily: SANS,
-            fontSize: 11,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: INK,
-            background: "transparent",
-            border: `1px solid ${INK}`,
-            borderRadius: 999,
-            padding: "5px 12px",
-            cursor: "pointer",
-          }}
-        >
-          Ask
-        </button>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 14px",
+              background: "rgba(255, 255, 255, 0.55)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+              border: `1px solid ${INK_HAIRLINE}`,
+              borderRadius: 0,
+            }}
+          >
+            <svg
+              width={16}
+              height={16}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={INK_FAINT}
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3 L12 21" />
+              <path d="M3 12 L21 12" />
+              <path d="M5.6 5.6 L18.4 18.4" />
+              <path d="M5.6 18.4 L18.4 5.6" />
+            </svg>
+            <input
+              value={promptValue}
+              onChange={(e) => onPromptChange(e.target.value)}
+              placeholder="Ask Delphi about your governance posture…"
+              style={{
+                flex: 1,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                fontFamily: SANS,
+                fontSize: 14,
+                color: INK,
+                letterSpacing: "0.005em",
+              }}
+            />
+            <button
+              type="button"
+              style={{
+                fontFamily: SANS,
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: INK,
+                background: "transparent",
+                border: `1px solid ${INK}`,
+                borderRadius: 999,
+                padding: "5px 12px",
+                cursor: "pointer",
+              }}
+            >
+              Ask
+            </button>
+          </div>
+        </div>
+        <div />
       </div>
     </div>
   );
@@ -1771,7 +1676,7 @@ const RecentMovement = ({
           backdropFilter: "blur(14px)",
           WebkitBackdropFilter: "blur(14px)",
           border: `1px solid ${INK_HAIRLINE}`,
-          borderRadius: 12,
+          borderRadius: 0,
         }}
       >
         {rows.map((d, i) => (
@@ -1797,54 +1702,54 @@ const priorityTone = (p: SignalCard["priority"]) => {
   return INK_FAINT;
 };
 
-const SignalCardView = ({
-  card,
-  expanded,
-  dimmed,
-  onToggle,
-}: {
-  card: SignalCard;
-  expanded: boolean;
-  dimmed: boolean;
-  onToggle: () => void;
-}) => {
-  const isSquare = card.shape === "square";
+const CornerTicks = ({ visible }: { visible: boolean }) => {
+  const size = 8;
+  const w = 1;
+  const c = INK_HAIRLINE;
+  const corners: React.CSSProperties[] = [
+    { top: 0, left: 0, borderTop: `${w}px solid ${c}`, borderLeft: `${w}px solid ${c}` },
+    { top: 0, right: 0, borderTop: `${w}px solid ${c}`, borderRight: `${w}px solid ${c}` },
+    { bottom: 0, left: 0, borderBottom: `${w}px solid ${c}`, borderLeft: `${w}px solid ${c}` },
+    { bottom: 0, right: 0, borderBottom: `${w}px solid ${c}`, borderRight: `${w}px solid ${c}` },
+  ];
   return (
     <motion.div
-      layout
       initial={false}
-      animate={{ opacity: dimmed ? 0.5 : 1 }}
-      transition={{ type: "spring", stiffness: 240, damping: 28 }}
+      animate={{ opacity: visible ? 1 : 0 }}
+      transition={{ duration: 0.18 }}
+      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+    >
+      {corners.map((style, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            width: size,
+            height: size,
+            ...style,
+          }}
+        />
+      ))}
+    </motion.div>
+  );
+};
+
+const CardCollapsedBody = ({ card }: { card: SignalCard }) => {
+  const isSquare = card.shape === "square";
+  return (
+    <div
       style={{
-        gridColumn: card.shape === "wide" ? "span 2" : "span 1",
-        background: "rgba(255, 255, 255, 0.7)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: `1px solid ${INK_HAIRLINE}`,
-        borderRadius: 12,
-        boxShadow: expanded
-          ? "0 1px 0 rgba(43, 45, 52, 0.02), 0 18px 36px -22px rgba(43, 45, 52, 0.30)"
-          : "0 1px 0 rgba(43, 45, 52, 0.02)",
-        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+        height: "100%",
       }}
     >
-      <motion.button
-        layout
-        type="button"
-        onClick={onToggle}
+      <div
         style={{
-          width: "100%",
-          textAlign: "left",
-          background: "transparent",
-          border: "none",
-          padding: "16px 20px 4px",
-          cursor: "pointer",
-          color: INK,
+          padding: "14px 16px 4px",
           display: "flex",
           alignItems: "flex-start",
-          gap: 16,
+          gap: 14,
         }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -1871,13 +1776,7 @@ const SignalCardView = ({
             {card.summary}
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 4,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
           <span
             style={{
               fontFamily: MONO,
@@ -1890,149 +1789,298 @@ const SignalCardView = ({
             {card.count}
           </span>
           {card.unit ? (
-            <span
-              style={{
-                fontFamily: MONO,
-                fontSize: 11,
-                color: INK_FAINT,
-              }}
-            >
+            <span style={{ fontFamily: MONO, fontSize: 11, color: INK_FAINT }}>
               {card.unit}
             </span>
           ) : null}
         </div>
-      </motion.button>
-
-      {/* Default-state viz — always visible */}
+      </div>
       <div
-        onClick={onToggle}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
         style={{
-          padding: isSquare ? "12px 20px 16px" : "10px 20px 16px",
+          padding: isSquare ? "10px 16px 14px" : "8px 16px 14px",
           flex: 1,
-          minHeight: isSquare ? 168 : undefined,
+          minHeight: isSquare ? 156 : undefined,
           display: "flex",
           alignItems: isSquare ? "center" : "flex-start",
           justifyContent: "center",
-          cursor: "pointer",
         }}
       >
         <div style={{ width: "100%" }}>
           <CardViz id={card.id} />
         </div>
       </div>
+    </div>
+  );
+};
 
+const SignalCardView = ({
+  card,
+  expanded,
+  dimmed,
+  onToggle,
+}: {
+  card: SignalCard;
+  expanded: boolean;
+  dimmed: boolean;
+  onToggle: (rect?: DOMRect) => void;
+}) => {
+  const [hovered, setHovered] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const handleActivate = () => {
+    onToggle(cardRef.current?.getBoundingClientRect());
+  };
+  return (
+    <div
+      style={{
+        gridColumn: card.shape === "wide" ? "span 2" : "span 1",
+        position: "relative",
+      }}
+    >
+      {/* Always-present invisible spacer maintains the slot's dimensions */}
+      <div style={{ visibility: "hidden" }} aria-hidden>
+        <CardCollapsedBody card={card} />
+      </div>
+
+      {/* The actual card; unmounts when expanded so the layoutId moves to the modal */}
       <AnimatePresence initial={false}>
-        {expanded ? (
+        {!expanded ? (
           <motion.div
-            layout
-            key="body"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 240, damping: 28 }}
-            style={{ overflow: "hidden" }}
+            key="card"
+            ref={cardRef}
+            layoutId={`signal-card-${card.id}`}
+            initial={{ opacity: 1 }}
+            animate={{ opacity: dimmed ? 0.5 : 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            onClick={handleActivate}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleActivate();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 0,
+              cursor: "pointer",
+              color: INK,
+              background: "rgba(255, 255, 255, 0.20)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+            }}
           >
-            <div
+            {/* Frosted glass surface that fades in on hover */}
+            <motion.div
+              initial={false}
+              animate={{ opacity: hovered ? 1 : 0 }}
+              transition={{ duration: 0.18 }}
               style={{
-                padding: "16px 20px 20px",
-                borderTop: `1px dashed ${INK_HAIRLINE}`,
+                position: "absolute",
+                inset: 0,
+                borderRadius: 0,
+                background: "rgba(255, 255, 255, 0.55)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: `1px solid ${INK_HAIRLINE}`,
+                pointerEvents: "none",
               }}
-            >
-              <p
-                style={{
-                  fontFamily: SERIF,
-                  fontSize: 14.5,
-                  color: INK,
-                  margin: "0 0 18px",
-                  lineHeight: 1.55,
-                  letterSpacing: "-0.005em",
-                  maxWidth: 600,
-                }}
-              >
-                {card.expanded}
-              </p>
-              <SectionLabel style={{ marginBottom: 8 }}>
-                Top offenders
-              </SectionLabel>
-              <div style={{ marginBottom: 22 }}>
-                {card.rows.slice(0, 3).map((row, i) => (
-                  <div
-                    key={row.label}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "10px 0",
-                      borderTop:
-                        i === 0 ? "none" : `1px solid ${INK_HAIRLINE}`,
-                      fontFamily: SANS,
-                      fontSize: 13,
-                      color: INK,
-                    }}
-                  >
-                    <span>{row.label}</span>
-                    <span
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: 11.5,
-                        color: INK_MUTED,
-                        letterSpacing: "0.02em",
-                      }}
-                    >
-                      {row.meta}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
-                <button
-                  type="button"
-                  style={{
-                    fontFamily: SANS,
-                    fontSize: 11.5,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    background: INK,
-                    color: PARCHMENT,
-                    border: "none",
-                    borderRadius: 999,
-                    padding: "9px 18px",
-                    cursor: "pointer",
-                  }}
-                >
-                  {card.primary}
-                </button>
-                <span
-                  style={{
-                    fontFamily: SANS,
-                    fontSize: 11,
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                    color: INK_FAINT,
-                  }}
-                >
-                  {card.rows.length} total
-                </span>
-              </div>
+            />
+            {/* Corner ticks at rest */}
+            <CornerTicks visible={!hovered} />
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <CardCollapsedBody card={card} />
             </div>
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </motion.div>
+    </div>
+  );
+};
+
+const SignalCardModal = ({
+  card,
+  anchor,
+  onClose,
+}: {
+  card: SignalCard;
+  anchor: DOMRect | null;
+  onClose: () => void;
+}) => {
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  // Position the modal at (or near) the card's anchor, then clamp to viewport.
+  // Width grows from the anchor's left edge; height clamped to viewport.
+  const pos = useMemo(() => {
+    const PAD = 16;
+    const TOP_GUARD = 70; // clear of fixed header
+    const MIN_WIDTH = 480;
+    const TARGET_WIDTH = 640;
+    if (typeof window === "undefined" || !anchor) {
+      return {
+        top: "10vh",
+        left: "calc(50vw - 320px)",
+        width: TARGET_WIDTH,
+        maxHeight: "70vh",
+      };
+    }
+    const desiredWidth = Math.min(
+      TARGET_WIDTH,
+      Math.max(MIN_WIDTH, anchor.width * 1.6),
+      window.innerWidth - PAD * 2,
+    );
+    const maxHeight = Math.min(window.innerHeight - TOP_GUARD - PAD, 640);
+    const left = Math.max(
+      PAD,
+      Math.min(anchor.left, window.innerWidth - desiredWidth - PAD),
+    );
+    const top = Math.max(
+      TOP_GUARD,
+      Math.min(anchor.top, window.innerHeight - maxHeight - PAD),
+    );
+    return { top, left, width: desiredWidth, maxHeight };
+  }, [anchor]);
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(43, 45, 52, 0.18)",
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
+          zIndex: 100,
+        }}
+      />
+      <motion.div
+        layoutId={`signal-card-${card.id}`}
+        transition={{ type: "spring", stiffness: 260, damping: 30 }}
+        style={{
+          position: "fixed",
+          top: pos.top,
+          left: pos.left,
+          width: pos.width,
+          maxHeight: pos.maxHeight,
+          background: "rgba(255, 255, 255, 0.38)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          borderRadius: 0,
+          border: `1px solid ${INK_HAIRLINE}`,
+          boxShadow:
+            "0 1px 0 rgba(43, 45, 52, 0.02), 0 32px 70px -16px rgba(43, 45, 52, 0.42)",
+          zIndex: 101,
+          overflow: "auto",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <CardCollapsedBody card={card} />
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ delay: 0.1, duration: 0.22 }}
+          style={{
+            padding: "0 20px 24px",
+            borderTop: `1px dashed ${INK_HAIRLINE}`,
+            marginTop: 4,
+            paddingTop: 18,
+          }}
+        >
+          <p
+            style={{
+              fontFamily: SERIF,
+              fontSize: 14.5,
+              color: INK,
+              margin: "0 0 18px",
+              lineHeight: 1.55,
+              letterSpacing: "-0.005em",
+              maxWidth: 600,
+            }}
+          >
+            {card.expanded}
+          </p>
+          <SectionLabel style={{ marginBottom: 8 }}>Top offenders</SectionLabel>
+          <div style={{ marginBottom: 22 }}>
+            {card.rows.slice(0, 3).map((row, i) => (
+              <div
+                key={row.label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "10px 0",
+                  borderTop: i === 0 ? "none" : `1px solid ${INK_HAIRLINE}`,
+                  fontFamily: SANS,
+                  fontSize: 13,
+                  color: INK,
+                }}
+              >
+                <span>{row.label}</span>
+                <span
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: 11.5,
+                    color: INK_MUTED,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {row.meta}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{ display: "flex", alignItems: "center", gap: 16 }}
+          >
+            <button
+              type="button"
+              style={{
+                fontFamily: SANS,
+                fontSize: 11.5,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                background: INK,
+                color: PARCHMENT,
+                border: "none",
+                borderRadius: 999,
+                padding: "9px 18px",
+                cursor: "pointer",
+              }}
+            >
+              {card.primary}
+            </button>
+            <span
+              style={{
+                fontFamily: SANS,
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: INK_FAINT,
+              }}
+            >
+              {card.rows.length} total
+            </span>
+          </div>
+        </motion.div>
+      </motion.div>
+    </>
   );
 };
 
@@ -2049,6 +2097,18 @@ const Decomposition = ({
 }) => {
   const dimension = DIMENSIONS.find((d) => d.id === dimensionId);
   const cards = SIGNALS[dimensionId] ?? [];
+  const [anchor, setAnchor] = useState<DOMRect | null>(null);
+
+  const handleToggle = (id: string) => (rect?: DOMRect) => {
+    const isOpening = expandedId !== id;
+    setAnchor(isOpening && rect ? rect : null);
+    onExpand(isOpening ? id : null);
+  };
+  const handleClose = () => {
+    setAnchor(null);
+    onExpand(null);
+  };
+
   if (!dimension) return null;
 
   return (
@@ -2063,27 +2123,11 @@ const Decomposition = ({
         }}
       >
         <div>
-          <SectionLabel style={{ marginBottom: 8 }}>
-            Decomposition · {dimension.name}
-          </SectionLabel>
-          <h2
-            style={{
-              fontFamily: SERIF,
-              fontSize: 28,
-              color: INK,
-              margin: 0,
-              letterSpacing: "-0.01em",
-              fontWeight: 400,
-            }}
-          >
-            What is moving the {dimension.name.toLowerCase()} score?
-          </h2>
           <div
             style={{
               display: "flex",
               alignItems: "baseline",
               gap: 14,
-              marginTop: 12,
             }}
           >
             <span
@@ -2146,7 +2190,7 @@ const Decomposition = ({
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gridAutoFlow: "dense",
-          gap: 12,
+          gap: 24,
           alignItems: "stretch",
         }}
       >
@@ -2157,9 +2201,7 @@ const Decomposition = ({
               card={card}
               expanded={expandedId === card.id}
               dimmed={expandedId !== null && expandedId !== card.id}
-              onToggle={() =>
-                onExpand(expandedId === card.id ? null : card.id)
-              }
+              onToggle={handleToggle(card.id)}
             />
           ))}
         </AnimatePresence>
@@ -2173,12 +2215,28 @@ const Decomposition = ({
             color: INK_MUTED,
             padding: 24,
             border: `1px dashed ${INK_HAIRLINE}`,
-            borderRadius: 12,
+            borderRadius: 0,
           }}
         >
           No decomposition cards configured for this dimension.
         </div>
       ) : null}
+
+      <AnimatePresence>
+        {expandedId
+          ? (() => {
+              const card = cards.find((c) => c.id === expandedId);
+              return card ? (
+                <SignalCardModal
+                  key={card.id}
+                  card={card}
+                  anchor={anchor}
+                  onClose={handleClose}
+                />
+              ) : null;
+            })()
+          : null}
+      </AnimatePresence>
     </div>
   );
 };
@@ -2222,9 +2280,10 @@ const DelphiCommandCenter = () => {
         background: CORINTH_BG,
         color: INK,
         fontFamily: SANS,
-        display: "flex",
         position: "relative",
         overflow: "hidden",
+        paddingLeft: DELPHI_RAIL_WIDTH,
+        boxSizing: "border-box",
       }}
     >
       {/* Soft floating shade — VERY subtle, opaque #CDD2D3 blurred */}
@@ -2261,16 +2320,17 @@ const DelphiCommandCenter = () => {
         }}
       />
 
-      <LeftRail />
+      <DelphiHeader />
+      <DelphiSideNav />
 
       <main
         style={{
-          flex: 1,
-          minWidth: 0,
           width: "100%",
           maxWidth: 1400,
           marginLeft: "auto",
           marginRight: "auto",
+          paddingTop: DELPHI_HEADER_HEIGHT,
+          paddingBottom: 160,
           display: "grid",
           gridTemplateColumns: "minmax(520px, 45fr) minmax(560px, 55fr)",
           gap: 0,
@@ -2282,92 +2342,19 @@ const DelphiCommandCenter = () => {
         <section
           style={{
             padding: "40px 48px 56px 56px",
-            borderRight: `1px solid ${INK_HAIRLINE}`,
             display: "flex",
             flexDirection: "column",
             minWidth: 0,
           }}
         >
-          <header
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 28,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: SERIF,
-                fontSize: 22,
-                letterSpacing: "0.01em",
-                color: INK,
-              }}
-            >
-              ethyca
-              <span
-                style={{
-                  display: "inline-block",
-                  width: 4,
-                  height: 4,
-                  borderRadius: "50%",
-                  background: TERRACOTTA,
-                  marginLeft: 4,
-                  verticalAlign: "middle",
-                  transform: "translateY(-3px)",
-                }}
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                color: INK_FAINT,
-              }}
-            >
-              <SectionLabel>Delphi · Command</SectionLabel>
-              <span style={{ fontFamily: MONO, fontSize: 11 }}>
-                {new Date().toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-          </header>
-
-          <div style={{ marginBottom: 12 }}>
-            <SectionLabel style={{ marginBottom: 8 }}>
-              Governance Posture Score
-            </SectionLabel>
-            <h1
-              style={{
-                fontFamily: SERIF,
-                fontSize: 34,
-                color: INK,
-                margin: 0,
-                letterSpacing: "-0.01em",
-                fontWeight: 400,
-                lineHeight: 1.15,
-              }}
-            >
-              Good morning, Karolis.
-            </h1>
-          </div>
-
-          <div style={{ marginTop: 18, marginBottom: 4 }}>
+          <div style={{ marginTop: 4, marginBottom: 4 }}>
             <GovernanceRadial
               selected={selectedDimension}
               onSelect={selectDimension}
             />
           </div>
 
-          <EthycaAi
-            selected={selectedDimension}
-            promptValue={promptValue}
-            onPromptChange={setPromptValue}
-          />
+          <EthycaNarrative selected={selectedDimension} />
         </section>
 
         {/* RIGHT COLUMN — operational context */}
@@ -2408,6 +2395,12 @@ const DelphiCommandCenter = () => {
           </AnimatePresence>
         </section>
       </main>
+
+      <AskDelphiBar
+        selected={selectedDimension}
+        promptValue={promptValue}
+        onPromptChange={setPromptValue}
+      />
     </div>
   );
 };
