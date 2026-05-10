@@ -79,14 +79,33 @@ interface RequestBadgeProps {
   status: keyof typeof statusPropMap;
 }
 
-const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
-  <Tag
-    color={statusPropMap[status].color}
-    className="justify-center"
-    data-testid="request-status-badge"
-  >
-    {statusPropMap[status].label}
-  </Tag>
-);
+const humanizeStatus = (value: string): string => {
+  const cleaned = value.replace(/[_-]+/g, " ").trim();
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+};
+
+const RequestStatusBadge = ({ status }: RequestBadgeProps) => {
+  const props = statusPropMap[status];
+  if (!props) {
+    return (
+      <Tag
+        color={CUSTOM_TAG_COLOR.MINOS}
+        className="justify-center"
+        data-testid="request-status-badge"
+      >
+        {status ? humanizeStatus(status) : "Unknown"}
+      </Tag>
+    );
+  }
+  return (
+    <Tag
+      color={props.color}
+      className="justify-center"
+      data-testid="request-status-badge"
+    >
+      {props.label}
+    </Tag>
+  );
+};
 
 export default RequestStatusBadge;

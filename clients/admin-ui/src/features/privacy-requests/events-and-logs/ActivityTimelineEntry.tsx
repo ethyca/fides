@@ -13,7 +13,7 @@ import {
 import styles from "./ActivityTimelineEntry.module.scss";
 import { AttachmentDisplay } from "./AttachmentDisplay";
 
-const TIMELINE_ICON_SIZE = 20;
+const TIMELINE_ICON_SIZE = 24;
 
 interface ActivityTimelineEntryProps {
   item: ActivityTimelineItem;

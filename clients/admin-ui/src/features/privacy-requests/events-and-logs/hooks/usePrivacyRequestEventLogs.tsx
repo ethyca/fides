@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 
-import { connectionLogoFromConfiguration } from "~/features/datastore-connections/ConnectionTypeLogo";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
+import {
+  connectionLogoFromConfiguration,
+  connectionLogoFromSystemType,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import {
   hasAwaitingProcessing,
@@ -18,7 +22,11 @@ import {
   ExecutionLogStatus,
   PrivacyRequestResults,
 } from "~/features/privacy-requests/types";
-import type { ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionType } from "~/types/api";
+import type {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+} from "~/types/api";
 
 /**
  * Hook for processing privacy request event logs.
@@ -33,7 +41,9 @@ export const usePrivacyRequestEventLogs = (
   taskStatusByDataset?: Record<string, string>,
 ) => {
   const { data: connectionsResponse, isLoading: isConnectionsLoading } =
-    useGetAllDatastoreConnectionsQuery({ size: 1000 });
+    useGetAllDatastoreConnectionsQuery({ size: 100 });
+
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
 
   const connectionsByKey = useMemo(() => {
     const map = new Map<string, ConnectionConfigurationResponse>();
@@ -44,6 +54,16 @@ export const usePrivacyRequestEventLogs = (
     });
     return map;
   }, [connectionsResponse]);
+
+  const connectionTypesByIdentifier = useMemo(() => {
+    const map = new Map<string, ConnectionSystemTypeMap>();
+    connectionTypesData?.items?.forEach((ct) => {
+      if (ct.identifier) {
+        map.set(ct.identifier, ct);
+      }
+    });
+    return map;
+  }, [connectionTypesData]);
 
   // We don't block the timeline on connections — if the lookup hasn't resolved
   // we just fall back to humanized keys.
@@ -87,7 +107,18 @@ export const usePrivacyRequestEventLogs = (
 
         if (connection) {
           title = connection.name || humanizeIdentifier(connection.key);
-          connectionLogo = connectionLogoFromConfiguration(connection);
+          // SaaS connections carry their logo as a base64-encoded SVG on the
+          // matching ConnectionSystemTypeMap, not on the connection itself.
+          const saasType =
+            connection.connection_type === ConnectionType.SAAS
+              ? connection.saas_config?.type
+              : undefined;
+          const systemType = saasType
+            ? connectionTypesByIdentifier.get(saasType)
+            : undefined;
+          connectionLogo = systemType
+            ? connectionLogoFromSystemType(systemType)
+            : connectionLogoFromConfiguration(connection);
         } else {
           title = humanizeIdentifier(key);
           icon = systemEventIcon(key, firstLog?.status ?? "");

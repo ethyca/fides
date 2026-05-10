@@ -1,39 +1,66 @@
 import { Avatar, Icons } from "fidesui";
 import React from "react";
 
-const ICON_SIZE = 20;
+const ICON_SIZE = 24;
 
-const renderIcon = (icon: React.ReactNode) => (
+const renderIcon = (
+  icon: React.ReactNode,
+  style?: React.CSSProperties,
+) => (
   <Avatar
     shape="square"
     size={ICON_SIZE}
     icon={icon}
-    style={{ backgroundColor: "var(--fidesui-neutral-50)", color: "inherit" }}
+    style={{
+      backgroundColor: "var(--fidesui-neutral-50)",
+      color: "inherit",
+      ...style,
+    }}
   />
 );
 
-export const userTimelineIcon = renderIcon(<Icons.User />);
+export const userTimelineIcon = renderIcon(<Icons.User />, {
+  backgroundColor: "var(--fidesui-brand-marble)",
+  color: "var(--fidesui-brand-minos)",
+});
+
+type AuditStatusGlyph = {
+  icon: React.ReactNode;
+  style?: React.CSSProperties;
+};
 
 // Maps audit-log action statuses (AuditLogAction values) to a Carbon icon.
 // For statuses we don't recognize we fall through to a generic system icon.
-const auditStatusIcon = (status: string): React.ReactNode => {
+const auditStatusIcon = (status: string): AuditStatusGlyph => {
   switch (status) {
     case "approved":
     case "pre_approval_eligible":
-      return <Icons.CheckmarkOutline />;
+      return {
+        icon: <Icons.Checkmark />,
+        style: {
+          backgroundColor: "var(--fidesui-brand-olive)",
+          color: "var(--fidesui-brand-corinth)",
+        },
+      };
     case "denied":
     case "pre_approval_not_eligible":
-      return <Icons.Misuse />;
+      return { icon: <Icons.Misuse /> };
     case "policy_evaluated":
-      return <Icons.Policy />;
+      return {
+        icon: <Icons.FlowData />,
+        style: {
+          backgroundColor: "var(--fidesui-brand-sandstone)",
+          color: "var(--fidesui-brand-minos)",
+        },
+      };
     case "pre_approval_webhook_triggered":
-      return <Icons.Flow />;
+      return { icon: <Icons.Flow /> };
     case "email_sent":
-      return <Icons.Notification />;
+      return { icon: <Icons.Notification /> };
     case "finished":
-      return <Icons.CheckmarkFilled />;
+      return { icon: <Icons.CheckmarkFilled /> };
     default:
-      return <Icons.Settings />;
+      return { icon: <Icons.Settings /> };
   }
 };
 
@@ -45,15 +72,19 @@ export const systemEventIcon = (
   status: string,
 ): React.ReactNode => {
   if (groupKey.startsWith("Dataset")) {
-    return renderIcon(<Icons.Flow />);
+    return renderIcon(<Icons.Process />);
   }
   if (groupKey.startsWith("Request execution plan")) {
     return renderIcon(<Icons.Flow />);
   }
-  return renderIcon(auditStatusIcon(status));
+  const { icon, style } = auditStatusIcon(status);
+  return renderIcon(icon, style);
 };
 
-export const requestReceivedIcon = renderIcon(<Icons.Notification />);
+export const requestReceivedIcon = renderIcon(<Icons.ArrowRight />, {
+  backgroundColor: "var(--fidesui-brand-terracotta)",
+  color: "var(--fidesui-brand-corinth)",
+});
 
 // Humanize a snake_case / kebab-case identifier. Used as a fallback when we
 // don't have a friendlier display name (e.g. an integration without a `name`

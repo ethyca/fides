@@ -62,7 +62,7 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
 export const getAvailableActionsForRequest = (
   request: PrivacyRequestResponse,
 ): readonly BulkActionType[] => {
-  return AVAILABLE_ACTIONS_BY_STATUS[request.status];
+  return AVAILABLE_ACTIONS_BY_STATUS[request.status] ?? [];
 };
 
 /**

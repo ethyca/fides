@@ -1,4 +1,4 @@
-import { Button, Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
+import { Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures, useFlags } from "~/features/common/features";
@@ -116,10 +116,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
                 value={id}
                 data-testid="request-detail-value-id"
               />
-              <Button
-                aria-label="Copy request ID"
-                icon={<ClipboardButton copyText={id} />}
-              />
+              <ClipboardButton copyText={id} />
             </Space.Compact>
           </Flex>
         </Form.Item>
