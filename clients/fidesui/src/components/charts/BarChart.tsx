@@ -110,12 +110,15 @@ export const BarChart = ({
     ({
       payload,
     }: {
-      payload?: ReadonlyArray<{ payload: BarChartDataPoint }>;
+      payload?: ReadonlyArray<{ payload?: BarChartDataPoint }>;
     }) => {
       if (!payload?.length) {
         return null;
       }
       const entry = payload[0].payload;
+      if (!entry) {
+        return null;
+      }
       return (
         <div
           style={{

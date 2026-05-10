@@ -98,13 +98,16 @@ export const Sparkline = ({
 
   const renderTooltipContent = useCallback(
     (tooltipProps: {
-      payload?: ReadonlyArray<{ payload: { value: number; idx: number } }>;
+      payload?: ReadonlyArray<{ payload?: { value: number; idx: number } }>;
     }) => {
       const { payload } = tooltipProps;
       if (!payload?.length) {
         return null;
       }
       const entry = payload[0].payload;
+      if (!entry) {
+        return null;
+      }
       const label = xAxisLabels?.[entry.idx] ?? "";
       return (
         <div
