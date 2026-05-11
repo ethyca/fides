@@ -83,6 +83,18 @@ class TestRawPassword:
         settings = DatabaseSettings()
         assert settings.raw_readonly_password is None
 
+    def test_pre_encoded_password_treated_as_literal(self) -> None:
+        """Passwords are always treated as raw values, never as pre-encoded.
+
+        If a user sets their password to "foo%40bar" (literally containing
+        the characters %, 4, 0), raw_password returns "foo%40bar" — NOT
+        "foo@bar". This matches the old URI-based path where escape_password
+        would double-encode %40 to %2540 in the URI, and psycopg2 would
+        decode it back to %40.
+        """
+        settings = DatabaseSettings(password="foo%40bar")
+        assert settings.raw_password == "foo%40bar"
+
 
 class TestConvertAsyncpgParams:
     def test_converts_sslmode_to_ssl(self) -> None:

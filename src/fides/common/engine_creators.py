@@ -9,6 +9,10 @@ resolved at **connection time** rather than engine construction time.
 Today the credential helpers read from static config (``CONFIG.database``).
 A future secret-provider integration will swap them to call
 ``provider.get_secret()`` — the rest of the engine code stays the same.
+
+Because creators run on every new pool connection, they must stay
+lightweight — avoid expensive I/O, network calls, or heavy computation.
+Credential lookups should return cached values in the common case.
 """
 
 from __future__ import annotations

@@ -43,6 +43,27 @@ class TestGetDbEngine:
         ):
             session.get_db_engine(creator=creator, keepalives_idle=30)
 
+    def test_creator_with_database_uri_raises(self) -> None:
+        """Passing both creator and database_uri is an error."""
+        creator = make_sync_creator()
+        with pytest.raises(
+            ValueError,
+            match="database_uri/config cannot be used with creator",
+        ):
+            session.get_db_engine(
+                creator=creator, database_uri="postgresql://localhost/db"
+            )
+
+    def test_creator_with_config_raises(self) -> None:
+        """Passing both creator and config is an error."""
+        creator = make_sync_creator()
+        config = get_config()
+        with pytest.raises(
+            ValueError,
+            match="database_uri/config cannot be used with creator",
+        ):
+            session.get_db_engine(creator=creator, config=config)
+
     def test_config_with_keepalives(self) -> None:
         """URI path with keepalives produces a working engine."""
         config = get_config()

@@ -47,6 +47,11 @@ def get_db_engine(
     if creator:
         # Creator handles credentials and connect_args internally,
         # so creator needs to set keepalives settings.
+        if database_uri or config:
+            raise ValueError(
+                "database_uri/config cannot be used with creator — "
+                "the creator handles connection construction"
+            )
         if keepalives_idle or keepalives_interval or keepalives_count:
             raise ValueError(
                 "keepalives_idle/interval/count cannot be used with creator — "
