@@ -33,7 +33,10 @@ from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.service.messaging.message_dispatch_service import (
+    _PROVIDER_MAP,
+    dispatch_message,
+)
 from fides.api.service.messaging.messaging_providers.base import (
     BaseEmailProviderService,
     BaseMessageProviderService,
@@ -460,7 +463,6 @@ class TestMessageDispatchService:
     def test_email_dispatch_aws_ses_email_test_message(
         self, db, messaging_config_aws_ses
     ):
-        from fides.api.service.messaging.message_dispatch_service import _PROVIDER_MAP
 
         mock_aws_ses_cls = Mock()
         mock_aws_ses_cls.return_value = Mock(spec=BaseEmailProviderService)
@@ -483,7 +485,6 @@ class TestMessageDispatchService:
     def test_email_dispatch_aws_ses_email_raises_exception(
         self, db, messaging_config_aws_ses
     ):
-        from fides.api.service.messaging.message_dispatch_service import _PROVIDER_MAP
 
         mock_aws_ses_cls = Mock()
         mock_instance = Mock(spec=BaseEmailProviderService)
