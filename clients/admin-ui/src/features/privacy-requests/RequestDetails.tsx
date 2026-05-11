@@ -120,7 +120,8 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
                     <Button
                       type="text"
                       size="small"
-                      icon={<Icons.Search />}
+                      // eslint-disable-next-line react/jsx-pascal-case
+                      icon={<Icons.DocumentMultiple_01 />}
                       aria-label="View related requests for this subject"
                       data-testid="view-related-requests-btn"
                       onClick={() => setIsRelatedRequestsDrawerOpen(true)}

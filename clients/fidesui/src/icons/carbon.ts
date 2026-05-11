@@ -35,6 +35,7 @@ export {
   Db2Database,
   Document,
   DocumentBlank,
+  DocumentMultiple_01,
   Download,
   Draggable,
   Edit,
