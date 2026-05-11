@@ -39,6 +39,9 @@ from fides.api.service.messaging.messaging_crud_service import (
     get_basic_messaging_template_by_type_or_default,
     get_enabled_messaging_template_by_type_and_property,
 )
+from fides.api.service.messaging.messaging_providers.aws_ses_service import (
+    AwsSesService,
+)
 from fides.api.service.messaging.messaging_providers.base import (
     BaseEmailProviderService,
     BaseMessageProviderService,
@@ -59,7 +62,6 @@ from fides.api.service.messaging.messaging_providers.twilio_sms_service import (
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.service.messaging.aws_ses_service import AWS_SES_Service
 
 EMAIL_JOIN_STRING = ", "
 
@@ -69,7 +71,15 @@ _PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = {
     MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
     MessagingServiceType.twilio_text: TwilioSmsService,
     MessagingServiceType.twilio_email: TwilioEmailService,
+    MessagingServiceType.aws_ses: AwsSesService,
 }
+
+
+def get_provider_class(
+    service_type: MessagingServiceType,
+) -> type[BaseMessageProviderService] | None:
+    """Public accessor for the provider map. Returns the provider class or None."""
+    return _PROVIDER_MAP.get(service_type)
 
 
 @celery_app.task(
@@ -306,14 +316,6 @@ def dispatch_message(
         error_message = f"No {'email' if messaging_method == MessagingMethod.EMAIL else 'phone'} identity supplied."
         logger.error(f"Message failed to send. {error_message}")
         raise MessageDispatchException(error_message)
-
-    # AWS SES uses legacy dispatcher — will be migrated to a provider class
-    # in a follow-up PR.
-    if messaging_service == MessagingServiceType.aws_ses:
-        if not isinstance(message, EmailForActionType):
-            raise MessageDispatchException("AWS SES requires an email message body")
-        _aws_ses_dispatcher(messaging_config, message, to)
-        return
 
     provider_cls = _PROVIDER_MAP.get(messaging_service)
     if not provider_cls:
@@ -690,30 +692,3 @@ def get_email_messaging_config_service_type(db: Session) -> Optional[str]:
         return MessagingServiceType.mailchimp_transactional.value
 
     return None
-
-
-# ---------------------------------------------------------------------------
-# Legacy dispatcher — will be replaced by AwsSesService provider class in a
-# follow-up PR.
-# ---------------------------------------------------------------------------
-
-
-def _aws_ses_dispatcher(
-    messaging_config: MessagingConfig,
-    message: EmailForActionType,
-    to: str,
-) -> None:
-    if not messaging_config.details or not messaging_config.secrets:
-        error_message = "No AWS SES config details or secrets supplied."
-        logger.error(f"Message failed to send. {error_message}")
-        raise MessageDispatchException(error_message)
-
-    aws_ses_service = AWS_SES_Service(messaging_config)
-
-    try:
-        aws_ses_service.send_email(to, message.subject, message.body)
-    except Exception as exc:
-        logger.error("Email failed to send: {}", str(exc))
-        raise MessageDispatchException(
-            f"AWS SES email failed to send due to: {str(exc)}"
-        )
