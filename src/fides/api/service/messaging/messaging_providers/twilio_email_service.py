@@ -59,15 +59,10 @@ class TwilioEmailService(BaseEmailProviderService):
             )
 
             # Threading / envelope headers
-            if message.reply_to:
-                mail.reply_to = ReplyTo(message.reply_to)
-            threading_headers = {
-                "Message-ID": message.message_id,
-                "In-Reply-To": message.in_reply_to,
-                "References": message.references,
-            }
-            for key, value in threading_headers.items():
-                if value:
+            for key, value in self.get_threading_headers(message).items():
+                if key == "Reply-To":
+                    mail.reply_to = ReplyTo(value)
+                else:
                     mail.header = Header(key, value)
 
             response = sg.client.mail.send.post(request_body=mail.get())

@@ -1,6 +1,4 @@
 import re
-from email import policy as email_policy
-from email.message import EmailMessage
 from typing import Any, Protocol
 
 from loguru import logger
@@ -151,7 +149,7 @@ class AwsSesService(BaseEmailProviderService):
             from_address = f"noreply@{self.details.domain}"
 
         try:
-            msg = self._build_mime(from_address, to.strip(), message)
+            msg = self.build_mime(from_address, to.strip(), message)
             ses_client.send_raw_email(
                 Source=from_address,
                 Destinations=[to.strip()],
@@ -164,31 +162,3 @@ class AwsSesService(BaseEmailProviderService):
             raise MessageDispatchException(
                 f"AWS SES email failed to send due to: {_sanitize_aws_error(exc)}"
             ) from exc
-
-    @staticmethod
-    def _build_mime(
-        from_address: str, to: str, message: EmailForActionType
-    ) -> EmailMessage:
-        """Build a MIME EmailMessage with optional threading headers."""
-        msg = EmailMessage(policy=email_policy.SMTP)
-        msg["From"] = from_address
-        msg["To"] = to
-        msg["Subject"] = message.subject
-
-        # Threading headers
-        if message.reply_to:
-            msg["Reply-To"] = message.reply_to
-        if message.message_id:
-            msg["Message-ID"] = message.message_id
-        if message.in_reply_to:
-            msg["In-Reply-To"] = message.in_reply_to
-        if message.references:
-            msg["References"] = message.references
-
-        if message.body_text:
-            msg.set_content(message.body_text)
-            msg.add_alternative(message.body, subtype="html")
-        else:
-            msg.set_content(message.body, subtype="html")
-
-        return msg
