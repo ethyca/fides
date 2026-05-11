@@ -278,9 +278,22 @@ const usePrivacyRequestForm = ({
       ),
       ...Object.fromEntries(
         Object.entries(customIdentityFields).flatMap(([key, value]) => {
-          if (!value) return [];
+          if (!value) {
+            return [];
+          }
           if (value.field_type === "date") {
-            return [[key, dateFieldValidation(value, value.label, true)]];
+            // Respect the required field for dates; text/select identity fields currently
+            // always validate as required regardless of the config setting (pre-existing behavior).
+            return [
+              [
+                key,
+                dateFieldValidation(
+                  value,
+                  value.label,
+                  value.required !== false,
+                ),
+              ],
+            ];
           }
           return [[key, Yup.string().required(`${value.label} is required`)]];
         }),
