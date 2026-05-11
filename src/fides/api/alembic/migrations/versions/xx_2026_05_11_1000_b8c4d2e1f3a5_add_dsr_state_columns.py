@@ -1,7 +1,7 @@
 """Add Postgres columns/tables for DSR pipeline state (Redis cutover).
 
 Revision ID: b8c4d2e1f3a5
-Revises: 3a91e5d4f7b2
+Revises: e3f4a5b6c7d8
 Create Date: 2026-05-11 10:00:00.000000
 
 """
@@ -14,7 +14,7 @@ from fides.api.db.base_class import JSONTypeOverride
 
 # revision identifiers, used by Alembic.
 revision = "b8c4d2e1f3a5"
-down_revision = "3a91e5d4f7b2"
+down_revision = "e3f4a5b6c7d8"
 branch_labels = None
 depends_on = None
 
