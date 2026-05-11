@@ -2,6 +2,7 @@ import { Button, Flex, Modal, Spin, Tabs, Text } from "fidesui";
 import React from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
+import { Editor } from "~/features/common/yaml/helpers";
 
 import {
   useGetConnectorTemplateVersionConfigQuery,
@@ -13,11 +14,13 @@ interface SaaSVersionContentProps {
   version: string;
 }
 
-const YamlBlock = ({ yaml }: { yaml: string | undefined }) => (
-  <pre className="max-h-[60vh] overflow-auto whitespace-pre rounded-md bg-gray-50 p-3 text-xs">
-    {yaml}
-  </pre>
-);
+const EDITOR_OPTIONS = {
+  readOnly: true,
+  minimap: { enabled: false },
+  fontSize: 13,
+  fontFamily: "Menlo",
+  scrollBeyondLastLine: false,
+};
 
 const SaaSVersionContent = ({
   connectorType,
@@ -50,7 +53,15 @@ const SaaSVersionContent = ({
         </Text>
       );
     }
-    return <YamlBlock yaml={configYaml} />;
+    return (
+      <Editor
+        defaultLanguage="yaml"
+        value={configYaml}
+        height="60vh"
+        options={EDITOR_OPTIONS}
+        theme="light"
+      />
+    );
   };
 
   const renderDataset = () => {
@@ -75,7 +86,15 @@ const SaaSVersionContent = ({
         </Text>
       );
     }
-    return <YamlBlock yaml={datasetYaml} />;
+    return (
+      <Editor
+        defaultLanguage="yaml"
+        value={datasetYaml}
+        height="60vh"
+        options={EDITOR_OPTIONS}
+        theme="light"
+      />
+    );
   };
 
   const tabItems = [
