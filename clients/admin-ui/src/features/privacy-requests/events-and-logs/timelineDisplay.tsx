@@ -20,7 +20,12 @@ const renderIcon = (
 );
 
 export const userTimelineIcon = renderIcon(<Icons.User />, {
-  backgroundColor: "var(--fidesui-brand-marble)",
+  backgroundColor: "var(--fidesui-brand-nectar)",
+  color: "var(--fidesui-brand-minos)",
+});
+
+export const commentTimelineIcon = renderIcon(<Icons.Chat />, {
+  backgroundColor: "var(--fidesui-brand-nectar)",
   color: "var(--fidesui-brand-minos)",
 });
 
@@ -35,6 +40,8 @@ const auditStatusIcon = (status: string): AuditStatusGlyph => {
   switch (status) {
     case "approved":
     case "pre_approval_eligible":
+    case "access_package_approved":
+    case "finished":
       return {
         icon: <Icons.Checkmark />,
         style: {
@@ -49,7 +56,7 @@ const auditStatusIcon = (status: string): AuditStatusGlyph => {
       return {
         icon: <Icons.FlowData />,
         style: {
-          backgroundColor: "var(--fidesui-brand-sandstone)",
+          backgroundColor: "color-mix(in srgb, var(--fidesui-brand-sandstone) 50%, white)",
           color: "var(--fidesui-brand-minos)",
         },
       };
@@ -57,8 +64,6 @@ const auditStatusIcon = (status: string): AuditStatusGlyph => {
       return { icon: <Icons.Flow /> };
     case "email_sent":
       return { icon: <Icons.Notification /> };
-    case "finished":
-      return { icon: <Icons.CheckmarkFilled /> };
     default:
       return { icon: <Icons.Settings /> };
   }
@@ -72,10 +77,27 @@ export const systemEventIcon = (
   status: string,
 ): React.ReactNode => {
   if (groupKey.startsWith("Dataset")) {
-    return renderIcon(<Icons.Process />);
+    return renderIcon(<Icons.Process />, {
+      backgroundColor:
+        "color-mix(in srgb, var(--fidesui-brand-sandstone) 50%, white)",
+      color: "var(--fidesui-brand-minos)",
+    });
   }
   if (groupKey.startsWith("Request execution plan")) {
     return renderIcon(<Icons.Flow />);
+  }
+  // "Access package upload" is the legacy dataset_name used for the same
+  // ExecutionLog before the rename to "Access package sent" — keep matching
+  // both so previously-persisted privacy requests still render the icon.
+  // Remove the "Access package upload" branch once legacy rows are migrated.
+  if (
+    groupKey === "Access package sent" ||
+    groupKey === "Access package upload"
+  ) {
+    return renderIcon(<Icons.SendAlt />, {
+      backgroundColor: "var(--fidesui-brand-olive)",
+      color: "var(--fidesui-brand-corinth)",
+    });
   }
   const { icon, style } = auditStatusIcon(status);
   return renderIcon(icon, style);

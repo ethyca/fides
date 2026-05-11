@@ -120,7 +120,12 @@ export const usePrivacyRequestEventLogs = (
             ? connectionLogoFromSystemType(systemType)
             : connectionLogoFromConfiguration(connection);
         } else {
-          title = humanizeIdentifier(key);
+          // Legacy ExecutionLogs persisted with dataset_name "Access package
+          // upload" should display as "Access package sent" alongside newly
+          // created rows. Remove once legacy rows are migrated.
+          const displayKey =
+            key === "Access package upload" ? "Access package sent" : key;
+          title = humanizeIdentifier(displayKey);
           icon = systemEventIcon(key, firstLog?.status ?? "");
         }
 
@@ -134,6 +139,7 @@ export const usePrivacyRequestEventLogs = (
           isSkipped: hasSkippedEntryStatus,
           isAwaitingInput: hasAwaitingProcessingStatus,
           isPolling: hasPollingStatus,
+          isFinished: firstLog?.status === "finished",
           id: `request-${key}`,
           logCount: logs.length,
           connectionLogo,

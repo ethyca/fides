@@ -329,12 +329,12 @@
             "user_id": null
           }
         ],
-        "Access package upload": [
+        "Access package sent": [
           {
             "connection_key": null,
             "collection_name": null,
             "fields_affected": null,
-            "message": "Access package upload successful for privacy request.",
+            "message": "",
             "action_type": "access",
             "status": "complete",
             "updated_at": "2025-07-22T20:39:34.932124Z",

@@ -249,7 +249,7 @@ export const TimelineItemColorMap: Record<
   CUSTOM_TAG_COLOR
 > = {
   [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: CUSTOM_TAG_COLOR.DEFAULT,
-  [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: CUSTOM_TAG_COLOR.MARBLE,
+  [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: CUSTOM_TAG_COLOR.NECTAR,
   [ActivityTimelineItemTypeEnum.MANUAL_TASK]: CUSTOM_TAG_COLOR.NECTAR,
 };
 
@@ -265,6 +265,7 @@ export interface ActivityTimelineItem {
   isSkipped: boolean;
   isAwaitingInput: boolean;
   isPolling: boolean;
+  isFinished?: boolean;
   id: string;
   attachments?: { id: string; file_name: string }[];
   // When set, the entry renders the integration's logo at the start.

@@ -39,6 +39,11 @@ $horizontal-padding: 20px;
   &--error:hover,
   &--error:focus {
     border-left: 8px solid var(--fidesui-color-error);
+    background-color: color-mix(
+      in srgb,
+      var(--fidesui-brand-terracotta) 20%,
+      transparent
+    );
   }
 
   &--awaiting-input,
@@ -51,6 +56,16 @@ $horizontal-padding: 20px;
   &--polling:hover,
   &--polling:focus {
     border-left: 8px solid var(--fidesui-color-warning);
+  }
+
+  &--finished,
+  &--finished:hover,
+  &--finished:focus {
+    background-color: color-mix(
+      in srgb,
+      var(--fidesui-brand-olive) 20%,
+      transparent
+    );
   }
 }
 
@@ -74,6 +89,15 @@ $horizontal-padding: 20px;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
+
+  // Connector logo SVGs (data/saas/icon/*.svg) ship with built-in
+  // whitespace, so the rendered glyph fills only ~22 of 24px. Scale the
+  // <img> by 24/22 ≈ 1.091 so it matches the 24x24 system event icons.
+  // REMOVE this rule once the upstream SVG assets are re-exported without
+  // internal padding.
+  img {
+    transform: scale(1.0909);
+  }
 }
 
 .title {

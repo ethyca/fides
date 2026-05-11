@@ -29,6 +29,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     isError,
     isAwaitingInput,
     isPolling,
+    isFinished,
     description,
     attachments,
     logCount = 0,
@@ -135,6 +136,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
       [styles["itemButton--error"]]: isError,
       [styles["itemButton--awaiting-input"]]: isAwaitingInput,
       [styles["itemButton--polling"]]: isPolling,
+      [styles["itemButton--finished"]]: isFinished,
       [styles["itemButton--clickable"]]: isClickable,
       [styles["itemButton--comment"]]:
         type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,

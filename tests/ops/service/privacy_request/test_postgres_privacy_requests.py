@@ -405,7 +405,7 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
 
     assert logs == {
         ("Request execution plan", "complete", None),
-        ("Access package upload", "complete", None),
+        ("Access package sent", "complete", None),
         (
             "Dataset traversal",
             "skipped",
@@ -440,7 +440,7 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
         ("Request execution plan", "complete"),
         ("Dataset traversal", "complete"),
         ("Request execution plan", "complete"),
-        ("Access package upload", "complete"),
+        ("Access package sent", "complete"),
     ]
 
 
