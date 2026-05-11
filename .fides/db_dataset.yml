@@ -3665,6 +3665,24 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: tcf_version_hash_history
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: privacy_experience_config_id
+        data_categories: [system.operations]
+      - name: previous_hash
+        data_categories: [system.operations]
+      - name: current_hash
+        data_categories: [system.operations]
+      - name: changed_at
+        data_categories: [system.operations]
+      - name: trigger_source
+        data_categories: [system.operations]
   - name: stagedresourceancestor
     fields:
       - name: id
