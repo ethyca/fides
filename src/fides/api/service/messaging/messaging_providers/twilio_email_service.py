@@ -50,7 +50,12 @@ class TwilioEmailService(BaseEmailProviderService):
             from_email = Email(self.from_email)
             to_email = To(to.strip())
             mail = self._compose_mail(
-                from_email, to_email, message.subject, message.body, template_id
+                from_email,
+                to_email,
+                message.subject,
+                message.body,
+                template_id,
+                body_text=message.body_text,
             )
 
             # Threading / envelope headers
@@ -64,13 +69,6 @@ class TwilioEmailService(BaseEmailProviderService):
             for key, value in threading_headers.items():
                 if value:
                     mail.header = Header(key, value)
-            if message.body_text:
-                # RFC 2046: in multipart/alternative, last part is most preferred.
-                # Place text/plain before text/html so HTML is preferred.
-                mail.contents = [
-                    Content("text/plain", message.body_text),
-                    Content("text/html", message.body),
-                ]
 
             response = sg.client.mail.send.post(request_body=mail.get())
             if response.status_code >= 400:
@@ -105,8 +103,13 @@ class TwilioEmailService(BaseEmailProviderService):
         subject: str,
         message_body: str,
         template_id: str | None = None,
+        body_text: str | None = None,
     ) -> Mail:
-        """Composes a SendGrid Mail object, using a template if one exists."""
+        """Composes a SendGrid Mail object, using a template if one exists.
+
+        When body_text is provided, builds multipart/alternative with text/plain
+        before text/html (RFC 2046: last part is most preferred).
+        """
         if template_id:
             mail = Mail(from_email=from_email, subject=subject)
             mail.template_id = TemplateId(template_id)
@@ -114,6 +117,12 @@ class TwilioEmailService(BaseEmailProviderService):
             personalization.dynamic_template_data = {"fides_email_body": message_body}
             personalization.add_email(to_email)
             mail.add_personalization(personalization)
+        elif body_text:
+            mail = Mail(from_email=from_email, subject=subject)
+            mail.add_personalization(Personalization())
+            mail.personalizations[0].add_email(to_email)
+            mail.content = Content("text/plain", body_text)
+            mail.content = Content("text/html", message_body)
         else:
             content = Content("text/html", message_body)
             mail = Mail(from_email, to_email, subject, content)
