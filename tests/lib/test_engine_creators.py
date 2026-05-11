@@ -1,8 +1,8 @@
 """Tests for engine creator factories and credential helpers."""
 
 import ssl
+from unittest.mock import MagicMock, patch
 
-import psycopg2  # type: ignore[import-untyped]
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -101,12 +101,45 @@ class TestBuildSslContext:
         assert _build_ssl_context({}) is None
         assert _build_ssl_context({"sslmode": "require"}) is None
 
-    def test_returns_context_with_sslrootcert(self, tmp_path) -> None:
-        # Create a dummy cert file (doesn't need to be valid for construction)
+    def test_returns_context_with_valid_sslrootcert(self, tmp_path) -> None:
+        """Success path: a valid CA cert produces a usable SSLContext."""
+        # Generate a self-signed cert for testing
+        import datetime
+
+        from cryptography import x509
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.x509.oid import NameOID
+
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        subject = issuer = x509.Name(
+            [
+                x509.NameAttribute(NameOID.COMMON_NAME, "test-ca"),
+            ]
+        )
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(issuer)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+            .not_valid_after(
+                datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(days=1)
+            )
+            .sign(key, hashes.SHA256())
+        )
         cert_file = tmp_path / "ca.pem"
-        cert_file.write_text("dummy")
-        # _build_ssl_context will fail on an invalid cert, but we can test
-        # that it attempts to create the context
+        cert_file.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+
+        ctx = _build_ssl_context({"sslrootcert": str(cert_file)})
+        assert isinstance(ctx, ssl.SSLContext)
+        assert ctx.verify_mode == ssl.CERT_REQUIRED
+
+    def test_returns_none_with_invalid_cert(self, tmp_path) -> None:
+        cert_file = tmp_path / "bad.pem"
+        cert_file.write_text("not a cert")
         with pytest.raises(ssl.SSLError):
             _build_ssl_context({"sslrootcert": str(cert_file)})
 
@@ -169,3 +202,37 @@ class TestMakeAsyncCreator:
                 assert result.scalar() == 1
         finally:
             await engine.dispose()
+
+    @patch("fides.common.engine_creators.asyncpg")
+    @patch("fides.common.engine_creators.AsyncAdapt_asyncpg_connection")
+    def test_ssl_context_not_overwritten_by_async_params(
+        self, mock_adapt_conn, mock_asyncpg
+    ) -> None:
+        """When both sslrootcert and sslmode are configured, the SSLContext
+        must not be overwritten by the raw ssl string from async_params."""
+        mock_ssl_context = MagicMock(spec=ssl.SSLContext)
+
+        with (
+            patch(
+                "fides.common.engine_creators._build_ssl_context",
+                return_value=mock_ssl_context,
+            ),
+            patch(
+                "fides.common.engine_creators._convert_asyncpg_params",
+                return_value={"ssl": "require", "other": "value"},
+            ),
+            patch(
+                "fides.common.engine_creators.await_only",
+                side_effect=lambda coro: coro,
+            ),
+        ):
+            creator = make_async_creator()
+            creator()
+
+        # asyncpg.connect was called — check the ssl kwarg
+        connect_kwargs = mock_asyncpg.connect.call_args[1]
+        assert connect_kwargs["ssl"] is mock_ssl_context, (
+            f"Expected SSLContext but got {connect_kwargs['ssl']!r} — "
+            "async_params overwrote the ssl_context"
+        )
+        assert connect_kwargs["other"] == "value"

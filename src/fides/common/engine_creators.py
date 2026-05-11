@@ -126,6 +126,12 @@ def make_async_creator(
     ssl_context = _build_ssl_context(db_params)
     async_params = _convert_asyncpg_params(db_params)
 
+    # When we have a full SSLContext (from sslrootcert), it takes priority
+    # over the raw ssl string (from sslmode). Otherwise kw.update(async_params)
+    # would overwrite the SSLContext with e.g. "require", losing cert verification.
+    if ssl_context:
+        async_params.pop("ssl", None)
+
     def creator() -> Any:
         if readonly:
             creds = get_readonly_db_credentials() or get_db_credentials()
