@@ -224,7 +224,9 @@ describe("Consent configuration", () => {
         cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
         cy.wait("@getDictionaryDeclarations");
         cy.getByTestId("select-consent-use-0").contains("Marketing");
-        cy.getByTestId("select-data-use-0").contains("Profiling for Advertising");
+        cy.getByTestId("select-data-use-0").contains(
+          "Profiling for Advertising",
+        );
         ["av_*", "aniC", "2_C_*"].forEach((cookieName) => {
           cy.getByTestId("select-cookies-0").contains(cookieName);
         });
