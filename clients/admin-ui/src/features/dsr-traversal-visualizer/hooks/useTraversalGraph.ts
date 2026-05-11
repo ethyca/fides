@@ -9,6 +9,7 @@ import {
   LaneBounds,
   LaneCollapseMap,
   PreviewEdge,
+  Reachability,
   TraversalPreviewResponse,
 } from "../types";
 
@@ -91,7 +92,7 @@ export const useTraversalGraph = (
 
     // Stage-2+ subtitles: immediate upstream system name from dep edges.
     const reachIds = payload.integrations
-      .filter((i) => i.reachability !== "unreachable")
+      .filter((i) => i.reachability !== Reachability.UNREACHABLE)
       .map((i) => i.id);
     const stageMap = computeStages(reachIds, payload.edges);
     const upstreamByTarget = new Map<string, string>();

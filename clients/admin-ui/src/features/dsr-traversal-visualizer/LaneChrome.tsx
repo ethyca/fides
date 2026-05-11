@@ -2,21 +2,16 @@ import { useViewport } from "@xyflow/react";
 import { Tooltip } from "fidesui";
 import { CSSProperties } from "react";
 
-import {
-  CARD_PITCH,
-  LANE_PADDING_X,
-  LaneId,
-  STAGE_GAP_HORIZONTAL,
-} from "./constants";
+import { CARD_PITCH, LANE_PADDING_X, STAGE_GAP_HORIZONTAL } from "./constants";
 import styles from "./LaneChrome.module.scss";
-import { LaneBounds } from "./types";
+import { LaneBounds, LaneId } from "./types";
 
 interface Props {
   lanes: LaneBounds[];
   onToggleCollapse: (lane: LaneId) => void;
 }
 
-const LaneChrome = ({ lanes, onToggleCollapse }: Props) => {
+export const LaneChrome = ({ lanes, onToggleCollapse }: Props) => {
   // Apply React Flow's current pan + zoom so lane chrome moves in sync with
   // the nodes positioned in the same canvas coord space.
   const { x: vx, y: vy, zoom } = useViewport();
@@ -193,5 +188,3 @@ const LaneChrome = ({ lanes, onToggleCollapse }: Props) => {
     </>
   );
 };
-
-export default LaneChrome;

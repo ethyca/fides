@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { LANE_COLLAPSE_STORAGE_KEY, LaneId } from "../constants";
-import { LaneCollapseMap } from "../types";
+import { LANE_COLLAPSE_STORAGE_KEY } from "../constants";
+import { LaneCollapseMap, LaneId } from "../types";
 
 const DEFAULTS: LaneCollapseMap = {
-  identity: false,
-  reach: false,
-  gated: false,
-  skipped: true,
+  [LaneId.IDENTITY]: false,
+  [LaneId.REACH]: false,
+  [LaneId.GATED]: false,
+  [LaneId.SKIPPED]: true,
 };
 
 const readFromStorage = (): LaneCollapseMap => {

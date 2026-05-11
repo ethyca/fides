@@ -1,4 +1,5 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import classNames from "classnames";
 import { Avatar, Flex, Icons, Tag, Text } from "fidesui";
 
 import { ManualTaskNodeData } from "../types";
@@ -6,7 +7,7 @@ import styles from "./ManualTaskNode.module.scss";
 
 export type ManualTaskNodeType = Node<ManualTaskNodeData, "manualTask">;
 
-const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
+export const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
   const primaryField = data.fields[0];
   const primaryLabel = primaryField?.label ?? primaryField?.name;
   const primaryHelp = primaryField?.help_text;
@@ -41,7 +42,7 @@ const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
         {primaryHelp && (
           <Text
             type="secondary"
-            className={`${styles.miniText} ${styles.fieldHelp}`}
+            className={classNames(styles.miniText, styles.fieldHelp)}
             ellipsis={{ tooltip: primaryHelp }}
           >
             {primaryHelp}
@@ -50,7 +51,7 @@ const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
         {extraCount > 0 && (
           <Text
             type="secondary"
-            className={`${styles.miniText} ${styles.fieldExtra}`}
+            className={classNames(styles.miniText, styles.fieldExtra)}
           >
             +{extraCount} more field{extraCount === 1 ? "" : "s"}
           </Text>
@@ -72,5 +73,3 @@ const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
     </div>
   );
 };
-
-export default ManualTaskNode;

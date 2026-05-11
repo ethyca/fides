@@ -4,7 +4,7 @@ interface DependencyEdgeData extends Record<string, unknown> {
   dep_count?: number;
 }
 
-const DependencyEdge = (
+export const DependencyEdge = (
   props: EdgeProps<Edge<DependencyEdgeData, "dependency">>,
 ) => {
   const {
@@ -31,7 +31,7 @@ const DependencyEdge = (
       className="react-flow__edge-path"
       markerEnd={markerEnd}
       style={{
-        stroke: "var(--fidesui-color-info, #1d4ed8)",
+        stroke: "var(--fidesui-color-link)",
         strokeWidth: 2,
         opacity: animated ? 1 : 0,
         transition: "opacity 180ms ease",
@@ -39,5 +39,3 @@ const DependencyEdge = (
     />
   );
 };
-
-export default DependencyEdge;

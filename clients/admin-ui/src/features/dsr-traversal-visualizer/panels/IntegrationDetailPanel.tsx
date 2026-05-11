@@ -9,6 +9,7 @@ import {
   PreviewEdge,
   TraversalPreviewResponse,
 } from "../types";
+import styles from "./IntegrationDetailPanel.module.scss";
 
 interface Props {
   data: IntegrationNodeData | null;
@@ -18,7 +19,7 @@ interface Props {
   onClose: () => void;
 }
 
-const IntegrationDetailPanel = ({
+export const IntegrationDetailPanel = ({
   data,
   edges,
   integrations,
@@ -65,7 +66,7 @@ const IntegrationDetailPanel = ({
       width={420}
     >
       <Flex vertical gap="middle">
-        <Text type="secondary" style={{ fontSize: 12 }}>
+        <Text type="secondary" className="text-xs">
           {data.connector_type} · {data.collection_count.traversed} of{" "}
           {data.collection_count.total} collections
         </Text>
@@ -87,9 +88,9 @@ const IntegrationDetailPanel = ({
           <Flex vertical gap={4}>
             <Text strong>Triggered by</Text>
             {incoming.map(({ sourceLabel, count }) => (
-              <Text key={sourceLabel} style={{ fontSize: 13 }}>
+              <Text key={sourceLabel}>
                 {sourceLabel}
-                <Text type="secondary" style={{ fontSize: 12 }}>
+                <Text type="secondary" className="text-xs">
                   {" · "}
                   {count} field reference{count === 1 ? "" : "s"}
                 </Text>
@@ -104,48 +105,15 @@ const IntegrationDetailPanel = ({
               <div
                 key={t.id}
                 data-testid="gating-task"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "6px 8px",
-                  marginTop: 4,
-                  background: "#fffaf0",
-                  border: "1px solid #fde68a",
-                  borderRadius: 6,
-                  fontSize: 12,
-                }}
+                className={styles.gatingTask}
               >
-                <span
-                  style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: 4,
-                    background: "#fef3c7",
-                    color: "#92400e",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  !
-                </span>
-                <div>
-                  <div>
-                    <strong>{t.name}</strong>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "var(--fidesui-color-text-tertiary)",
-                    }}
-                  >
+                <span className={styles.gatingBadge}>!</span>
+                <Flex vertical>
+                  <Text strong>{t.name}</Text>
+                  <Text type="secondary" className="text-xs">
                     must complete before this runs
-                  </div>
-                </div>
+                  </Text>
+                </Flex>
               </div>
             ))}
           </Flex>
@@ -169,10 +137,7 @@ const IntegrationDetailPanel = ({
                       <Flex gap={4} wrap>
                         {c.fields.flatMap((f) =>
                           f.data_categories.map((dc) => (
-                            <Tag
-                              key={`${c.name}.${f.name}.${dc}`}
-                              style={{ fontSize: 10 }}
-                            >
+                            <Tag key={`${c.name}.${f.name}.${dc}`}>
                               {getDataCategoryDisplayName(dc)}
                             </Tag>
                           )),
@@ -189,5 +154,3 @@ const IntegrationDetailPanel = ({
     </Drawer>
   );
 };
-
-export default IntegrationDetailPanel;

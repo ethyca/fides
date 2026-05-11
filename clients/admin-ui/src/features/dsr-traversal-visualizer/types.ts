@@ -1,13 +1,27 @@
 import type { Node } from "@xyflow/react";
 
-import { LaneId } from "./constants";
+export enum LaneId {
+  IDENTITY = "identity",
+  REACH = "reach",
+  GATED = "gated",
+  SKIPPED = "skipped",
+}
 
-export type ActionType = "access" | "erasure";
-export type Reachability =
-  | "reachable"
-  | "unreachable"
-  | "requires_manual_identity";
-export type ActionStatus = "active" | "skipped";
+export enum ActionType {
+  ACCESS = "access",
+  ERASURE = "erasure",
+}
+
+export enum Reachability {
+  REACHABLE = "reachable",
+  UNREACHABLE = "unreachable",
+  REQUIRES_MANUAL_IDENTITY = "requires_manual_identity",
+}
+
+export enum ActionStatus {
+  ACTIVE = "active",
+  SKIPPED = "skipped",
+}
 
 export interface FieldDetail {
   name: string;

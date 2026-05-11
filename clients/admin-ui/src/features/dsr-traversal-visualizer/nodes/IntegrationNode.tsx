@@ -14,7 +14,7 @@ import styles from "./IntegrationNode.module.scss";
 
 export type IntegrationNodeType = Node<IntegrationNodeData, "integration">;
 
-const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
+export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
   const {
     connection_key: connectionKey,
     connector_type: connectorType,
@@ -111,5 +111,3 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
     </div>
   );
 };
-
-export default IntegrationNode;

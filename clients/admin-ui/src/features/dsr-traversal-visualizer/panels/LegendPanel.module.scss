@@ -2,29 +2,28 @@
   position: absolute;
   bottom: 16px;
   right: 16px;
-  background: #fff;
+  background: var(--fidesui-color-bg-container);
   border: 1px solid var(--fidesui-color-border);
-  border-radius: 8px;
+  border-radius: var(--ant-border-radius-lg);
   padding: 10px 12px;
   font-size: 11.5px;
   color: var(--fidesui-color-text-secondary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--ant-box-shadow-tertiary);
   z-index: 4;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .swatch {
   width: 30px;
   height: 8px;
   flex-shrink: 0;
+}
+
+.dataDependency {
+  color: var(--fidesui-color-link);
+}
+
+.manualReview {
+  color: var(--fidesui-color-warning);
 }
 
 .cardSwatch {
@@ -37,12 +36,12 @@
 }
 
 .cardInFlow {
-  background: #f6fbf7;
-  border-color: #bbf7d0;
+  background: var(--fidesui-color-success-bg);
+  border-color: var(--fidesui-color-success-border);
 }
 
 .cardSkipped {
-  background: #fafafa;
+  background: var(--fidesui-color-fill-quaternary);
   opacity: 0.6;
 }
 
@@ -53,9 +52,9 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
-  border: 2px solid #94a3b8;
-  color: #94a3b8;
+  background: var(--fidesui-color-bg-container);
+  border: 2px solid var(--fidesui-color-text-tertiary);
+  color: var(--fidesui-color-text-tertiary);
   font-size: 11px;
   font-weight: 800;
   flex-shrink: 0;

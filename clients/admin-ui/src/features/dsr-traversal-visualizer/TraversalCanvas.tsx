@@ -9,19 +9,19 @@ import {
 } from "@xyflow/react";
 import { useEffect } from "react";
 
-import DependencyEdge from "./edges/DependencyEdge";
-import GatesEdge from "./edges/GatesEdge";
+import { DependencyEdge } from "./edges/DependencyEdge";
+import { GatesEdge } from "./edges/GatesEdge";
 import { useLaneCollapseState } from "./hooks/useLaneCollapseState";
 import { useNodeSelection } from "./hooks/useNodeSelection";
 import { useTraversalGraph } from "./hooks/useTraversalGraph";
-import LaneChrome from "./LaneChrome";
-import IdentityRootNode from "./nodes/IdentityRootNode";
-import IntegrationNode from "./nodes/IntegrationNode";
-import ManualTaskNode from "./nodes/ManualTaskNode";
-import IntegrationDetailPanel from "./panels/IntegrationDetailPanel";
-import LegendPanel from "./panels/LegendPanel";
-import ManualTaskDetailPanel from "./panels/ManualTaskDetailPanel";
-import { TraversalPreviewResponse } from "./types";
+import { LaneChrome } from "./LaneChrome";
+import { IdentityRootNode } from "./nodes/IdentityRootNode";
+import { IntegrationNode } from "./nodes/IntegrationNode";
+import { ManualTaskNode } from "./nodes/ManualTaskNode";
+import { IntegrationDetailPanel } from "./panels/IntegrationDetailPanel";
+import { LegendPanel } from "./panels/LegendPanel";
+import { ManualTaskDetailPanel } from "./panels/ManualTaskDetailPanel";
+import { LaneId, Reachability, TraversalPreviewResponse } from "./types";
 
 const NODE_TYPES = {
   identityRoot: IdentityRootNode,
@@ -55,7 +55,7 @@ interface Props {
   payload: TraversalPreviewResponse | undefined;
 }
 
-const TraversalCanvas = ({ payload }: Props) => {
+export const TraversalCanvas = ({ payload }: Props) => {
   const { collapse, toggle, expand } = useLaneCollapseState();
   const { selected, onNodeClick, clear } = useNodeSelection();
   const { nodes, edges, lanes } = useTraversalGraph(
@@ -78,20 +78,19 @@ const TraversalCanvas = ({ payload }: Props) => {
         chainNodeIds.add(e.target);
       }
     });
-    const idToLane = new Map<
-      string,
-      "identity" | "reach" | "gated" | "skipped"
-    >();
+    const idToLane = new Map<string, LaneId>();
     if (payload?.identity_root.id) {
-      idToLane.set(payload.identity_root.id, "identity");
+      idToLane.set(payload.identity_root.id, LaneId.IDENTITY);
     }
     payload?.integrations.forEach((i) => {
       idToLane.set(
         i.id,
-        i.reachability === "unreachable" ? "skipped" : "reach",
+        i.reachability === Reachability.UNREACHABLE
+          ? LaneId.SKIPPED
+          : LaneId.REACH,
       );
     });
-    payload?.manual_tasks.forEach((m) => idToLane.set(m.id, "gated"));
+    payload?.manual_tasks.forEach((m) => idToLane.set(m.id, LaneId.GATED));
 
     const lanesToExpand = new Set<(typeof lanes)[number]["id"]>();
     chainNodeIds.forEach((id) => {
@@ -153,5 +152,3 @@ const TraversalCanvas = ({ payload }: Props) => {
     </div>
   );
 };
-
-export default TraversalCanvas;

@@ -8,7 +8,7 @@ interface Props {
   onChange: (propertyKey: string) => void;
 }
 
-const PropertyPicker = ({ value, onChange }: Props) => {
+export const PropertyPicker = ({ value, onChange }: Props) => {
   const { data, isLoading } = useGetAllPropertiesQuery({ size: 100 });
 
   const options = useMemo(
@@ -24,16 +24,13 @@ const PropertyPicker = ({ value, onChange }: Props) => {
     <Select
       data-testid="property-picker"
       aria-label="Select a property"
-      showSearch
+      showSearch={{ optionFilterProp: "label" }}
       placeholder="Select a property"
-      style={{ minWidth: 240 }}
+      className="min-w-60"
       value={value ?? undefined}
       loading={isLoading}
       options={options}
       onChange={onChange}
-      optionFilterProp="label"
     />
   );
 };
-
-export default PropertyPicker;

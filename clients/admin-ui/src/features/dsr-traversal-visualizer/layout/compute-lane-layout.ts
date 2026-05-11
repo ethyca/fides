@@ -14,7 +14,9 @@ import {
 import {
   LaneBounds,
   LaneCollapseMap,
+  LaneId,
   LaneLayoutResult,
+  Reachability,
   StageBlock,
   TraversalPreviewResponse,
 } from "../types";
@@ -28,23 +30,23 @@ import { computeStages } from "./compute-stages";
 const laneContentWidth = (cols: number): number =>
   LANE_PADDING_X * 2 + NODE_WIDTH + Math.max(0, cols - 1) * COL_WIDTH;
 
-const LANE_LABELS: Record<string, { label: string; tooltip: string }> = {
-  identity: {
+const LANE_LABELS: Record<LaneId, { label: string; tooltip: string }> = {
+  [LaneId.IDENTITY]: {
     label: "Identity input",
     tooltip:
       "The identity values this property's privacy-center forms accept. Every traversal starts here.",
   },
-  reach: {
+  [LaneId.REACH]: {
     label: "Will be queried",
     tooltip:
       "These systems contain data that will be searched for the data subject's records when this DSR runs.",
   },
-  gated: {
+  [LaneId.GATED]: {
     label: "Gated by manual review",
     tooltip:
       "These manual tasks must be completed before the systems they gate will run.",
   },
-  skipped: {
+  [LaneId.SKIPPED]: {
     label: "Not touched",
     tooltip:
       "These systems can't be reached with the identity types this property accepts, so the DSR won't query them.",
@@ -83,10 +85,10 @@ export const computeLaneLayout = (
 ): LaneLayoutResult => {
   const identityNodeId = payload.identity_root.id;
   const reachIntegrations = payload.integrations.filter(
-    (i) => i.reachability !== "unreachable",
+    (i) => i.reachability !== Reachability.UNREACHABLE,
   );
   const skippedIntegrations = payload.integrations.filter(
-    (i) => i.reachability === "unreachable",
+    (i) => i.reachability === Reachability.UNREACHABLE,
   );
 
   const reachIds = reachIntegrations.map((i) => i.id);
@@ -122,7 +124,7 @@ export const computeLaneLayout = (
     };
   }
   lanes.push({
-    id: "identity",
+    id: LaneId.IDENTITY,
     x: cursorX,
     y: LANE_Y_TOP,
     width: identityWidth,
@@ -197,7 +199,7 @@ export const computeLaneLayout = (
   }
 
   lanes.push({
-    id: "reach",
+    id: LaneId.REACH,
     x: cursorX,
     y: LANE_Y_TOP,
     width: reachWidth,
@@ -237,7 +239,7 @@ export const computeLaneLayout = (
     }
   }
   lanes.push({
-    id: "gated",
+    id: LaneId.GATED,
     x: cursorX,
     y: LANE_Y_TOP,
     width: gatedWidth,
@@ -275,7 +277,7 @@ export const computeLaneLayout = (
     }
   }
   lanes.push({
-    id: "skipped",
+    id: LaneId.SKIPPED,
     x: cursorX,
     y: LANE_Y_TOP,
     width: skippedWidth,

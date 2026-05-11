@@ -1,22 +1,25 @@
-import { Flex, Spin } from "fidesui";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { Flex, Spin, Text } from "fidesui";
 import { useRouter } from "next/router";
 import { ReactNode, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-import CanvasHeader from "./header/CanvasHeader";
+import { CANVAS_HEIGHT_CSS } from "./constants";
+import { CanvasHeader } from "./header/CanvasHeader";
 import {
   useGetTraversalPreviewQuery,
   useLazyGetTraversalPreviewQuery,
 } from "./traversal-preview.slice";
-import TraversalCanvas from "./TraversalCanvas";
+import { TraversalCanvas } from "./TraversalCanvas";
+import { ActionType, Reachability } from "./types";
 
 interface Props {
   propertyKey: string | null;
-  actionType: "access" | "erasure";
+  actionType: ActionType;
 }
 
-const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
+export const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
   const router = useRouter();
   const [showNotTouched, setShowNotTouched] = useState(true);
 
@@ -25,8 +28,9 @@ const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
   // identical calls inside IntegrationNode.
   useTaxonomies();
   const { data, isLoading } = useGetTraversalPreviewQuery(
-    { propertyId: propertyKey!, actionType, includeUnreachable: true },
-    { skip: !propertyKey },
+    propertyKey
+      ? { propertyId: propertyKey, actionType, includeUnreachable: true }
+      : skipToken,
   );
   const [triggerRefresh] = useLazyGetTraversalPreviewQuery();
 
@@ -35,11 +39,13 @@ const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
         ...data,
         integrations: showNotTouched
           ? data.integrations
-          : data.integrations.filter((i) => i.reachability !== "unreachable"),
+          : data.integrations.filter(
+              (i) => i.reachability !== Reachability.UNREACHABLE,
+            ),
       }
     : undefined;
 
-  const goTo = (key: string, action = actionType) => {
+  const goTo = (key: string, action: ActionType = actionType) => {
     router.replace(`/dsr-traversal/${key}/${action}`);
   };
 
@@ -49,11 +55,11 @@ const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
       <Flex
         align="center"
         justify="center"
-        style={{ height: "calc(100vh - 240px)" }}
+        style={{ height: CANVAS_HEIGHT_CSS }}
       >
-        <span style={{ color: "var(--fidesui-color-text-tertiary)" }}>
+        <Text type="secondary">
           Select a property to preview its DSR traversal.
-        </span>
+        </Text>
       </Flex>
     );
   } else if (isLoading) {
@@ -61,7 +67,7 @@ const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
       <Flex
         align="center"
         justify="center"
-        style={{ height: "calc(100vh - 240px)" }}
+        style={{ height: CANVAS_HEIGHT_CSS }}
       >
         <Spin />
       </Flex>
@@ -94,5 +100,3 @@ const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
     </>
   );
 };
-
-export default TraversalVisualizerPage;

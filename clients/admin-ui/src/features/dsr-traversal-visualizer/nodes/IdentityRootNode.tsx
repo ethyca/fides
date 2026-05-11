@@ -5,7 +5,7 @@ import styles from "./IdentityRootNode.module.scss";
 
 export type IdentityRootNodeType = Node<IdentityRootData, "identityRoot">;
 
-const IdentityRootNode = ({
+export const IdentityRootNode = ({
   data,
 }: NodeProps<Node<IdentityRootData, "identityRoot">>) => {
   const types = data.identity_types?.length
@@ -27,5 +27,3 @@ const IdentityRootNode = ({
     </div>
   );
 };
-
-export default IdentityRootNode;

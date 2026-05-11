@@ -1,15 +1,16 @@
-import { Button, Radio, Switch } from "fidesui";
+import { Button, Flex, Radio, Switch, Text } from "fidesui";
 
-import { TraversalPreviewResponse } from "../types";
-import PropertyPicker from "./PropertyPicker";
+import { ActionType, Reachability, TraversalPreviewResponse } from "../types";
+import styles from "./CanvasHeader.module.scss";
+import { PropertyPicker } from "./PropertyPicker";
 
 interface Props {
   propertyKey: string | null;
-  actionType: "access" | "erasure";
+  actionType: ActionType;
   showNotTouched: boolean;
   payload: TraversalPreviewResponse | undefined;
   onPropertyChange: (key: string) => void;
-  onActionChange: (action: "access" | "erasure") => void;
+  onActionChange: (action: ActionType) => void;
   onShowNotTouchedChange: (show: boolean) => void;
   onRegenerate: () => void;
 }
@@ -19,14 +20,14 @@ const summarize = (payload: TraversalPreviewResponse | undefined) => {
     return "";
   }
   const reach = payload.integrations.filter(
-    (i) => i.reachability !== "unreachable",
+    (i) => i.reachability !== Reachability.UNREACHABLE,
   ).length;
   const skipped = payload.integrations.length - reach;
   const manual = payload.manual_tasks.length;
   return `${reach} system${reach === 1 ? "" : "s"} will be queried, ${manual} manual review${manual === 1 ? "" : "s"}, ${skipped} not touched`;
 };
 
-const CanvasHeader = ({
+export const CanvasHeader = ({
   propertyKey,
   actionType,
   showNotTouched,
@@ -36,54 +37,46 @@ const CanvasHeader = ({
   onShowNotTouchedChange,
   onRegenerate,
 }: Props) => (
-  <div
+  <Flex
+    align="center"
+    gap="middle"
+    justify="space-between"
+    className={styles.root}
     data-testid="canvas-header"
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 16,
-      padding: "12px 16px",
-      borderBottom: "1px solid var(--fidesui-color-border)",
-      background: "var(--fidesui-color-bg-container)",
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-    }}
   >
-    <PropertyPicker value={propertyKey} onChange={onPropertyChange} />
-    <Radio.Group
-      value={actionType}
-      onChange={(e) => onActionChange(e.target.value)}
-      data-testid="action-type-toggle"
-      style={{ flexShrink: 0, whiteSpace: "nowrap" }}
-    >
-      <Radio.Button value="access">Access</Radio.Button>
-      <Radio.Button value="erasure">Erasure</Radio.Button>
-    </Radio.Group>
-    <Switch
-      checked={showNotTouched}
-      onChange={onShowNotTouchedChange}
-      data-testid="show-not-touched"
-    />
-    <span style={{ fontSize: 12, color: "var(--fidesui-color-text-tertiary)" }}>
-      Show not touched
-    </span>
-    <span style={{ flex: 1 }} />
-    {payload ? (
-      <span
-        style={{ fontSize: 12, color: "var(--fidesui-color-text-secondary)" }}
+    <Flex align="center" gap="middle">
+      <PropertyPicker value={propertyKey} onChange={onPropertyChange} />
+      <Radio.Group
+        value={actionType}
+        onChange={(e) => onActionChange(e.target.value)}
+        data-testid="action-type-toggle"
+        className={styles.actionToggle}
       >
-        {summarize(payload)}
-      </span>
-    ) : null}
-    <Button
-      onClick={onRegenerate}
-      data-testid="regenerate"
-      disabled={!propertyKey}
-    >
-      Regenerate
-    </Button>
-  </div>
+        <Radio.Button value={ActionType.ACCESS}>Access</Radio.Button>
+        <Radio.Button value={ActionType.ERASURE}>Erasure</Radio.Button>
+      </Radio.Group>
+      <Switch
+        checked={showNotTouched}
+        onChange={onShowNotTouchedChange}
+        data-testid="show-not-touched"
+      />
+      <Text type="secondary" className="text-xs">
+        Show not touched
+      </Text>
+    </Flex>
+    <Flex align="center" gap="middle">
+      {payload && (
+        <Text type="secondary" className="text-xs">
+          {summarize(payload)}
+        </Text>
+      )}
+      <Button
+        onClick={onRegenerate}
+        data-testid="regenerate"
+        disabled={!propertyKey}
+      >
+        Regenerate
+      </Button>
+    </Flex>
+  </Flex>
 );
-
-export default CanvasHeader;

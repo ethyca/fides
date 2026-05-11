@@ -1,3 +1,7 @@
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
+import { LaneId, Reachability } from "./types";
+
 export const NODE_WIDTH = 320;
 // Matches the rendered height of an integration card with our pinned chip
 // row. Dagre uses this to allocate vertical space in the LR layout -- if
@@ -16,17 +20,17 @@ export const EDGE_TYPES = {
   GATES: "gates",
 } as const;
 
-export const REACHABILITY_LABEL = {
-  reachable: "Reachable",
-  unreachable: "Unreachable",
-  requires_manual_identity: "Needs manual ID",
-} as const;
+export const REACHABILITY_LABEL: Record<Reachability, string> = {
+  [Reachability.REACHABLE]: "Reachable",
+  [Reachability.UNREACHABLE]: "Unreachable",
+  [Reachability.REQUIRES_MANUAL_IDENTITY]: "Needs manual ID",
+};
 
-export const REACHABILITY_COLOR = {
-  reachable: "success",
-  unreachable: "default",
-  requires_manual_identity: "warning",
-} as const;
+export const REACHABILITY_COLOR: Record<Reachability, CUSTOM_TAG_COLOR> = {
+  [Reachability.REACHABLE]: CUSTOM_TAG_COLOR.SUCCESS,
+  [Reachability.UNREACHABLE]: CUSTOM_TAG_COLOR.DEFAULT,
+  [Reachability.REQUIRES_MANUAL_IDENTITY]: CUSTOM_TAG_COLOR.WARNING,
+};
 
 // Lane layout — pixel coordinates and widths used by computeLaneLayout.
 export const LANE_X = {
@@ -92,11 +96,14 @@ export const LANE_GAP = 56;
 // Where useLaneCollapseState persists user preferences.
 export const LANE_COLLAPSE_STORAGE_KEY = "fides:dsr-traversal:lane-collapse:v1";
 
-export type LaneId = "identity" | "reach" | "gated" | "skipped";
-
 export const LANE_IDS: readonly LaneId[] = [
-  "identity",
-  "reach",
-  "gated",
-  "skipped",
-] as const;
+  LaneId.IDENTITY,
+  LaneId.REACH,
+  LaneId.GATED,
+  LaneId.SKIPPED,
+];
+
+// Reserved height for app chrome (top nav + breadcrumb + canvas header)
+// subtracted from viewport height when sizing the canvas area.
+export const CANVAS_VIEWPORT_OFFSET = 240;
+export const CANVAS_HEIGHT_CSS = `calc(100vh - ${CANVAS_VIEWPORT_OFFSET}px)`;

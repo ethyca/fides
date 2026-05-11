@@ -8,7 +8,11 @@ interface Props {
   onClose: () => void;
 }
 
-const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
+export const ManualTaskDetailPanel = ({
+  data,
+  integrations,
+  onClose,
+}: Props) => {
   if (!data) {
     return null;
   }
@@ -35,12 +39,9 @@ const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
           <Flex vertical>
             <Text strong>Conditions</Text>
             {data.conditions.map((c) => (
-              <Flex key={c.expression} vertical style={{ marginBottom: 8 }}>
+              <Flex key={c.expression} vertical className="mb-2">
                 <Text>{c.summary}</Text>
-                <Text
-                  type="secondary"
-                  style={{ fontSize: 11, fontFamily: "monospace" }}
-                >
+                <Text type="secondary" className="font-mono text-xs">
                   {c.expression}
                 </Text>
               </Flex>
@@ -48,21 +49,17 @@ const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
           </Flex>
         )}
         {data.fields.length > 0 && (
-          <Flex vertical gap={8}>
+          <Flex vertical gap="small">
             <Text strong>Required Fields</Text>
             {data.fields.map((f) => (
               <Flex key={f.name} vertical gap={2}>
                 <Flex gap={6} align="baseline">
                   <Text>{f.label ?? f.name}</Text>
-                  <Tag style={{ fontSize: 10, margin: 0 }}>{f.type}</Tag>
-                  {f.required && (
-                    <Tag color="error" style={{ fontSize: 10, margin: 0 }}>
-                      required
-                    </Tag>
-                  )}
+                  <Tag>{f.type}</Tag>
+                  {f.required && <Tag color="error">required</Tag>}
                 </Flex>
                 {f.help_text && (
-                  <Text type="secondary" style={{ fontSize: 12 }}>
+                  <Text type="secondary" className="text-xs">
                     {f.help_text}
                   </Text>
                 )}
@@ -78,9 +75,9 @@ const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
               const name =
                 integration?.system?.name ?? integration?.connection_key ?? id;
               return (
-                <div key={id} data-testid="gated-integration">
+                <Text key={id} data-testid="gated-integration">
                   {name}
-                </div>
+                </Text>
               );
             })}
           </Flex>
@@ -89,5 +86,3 @@ const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
     </Drawer>
   );
 };
-
-export default ManualTaskDetailPanel;
