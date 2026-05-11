@@ -50,7 +50,7 @@ class TestBasicFetch:
 
     def test_unknown_secret_raises(self, aws_env):
         provider = AWSSecretsManagerProvider(region_name=REGION)
-        with pytest.raises(SecretProviderError, match="no cached value available"):
+        with pytest.raises(SecretProviderError, match="permanently inaccessible"):
             provider.get_secret("nonexistent-secret")
 
     def test_invalid_json_raises_without_leaking_secret(self, aws_env):
@@ -245,6 +245,113 @@ class TestStaleWhileRevalidate:
         )
         with pytest.raises(SecretProviderError, match="no cached value available"):
             provider.get_secret(SECRET_NAME)
+
+
+class TestPermanentErrors:
+    """Permanent AWS errors (secret deleted, IAM revoked, etc.) should fail
+    immediately and clear the cache, not serve stale credentials."""
+
+    @pytest.mark.parametrize(
+        "error_code",
+        [
+            "ResourceNotFoundException",
+            "AccessDeniedException",
+            "DecryptionFailureException",
+            "InvalidRequestException",
+        ],
+    )
+    def test_permanent_error_raises_immediately(self, aws_env, error_code):
+        time_value = [100.0]
+
+        with patch(
+            "fides.config.secrets.aws_secrets_manager_provider.time"
+        ) as mock_time:
+            mock_time.monotonic = lambda: time_value[0]
+
+            provider = AWSSecretsManagerProvider(
+                region_name=REGION,
+                cache_ttl_seconds=10.0,
+                cache_stale_ttl_seconds=1800.0,
+            )
+            provider.get_secret(SECRET_NAME)
+
+            # Expire TTL, then simulate permanent error
+            time_value[0] = 120.0
+            provider._client.get_secret_value = MagicMock(
+                side_effect=ClientError(
+                    {"Error": {"Code": error_code, "Message": "revoked"}},
+                    "GetSecretValue",
+                )
+            )
+
+            with pytest.raises(SecretProviderError, match="permanently inaccessible"):
+                provider.get_secret(SECRET_NAME)
+
+    def test_permanent_error_clears_cache(self, aws_env):
+        time_value = [100.0]
+
+        with patch(
+            "fides.config.secrets.aws_secrets_manager_provider.time"
+        ) as mock_time:
+            mock_time.monotonic = lambda: time_value[0]
+
+            provider = AWSSecretsManagerProvider(
+                region_name=REGION,
+                cache_ttl_seconds=10.0,
+                cache_stale_ttl_seconds=1800.0,
+            )
+            provider.get_secret(SECRET_NAME)
+
+            # Expire TTL, simulate permanent error
+            time_value[0] = 120.0
+            provider._client.get_secret_value = MagicMock(
+                side_effect=ClientError(
+                    {"Error": {"Code": "AccessDeniedException", "Message": "revoked"}},
+                    "GetSecretValue",
+                )
+            )
+
+            with pytest.raises(SecretProviderError):
+                provider.get_secret(SECRET_NAME)
+
+            # Cache should be cleared — switch to a transient error to
+            # verify the cached value is gone (not just re-triggering
+            # the permanent error path)
+            provider._client.get_secret_value = MagicMock(
+                side_effect=ClientError(
+                    {"Error": {"Code": "InternalServiceError", "Message": "boom"}},
+                    "GetSecretValue",
+                )
+            )
+            with pytest.raises(SecretProviderError, match="no cached value available"):
+                provider.get_secret(SECRET_NAME)
+
+    def test_transient_error_still_serves_stale(self, aws_env):
+        """InternalServiceError is transient — should still serve stale."""
+        time_value = [100.0]
+
+        with patch(
+            "fides.config.secrets.aws_secrets_manager_provider.time"
+        ) as mock_time:
+            mock_time.monotonic = lambda: time_value[0]
+
+            provider = AWSSecretsManagerProvider(
+                region_name=REGION,
+                cache_ttl_seconds=10.0,
+                cache_stale_ttl_seconds=1800.0,
+            )
+            provider.get_secret(SECRET_NAME)
+
+            time_value[0] = 120.0
+            provider._client.get_secret_value = MagicMock(
+                side_effect=ClientError(
+                    {"Error": {"Code": "InternalServiceError", "Message": "boom"}},
+                    "GetSecretValue",
+                )
+            )
+
+            secret = provider.get_secret(SECRET_NAME)
+            assert secret["username"] == "testuser"
 
 
 class TestInvalidate:

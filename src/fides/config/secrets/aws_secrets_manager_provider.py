@@ -8,9 +8,20 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 import boto3
+from botocore.exceptions import ClientError
 from loguru import logger as log
 
 from fides.config.secrets.base import SecretProvider, SecretProviderError, SecretValue
+
+# Error codes indicating the secret is intentionally inaccessible.
+# Serving stale credentials would mask a deliberate revocation, so these
+# must fail immediately and clear the cache.
+_PERMANENT_ERROR_CODES = {
+    "ResourceNotFoundException",  # secret deleted
+    "AccessDeniedException",  # IAM permissions revoked
+    "DecryptionFailureException",  # KMS key disabled or deleted
+    "InvalidRequestException",  # secret scheduled for deletion
+}
 
 
 @dataclass
@@ -160,8 +171,22 @@ class AWSSecretsManagerProvider(SecretProvider):
     def _handle_fetch_failure(
         self, secret_id: str, entry: _CacheEntry, exc: Exception
     ) -> SecretValue:
-        """Serve stale value if within grace period, otherwise raise."""
+        """Serve stale value if within grace period, otherwise raise.
+
+        Permanent errors (secret deleted, IAM revoked, KMS key disabled)
+        clear the cache and raise immediately — serving stale credentials
+        would mask a deliberate revocation.
+        """
         entry.last_failed_at = time.monotonic()
+
+        # Permanent errors: clear cache so subsequent calls also fail
+        if isinstance(exc, ClientError):
+            error_code = exc.response.get("Error", {}).get("Code", "")
+            if error_code in _PERMANENT_ERROR_CODES:
+                entry.value = None
+                raise SecretProviderError(
+                    f"Secret {secret_id!r} is permanently inaccessible ({error_code})"
+                ) from exc
 
         cached_value = entry.value
         if cached_value is None:
