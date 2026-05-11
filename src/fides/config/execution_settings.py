@@ -36,7 +36,7 @@ class DsrCacheSweeperSettings(BaseModel):
         ),
     )
     batch_size: int = Field(
-        default=1000,
+        default=10000,
         ge=1000,
         description=(
             "Max privacy requests to process per database batch (keyset pagination). "
@@ -44,11 +44,12 @@ class DsrCacheSweeperSettings(BaseModel):
         ),
     )
     batch_sleep_seconds: float = Field(
-        default=0.05,
+        default=0.0,
         ge=0.0,
         description=(
             "Base delay between database batches (seconds); a random jitter from 0 up to "
-            "this value is added. Default 0.05 (50ms) to yield lightly between pages."
+            "this value is added. Default 0 (disabled). Increase to lightly yield between "
+            "pages if needed as a safety valve under load."
         ),
     )
     include_denied_and_duplicate: bool = Field(
@@ -93,7 +94,7 @@ class DsrCacheSweeperSettings(BaseModel):
     maintenance_set_key: str = Field(
         default="__maintenance:dsr_cache_sweeper:eligible_ids",
         description=(
-            "Redis key for the temporary eligible-ID set (SADD/SISMEMBER). Override for "
+            "Redis key for the temporary eligible-ID set (SADD/SMISMEMBER). Override for "
             "multi-tenant or test isolation."
         ),
     )

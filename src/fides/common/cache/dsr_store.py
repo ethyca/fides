@@ -103,7 +103,7 @@ def redis_key_is_dsr_cache_key_for_id(key: str, dsr_id_lower: str) -> bool:
 
 
 def candidate_privacy_request_ids_for_sweep(key: str) -> Set[str]:
-    """Candidate ids to check with SISMEMBER (normalized lowercase)."""
+    """Candidate ids to check with SMISMEMBER (normalized lowercase)."""
     out: set[str] = set()
     for m in _DSR_REDIS_KEY_SWEEP_UUID_RE.findall(key):
         u = _normalize_uuid_token(m)

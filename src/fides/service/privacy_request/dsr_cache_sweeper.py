@@ -46,7 +46,6 @@ class DsrCacheSweeperResult:
     """Summary of one sweeper run."""
 
     rows_scanned: int
-    rows_skipped_status_mismatch: int
     eligible_dsr_count: int
     redis_keys_scanned: int
     dsr_ids_seen_in_redis: int
@@ -175,17 +174,15 @@ def _run_dsr_cache_sweeper_legacy(
 
     logger.info(
         "DSR cache sweeper DB phase complete (legacy) pages={} rows_scanned={} "
-        "skipped_status_mismatch={} redis_clears={} db_phase_duration_s={:.3f}",
+        "redis_clears={} db_phase_duration_s={:.3f}",
         db_page_index,
         rows_scanned,
-        0,
         redis_keys_deleted,
         time.perf_counter() - db_phase_started,
     )
 
     return DsrCacheSweeperResult(
         rows_scanned=rows_scanned,
-        rows_skipped_status_mismatch=0,
         eligible_dsr_count=redis_keys_deleted,  # best-effort legacy: one clear per eligible row
         redis_keys_scanned=0,
         dsr_ids_seen_in_redis=redis_keys_deleted,
@@ -223,17 +220,15 @@ def run_dsr_cache_sweeper(
         duration = time.perf_counter() - started
         logger.info(
             "DSR cache sweeper (legacy) finished rows_scanned={} "
-            "redis_keys_deleted={} skipped_status_mismatch={} redis_errors={} "
+            "redis_keys_deleted={} redis_errors={} "
             "duration_s={:.3f}",
             res.rows_scanned,
             res.redis_keys_deleted,
-            0,
             res.redis_errors,
             duration,
         )
         return DsrCacheSweeperResult(
             rows_scanned=res.rows_scanned,
-            rows_skipped_status_mismatch=res.rows_skipped_status_mismatch,
             eligible_dsr_count=res.eligible_dsr_count,
             redis_keys_scanned=0,
             dsr_ids_seen_in_redis=res.dsr_ids_seen_in_redis,
@@ -336,12 +331,11 @@ def run_dsr_cache_sweeper(
     )
     logger.info(
         "DSR cache sweeper DB phase complete (single-pass staging) pages={} "
-        "eligible_dsr_count={} rows_scanned={} skipped_status_mismatch={} "
+        "eligible_dsr_count={} rows_scanned={} "
         "db_phase_duration_s={:.3f} redis_staging_stream_s={:.3f}",
         db_page_index,
         eligible_dsr_count,
         rows_scanned,
-        0,
         db_phase_duration_s,
         staging_duration_s,
     )
@@ -357,16 +351,14 @@ def run_dsr_cache_sweeper(
     if eligible_dsr_count == 0:
         logger.info(
             "DSR cache sweeper finished eligible_dsr_count=0 rows_scanned={} "
-            "skipped_status_mismatch={} redis_keys_scanned=0 redis_keys_deleted=0 "
+            "redis_keys_scanned=0 redis_keys_deleted=0 "
             "duration_s={:.3f} db_phase_duration_s={:.3f} maintenance_set_deleted=n/a",
             rows_scanned,
-            0,
             duration,
             db_phase_duration_s,
         )
         return DsrCacheSweeperResult(
             rows_scanned=rows_scanned,
-            rows_skipped_status_mismatch=0,
             eligible_dsr_count=0,
             redis_keys_scanned=0,
             dsr_ids_seen_in_redis=0,
@@ -409,18 +401,46 @@ def run_dsr_cache_sweeper(
         for key_batch in redis.iter_scan_batches(count=scan_count):
             chunk_started = time.perf_counter()
             keys_in_chunk = len(key_batch)
+
+            keyed: list[tuple[str, list[str]]] = []
             for raw_key in key_batch:
                 redis_keys_scanned += 1
                 key_str = decode_dsr_redis_key(raw_key)
                 candidates = candidate_privacy_request_ids_for_sweep(key_str)
+                if candidates:
+                    keyed.append((key_str, sorted(candidates)))
+
+            present_rows: list[Any] = []
+            if keyed:
+                try:
+                    pipe = redis.pipeline(transaction=False)
+                    for _key_str, cand_list in keyed:
+                        pipe.smismember(set_key, *cand_list)
+                    present_rows = pipe.execute()
+                    if len(present_rows) != len(keyed):
+                        raise ValueError(
+                            "SMISMEMBER pipeline length mismatch: "
+                            f"expected {len(keyed)}, got {len(present_rows)}"
+                        )
+                except Exception:  # noqa: BLE001
+                    present_rows = []
+                    for _key_str, cand_list in keyed:
+                        try:
+                            present_rows.append(redis.smismember(set_key, *cand_list))
+                        except Exception:  # noqa: BLE001
+                            redis_errors += 1
+                            present_rows.append(None)
+
+            for (key_str, cand_list), present in zip(keyed, present_rows):
+                if present is None:
+                    continue
+                if isinstance(present, Exception):
+                    redis_errors += 1
+                    continue
                 delete_this_key = False
                 matched_id: Optional[str] = None
-                for uid in candidates:
-                    try:
-                        if not redis.sismember(set_key, uid):
-                            continue
-                    except Exception:  # noqa: BLE001
-                        redis_errors += 1
+                for uid, is_member in zip(cand_list, present):
+                    if not is_member:
                         continue
                     if redis_key_is_dsr_cache_key_for_id(key_str, uid):
                         delete_this_key = True
@@ -473,14 +493,13 @@ def run_dsr_cache_sweeper(
 
     logger.info(
         "DSR cache sweeper finished eligible_dsr_count={} rows_scanned={} "
-        "skipped_status_mismatch={} redis_keys_scanned={} dsr_ids_seen_in_redis={} "
+        "redis_keys_scanned={} dsr_ids_seen_in_redis={} "
         "redis_keys_deleted={} redis_delete_errors={} redis_errors={} "
         "duration_s={:.3f} sweep_s={:.3f} db_phase_duration_s={:.3f} "
         "redis_staging_duration_s={:.3f} redis_scan_phase_duration_s={:.3f} "
         "maintenance_set_deleted={}",
         eligible_dsr_count,
         rows_scanned,
-        0,
         redis_keys_scanned,
         len(dsr_ids_touched),
         redis_keys_deleted,
@@ -496,7 +515,6 @@ def run_dsr_cache_sweeper(
 
     return DsrCacheSweeperResult(
         rows_scanned=rows_scanned,
-        rows_skipped_status_mismatch=0,
         eligible_dsr_count=eligible_dsr_count,
         redis_keys_scanned=redis_keys_scanned,
         dsr_ids_seen_in_redis=len(dsr_ids_touched),
