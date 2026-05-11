@@ -1,0 +1,8 @@
+---
+ticket: ENG-3302
+type: added
+message: >-
+  Added inert hook skeletons for reply mailbox polling and DSR
+  notifications. These Celery tasks are no-ops until Fidesplus
+  registers an implementation.
+pr: 8158
