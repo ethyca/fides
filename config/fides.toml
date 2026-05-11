@@ -213,6 +213,10 @@ task_engine_keepalives_count = 5 # integer
 # still valid before using them.
 task_engine_pool_pre_ping = true # boolean
 
+# Timeout in seconds for database healthcheck queries on the
+# /health/database endpoint.
+healthcheck_query_timeout = 1.0 # number
+
 # The database user with which to login to the application database.
 user = "defaultuser" # string
 
@@ -315,13 +319,6 @@ email_send_timezone = "US/Eastern" # string
 # terminate tasks that approach memory limits.
 memory_watchdog_enabled = false # boolean
 
-# When true, DSR-queue Celery publishes pass ignore_result=True (no
-# result-backend tombstones for run_privacy_request or
-# queue_request_task dispatches). Default false preserves current
-# result storage. Set via
-# FIDES__EXECUTION__IGNORE_DSR_CELERY_TASK_RESULTS.
-ignore_dsr_celery_task_results = false # boolean
-
 # When enabled, falls back to the legacy traversal algorithm. Intended
 # as a temporary safety net in case of regressions with the optimized
 # traversal.
@@ -333,7 +330,7 @@ use_legacy_traversal = false # boolean
 task_soft_time_limit_seconds = 0 # integer
 
 # Minutes between polling Jira for ticket status updates.
-jira_polling_interval_minutes = 10 # integer
+jira_polling_interval_minutes = 3 # integer
 
 #-------------#
 #-- LOGGING --#

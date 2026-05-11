@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.84.7a0"
+    "version": "2.85.0rc2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3029,6 +3029,17 @@
                         ],
                         "sensitive": true,
                         "title": "Api Key"
+                      },
+                      "completion_status": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Completion Status"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
@@ -6017,6 +6028,17 @@
                         ],
                         "sensitive": true,
                         "title": "Api Key"
+                      },
+                      "completion_status": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Completion Status"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
@@ -7610,6 +7632,17 @@
                         ],
                         "sensitive": true,
                         "title": "Api Key"
+                      },
+                      "completion_status": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Completion Status"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
@@ -10496,6 +10529,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DatasetReachability"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connection/{connection_key}/protected-fields": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Get Dataset Protected Fields",
+        "description": "Returns the fields that are protected on a SaaS connection:\nimmutable top-level metadata fields and collection fields\nreferenced by the SaaS config.\n\nProtected fields are a property of the connection's SaaS config,\nnot any individual dataset.",
+        "operationId": "get_dataset_protected_fields_api_v1_connection__connection_key__protected_fields_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetProtectedFields"
                 }
               }
             }
@@ -22009,6 +22092,14 @@
             },
             "type": "array",
             "title": "Failed"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetFieldWarning"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
           }
         },
         "type": "object",
@@ -24483,6 +24574,17 @@
                     ],
                     "title": "Api Key",
                     "sensitive": true
+                  },
+                  "completion_status": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Completion Status"
                   }
                 },
                 "additionalProperties": true,
@@ -25451,6 +25553,9 @@
           "value": {
             "anyOf": [
               {
+                "type": "boolean"
+              },
+              {
                 "type": "integer"
               },
               {
@@ -25460,6 +25565,9 @@
                 "items": {
                   "anyOf": [
                     {
+                      "type": "boolean"
+                    },
+                    {
                       "type": "integer"
                     },
                     {
@@ -25468,6 +25576,9 @@
                   ]
                 },
                 "type": "array"
+              },
+              {
+                "type": "null"
               }
             ],
             "title": "Value"
@@ -25475,8 +25586,7 @@
         },
         "type": "object",
         "required": [
-          "label",
-          "value"
+          "label"
         ],
         "title": "CustomPrivacyRequestField",
         "description": "Schema for custom privacy request fields."
@@ -26812,6 +26922,52 @@
         "title": "DatasetField",
         "description": "The DatasetField resource model.\n\nThis resource is nested within a DatasetCollection."
       },
+      "DatasetFieldWarning": {
+        "properties": {
+          "collection": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "restored",
+              "removed",
+              "failed"
+            ],
+            "title": "Action"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "message"
+        ],
+        "title": "DatasetFieldWarning",
+        "description": "A structured warning about a restored field on a SaaS dataset."
+      },
       "DatasetMetadata": {
         "properties": {
           "resource_id": {
@@ -26868,6 +27024,31 @@
         "type": "object",
         "title": "DatasetMetadata",
         "description": "The DatasetMetadata resource model.\n\nObject used to hold application specific metadata for a dataset"
+      },
+      "DatasetProtectedFields": {
+        "properties": {
+          "immutable_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Immutable Fields"
+          },
+          "protected_collection_fields": {
+            "items": {
+              "$ref": "#/components/schemas/ProtectedCollectionField"
+            },
+            "type": "array",
+            "title": "Protected Collection Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "immutable_fields",
+          "protected_collection_fields"
+        ],
+        "title": "DatasetProtectedFields",
+        "description": "Fields that cannot be modified on a SaaS dataset."
       },
       "DatasetReachability": {
         "properties": {
@@ -27317,40 +27498,6 @@
         ],
         "title": "DryRunDatasetResponse",
         "description": "Response model for dataset dry run"
-      },
-      "DsrCacheSweeperApplicationConfig": {
-        "properties": {
-          "enabled": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Enabled",
-            "description": "Enable periodic DSR cache sweeper for terminal privacy requests. Requires non-zero execution.dsr_cache_sweeper.interval_minutes in server config. Default unset/false in resolved settings."
-          },
-          "lock_timeout_seconds": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 604800.0,
-                "minimum": 60.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lock Timeout Seconds",
-            "description": "Redis lock TTL (seconds) for the DSR cache sweeper job. Unset uses execution.dsr_cache_sweeper.lock_timeout_seconds from server config (default 1800 = 30 minutes)."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "DsrCacheSweeperApplicationConfig",
-        "description": "API overrides for ``execution.dsr_cache_sweeper``."
       },
       "DuplicateDetectionApplicationConfig": {
         "properties": {
@@ -27834,16 +27981,6 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/SqlDryRunMode"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "dsr_cache_sweeper": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/DsrCacheSweeperApplicationConfig"
               },
               {
                 "type": "null"
@@ -28772,6 +28909,9 @@
           "value": {
             "anyOf": [
               {
+                "type": "boolean"
+              },
+              {
                 "type": "integer"
               },
               {
@@ -28780,6 +28920,9 @@
               {
                 "items": {
                   "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
                     {
                       "type": "integer"
                     },
@@ -28802,7 +28945,7 @@
           "label"
         ],
         "title": "IdentityValue",
-        "description": "Represents an identity value with a label in API responses.\n\nThe value field accepts MultiValue types which match what LabeledIdentity supports:\n- int\n- str\n- List[Union[int, str]]\n\nThis allows the schema to accept list values that were previously causing\nvalidation errors."
+        "description": "Represents an identity value with a label in API responses.\n\nThe value field accepts MultiValue types which match what LabeledIdentity supports:\n- bool\n- int\n- str\n- List[Union[bool, int, str]]\n\nThis allows the schema to accept list values that were previously causing\nvalidation errors."
       },
       "IdentityVerificationConfigResponse": {
         "properties": {
@@ -28981,6 +29124,17 @@
             ],
             "title": "Api Key",
             "sensitive": true
+          },
+          "completion_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Status"
           }
         },
         "additionalProperties": true,
@@ -34051,6 +34205,25 @@
         "title": "PrivacyRule",
         "description": "The PrivacyRule resource model.\n\nA list of privacy data types and what match method to use."
       },
+      "ProtectedCollectionField": {
+        "properties": {
+          "collection": {
+            "type": "string",
+            "title": "Collection"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "collection",
+          "field"
+        ],
+        "title": "ProtectedCollectionField",
+        "description": "A single field that is protected by the SaaS config."
+      },
       "QueryParam": {
         "properties": {
           "name": {
@@ -36145,6 +36318,17 @@
                     ],
                     "title": "Api Key",
                     "sensitive": true
+                  },
+                  "completion_status": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Completion Status"
                   }
                 },
                 "additionalProperties": true,
@@ -39659,6 +39843,14 @@
                 "type": "null"
               }
             ]
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetFieldWarning"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
           }
         },
         "type": "object",
