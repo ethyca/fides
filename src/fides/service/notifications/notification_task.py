@@ -1,10 +1,18 @@
-"""Celery task and scheduler wiring for DSR lifecycle notifications.
+"""Celery tasks for DSR lifecycle notifications.
 
-The ``send_notifications`` task acquires a Redis lock, then delegates to
-a registered notification service callable.  Until Fidesplus registers an
-implementation, the task is a no-op.
+Two delivery paths (Option C — hybrid):
 
-The ``initiate_notification_task`` function adds the task to the
+1. **Event-driven (primary):** The ``notify`` task is called directly by
+   DSR lifecycle code when a state change occurs (e.g., request completed).
+   It delivers the notification immediately via the registered handler.
+
+2. **Sweep (secondary):** The ``sweep_notifications`` task runs on a
+   scheduled interval via APScheduler.  It catches any notifications that
+   were missed or failed on the primary path.
+
+Both paths are no-ops until Fidesplus registers implementations.
+
+The ``initiate_notification_task`` function adds the sweep job to the
 APScheduler on application startup.
 """
 
@@ -22,38 +30,76 @@ NOTIFICATION_JOB = "dsr_notifications"
 NOTIFICATION_LOCK = "dsr_notifications_lock"
 NOTIFICATION_LOCK_TIMEOUT = 600
 
-_service_fn: Callable[[Session], None] | None = None
+_sweep_fn: Callable[[Session], None] | None = None
+_notify_fn: Callable[[Session, str, str], None] | None = None
 
 
-def register_notification_service(fn: Callable[[Session], None]) -> None:
-    """Register the actual notification implementation (called by Fidesplus)."""
-    global _service_fn  # noqa: PLW0603
-    _service_fn = fn
-    logger.info("DSR notification service registered")
+def register_notification_sweep(fn: Callable[[Session], None]) -> None:
+    """Register the sweep implementation (called by Fidesplus).
+
+    The sweep function receives a DB session and should query for any
+    pending unsent notifications and process them.
+    """
+    global _sweep_fn  # noqa: PLW0603
+    _sweep_fn = fn
+    logger.info("DSR notification sweep service registered")
+
+
+def register_notification_handler(fn: Callable[[Session, str, str], None]) -> None:
+    """Register the event-driven notification handler (called by Fidesplus).
+
+    The handler receives a DB session, a privacy_request_id, and an
+    event_type string (e.g. "request_completed", "request_approved").
+    """
+    global _notify_fn  # noqa: PLW0603
+    _notify_fn = fn
+    logger.info("DSR notification handler registered")
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def send_notifications(self: DatabaseTask) -> None:
-    """Process and send pending DSR lifecycle notifications.
+def notify(self: DatabaseTask, privacy_request_id: str, event_type: str) -> None:
+    """Send a notification for a specific DSR lifecycle event.
 
-    Acquires a Redis lock to prevent concurrent execution.  Delegates to
-    the registered notification service; if none is registered the task is a
-    no-op.
+    Called directly by DSR lifecycle code (e.g. after a request is
+    completed).  Delegates to the registered handler; if none is
+    registered the task is a no-op.
+    """
+    if _notify_fn is None:
+        logger.debug(
+            "DSR notification handler not registered, skipping notify "
+            "for request={} event={}",
+            privacy_request_id,
+            event_type,
+        )
+        return
+
+    with self.get_new_session() as db:
+        _notify_fn(db, privacy_request_id, event_type)
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def sweep_notifications(self: DatabaseTask) -> None:
+    """Sweep for pending unsent notifications and process them.
+
+    Runs on a scheduled interval as a catch-all for notifications that
+    failed or were missed on the event-driven path.  Acquires a Redis
+    lock to prevent concurrent execution.  Delegates to the registered
+    sweep function; if none is registered the task is a no-op.
     """
     with redis_lock(NOTIFICATION_LOCK, NOTIFICATION_LOCK_TIMEOUT) as lock:
         if not lock:
             return
 
-        if _service_fn is None:
-            logger.debug("DSR notifications: no service registered, skipping")
+        if _sweep_fn is None:
+            logger.debug("DSR notification sweep: no service registered, skipping")
             return
 
         with self.get_new_session() as db:
-            _service_fn(db)
+            _sweep_fn(db)
 
 
 def initiate_notification_task() -> None:
-    """Add the DSR notification job to the APScheduler.
+    """Add the DSR notification sweep job to the APScheduler.
 
     Called during application startup from ``main.py``.  Skipped in
     test mode.
@@ -62,11 +108,13 @@ def initiate_notification_task() -> None:
         return
 
     if not scheduler.running:
-        raise RuntimeError("Scheduler is not running! Cannot add DSR notification job.")
+        raise RuntimeError(
+            "Scheduler is not running! Cannot add DSR notification sweep job."
+        )
 
-    logger.info("Initiating scheduler for DSR notifications")
+    logger.info("Initiating scheduler for DSR notification sweep")
     scheduler.add_job(
-        func=send_notifications.delay,
+        func=sweep_notifications.delay,
         trigger="interval",
         id=NOTIFICATION_JOB,
         coalesce=True,
