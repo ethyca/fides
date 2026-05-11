@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from email import policy as email_policy
+from email.message import EmailMessage
 from typing import ClassVar
 
 from loguru import logger
@@ -80,6 +82,45 @@ class BaseEmailProviderService(BaseMessageProviderService):
 
     @abstractmethod
     def send_email(self, to: str, message: EmailForActionType) -> None: ...
+
+    @staticmethod
+    def get_threading_headers(
+        message: EmailForActionType, header_prefix: str = ""
+    ) -> dict[str, str]:
+        """Return non-None threading headers from the message."""
+        candidates = {
+            "Reply-To": message.reply_to,
+            "Message-ID": message.message_id,
+            "In-Reply-To": message.in_reply_to,
+            "References": message.references,
+        }
+        return {f"{header_prefix}{k}": v for k, v in candidates.items() if v}
+
+    @staticmethod
+    def build_mime(
+        from_address: str, to: str, message: EmailForActionType
+    ) -> EmailMessage:
+        """Build a MIME EmailMessage with optional threading headers.
+
+        Reusable by any provider that sends raw MIME (e.g., SES, SMTP).
+        """
+        msg = EmailMessage(policy=email_policy.SMTP)
+        msg["From"] = from_address
+        msg["To"] = to
+        msg["Subject"] = message.subject
+
+        for header, value in BaseEmailProviderService.get_threading_headers(
+            message
+        ).items():
+            msg[header] = value
+
+        if message.body_text:
+            msg.set_content(message.body_text)
+            msg.add_alternative(message.body, subtype="html")
+        else:
+            msg.set_content(message.body, subtype="html")
+
+        return msg
 
 
 class BaseSMSProviderService(BaseMessageProviderService):

@@ -39,16 +39,11 @@ class MailchimpTransactionalService(BaseEmailProviderService):
         if message.reply_to:
             msg_payload["reply_to"] = message.reply_to
 
-        # Threading headers go in the headers dict (no native Mandrill equivalents)
-        headers = {}
-        if message.message_id:
-            headers["Message-ID"] = message.message_id
-        if message.in_reply_to:
-            headers["In-Reply-To"] = message.in_reply_to
-        if message.references:
-            headers["References"] = message.references
-        if headers:
-            msg_payload["headers"] = headers
+        # Threading headers (exclude Reply-To — handled natively above)
+        threading_headers = self.get_threading_headers(message)
+        threading_headers.pop("Reply-To", None)
+        if threading_headers:
+            msg_payload["headers"] = threading_headers
         if message.body_text:
             msg_payload["text"] = message.body_text
 

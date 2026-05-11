@@ -58,14 +58,7 @@ class MailgunService(BaseEmailProviderService):
                 data["html"] = message.body
 
             # Threading / envelope headers
-            if message.reply_to:
-                data["h:Reply-To"] = message.reply_to
-            if message.message_id:
-                data["h:Message-ID"] = message.message_id
-            if message.in_reply_to:
-                data["h:In-Reply-To"] = message.in_reply_to
-            if message.references:
-                data["h:References"] = message.references
+            data.update(self.get_threading_headers(message, header_prefix="h:"))
             if message.body_text:
                 data["text"] = message.body_text
 
