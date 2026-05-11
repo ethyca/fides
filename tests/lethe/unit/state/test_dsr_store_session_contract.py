@@ -1,10 +1,16 @@
-"""Session-boundary checks for ``DSRStore`` (callers own ``commit``/``rollback``)."""
+"""Session-boundary checks for ``DSRStore`` (callers own ``commit``/``rollback``).
+
+Location: ``tests/lethe/unit/state/``. Marker: ``@pytest.mark.unit``.
+"""
 
 from unittest.mock import MagicMock, create_autospec
 
+import pytest
 from sqlalchemy.orm import Session
 
 from lethe.state import DSRStore
+
+pytestmark = pytest.mark.unit
 
 
 def test_write_encryption_flushes_without_commit() -> None:

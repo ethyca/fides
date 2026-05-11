@@ -296,7 +296,7 @@ def pytest_ops(
             run_tests=True,
             analytics_opt_out=True,
             datastores=[],
-            pytest_path=f"{OPS_TEST_DIR} tests/integration/",
+            pytest_path=f"{OPS_TEST_DIR} tests/integration/ tests/lethe/integration/",
             split_args=split_args,
         )
     elif mark == "external_datastores":
@@ -498,6 +498,7 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "pytest",
         *pytest_config.args,
         "tests/common/",
+        "tests/lethe/unit/",
         "tests/service/",
         "tests/system_integration_link/",
         "tests/task/",

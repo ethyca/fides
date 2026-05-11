@@ -1,6 +1,13 @@
-"""Unit tests for legacy DSR Redis key discovery helpers."""
+"""Unit tests for legacy DSR Redis key discovery helpers.
+
+Location: ``tests/lethe/unit/migration/``. Marker: ``@pytest.mark.unit``.
+"""
+
+import pytest
 
 from lethe.migration.redis_reader import extract_privacy_request_id_from_key
+
+pytestmark = pytest.mark.unit
 
 
 def test_extract_privacy_request_id_from_dsr_prefix() -> None:
