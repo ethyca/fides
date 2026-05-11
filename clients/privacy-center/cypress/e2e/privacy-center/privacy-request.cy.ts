@@ -582,4 +582,20 @@ describe("Privacy Request with date of birth identity field", () => {
       });
     });
   });
+
+  it("shows a validation error when date of birth is before the min constraint", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request_min.json").then(() => {
+      cy.getByTestId("privacy-request-form").within(() => {
+        cy.get("#email").type("test@example.com");
+        cy.get("[data-testid='date-date_of_birth'] input").type("1800-01-01");
+        cy.get("[data-testid='date-date_of_birth'] input").blur();
+        cy.get("button[type='submit']").click();
+        cy.contains("Date of Birth must be on or after 1900-01-01").should(
+          "be.visible",
+        );
+      });
+    });
+  });
 });
