@@ -12,12 +12,15 @@ from datetime import datetime, timezone
 
 import pytest
 
+from fides.service.pbac.consumers.entities import DataConsumerEntity
+from fides.service.pbac.consumers.repository import DataConsumerRedisRepository
 from fides.service.pbac.policies.interface import (
     AccessEvaluationRequest,
     AccessPolicyEvaluator,
     PolicyDecision,
     PolicyEvaluationResult,
 )
+from fides.service.pbac.purposes.repository import DataPurposeRedisRepository
 from fides.service.pbac.service import InProcessPBACEvaluationService
 from fides.service.pbac.types import (
     DatasetPurposes,
@@ -54,6 +57,29 @@ def _make_entry(
 
 
 @pytest.fixture
+def registered_consumer(cache):
+    """A consumer with analytics purpose — won't overlap marketing datasets."""
+    purpose_repo = DataPurposeRedisRepository(cache)
+    consumer_repo = DataConsumerRedisRepository(cache, purpose_repo)
+    now = datetime.now(timezone.utc)
+    entity = DataConsumerEntity(
+        id="consumer-cat-test",
+        name="Analytics Pipeline",
+        type="group",
+        contact_email="test@example.com",
+        purpose_fides_keys=["analytics"],
+        created_at=now,
+        updated_at=now,
+    )
+    consumer_repo.save(entity)
+    yield entity
+    try:
+        consumer_repo.delete(entity.id)
+    except Exception:
+        pass
+
+
+@pytest.fixture
 def field_categories():
     return {
         "users": {
@@ -78,7 +104,7 @@ def dataset_purposes():
 @pytest.mark.integration
 class TestDataCategoryResolution:
     def test_specific_columns_resolve_to_categories(
-        self, cache, field_categories, dataset_purposes
+        self, cache, registered_consumer, field_categories, dataset_purposes
     ):
         evaluator = CapturingPolicyEvaluator()
         service = InProcessPBACEvaluationService(
@@ -101,7 +127,7 @@ class TestDataCategoryResolution:
         }
 
     def test_select_star_resolves_all_field_categories(
-        self, cache, field_categories, dataset_purposes
+        self, cache, registered_consumer, field_categories, dataset_purposes
     ):
         evaluator = CapturingPolicyEvaluator()
         service = InProcessPBACEvaluationService(
@@ -126,7 +152,7 @@ class TestDataCategoryResolution:
         }
 
     def test_empty_data_categories_when_no_field_categories_configured(
-        self, cache, dataset_purposes
+        self, cache, registered_consumer, dataset_purposes
     ):
         evaluator = CapturingPolicyEvaluator()
         service = InProcessPBACEvaluationService(
@@ -145,7 +171,7 @@ class TestDataCategoryResolution:
         assert evaluator.requests[0].data_categories == ()
 
     def test_unknown_columns_produce_empty_categories(
-        self, cache, field_categories, dataset_purposes
+        self, cache, registered_consumer, field_categories, dataset_purposes
     ):
         evaluator = CapturingPolicyEvaluator()
         service = InProcessPBACEvaluationService(

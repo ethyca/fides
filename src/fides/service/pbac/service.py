@@ -87,10 +87,12 @@ class InProcessPBACEvaluationService:
         # 1. Resolve consumer
         consumer = self._identity_resolver.resolve(identity=entry.identity)
 
-        # 2. Resolve datasets + collect per-dataset collection names
+        # 2. Resolve datasets + collect per-dataset collection names and columns
         dataset_keys: list[str] = []
         collections: dict[str, list[str]] = {}
         unresolved_gaps: list[EvaluationGap] = []
+        columns_by_table = extract_columns(entry.query_text)
+        columns_by_dataset: dict[str, dict[str, list[str]]] = {}
         for table_ref in entry.referenced_tables:
             fides_key = self._dataset_resolver.resolve(table_ref)
             if fides_key:
@@ -98,7 +100,11 @@ class InProcessPBACEvaluationService:
                     dataset_keys.append(fides_key)
                     collections[fides_key] = []
                 if table_ref.table:
-                    collections[fides_key].append(table_ref.table.lower())
+                    coll = table_ref.table.lower()
+                    collections[fides_key].append(coll)
+                    if fides_key not in columns_by_dataset:
+                        columns_by_dataset[fides_key] = {}
+                    columns_by_dataset[fides_key][coll] = columns_by_table.get(coll, [])
             else:
                 unresolved_gaps.append(
                     EvaluationGap(
@@ -143,24 +149,12 @@ class InProcessPBACEvaluationService:
         # 6. Resolve data_use on violations
         enriched = self._resolve_data_uses(result.violations)
 
-        # 7. Extract columns from query text for data category resolution
-        columns_by_table = extract_columns(entry.query_text)
-        columns_by_dataset: dict[str, dict[str, list[str]]] = {}
-        for table_ref in entry.referenced_tables:
-            fides_key = self._dataset_resolver.resolve(table_ref)
-            if fides_key and table_ref.table:
-                coll = table_ref.table.lower()
-                table_columns = columns_by_table.get(coll, [])
-                if fides_key not in columns_by_dataset:
-                    columns_by_dataset[fides_key] = {}
-                columns_by_dataset[fides_key][coll] = table_columns
-
-        # 8. Filter through Policy v2
+        # 7. Filter through Policy v2
         filtered = self._filter_violations_through_policies(
             enriched, consumer, columns_by_dataset
         )
 
-        # 9. Build flat EvaluationRecord
+        # 8. Build flat EvaluationRecord
         return EvaluationRecord(
             query_id=entry.external_job_id,
             identity=entry.identity,
@@ -324,7 +318,6 @@ class InProcessPBACEvaluationService:
         if not coll_fields:
             return ()
 
-        columns: list[str] = []
         ds_cols = columns_by_dataset.get(dataset_key, {})
         columns = ds_cols.get(collection, [])
 
