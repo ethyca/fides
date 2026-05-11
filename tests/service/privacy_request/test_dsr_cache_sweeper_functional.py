@@ -32,7 +32,7 @@ def _patch_dsr_cache_sweeper_execution(
     nested_updates: dict[str, Any] = {
         "batch_sleep_seconds": 0.0,
         "staleness_minutes": 30,
-        "batch_size": 50,
+        "batch_size": 1000,
     }
     nested_updates.update(overrides)
     tc = CONFIG.execution.dsr_cache_sweeper.model_copy(update=nested_updates)

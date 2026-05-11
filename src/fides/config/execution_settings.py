@@ -36,12 +36,21 @@ class DsrCacheSweeperSettings(BaseModel):
         ),
     )
     batch_size: int = Field(
-        default=50,
-        description="Max privacy requests to process per database batch (keyset pagination).",
+        default=10000,
+        ge=10,
+        description=(
+            "Max privacy requests to process per database batch (keyset pagination). "
+            "Minimum 10; increase for fewer round-trips on large backlogs."
+        ),
     )
     batch_sleep_seconds: float = Field(
-        default=0.5,
-        description="Base delay between batches; a random jitter up to this value is added.",
+        default=0.0,
+        ge=0.0,
+        description=(
+            "Base delay between database batches (seconds); a random jitter from 0 up to "
+            "this value is added. Default 0 (disabled). Increase to lightly yield between "
+            "pages if needed as a safety valve under load."
+        ),
     )
     include_denied_and_duplicate: bool = Field(
         default=True,
@@ -85,7 +94,7 @@ class DsrCacheSweeperSettings(BaseModel):
     maintenance_set_key: str = Field(
         default="__maintenance:dsr_cache_sweeper:eligible_ids",
         description=(
-            "Redis key for the temporary eligible-ID set (SADD/SISMEMBER). Override for "
+            "Redis key for the temporary eligible-ID set (SADD/SMISMEMBER). Override for "
             "multi-tenant or test isolation."
         ),
     )
@@ -100,6 +109,17 @@ class DsrCacheSweeperSettings(BaseModel):
         ge=1,
         le=10000,
         description="Max keys per pipeline UNLINK/DEL batch in single-pass mode.",
+    )
+    membership_lookup_batch_size: int = Field(
+        default=2048,
+        ge=50,
+        le=20000,
+        description=(
+            "How many staging-set membership checks (SMISMEMBER commands) to send in each "
+            "Redis pipeline round trip while scanning keys in single-pass mode. Default "
+            "2048 balances fewer round trips against predictable latency. Override only if "
+            "you measure a need."
+        ),
     )
 
 

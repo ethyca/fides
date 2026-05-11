@@ -1,9 +1,9 @@
 """Periodic DSR cache sweeper: clears Redis cache keys for terminal privacy requests.
 
 Eligible rows are selected from Postgres by terminal status and staleness on
-``updated_at``, including soft-deleted requests (``deleted_at`` set). For each
-eligible id we re-read ``status`` while building the work set (same race semantics
-as the legacy per-row path).
+``updated_at``, including soft-deleted requests (``deleted_at`` set). Rows
+returned by the paginated query are treated as eligible without a second
+per-row status read.
 
 **Single-pass mode (default):** eligible string IDs are staged in a Redis set
 with a TTL, the keyspace is scanned once in bounded chunks, and keys matching
@@ -46,7 +46,6 @@ class DsrCacheSweeperResult:
     """Summary of one sweeper run."""
 
     rows_scanned: int
-    rows_skipped_status_mismatch: int
     eligible_dsr_count: int
     redis_keys_scanned: int
     dsr_ids_seen_in_redis: int
@@ -107,12 +106,15 @@ def _run_dsr_cache_sweeper_legacy(
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=staleness_minutes)
 
     rows_scanned = 0
-    rows_skipped_status_mismatch = 0
     redis_errors = 0
     redis_keys_deleted = 0
     last_id = ""
+    db_phase_started = time.perf_counter()
+    db_page_index = 0
 
     while True:
+        page_started = time.perf_counter()
+        cleared_before_page = redis_keys_deleted
         batch_rows = (
             db.query(PrivacyRequest.id, PrivacyRequest.status)
             .filter(
@@ -127,24 +129,8 @@ def _run_dsr_cache_sweeper_legacy(
         if not batch_rows:
             break
 
-        for pr_id, initial_status in batch_rows:
+        for pr_id, status in batch_rows:
             rows_scanned += 1
-
-            current = (
-                db.query(PrivacyRequest.status)
-                .filter(PrivacyRequest.id == pr_id)
-                .scalar()
-            )
-            if current is None or current not in terminal_statuses:
-                rows_skipped_status_mismatch += 1
-                logger.debug(
-                    "Skipping DSR cache sweeper for privacy_request_id={}: "
-                    "status no longer eligible (batch had {}, current={})",
-                    pr_id,
-                    initial_status.value,
-                    getattr(current, "value", current),
-                )
-                continue
 
             store = get_dsr_cache_store(str(pr_id))
             try:
@@ -154,7 +140,7 @@ def _run_dsr_cache_sweeper_legacy(
                     "Cleared Redis DSR cache privacy_request_id={} status={} "
                     "staleness_minutes={}",
                     pr_id,
-                    current.value,
+                    status.value,
                     staleness_minutes,
                 )
             except Exception as exc:  # noqa: BLE001
@@ -162,19 +148,41 @@ def _run_dsr_cache_sweeper_legacy(
                 logger.warning(
                     "Redis clear failed for privacy_request_id={} status={}: {}",
                     pr_id,
-                    current.value,
+                    status.value,
                     exc,
                 )
 
         last_id = batch_rows[-1][0]
+        page_duration_s = time.perf_counter() - page_started
+        clears_in_page = redis_keys_deleted - cleared_before_page
+        logger.info(
+            "DSR cache sweeper DB page (legacy) page_index={} rows_in_page={} "
+            "redis_clear_attempts_in_page={} page_duration_s={:.3f} "
+            "cumulative_rows_scanned={} cumulative_redis_clears={}",
+            db_page_index,
+            len(batch_rows),
+            clears_in_page,
+            page_duration_s,
+            rows_scanned,
+            redis_keys_deleted,
+        )
+        db_page_index += 1
 
         if batch_sleep > 0:
             jitter = random.uniform(0.0, batch_sleep)
             time.sleep(batch_sleep + jitter)
 
+    logger.info(
+        "DSR cache sweeper DB phase complete (legacy) pages={} rows_scanned={} "
+        "redis_clears={} db_phase_duration_s={:.3f}",
+        db_page_index,
+        rows_scanned,
+        redis_keys_deleted,
+        time.perf_counter() - db_phase_started,
+    )
+
     return DsrCacheSweeperResult(
         rows_scanned=rows_scanned,
-        rows_skipped_status_mismatch=rows_skipped_status_mismatch,
         eligible_dsr_count=redis_keys_deleted,  # best-effort legacy: one clear per eligible row
         redis_keys_scanned=0,
         dsr_ids_seen_in_redis=redis_keys_deleted,
@@ -212,17 +220,15 @@ def run_dsr_cache_sweeper(
         duration = time.perf_counter() - started
         logger.info(
             "DSR cache sweeper (legacy) finished rows_scanned={} "
-            "redis_keys_deleted={} skipped_status_mismatch={} redis_errors={} "
+            "redis_keys_deleted={} redis_errors={} "
             "duration_s={:.3f}",
             res.rows_scanned,
             res.redis_keys_deleted,
-            res.rows_skipped_status_mismatch,
             res.redis_errors,
             duration,
         )
         return DsrCacheSweeperResult(
             rows_scanned=res.rows_scanned,
-            rows_skipped_status_mismatch=res.rows_skipped_status_mismatch,
             eligible_dsr_count=res.eligible_dsr_count,
             redis_keys_scanned=0,
             dsr_ids_seen_in_redis=res.dsr_ids_seen_in_redis,
@@ -235,16 +241,39 @@ def run_dsr_cache_sweeper(
 
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=staleness_minutes)
 
+    set_key = tc.maintenance_set_key
+    ttl = int(tc.maintenance_set_ttl_seconds)
+    scan_count = int(tc.redis_scan_count)
+    del_batch = max(1, int(tc.redis_delete_batch_size))
+    membership_lookup_batch_size = max(1, int(tc.membership_lookup_batch_size))
+
+    manager = get_redis_cache_manager()
+    redis = manager._redis
+    redis.delete(set_key)
+    logger.info(
+        "DSR cache sweeper single-pass: Postgres staging phase starting "
+        "(eligible ids are written to Redis; SCAN/UNLINK runs after this phase). "
+        "maintenance_set_key={} membership_lookup_batch_size={}",
+        set_key,
+        membership_lookup_batch_size,
+    )
+    staging_expire_applied = False
+    total_staged_members = 0
+    staging_first_sadd_s: Optional[float] = None
+    staging_last_sadd_end_s: Optional[float] = None
+
     rows_scanned = 0
-    rows_skipped_status_mismatch = 0
-    eligible_ids: list[str] = []
     last_id = ""
+    db_phase_started = time.perf_counter()
+    db_page_index = 0
+    terminal_status_list = list(terminal_statuses)
 
     while True:
+        page_started = time.perf_counter()
         batch_rows = (
             db.query(PrivacyRequest.id, PrivacyRequest.status)
             .filter(
-                PrivacyRequest.status.in_(list(terminal_statuses)),
+                PrivacyRequest.status.in_(terminal_status_list),
                 PrivacyRequest.updated_at < cutoff,
                 PrivacyRequest.id > last_id,
             )
@@ -255,34 +284,70 @@ def run_dsr_cache_sweeper(
         if not batch_rows:
             break
 
-        for pr_id, initial_status in batch_rows:
-            rows_scanned += 1
-
-            current = (
-                db.query(PrivacyRequest.status)
-                .filter(PrivacyRequest.id == pr_id)
-                .scalar()
-            )
-            if current is None or current not in terminal_statuses:
-                rows_skipped_status_mismatch += 1
-                logger.debug(
-                    "Skipping DSR cache sweeper staging for privacy_request_id={}: "
-                    "status no longer eligible (batch had {}, current={})",
-                    pr_id,
-                    initial_status.value,
-                    getattr(current, "value", current),
-                )
-                continue
-
-            eligible_ids.append(str(pr_id).lower())
+        page_eligible = [str(pr_id).lower() for pr_id, _ in batch_rows]
+        rows_scanned += len(batch_rows)
 
         last_id = batch_rows[-1][0]
+        page_duration_s = time.perf_counter() - page_started
+        eligible_added_in_page = len(page_eligible)
+
+        if page_eligible:
+            sadd_started = time.perf_counter()
+            if staging_first_sadd_s is None:
+                staging_first_sadd_s = sadd_started
+            redis.sadd_members_chunked(set_key, page_eligible)
+            if not staging_expire_applied:
+                redis.expire(set_key, ttl)
+                staging_expire_applied = True
+            sadd_duration_s = time.perf_counter() - sadd_started
+            staging_last_sadd_end_s = time.perf_counter()
+            total_staged_members += len(page_eligible)
+            set_member_count = int(redis.scard(set_key))
+            logger.info(
+                "DSR cache sweeper Redis staging SADD batch page_index={} members_added={} "
+                "sadd_duration_s={:.3f} set_member_count={} ttl_seconds={} ttl_applied={}",
+                db_page_index,
+                len(page_eligible),
+                sadd_duration_s,
+                set_member_count,
+                ttl,
+                staging_expire_applied,
+            )
+
+        logger.info(
+            "DSR cache sweeper DB page (single-pass staging) page_index={} rows_in_page={} "
+            "eligible_added_in_page={} page_duration_s={:.3f} cumulative_rows_scanned={} "
+            "cumulative_staged_members={}",
+            db_page_index,
+            len(batch_rows),
+            eligible_added_in_page,
+            page_duration_s,
+            rows_scanned,
+            total_staged_members,
+        )
+        db_page_index += 1
 
         if batch_sleep > 0:
             jitter = random.uniform(0.0, batch_sleep)
             time.sleep(batch_sleep + jitter)
 
-    eligible_dsr_count = len(eligible_ids)
+    db_phase_duration_s = time.perf_counter() - db_phase_started
+    eligible_dsr_count = int(redis.scard(set_key))
+    staging_duration_s = (
+        (staging_last_sadd_end_s - staging_first_sadd_s)
+        if staging_first_sadd_s is not None and staging_last_sadd_end_s is not None
+        else 0.0
+    )
+    logger.info(
+        "DSR cache sweeper DB phase complete (single-pass staging) pages={} "
+        "eligible_dsr_count={} rows_scanned={} "
+        "db_phase_duration_s={:.3f} redis_staging_stream_s={:.3f}",
+        db_page_index,
+        eligible_dsr_count,
+        rows_scanned,
+        db_phase_duration_s,
+        staging_duration_s,
+    )
     redis_keys_scanned = 0
     dsr_ids_touched: set[str] = set()
     redis_keys_deleted = 0
@@ -295,15 +360,14 @@ def run_dsr_cache_sweeper(
     if eligible_dsr_count == 0:
         logger.info(
             "DSR cache sweeper finished eligible_dsr_count=0 rows_scanned={} "
-            "skipped_status_mismatch={} redis_keys_scanned=0 redis_keys_deleted=0 "
-            "duration_s={:.3f} maintenance_set_deleted=n/a",
+            "redis_keys_scanned=0 redis_keys_deleted=0 "
+            "duration_s={:.3f} db_phase_duration_s={:.3f} maintenance_set_deleted=n/a",
             rows_scanned,
-            rows_skipped_status_mismatch,
             duration,
+            db_phase_duration_s,
         )
         return DsrCacheSweeperResult(
             rows_scanned=rows_scanned,
-            rows_skipped_status_mismatch=rows_skipped_status_mismatch,
             eligible_dsr_count=0,
             redis_keys_scanned=0,
             dsr_ids_seen_in_redis=0,
@@ -314,19 +378,20 @@ def run_dsr_cache_sweeper(
             maintenance_set_deleted=True,
         )
 
-    manager = get_redis_cache_manager()
-    redis = manager._redis
-    set_key = tc.maintenance_set_key
-    ttl = int(tc.maintenance_set_ttl_seconds)
-    scan_count = int(tc.redis_scan_count)
-    del_batch = max(1, int(tc.redis_delete_batch_size))
-
+    scan_phase_duration_s = 0.0
     sweep_started = time.perf_counter()
     try:
-        # Fresh staging set for this run
-        redis.delete(set_key)
-        redis.sadd_members_chunked(set_key, eligible_ids)
-        redis.expire(set_key, ttl)
+        logger.info(
+            "DSR cache sweeper starting Redis SCAN set_key={} eligible_dsr_count={} "
+            "staging_duration_s={:.3f} ttl_seconds={} redis_scan_count={} "
+            "membership_lookup_batch_size={}",
+            set_key,
+            eligible_dsr_count,
+            staging_duration_s,
+            ttl,
+            scan_count,
+            membership_lookup_batch_size,
+        )
 
         pending_delete: list[str] = []
 
@@ -342,19 +407,59 @@ def run_dsr_cache_sweeper(
                 redis_delete_errors += err
                 redis_errors += err
 
+        scan_started = time.perf_counter()
+        scan_chunk_index = 0
         for key_batch in redis.iter_scan_batches(count=scan_count):
+            chunk_started = time.perf_counter()
+            keys_in_chunk = len(key_batch)
+
+            keyed: list[tuple[str, list[str]]] = []
             for raw_key in key_batch:
                 redis_keys_scanned += 1
                 key_str = decode_dsr_redis_key(raw_key)
                 candidates = candidate_privacy_request_ids_for_sweep(key_str)
+                if candidates:
+                    keyed.append((key_str, sorted(candidates)))
+
+            present_rows: list[Any] = []
+            if keyed:
+                for pipe_off in range(0, len(keyed), membership_lookup_batch_size):
+                    pipe_slice = keyed[
+                        pipe_off : pipe_off + membership_lookup_batch_size
+                    ]
+                    sub_present: list[Any] = []
+                    try:
+                        pipe = redis.pipeline(transaction=False)
+                        for _key_str, cand_list in pipe_slice:
+                            pipe.smismember(set_key, *cand_list)
+                        sub_present = pipe.execute()
+                        if len(sub_present) != len(pipe_slice):
+                            raise ValueError(
+                                "SMISMEMBER pipeline length mismatch: "
+                                f"expected {len(pipe_slice)}, got {len(sub_present)}"
+                            )
+                    except Exception:  # noqa: BLE001
+                        sub_present = []
+                        for _key_str, cand_list in pipe_slice:
+                            try:
+                                sub_present.append(
+                                    redis.smismember(set_key, *cand_list)
+                                )
+                            except Exception:  # noqa: BLE001
+                                redis_errors += 1
+                                sub_present.append(None)
+                    present_rows.extend(sub_present)
+
+            for (key_str, cand_list), present in zip(keyed, present_rows):
+                if present is None:
+                    continue
+                if isinstance(present, Exception):
+                    redis_errors += 1
+                    continue
                 delete_this_key = False
                 matched_id: Optional[str] = None
-                for uid in candidates:
-                    try:
-                        if not redis.sismember(set_key, uid):
-                            continue
-                    except Exception:  # noqa: BLE001
-                        redis_errors += 1
+                for uid, is_member in zip(cand_list, present):
+                    if not is_member:
                         continue
                     if redis_key_is_dsr_cache_key_for_id(key_str, uid):
                         delete_this_key = True
@@ -366,14 +471,32 @@ def run_dsr_cache_sweeper(
                     if len(pending_delete) >= del_batch:
                         flush_pending()
 
-            logger.debug(
-                "DSR cache sweeper SCAN chunk redis_keys_scanned={} "
-                "pending_delete_queue={}",
+            chunk_duration_s = time.perf_counter() - chunk_started
+            logger.info(
+                "DSR cache sweeper Redis SCAN chunk chunk_index={} keys_in_chunk={} "
+                "chunk_duration_s={:.3f} cumulative_keys_scanned={} pending_delete_queue={} "
+                "redis_keys_deleted_so_far={}",
+                scan_chunk_index,
+                keys_in_chunk,
+                chunk_duration_s,
                 redis_keys_scanned,
                 len(pending_delete),
+                redis_keys_deleted,
             )
+            scan_chunk_index += 1
 
         flush_pending()
+        scan_phase_duration_s = time.perf_counter() - scan_started
+        logger.info(
+            "DSR cache sweeper Redis SCAN phase complete scan_chunks={} "
+            "redis_keys_scanned={} redis_keys_deleted={} dsr_ids_seen_in_redis={} "
+            "scan_phase_duration_s={:.3f}",
+            scan_chunk_index,
+            redis_keys_scanned,
+            redis_keys_deleted,
+            len(dsr_ids_touched),
+            scan_phase_duration_s,
+        )
 
         redis.delete(set_key)
         maintenance_set_deleted = True
@@ -389,12 +512,13 @@ def run_dsr_cache_sweeper(
 
     logger.info(
         "DSR cache sweeper finished eligible_dsr_count={} rows_scanned={} "
-        "skipped_status_mismatch={} redis_keys_scanned={} dsr_ids_seen_in_redis={} "
+        "redis_keys_scanned={} dsr_ids_seen_in_redis={} "
         "redis_keys_deleted={} redis_delete_errors={} redis_errors={} "
-        "duration_s={:.3f} sweep_s={:.3f} maintenance_set_deleted={}",
+        "duration_s={:.3f} sweep_s={:.3f} db_phase_duration_s={:.3f} "
+        "redis_staging_duration_s={:.3f} redis_scan_phase_duration_s={:.3f} "
+        "maintenance_set_deleted={}",
         eligible_dsr_count,
         rows_scanned,
-        rows_skipped_status_mismatch,
         redis_keys_scanned,
         len(dsr_ids_touched),
         redis_keys_deleted,
@@ -402,12 +526,14 @@ def run_dsr_cache_sweeper(
         redis_errors,
         total_duration,
         sweep_duration,
+        db_phase_duration_s,
+        staging_duration_s,
+        scan_phase_duration_s,
         maintenance_set_deleted,
     )
 
     return DsrCacheSweeperResult(
         rows_scanned=rows_scanned,
-        rows_skipped_status_mismatch=rows_skipped_status_mismatch,
         eligible_dsr_count=eligible_dsr_count,
         redis_keys_scanned=redis_keys_scanned,
         dsr_ids_seen_in_redis=len(dsr_ids_touched),
