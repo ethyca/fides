@@ -158,3 +158,22 @@ def test_list_uploaded_older_than(repo, db, insert_row):
     assert new_uploaded.id not in ret_ids  # too new
     assert old_promoted.id not in ret_ids  # not uploaded
     assert boundary.id not in ret_ids  # cutoff is exclusive
+
+
+def test_list_uploaded_older_than_caps_and_orders_oldest_first(repo, db, insert_row):
+    cutoff = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    oldest = insert_row(
+        object_key="prefix/oldest.pdf",
+        created_at=datetime(2020, 1, 1, tzinfo=timezone.utc),
+    )
+    middle = insert_row(
+        object_key="prefix/middle.pdf",
+        created_at=datetime(2021, 1, 1, tzinfo=timezone.utc),
+    )
+    newest = insert_row(
+        object_key="prefix/newest.pdf",
+        created_at=datetime(2022, 1, 1, tzinfo=timezone.utc),
+    )
+    capped = repo.list_uploaded_older_than(cutoff, limit=2, session=db)
+    assert [r.id for r in capped] == [oldest.id, middle.id]
+    assert newest.id not in {r.id for r in capped}
