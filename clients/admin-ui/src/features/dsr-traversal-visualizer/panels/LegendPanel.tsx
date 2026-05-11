@@ -14,6 +14,7 @@ export const LegendPanel = () => (
           y2="4"
           stroke="currentColor"
           strokeWidth="2"
+          strokeDasharray="5"
         />
       </svg>
       <span>Data dependency</span>

@@ -31,7 +31,7 @@ export const DependencyEdge = (
       className="react-flow__edge-path"
       markerEnd={markerEnd}
       style={{
-        stroke: "var(--fidesui-color-link)",
+        stroke: "var(--fidesui-brand-minos)",
         strokeWidth: 2,
         opacity: animated ? 1 : 0,
         transition: "opacity 180ms ease",
