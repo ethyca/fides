@@ -149,24 +149,23 @@ const CustomFieldRenderer = ({
 
     case "date":
       return (
-        <DatePicker
-          id={fieldKey}
-          data-testid={`date-${fieldKey}`}
-          placeholder={label}
-          value={props.value ? dayjs(props.value) : null}
-          onChange={(date) =>
-            props.onChange(date ? date.format("YYYY-MM-DD") : "")
-          }
-          onBlur={onBlur}
-          format="YYYY-MM-DD"
-          minDate={props.min ? dayjs(props.min) : undefined}
-          maxDate={props.max ? dayjs(props.max) : undefined}
-          getPopupContainer={() => document.body}
-          aria-label={label}
-          aria-describedby={`${fieldKey}-error`}
-          aria-required={required !== false}
-          className="w-full"
-        />
+        <div data-testid={`date-${fieldKey}`}>
+          <DatePicker
+            id={fieldKey}
+            placeholder={label}
+            value={props.value ? dayjs(props.value) : null}
+            onChange={(date) =>
+              props.onChange(date ? date.format("YYYY-MM-DD") : "")
+            }
+            onBlur={onBlur}
+            format="YYYY-MM-DD"
+            getPopupContainer={() => document.body}
+            aria-label={label}
+            aria-describedby={`${fieldKey}-error`}
+            aria-required={required !== false}
+            className="w-full"
+          />
+        </div>
       );
 
     case "text":
