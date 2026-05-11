@@ -138,8 +138,7 @@ class AwsSesService(BaseEmailProviderService):
         """Send an email using AWS SES raw API for custom header support.
 
         Builds a MIME message using ``email.message.EmailMessage`` (modern
-        Python 3.6+ API). Does NOT call validate_on_save() — that is done at
-        config save/test time.
+        Python 3.6+ API).
         """
         ses_client = self.get_ses_client()
 
