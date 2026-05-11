@@ -1,11 +1,11 @@
+import re
 from email.message import EmailMessage
-from typing import Any
+from typing import Any, Protocol
 
 from loguru import logger
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.messaging import MessagingConfig
-from fides.api.models.property import CONFIG
 from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     MessagingServiceDetailsAWS_SES,
@@ -16,27 +16,37 @@ from fides.api.service.messaging.messaging_providers.base import (
     BaseEmailProviderService,
 )
 from fides.api.util.aws_util import get_aws_session
+from fides.config import CONFIG
 
 
-class SESClient:
-    """Hand-rolled type stub for the AWS SES client.
+class SESClient(Protocol):
+    """Structural type for the AWS SES client.
 
     The project does not use boto3-stubs; this gives get_ses_client() a typed
     return value so mypy can check method calls.
     """
 
-    def get_identity_verification_attributes(  # type: ignore[empty-body]
+    def get_identity_verification_attributes(
         self, Identities: list[str]
-    ) -> dict[str, dict[str, dict[str, str]]]:
-        """Returns verification attributes for the given identities."""
+    ) -> dict[str, dict[str, dict[str, str]]]: ...
 
-    def send_raw_email(  # type: ignore[empty-body]
+    def send_raw_email(
         self,
         Source: str,
         Destinations: list[str],
         RawMessage: dict[str, bytes],
-    ) -> dict[str, str]:
-        """Sends a raw MIME email."""
+    ) -> dict[str, str]: ...
+
+
+def _sanitize_aws_error(exc: Exception) -> str:
+    """Strip IAM ARNs and account IDs from AWS error messages to avoid leaking
+    them in API responses. The full error is still logged server-side."""
+    msg = str(exc)
+    # Remove ARNs like arn:aws:iam::123456789:user/some-user
+    msg = re.sub(r"arn:aws:[^\s]+", "<redacted-arn>", msg)
+    # Remove standalone 12-digit account IDs
+    msg = re.sub(r"(?<!\d)\d{12}(?!\d)", "<redacted-account>", msg)
+    return msg
 
 
 class AwsSesService(BaseEmailProviderService):
@@ -57,6 +67,9 @@ class AwsSesService(BaseEmailProviderService):
     def get_ses_client(self) -> SESClient:
         """Returns a cached AWS SES client, creating one on first call.
 
+        Cache scope is per-instance (i.e., per dispatch_message call) —
+        AwsSesService is instantiated fresh each time.
+
         Supports assume-role with two-source fallback:
         CONFIG.credentials (global) → per-config secret.
         """
@@ -69,20 +82,25 @@ class AwsSesService(BaseEmailProviderService):
             "region_name": self.details.aws_region,
         }
 
-        aws_session = get_aws_session(
-            auth_method=self.secrets.auth_method.value,
-            storage_secrets=storage_secrets,  # type: ignore[arg-type]
-            assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
-                "notifications", {}
-            ).get("aws_ses_assume_role_arn")
-            or self.secrets.aws_assume_role_arn,
-        )
+        try:
+            aws_session = get_aws_session(
+                auth_method=self.secrets.auth_method.value,
+                storage_secrets=storage_secrets,  # type: ignore[arg-type]
+                assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
+                    "notifications", {}
+                ).get("aws_ses_assume_role_arn")
+                or self.secrets.aws_assume_role_arn,
+            )
+        except Exception as exc:
+            raise MessageDispatchException(
+                f"Failed to create AWS session: {_sanitize_aws_error(exc)}"
+            ) from exc
         aws_ses_client = aws_session.client("ses", region_name=self.details.aws_region)
 
         self._ses_client = aws_ses_client
         return aws_ses_client
 
-    def validate_email_and_domain_status(self) -> None:
+    def validate_on_save(self) -> None:
         """Validate that either the email or domain (or both) are verified in SES.
 
         Raises MessageDispatchException if any configured identity is not verified.
@@ -99,28 +117,37 @@ class AwsSesService(BaseEmailProviderService):
             )
 
         ses_client = self.get_ses_client()
-        response = ses_client.get_identity_verification_attributes(
-            Identities=identities
-        )
+        try:
+            response = ses_client.get_identity_verification_attributes(
+                Identities=identities
+            )
+        except Exception as exc:
+            raise MessageDispatchException(
+                f"SES identity verification failed: {_sanitize_aws_error(exc)}"
+            ) from exc
         attributes = response.get("VerificationAttributes", {})
 
         for identity in identities:
             status = attributes.get(identity, {}).get("VerificationStatus")
             if status != "Success":
-                logger.error(f"{identity} is not verified in SES.")
+                logger.warning(f"{identity} is not verified in SES.")
                 raise MessageDispatchException(f"{identity} is not verified in SES.")
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
         """Send an email using AWS SES raw API for custom header support.
 
         Builds a MIME message using ``email.message.EmailMessage`` (modern
-        Python 3.6+ API). Does NOT call validate_email_and_domain_status() —
-        that is done at config save/test time.
+        Python 3.6+ API). Does NOT call validate_on_save() — that is done at
+        config save/test time.
         """
         ses_client = self.get_ses_client()
 
         from_address = self.details.email_from
         if not from_address:
+            if not self.details.domain:
+                raise MessageDispatchException(
+                    "AWS SES config must have either email_from or domain set."
+                )
             from_address = f"noreply@{self.details.domain}"
 
         try:
@@ -135,8 +162,8 @@ class AwsSesService(BaseEmailProviderService):
         except Exception as exc:
             logger.error("Email failed to send: {}", str(exc))
             raise MessageDispatchException(
-                f"AWS SES email failed to send due to: {str(exc)}"
-            )
+                f"AWS SES email failed to send due to: {_sanitize_aws_error(exc)}"
+            ) from exc
 
     @staticmethod
     def _build_mime(

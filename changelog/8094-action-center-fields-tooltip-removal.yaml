@@ -1,4 +1,0 @@
-type: Fixed
-description: Removed redundant and flickering tooltip from breadcrumb paths in the Action Center monitor fields view.
-pr: 8094
-labels: []

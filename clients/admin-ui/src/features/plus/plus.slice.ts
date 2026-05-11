@@ -34,8 +34,13 @@ import {
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  JiraCredentialLinkStatus,
+  JiraLinkSaasRequest,
+  JiraLinkSaasResponse,
   JiraPreviewRequest,
+  JiraSaasConnectionInfo,
   JiraTicketData,
+  JiraUnlinkSaasResponse,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   SystemPurposeSummary,
@@ -590,6 +595,45 @@ const plusApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    getJiraSaasConnections: build.query<
+      JiraSaasConnectionInfo[],
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/available-saas-connections`,
+      }),
+      providesTags: ["Jira Credentials"],
+    }),
+    getJiraCredentialLinkStatus: build.query<
+      JiraCredentialLinkStatus,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/link-saas-credentials`,
+      }),
+      providesTags: ["Jira Credentials"],
+    }),
+    linkJiraSaasCredentials: build.mutation<
+      JiraLinkSaasResponse,
+      { connectionKey: string } & JiraLinkSaasRequest
+    >({
+      query: ({ connectionKey, ...body }) => ({
+        url: `plus/connection/${connectionKey}/jira/link-saas-credentials`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Jira Credentials", "Datastore Connection"],
+    }),
+    unlinkJiraSaasCredentials: build.mutation<
+      JiraUnlinkSaasResponse,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/link-saas-credentials`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Jira Credentials", "Datastore Connection"],
+    }),
   }),
 });
 
@@ -637,6 +681,10 @@ export const {
   useGetJiraStatusesQuery,
   useGetJiraTemplateVariablesQuery,
   usePreviewJiraTicketMutation,
+  useGetJiraSaasConnectionsQuery,
+  useGetJiraCredentialLinkStatusQuery,
+  useLinkJiraSaasCredentialsMutation,
+  useUnlinkJiraSaasCredentialsMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

@@ -10,7 +10,10 @@ import {
 import { useMemo } from "react";
 
 import IdentityResolutionTab from "~/features/integrations/configure-identity-resolution/IdentityResolutionTab";
-import { JiraConfigTab } from "~/features/integrations/configure-jira";
+import {
+  JiraConfigTab,
+  JiraCredentialsTab,
+} from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import QueryLogConfigTab from "~/features/integrations/configure-query-log/QueryLogConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
@@ -243,6 +246,13 @@ export const useFeatureBasedTabs = ({
       enabledFeatures?.includes(IntegrationFeature.DSR_AUTOMATION) &&
       connection?.connection_type === ConnectionType.JIRA_TICKET
     ) {
+      tabItems.push({
+        label: "Credentials",
+        key: "credentials",
+        children: (
+          <JiraCredentialsTab connection={connection!} testData={testData} />
+        ),
+      });
       tabItems.push({
         label: "Ticket setup",
         key: "configuration",

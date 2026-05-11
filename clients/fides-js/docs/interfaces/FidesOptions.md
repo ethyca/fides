@@ -384,6 +384,28 @@ Defaults to `undefined`.
 
 ***
 
+### fides\_att\_status
+
+> **fides\_att\_status**: `"denied"` \| `"not_determined"` \| `"restricted"` \| `"authorized"`
+
+Apple ATTrackingManager authorization status, set by the mobile SDK before loading the
+embedded TCF consent experience. When `"denied"` or `"restricted"`, custom privacy notices
+where `att_exempt` is `false` (or unset) are automatically disabled (toggle locked to
+opt_out); notices with `att_exempt: true` remain interactive.
+
+Mirrors Apple's `ATTrackingManager.AuthorizationStatus` enum values:
+- `"not_determined"` — user has not yet been asked (default)
+- `"restricted"` — tracking is restricted by device policy; notices locked
+- `"denied"` — user explicitly denied ATT; notices locked
+- `"authorized"` — user granted ATT; no locking applied
+
+Only applies to the TCF embedded consent experience on iOS. Android and web contexts
+should not set this option (they default to `"not_determined"`, which applies no locking).
+
+Defaults to `"not_determined"`.
+
+***
+
 ### fides\_disabled\_systems?
 
 > `optional` **fides\_disabled\_systems**: `string`

@@ -11,10 +11,9 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
 )
 from fides.api.service.messaging.messaging_providers.base import (
+    EMAIL_TEMPLATE_NAME,
     BaseEmailProviderService,
 )
-
-EMAIL_TEMPLATE_NAME = "fides"
 
 
 class MailgunService(BaseEmailProviderService):
@@ -24,17 +23,15 @@ class MailgunService(BaseEmailProviderService):
 
     def __init__(self, messaging_config: MessagingConfig):
         super().__init__(messaging_config)
-        self.domain = messaging_config.details[MessagingServiceDetails.DOMAIN.value]
-        self.api_key = messaging_config.secrets[
-            MessagingServiceSecrets.MAILGUN_API_KEY.value
-        ]
-        is_eu = messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value]
+        self.domain = self._get_detail(MessagingServiceDetails.DOMAIN)
+        self.api_key = self._get_secret(MessagingServiceSecrets.MAILGUN_API_KEY)
+        is_eu = self.messaging_config.details.get(
+            MessagingServiceDetails.IS_EU_DOMAIN.value, False
+        )
         self.base_url = (
             "https://api.eu.mailgun.net" if is_eu else "https://api.mailgun.net"
         )
-        self.api_version = messaging_config.details[
-            MessagingServiceDetails.API_VERSION.value
-        ]
+        self.api_version = self._get_detail(MessagingServiceDetails.API_VERSION)
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
         try:

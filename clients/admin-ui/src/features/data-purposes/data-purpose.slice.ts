@@ -47,6 +47,35 @@ export interface PurposeDatasetAssignment {
   steward: string;
 }
 
+export interface AvailableSystem {
+  system_id: string;
+  system_name: string;
+  system_type: string;
+}
+
+export interface AvailableDataset {
+  dataset_fides_key: string;
+  dataset_name: string;
+  system_name: string;
+}
+
+export interface PurposeFeatureOption {
+  value: string;
+  label: string;
+}
+
+export interface PurposeOverviewResponse {
+  purpose: DataPurpose;
+  systems: PurposeSystemAssignment[];
+  datasets: PurposeDatasetAssignment[];
+  available_systems: AvailableSystem[];
+  available_datasets: AvailableDataset[];
+}
+
+/**
+ * Per-purpose enrichment used by the list grid and network view. Served
+ * in a single batched call to avoid N+1 requests across cards.
+ */
 export interface PurposeSummary {
   fides_key: string;
   system_count: number;
@@ -66,13 +95,13 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         url: `data-purpose`,
         params,
       }),
-      providesTags: ["DataPurpose"],
-    }),
-    getDataPurposeByKey: builder.query<DataPurpose, string>({
-      query: (fidesKey) => ({
-        url: `data-purpose/${fidesKey}`,
-      }),
-      providesTags: ["DataPurpose"],
+      providesTags: (result) => [
+        { type: "DataPurpose" as const, id: "LIST" },
+        ...(result?.items ?? []).map((purpose) => ({
+          type: "DataPurpose" as const,
+          id: purpose.fides_key,
+        })),
+      ],
     }),
     createDataPurpose: builder.mutation<DataPurpose, Partial<DataPurpose>>({
       query: (body) => ({
@@ -80,7 +109,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["DataPurpose"],
+      invalidatesTags: [{ type: "DataPurpose", id: "LIST" }],
     }),
     updateDataPurpose: builder.mutation<
       DataPurpose,
@@ -91,7 +120,10 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "PUT",
         body,
       }),
-      invalidatesTags: ["DataPurpose"],
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "PurposeOverview", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
+      ],
     }),
     deleteDataPurpose: builder.mutation<
       void,
@@ -102,16 +134,122 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "DELETE",
         params: force ? { force: true } : undefined,
       }),
-      invalidatesTags: ["DataPurpose", "DataConsumer"],
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "DataPurpose", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
+        "DataConsumer",
+      ],
     }),
 
     // Plus-only, MSW-mocked for now.
-    // TODO: replace with real endpoint once fidesplus ships it.
+    // TODO: replace with real endpoints once fidesplus ships them.
     getPurposeSummaries: builder.query<PurposeSummary[], void>({
       query: () => ({
         url: `plus/data-purpose/summaries`,
       }),
-      providesTags: ["DataPurpose"],
+      providesTags: (result) => [
+        { type: "DataPurpose" as const, id: "LIST" },
+        ...(result ?? []).map((summary) => ({
+          type: "DataPurpose" as const,
+          id: summary.fides_key,
+        })),
+      ],
+    }),
+    getPurposeOverview: builder.query<PurposeOverviewResponse, string>({
+      query: (fidesKey) => ({
+        url: `plus/data-purpose/${fidesKey}/overview`,
+      }),
+      providesTags: (_result, _error, fidesKey) => [
+        { type: "PurposeOverview", id: fidesKey },
+      ],
+    }),
+    getPurposeFeatureOptions: builder.query<PurposeFeatureOption[], void>({
+      query: () => ({
+        url: `plus/data-purpose/feature-options`,
+      }),
+    }),
+    assignSystemsToPurpose: builder.mutation<
+      PurposeSystemAssignment[],
+      { fidesKey: string; systemIds: string[] }
+    >({
+      query: ({ fidesKey, systemIds }) => ({
+        url: `plus/data-purpose/${fidesKey}/systems`,
+        method: "PUT",
+        body: { system_ids: systemIds },
+      }),
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "PurposeOverview", id: fidesKey },
+      ],
+    }),
+    removeSystemsFromPurpose: builder.mutation<
+      PurposeSystemAssignment[],
+      { fidesKey: string; systemIds: string[] }
+    >({
+      query: ({ fidesKey, systemIds }) => ({
+        url: `plus/data-purpose/${fidesKey}/systems`,
+        method: "DELETE",
+        body: { system_ids: systemIds },
+      }),
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "PurposeOverview", id: fidesKey },
+      ],
+    }),
+    addDatasetsToPurpose: builder.mutation<
+      PurposeDatasetAssignment[],
+      { fidesKey: string; datasetFidesKeys: string[] }
+    >({
+      query: ({ fidesKey, datasetFidesKeys }) => ({
+        url: `plus/data-purpose/${fidesKey}/datasets`,
+        method: "PUT",
+        body: { dataset_fides_keys: datasetFidesKeys },
+      }),
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "PurposeOverview", id: fidesKey },
+      ],
+    }),
+    removeDatasetsFromPurpose: builder.mutation<
+      PurposeDatasetAssignment[],
+      { fidesKey: string; datasetFidesKeys: string[] }
+    >({
+      query: ({ fidesKey, datasetFidesKeys }) => ({
+        url: `plus/data-purpose/${fidesKey}/datasets`,
+        method: "DELETE",
+        body: { dataset_fides_keys: datasetFidesKeys },
+      }),
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "PurposeOverview", id: fidesKey },
+      ],
+    }),
+    acceptPurposeCategories: builder.mutation<
+      DataPurpose,
+      { fidesKey: string; categories: string[] }
+    >({
+      query: ({ fidesKey, categories }) => ({
+        url: `plus/data-purpose/${fidesKey}/categories/accept`,
+        method: "POST",
+        body: { categories },
+      }),
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "PurposeOverview", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
+      ],
+    }),
+    markPurposeCategoriesMisclassified: builder.mutation<
+      PurposeDatasetAssignment[],
+      { fidesKey: string; categories: string[]; datasetFidesKeys?: string[] }
+    >({
+      query: ({ fidesKey, categories, datasetFidesKeys }) => ({
+        url: `plus/data-purpose/${fidesKey}/categories/misclassified`,
+        method: "POST",
+        body: {
+          categories,
+          dataset_fides_keys: datasetFidesKeys,
+        },
+      }),
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "PurposeOverview", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
+      ],
     }),
 
     downloadDataPurposesCsv: builder.query<Blob, DataPurposeParams>({
@@ -126,10 +264,17 @@ export const dataPurposesApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataPurposesQuery,
-  useGetDataPurposeByKeyQuery,
   useCreateDataPurposeMutation,
   useUpdateDataPurposeMutation,
   useDeleteDataPurposeMutation,
   useGetPurposeSummariesQuery,
+  useGetPurposeOverviewQuery,
+  useGetPurposeFeatureOptionsQuery,
+  useAssignSystemsToPurposeMutation,
+  useRemoveSystemsFromPurposeMutation,
+  useAddDatasetsToPurposeMutation,
+  useRemoveDatasetsFromPurposeMutation,
+  useAcceptPurposeCategoriesMutation,
+  useMarkPurposeCategoriesMisclassifiedMutation,
   useLazyDownloadDataPurposesCsvQuery,
 } = dataPurposesApi;
