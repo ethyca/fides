@@ -32,6 +32,7 @@ from .logging_settings import LoggingSettings
 from .notification_settings import NotificationSettings
 from .privacy_center_settings import PrivacyCenterSettings
 from .redis_settings import RedisSettings
+from .secrets_settings import SecretsSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
 from .utils import (
@@ -86,6 +87,7 @@ class FidesConfig(FidesSettings):
     notifications: NotificationSettings
     redis: RedisSettings
     privacy_center: PrivacyCenterSettings
+    secrets: SecretsSettings
     security: SecuritySettings
     user: UserSettings
 
@@ -175,6 +177,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "notifications": NotificationSettings,
         "privacy_center": PrivacyCenterSettings,
         "redis": RedisSettings,
+        "secrets": SecretsSettings,
         "security": SecuritySettings,
         "user": UserSettings,
     }
