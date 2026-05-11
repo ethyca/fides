@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Migrated AWS SES dispatcher to provider class pattern, adding SES identity validation on config save and deleting the legacy aws_ses_service module
+pr: 8120
+labels: []
