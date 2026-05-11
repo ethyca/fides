@@ -62,7 +62,7 @@ from fides.api.service.privacy_request.request_service import (
 )
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.tasks import DSR_QUEUE_NAME
-from fides.api.util.cache import cache_task_tracking_key
+from fides.api.util.cache import persist_dsr_async_task_id
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.session_management import get_autoclose_db_session
@@ -628,7 +628,7 @@ class PrivacyRequestService:
             RequestTask.privacy_request_id == privacy_request_id
         ).delete()
         self.db.delete(existing_privacy_request)
-        existing_privacy_request.clear_cached_values()
+        existing_privacy_request.clear_dsr_state()
 
         logger.info(f"Resubmitting privacy request {privacy_request_id}")
 
@@ -1075,7 +1075,7 @@ def queue_privacy_request(
                 "from_step": from_step,
             },
         )
-        cache_task_tracking_key(privacy_request_id, task.task_id)
+        persist_dsr_async_task_id(privacy_request_id, task.task_id)
 
         # Clear any previous scheduling failure in the activity timeline
         _clear_scheduling_failure_if_exists(privacy_request_id)

@@ -23,7 +23,7 @@ from fides.api.service.privacy_request.request_service import (
     remove_saved_dsr_data,
     requeue_interrupted_tasks,
 )
-from fides.api.util.cache import cache_task_tracking_key
+from fides.api.util.cache import persist_dsr_async_task_id
 from fides.common.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.config import CONFIG
 
@@ -471,7 +471,7 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
         from fides.api.models.privacy_request import PrivacyRequest, RequestTask
         from fides.api.models.worker_task import ExecutionLogStatus
         from fides.api.schemas.policy import ActionType
-        from fides.api.util.cache import cache_task_tracking_key
+        from fides.api.util.cache import persist_dsr_async_task_id
 
         # Create the privacy request
         privacy_request = PrivacyRequest.create(
@@ -502,9 +502,9 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
             },
         )
 
-        # Cache task IDs
-        cache_task_tracking_key(privacy_request.id, "main_task_123")
-        cache_task_tracking_key(request_task.id, "sub_task_456")
+        # Persist task IDs (Postgres DSRStore)
+        persist_dsr_async_task_id(privacy_request.id, "main_task_123")
+        persist_dsr_async_task_id(request_task.id, "sub_task_456")
 
         yield privacy_request
 
@@ -577,38 +577,33 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
 class TestGetCachedTaskId:
     """Test the standalone get_cached_task_id function."""
 
-    def test_get_cached_task_id_success(self, privacy_request):
+    def test_get_cached_task_id_success(self, db, privacy_request):
         """Test successful retrieval of cached task ID."""
-        # Cache a task ID
-        cache_task_tracking_key(privacy_request.id, "test_task_id_123")
+        # Persist a task ID (Postgres DSRStore)
+        persist_dsr_async_task_id(privacy_request.id, "test_task_id_123")
 
         # Function should return the cached ID
-        result = get_cached_task_id(privacy_request.id)
+        result = get_cached_task_id(db, privacy_request.id)
         assert result == "test_task_id_123"
 
-    def test_get_cached_task_id_none_when_not_cached(self, privacy_request):
+    def test_get_cached_task_id_none_when_not_cached(self, db, privacy_request):
         """Test that function returns None when no task ID is cached."""
-        result = get_cached_task_id(privacy_request.id)
+        result = get_cached_task_id(db, privacy_request.id)
         assert result is None
 
-    @mock.patch("fides.api.service.privacy_request.request_service.get_dsr_cache_store")
+    @mock.patch("fides.api.service.privacy_request.request_service.DSRStore")
     @mock.patch("fides.api.service.privacy_request.request_service.logger")
     def test_get_cached_task_id_cache_exception(
-        self, mock_logger, mock_get_store, privacy_request
+        self, mock_logger, mock_dsr_store, db, privacy_request
     ):
-        """Test that function logs error and re-raises exceptions from cache operations."""
-        # Mock store to raise exception on get_async_execution
+        """Test that function logs error and re-raises exceptions from DSRStore operations."""
         mock_store = mock.Mock()
-        mock_store.get_async_execution.side_effect = Exception(
-            "Redis connection failed"
-        )
-        mock_get_store.return_value = mock_store
+        mock_store.get_async_execution.side_effect = Exception("DB failure")
+        mock_dsr_store.return_value = mock_store
 
-        # Function should log error and re-raise exception
-        with pytest.raises(Exception, match="Redis connection failed"):
-            get_cached_task_id(privacy_request.id)
+        with pytest.raises(Exception, match="DB failure"):
+            get_cached_task_id(db, privacy_request.id)
 
-        # Verify error was logged
         mock_logger.error.assert_called_once()
         log_message = mock_logger.error.call_args[0][0]
         assert "Failed to get cached task ID" in log_message

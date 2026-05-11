@@ -14,10 +14,10 @@ from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from fides.api.util.cache import (
     FidesopsRedis,
-    cache_task_tracking_key,
     celery_tasks_in_flight,
     get_async_task_tracking_cache_key,
     get_cache,
+    persist_dsr_async_task_id,
 )
 from fides.api.util.custom_json_encoder import (
     ENCODED_BYTES_PREFIX,
@@ -196,17 +196,17 @@ class TestCustomDecoder:
         assert FidesopsRedis.decode_obj(value) is None
 
 
-class TestCacheTaskTrackingKey:
+class TestPersistDsrAsyncTaskId:
     def test_cache_tracking_key_privacy_request(self, privacy_request):
         assert privacy_request.get_cached_task_id() is None
 
-        cache_task_tracking_key(privacy_request.id, "test_1234")
+        persist_dsr_async_task_id(privacy_request.id, "test_1234")
 
         assert privacy_request.get_cached_task_id() == "test_1234"
 
     def test_cache_tracking_key_has_ttl(self, privacy_request):
         """Verify async-execution keys are stored with a TTL to prevent leaking."""
-        cache_task_tracking_key(privacy_request.id, "test_1234")
+        persist_dsr_async_task_id(privacy_request.id, "test_1234")
 
         raw_cache = get_cache()
         # Check new-format key; fall back to legacy key for backward compat
@@ -221,7 +221,7 @@ class TestCacheTaskTrackingKey:
         """Request Task celery tasks are cached in the same location as Privacy Request"""
         assert request_task.get_cached_task_id() is None
 
-        cache_task_tracking_key(request_task.id, "test_5678")
+        persist_dsr_async_task_id(request_task.id, "test_5678")
 
         assert request_task.get_cached_task_id() == "test_5678"
 

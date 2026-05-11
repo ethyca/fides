@@ -1,12 +1,14 @@
 import secrets
-from typing import Optional, Union
+from contextlib import closing
+from typing import Union
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
-from fides.api.util.cache import get_dsr_cache_store
+from fides.api.db.session import get_db_session
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
 from fides.config import CONFIG
+from lethe.state import DSRStore
 
 
 def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> str:
@@ -22,8 +24,10 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     if isinstance(data, bytes):
         data = data.decode(CONFIG.security.encoding)
 
-    store = get_dsr_cache_store(request_id)
-    raw = store.get_encryption("key")
+    SessionLocal = get_db_session(CONFIG)
+    with closing(SessionLocal()) as db:
+        raw = DSRStore(db, request_id).get_encryption("key")
+
     if raw is None:
         return data
     if isinstance(raw, bytes):

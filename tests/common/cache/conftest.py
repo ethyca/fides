@@ -8,7 +8,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
 from tests.common.cache.mock_redis import create_mock_redis
 
@@ -25,12 +24,6 @@ def mock_redis():
 def manager(mock_redis) -> RedisCacheManager:
     """RedisCacheManager backed by mock Redis."""
     return RedisCacheManager(mock_redis)
-
-
-@pytest.fixture
-def dsr_store(manager: RedisCacheManager) -> DSRCacheStore:
-    """DSRCacheStore backed by mock Redis, scoped to default 'pr-1' ID."""
-    return DSRCacheStore("pr-1", manager)
 
 
 @pytest.fixture

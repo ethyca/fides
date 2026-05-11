@@ -14,10 +14,10 @@ from fides.api.service.privacy_request.request_service import (
     requeue_interrupted_tasks,
 )
 from fides.api.util.cache import (
-    cache_task_tracking_key,
     get_cache,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
+    persist_dsr_async_task_id,
     reset_privacy_request_retry_count,
 )
 from fides.config import CONFIG
@@ -63,7 +63,7 @@ def make_privacy_request(db, policy):
             },
         )
         if cached:
-            cache_task_tracking_key(pr.id, f"pr_task_{pr.id}")
+            persist_dsr_async_task_id(pr.id, f"pr_task_{pr.id}")
         created.append(pr)
         return pr
 
@@ -108,7 +108,7 @@ def make_request_task(db):
             data["async_type"] = async_type
         task = RequestTask.create(db, data=data)
         if cached_subtask_id:
-            cache_task_tracking_key(task.id, cached_subtask_id)
+            persist_dsr_async_task_id(task.id, cached_subtask_id)
         created.append(task)
         return task
 
@@ -132,7 +132,7 @@ def in_progress_privacy_request(db, policy):
             "client_id": policy.client_id,
         },
     )
-    cache_task_tracking_key(pr.id, "privacy_request_task_id")
+    persist_dsr_async_task_id(pr.id, "privacy_request_task_id")
     yield pr
     pr.delete(db)
 
@@ -152,7 +152,7 @@ def in_progress_request_task(db, in_progress_privacy_request):
             "downstream_tasks": [],
         },
     )
-    cache_task_tracking_key(task.id, "request_task_id")
+    persist_dsr_async_task_id(task.id, "request_task_id")
     yield task
     task.delete(db)
 

@@ -10,6 +10,7 @@ from fides.cli.options import yes_flag
 from fides.cli.utils import with_server_health_check
 from fides.common.utils import echo_red, handle_cli_response
 from fides.core import api as _api
+from lethe.migration import migrate_dsr_redis_to_postgres
 
 
 @click.group(name="db")
@@ -140,4 +141,55 @@ def migrate_consent_encryption(
         )
     else:
         echo_red(f"Completed with errors: {result.errors}")
+        ctx.exit(1)
+
+
+@database.command(name="migrate-dsr-redis")
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Print planned writes without committing to Postgres.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Overwrite non-empty Postgres columns when Redis has a value.",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=None,
+    help="Maximum number of privacy request ids to process (after discovery sort).",
+)
+@click.pass_context
+def migrate_dsr_redis(
+    ctx: click.Context,
+    dry_run: bool,
+    force: bool,
+    limit: int | None,
+) -> None:
+    """
+    Copy legacy DSR Redis keys (``dsr:…`` / ``id-{pr}-…``) onto Postgres ``DSRStore`` columns.
+
+    Run with the application stopped or when no DSR rows are being mutated. This does
+    not migrate identities or masking secrets (those have separate persistence paths).
+    """
+    _ = ctx.obj["CONFIG"]
+    try:
+        result = migrate_dsr_redis_to_postgres(dry_run=dry_run, force=force, limit=limit)
+    except Exception as e:  # noqa: BLE001
+        echo_red(f"DSR Redis migration failed: {e}")
+        ctx.exit(1)
+        return
+
+    click.echo(
+        f"Processed {result.privacy_request_ids} privacy request id(s): "
+        f"updated={result.updated}, skipped={result.skipped}, "
+        f"missing_row={result.missing_row}, errors={len(result.errors)}."
+    )
+    if result.errors:
+        for err in result.errors:
+            click.echo(f"  - {err}")
         ctx.exit(1)

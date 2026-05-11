@@ -27,12 +27,8 @@ from fides.api.models.privacy_request.execution_log import (
 from fides.api.models.worker_task import ExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
-from fides.api.util.cache import (
-    celery_tasks_in_flight,
-    get_dsr_cache_store,
-)
+from fides.api.util.cache import celery_tasks_in_flight
 from fides.api.util.collection_util import Row
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.privacy_request import PrivacyRequest
@@ -163,6 +159,9 @@ class RequestTask(WorkerTask, Base):
     # Stores key details from traversal.traverse in the format of TraversalDetails
     traversal_details = Column(MutableDict.as_mutable(JSONB))
 
+    celery_task_id = Column(String, nullable=True, index=True)
+    email_checkpoints = Column(MutableList.as_mutable(JSONB), nullable=True)
+
     privacy_request = relationship(
         "PrivacyRequest",
         back_populates="request_tasks",
@@ -244,22 +243,23 @@ class RequestTask(WorkerTask, Base):
         return [e.value for e in ActionType]
 
     @staticmethod
-    def get_cached_task_id_by_id(request_task_id: str) -> Optional[str]:
-        """Gets the cached celery task ID for a request task by its primary key.
+    def get_cached_task_id_by_id(db: Session, request_task_id: str) -> Optional[str]:
+        """Gets the persisted celery task ID for a request task by its primary key.
 
-        This static variant avoids loading a full RequestTask ORM object,
-        which is important when iterating many tasks in memory-sensitive
-        contexts (e.g. the cancel path on the webserver).
+        This uses a column projection query to avoid loading large encrypted blobs.
         """
-        store = get_dsr_cache_store(request_task_id)
-        task_id = store.get_async_execution()
-        if isinstance(task_id, bytes):
-            return task_id.decode(CONFIG.security.encoding)
-        return task_id
+        return (
+            db.query(RequestTask.celery_task_id)
+            .filter(RequestTask.id == request_task_id)
+            .scalar()
+        )
 
     def get_cached_task_id(self) -> Optional[str]:
-        """Gets the cached celery task ID for this request task."""
-        return RequestTask.get_cached_task_id_by_id(self.id)
+        """Gets the persisted celery task ID for this request task."""
+        db = Session.object_session(self)
+        if db is None:
+            raise RuntimeError("RequestTask must be bound to a Session")
+        return RequestTask.get_cached_task_id_by_id(db, self.id)
 
     def cleanup_external_storage(self) -> None:
         """Clean up all external storage files for this request task"""

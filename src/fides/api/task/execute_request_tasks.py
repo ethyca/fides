@@ -35,7 +35,7 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
-from fides.api.util.cache import cache_task_tracking_key
+from fides.api.util.cache import persist_dsr_async_task_id
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
@@ -632,7 +632,7 @@ def queue_request_task(
             "privacy_request_proceed": privacy_request_proceed,
         },
     )
-    cache_task_tracking_key(request_task.id, celery_task.task_id)
+    persist_dsr_async_task_id(request_task.id, celery_task.task_id)
 
 
 def log_task_queued(request_task: RequestTask, location: str) -> None:

@@ -57,6 +57,7 @@ def static_checks(session: nox.Session) -> None:
     session.notify("ruff(format)")
     session.notify("ruff(check)")
     session.notify("mypy")
+    session.notify("check_lethe_boundary")
 
 
 @nox.session()
@@ -106,6 +107,13 @@ def mypy(session: nox.Session) -> None:
     install_requirements(session)
     command = "mypy"
     session.run(command)
+
+
+@nox.session()
+def check_lethe_boundary(session: nox.Session) -> None:
+    """Ensure ``lethe.state`` does not import Redis or perform transaction control."""
+    install_requirements(session)
+    session.run("python", "scripts/check_lethe_state_boundary.py")
 
 
 @nox.session()
@@ -570,6 +578,7 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/integration/": ["ops-integration"],  # Workflow integration tests
+    "tests/lethe/": ["misc-unit", "ops-integration"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 

@@ -116,20 +116,16 @@ from fides.api.schemas.redis_cache import (
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
 from fides.api.tasks import celery_app
-from fides.api.util.cache import (
-    FidesopsRedis,
-    get_cache,
-    get_dsr_cache_store,
-)
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
-from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
+from lethe.state import DSRStore
+from lethe.state.identity_verification import IdentityVerificationMixin
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]
@@ -322,6 +318,19 @@ class PrivacyRequest(
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
+    # DSR pipeline state (Postgres; replaces Redis dsr:* keys for these fields)
+    encryption_key = Column(encrypted_type(String), nullable=True)
+    drp_request_body = Column(JSONB, nullable=True)
+    data_use_map = Column(JSONB, nullable=True)
+    paused_step = Column(String, nullable=True)
+    paused_collection = Column(String, nullable=True)
+    paused_action_needed = Column(JSONB, nullable=True)
+    failed_step = Column(String, nullable=True)
+    failed_collection = Column(String, nullable=True)
+    failed_action_needed = Column(JSONB, nullable=True)
+    celery_task_id = Column(String, nullable=True, index=True)
+    requeue_retry_count = Column(Integer, nullable=False, server_default="0")
+
     # Encrypted filtered access results saved for later retrieval
     _filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
         "filtered_final_upload",
@@ -479,20 +488,25 @@ class PrivacyRequest(
             "location": self.location,
         }
 
-    def clear_cached_values(self) -> None:
+    def _dsr_store(self) -> DSRStore:
+        db = Session.object_session(self)
+        if db is None:
+            raise RuntimeError("PrivacyRequest must be bound to a Session for DSR state access")
+        return DSRStore(db, self.id)
+
+    def clear_dsr_state(self) -> None:
         """
-        Clears all cached values associated with this privacy request from Redis.
+        Clears Postgres-backed DSR state fields associated with this privacy request.
         """
-        logger.info(f"Clearing cached values for privacy request {self.id}")
-        store = get_dsr_cache_store(self.id)
-        store.clear()
+        logger.info("Clearing DSR store state for privacy request {}", self.id)
+        self._dsr_store().clear_privacy_request_state()
 
     def delete(self, db: Session) -> None:
         """
-        Clean up the cached and persisted data related to this privacy request before
-        deleting this object from the database
+        Clean up persisted DSR state and related data for this privacy request before
+        deleting this object from the database.
         """
-        self.clear_cached_values()
+        self.clear_dsr_state()
         self.cleanup_external_storage()
         AttachmentService(db).delete_for_reference(
             self.id, AttachmentReferenceType.privacy_request
@@ -516,22 +530,10 @@ class PrivacyRequest(
     def cache_identity(
         self, identity: Union[Identity, Dict[str, LabeledIdentity]]
     ) -> None:
-        """Sets the identity's values at their specific locations in the Fides app cache"""
-        if isinstance(identity, dict):
-            identity = Identity(**identity)
-
-        identity_dict: Dict[str, Any] = identity.labeled_dict()
-
-        store = get_dsr_cache_store(self.id)
-        # Encode values for Redis storage
-        encoded_dict = {
-            key: FidesopsRedis.encode_obj(value)
-            for key, value in identity_dict.items()
-            if value is not None
-        }
-        store.cache_identity_data(
-            encoded_dict,
-            expire_seconds=CONFIG.redis.default_ttl_seconds,
+        """Identity values are persisted via ``persist_identity``; Redis caching was removed."""
+        logger.debug(
+            "cache_identity is a no-op for privacy request {} (identity is DB-backed)",
+            self.id,
         )
 
     def cache_custom_privacy_request_fields(
@@ -540,26 +542,14 @@ class PrivacyRequest(
             Dict[str, CustomPrivacyRequestFieldSchema]
         ] = None,
     ) -> None:
-        """Sets each of the custom privacy request fields values under their own key in the cache"""
+        """Custom fields are persisted on ``CustomPrivacyRequestField`` rows; Redis caching was removed."""
         if not custom_privacy_request_fields:
             return
 
         if not CONFIG.execution.allow_custom_privacy_request_field_collection:
             return
 
-        if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
-            store = get_dsr_cache_store(self.id)
-            # Encode values for Redis storage
-            encoded_fields = {
-                key: json.dumps(item.value, cls=CustomJSONEncoder)
-                for key, item in custom_privacy_request_fields.items()
-                if item is not None
-            }
-            store.cache_custom_fields(
-                encoded_fields,
-                expire_seconds=CONFIG.redis.default_ttl_seconds,
-            )
-        else:
+        if not CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
             logger.info(
                 "Custom fields from privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution' is set to false and prevents their usage.",
                 self.id,
@@ -675,9 +665,8 @@ class PrivacyRequest(
         return self
 
     def get_cached_encryption_key(self) -> Optional[str]:
-        """Gets the cached encryption key for this privacy request."""
-        store = get_dsr_cache_store(self.id)
-        raw = store.get_encryption("key")
+        """Gets the persisted encryption key for this privacy request."""
+        raw = self._dsr_store().get_encryption("key")
         if raw is None:
             return None
         if isinstance(raw, bytes):
@@ -685,21 +674,18 @@ class PrivacyRequest(
         return str(raw)
 
     def get_cached_task_id(self) -> Optional[str]:
-        """Gets the cached task ID for this privacy request."""
-        store = get_dsr_cache_store(self.id)
-        task_id = store.get_async_execution()
-        if isinstance(task_id, bytes):
-            return task_id.decode(CONFIG.security.encoding)
-        return task_id
+        """Gets the persisted Celery task ID for this privacy request."""
+        return self.celery_task_id
 
     def get_async_execution_task(self) -> Optional[AsyncResult]:
         """Returns a task reflecting the state of this privacy request's asynchronous execution."""
         task_id = self.get_cached_task_id()
-        res: AsyncResult = AsyncResult(task_id)
-        return res
+        if not task_id:
+            return None
+        return AsyncResult(task_id)
 
-    def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
-        """Sets the DRP request body values at their specific locations in the Fides app cache"""
+    def persist_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
+        """Persist DRP request body fields on the privacy request row (Postgres ``DSRStore``)."""
         drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
 
         # Serialize complex objects to repr format for storage
@@ -712,19 +698,17 @@ class PrivacyRequest(
                 else:
                     serialized_body[key] = value
 
-        store = get_dsr_cache_store(self.id)
-        store.cache_drp_request_body(
+        self._dsr_store().merge_drp_request_body(
             serialized_body,
             expire_seconds=CONFIG.redis.default_ttl_seconds,
         )
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
-        """Sets the encryption key in the Fides app cache if provided"""
+        """Sets the encryption key on the privacy request row if provided."""
         if not encryption_key:
             return
 
-        store = get_dsr_cache_store(self.id)
-        store.write_encryption(
+        self._dsr_store().write_encryption(
             "key",
             encryption_key,
             expire_seconds=CONFIG.redis.default_ttl_seconds,
@@ -750,63 +734,23 @@ class PrivacyRequest(
             )
 
     def verify_cache_for_identity_data(self) -> bool:
-        """Verifies if the identity data is cached for this request"""
-        store = get_dsr_cache_store(self.id)
-        return store.has_cached_identity_data()
+        """Returns True if persisted identity rows exist for this request."""
+        return bool(self.provided_identities)  # type: ignore[attr-defined]
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache"""
-        store = get_dsr_cache_store(self.id)
-        result = store.get_cached_identity_data()
-
-        if not result:
-            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
-            identity = self.get_persisted_identity()
-            self.cache_identity(identity)
-            result = store.get_cached_identity_data()
-
-        # Parse JSON values for backward compatibility
+        """Return persisted identity values for this request (relational DB; not Redis)."""
+        identity = self.get_persisted_identity()
         parsed_result: Dict[str, Any] = {}
-        for key, value in result.items():
-            try:
-                # try parsing the value as JSON
-                parsed_result[key] = json.loads(value)
-            except json.JSONDecodeError:
-                # if parsing as JSON fails, assume it's a string.
-                # this is purely for backward compatibility: to ensure
-                # that identity data stored pre-2.34.0 in the "old" format
-                # can still be correctly retrieved from the cache.
+        for key, value in identity.labeled_dict().items():
+            if hasattr(value, "model_dump"):
+                parsed_result[key] = value.model_dump()
+            else:
                 parsed_result[key] = value
-
         return parsed_result
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
-        """Retrieves any custom fields pertaining to this request from the cache"""
-        store = get_dsr_cache_store(self.id)
-        result = store.get_cached_custom_fields()
-
-        if not result:
-            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
-            custom_privacy_request_fields = (
-                self.get_persisted_custom_privacy_request_fields()
-            )
-            self.cache_custom_privacy_request_fields(
-                {
-                    key: CustomPrivacyRequestFieldSchema(**value)
-                    for key, value in custom_privacy_request_fields.items()
-                }
-            )
-            result = store.get_cached_custom_fields()
-
-        # Parse JSON values
-        parsed_result: Dict[str, Any] = {}
-        for key, value in result.items():
-            try:
-                parsed_result[key] = json.loads(value)
-            except json.JSONDecodeError:
-                parsed_result[key] = value
-
-        return parsed_result
+        """Return persisted custom field values for this request (relational DB; not Redis)."""
+        return dict(self.get_persisted_custom_privacy_request_fields())
 
     def cache_email_connector_template_contents(
         self,
@@ -814,31 +758,44 @@ class PrivacyRequest(
         collection: CollectionAddress,
         action_needed: List[ManualAction],
     ) -> None:
-        """Cache the raw details needed to email to a third party service regarding action they must complete
-        on their end for the given collection"""
-        cache_action_required(
-            cache_key=f"EMAIL_INFORMATION__{self.id}__{step.value}__{collection.dataset}__{collection.collection}",
+        """Persist email connector template details on the matching ``RequestTask`` row."""
+        db = Session.object_session(self)
+        if db is None:
+            raise RuntimeError("PrivacyRequest must be bound to a Session")
+
+        rt = (
+            db.query(RequestTask)
+            .filter(
+                RequestTask.privacy_request_id == self.id,
+                RequestTask.collection_address == collection.value,
+            )
+            .first()
+        )
+        if rt is None:
+            raise RuntimeError(
+                f"No RequestTask found for privacy request {self.id} at {collection.value} to store email checkpoint"
+            )
+
+        checkpoint = CheckpointActionRequired(
             step=step,
             collection=collection,
             action_needed=action_needed,
+        ).model_dump(mode="json")
+        self._dsr_store().append_email_checkpoint(
+            request_task_id=rt.id,
+            checkpoint=checkpoint,
         )
 
     def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
     ) -> List[CheckpointActionRequired]:
-        """Retrieve the raw details to populate an email template for collections on a given dataset."""
-        cache: FidesopsRedis = get_cache()
-        email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
-            f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
+        """Retrieve persisted email connector template details for a dataset."""
+        entries = self._dsr_store().get_email_checkpoints_for_dataset(
+            privacy_request_id=self.id,
+            step=step.value,
+            dataset=dataset,
         )
-
-        actions: List[CheckpointActionRequired] = []
-        for email_content in email_contents.values():
-            if email_content:
-                actions.append(
-                    _parse_cache_to_checkpoint_action_required(email_content)
-                )
-        return actions
+        return [_parse_cache_to_checkpoint_action_required(e) for e in entries]
 
     def cache_paused_collection_details(
         self,
@@ -847,80 +804,93 @@ class PrivacyRequest(
         action_needed: Optional[List[ManualAction]] = None,
     ) -> None:
         """
-        Cache details about the paused step, paused collection, and any action needed to resume the privacy request.
+        Persist details about the paused step, paused collection, and any action needed to resume the privacy request.
         """
-        cache_action_required(
-            cache_key=f"PAUSED_LOCATION__{self.id}",
-            step=step,
-            collection=collection,
-            action_needed=action_needed,
+        self._dsr_store().write_paused_checkpoint(
+            step=step.value if step else None,
+            collection=collection.value if collection else None,
+            action_needed=[a.model_dump(mode="json") for a in action_needed]
+            if action_needed
+            else None,
         )
 
     def get_paused_collection_details(
         self,
     ) -> Optional[CheckpointActionRequired]:
-        """Return details about the paused step, paused collection, and any action needed to resume the paused privacy request.
+        """Return persisted details about the paused privacy request checkpoint."""
+        step, collection_str, action_needed = self._dsr_store().read_paused_checkpoint()
+        if not step:
+            return None
 
-        The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
-        portion of the privacy request flow, and the collection tells us where we should cache manual input data for later use,
-        In other words, this manual data belongs to this collection.
-        """
-        return get_action_required_details(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
+        collection = (
+            CollectionAddress.from_string(collection_str) if collection_str else None
+        )
+        manual_actions = (
+            [ManualAction(**action) for action in action_needed] if action_needed else None
+        )
+        return CheckpointActionRequired(
+            step=CurrentStep(step),
+            collection=collection,
+            action_needed=manual_actions,
+        )
 
     def cache_failed_checkpoint_details(
         self,
         step: Optional[CurrentStep] = None,
     ) -> None:
         """
-        Cache the checkpoint reached in the Privacy Request so it can be resumed from this point in
+        Persist the checkpoint reached in the Privacy Request so it can be resumed from this point in
         case of failure.
 
         """
-        cache_action_required(
-            cache_key=f"FAILED_LOCATION__{self.id}",
-            step=step,
-            collection=None,  # Deprecated for failed checkpoint details
+        self._dsr_store().write_failed_checkpoint(
+            step=step.value if step else None,
+            collection=None,
             action_needed=None,
         )
 
     def get_failed_checkpoint_details(
         self,
     ) -> Optional[CheckpointActionRequired]:
-        """Get the latest checkpoint reached in Privacy Request processing so we know where to resume
-        in case of failure.
-        """
-        return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
+        """Get the latest persisted failed checkpoint details for this privacy request."""
+        step, collection_str, action_needed = self._dsr_store().read_failed_checkpoint()
+        if not step:
+            return None
+
+        collection = (
+            CollectionAddress.from_string(collection_str) if collection_str else None
+        )
+        manual_actions = (
+            [ManualAction(**action) for action in action_needed] if action_needed else None
+        )
+        return CheckpointActionRequired(
+            step=CurrentStep(step),
+            collection=collection,
+            action_needed=manual_actions,
+        )
 
     def cache_manual_webhook_access_input(
         self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
     ) -> None:
-        """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
-        which is *NOT* integrated with the graph.
-
-        Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
-        """
-        cache: FidesopsRedis = get_cache()
+        """Persist manually added data for the given manual webhook (access)."""
         parsed_data = manual_webhook.fields_schema.model_validate(input_data)
-
-        cache.set_encoded_object(
-            f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.model_dump(mode="json"),
+        self._dsr_store().upsert_manual_webhook_input(
+            privacy_request_id=self.id,
+            manual_webhook_id=manual_webhook.id,
+            action_type=ActionType.access.value,
+            input_data=parsed_data.model_dump(mode="json"),
         )
 
     def cache_manual_webhook_erasure_input(
         self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
     ) -> None:
-        """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
-        which is *NOT* integrated with the graph.
-
-        Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
-        """
-        cache: FidesopsRedis = get_cache()
+        """Persist manually added data for the given manual webhook (erasure)."""
         parsed_data = manual_webhook.erasure_fields_schema.model_validate(input_data)
-
-        cache.set_encoded_object(
-            f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.model_dump(mode="json"),
+        self._dsr_store().upsert_manual_webhook_input(
+            privacy_request_id=self.id,
+            manual_webhook_id=manual_webhook.id,
+            action_type=ActionType.erasure.value,
+            input_data=parsed_data.model_dump(mode="json"),
         )
 
     def get_manual_webhook_access_input_strict(
@@ -1020,18 +990,19 @@ class PrivacyRequest(
         Cache a dict of collections traversed in the privacy request
         mapped to their associated data uses
         """
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
+        serializable: Dict[str, Any] = {
+            k: (list(v) if isinstance(v, set) else v) for k, v in value.items()
+        }
+        self._dsr_store().write_data_use_map(serializable)
 
     def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
         """
-        Fetch the collection -> data use map cached for this privacy request
+        Fetch the collection -> data use map persisted for this privacy request.
         """
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[Dict[str, Optional[Dict[str, Set[str]]]]] = (
-            cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        )
-        return list(value_dict.values())[0] if value_dict else None
+        raw = self._dsr_store().get_data_use_map()
+        if not raw:
+            return None
+        return {k: set(v) if isinstance(v, list) else set() for k, v in raw.items()}
 
     def trigger_pre_approval_webhook(
         self,
@@ -1215,7 +1186,7 @@ class PrivacyRequest(
             # Use the static method with the raw ID rather than the instance
             # method — we intentionally avoid loading RequestTask ORM objects
             # to prevent pulling large encrypted blobs into memory.
-            task_id = RequestTask.get_cached_task_id_by_id(rt_id)
+            task_id = RequestTask.get_cached_task_id_by_id(db, rt_id)
             if task_id:
                 request_task_celery_ids.append(task_id)
         return request_task_celery_ids
@@ -1672,33 +1643,29 @@ class PrivacyRequestError(Base):
 def _get_manual_access_input_from_cache(
     privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
 ) -> Optional[Dict[str, Any]]:
-    """Get raw manual input uploaded to the privacy request for the given webhook
-    from the cache without attempting to coerce into a Pydantic schema"""
-    cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    """Get raw manual input uploaded to the privacy request for the given webhook."""
+    db = Session.object_session(privacy_request)
+    if db is None:
+        return None
+    return DSRStore(db, privacy_request.id).get_manual_webhook_input(
+        privacy_request_id=privacy_request.id,
+        manual_webhook_id=manual_webhook.id,
+        action_type=ActionType.access.value,
     )
-    if cached_results:
-        return list(cached_results.values())[0]
-    return None
 
 
 def _get_manual_erasure_input_from_cache(
     privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
 ) -> Optional[Dict[str, Any]]:
-    """Get raw manual input uploaded to the privacy request for the given webhook
-    from the cache without attempting to coerce into a Pydantic schema"""
-    cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    """Get raw manual input uploaded to the privacy request for the given webhook."""
+    db = Session.object_session(privacy_request)
+    if db is None:
+        return None
+    return DSRStore(db, privacy_request.id).get_manual_webhook_input(
+        privacy_request_id=privacy_request.id,
+        manual_webhook_id=manual_webhook.id,
+        action_type=ActionType.erasure.value,
     )
-    if cached_results:
-        return list(cached_results.values())[0]
-    return None
 
 
 class PrivacyRequestNotifications(Base):
@@ -1799,49 +1766,6 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
         if value := self.encrypted_value.get("value"):
             self.hashed_value = self.hash_value(value)  # type: ignore
         self.is_hash_migrated = True
-
-
-def cache_action_required(
-    cache_key: str,
-    step: Optional[CurrentStep] = None,
-    collection: Optional[CollectionAddress] = None,
-    action_needed: Optional[List[ManualAction]] = None,
-) -> None:
-    """Generic method to cache information about additional action required for a collection.
-
-    For example, we might pause a privacy request at the access step of the postgres_example:address collection.  The
-    user might need to retrieve an "email" field and an "address" field where the customer_id is 22 to resume the request.
-
-    The "step" describes whether action is needed in the access or the erasure portion of the request.
-    """
-    cache: FidesopsRedis = get_cache()
-    action_required: Optional[CheckpointActionRequired] = None
-    if step:
-        action_required = CheckpointActionRequired(
-            step=step, collection=collection, action_needed=action_needed
-        )
-
-    cache.set_encoded_object(
-        cache_key,
-        action_required.model_dump() if action_required else None,
-    )
-
-
-def get_action_required_details(
-    cached_key: str,
-) -> Optional[CheckpointActionRequired]:
-    """Get details about the action required for a given collection.
-
-    The "step" lets us know if action is needed in the "access" or the "erasure" portion of the privacy request flow.
-    The "collection" is the node in question, and the "action_needed" describes actions that must be manually
-    performed to complete the request.
-    """
-    cache: FidesopsRedis = get_cache()
-    cached_stopped: Optional[dict[str, Any]] = cache.get_encoded_by_key(cached_key)
-    if cached_stopped:
-        return _parse_cache_to_checkpoint_action_required(cached_stopped)
-
-    return None
 
 
 def _parse_cache_to_checkpoint_action_required(

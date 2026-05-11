@@ -10,7 +10,6 @@ from fides.api.schemas.masking.masking_secrets import (
     MaskingSecretMeta,
     SecretType,
 )
-from fides.api.util.cache import get_cache, get_masking_secret_cache_key
 from fides.config import CONFIG
 
 T = TypeVar("T")
@@ -74,21 +73,8 @@ class SecretsUtil:
         secret_type: SecretType,
     ) -> Optional[Any]:
         """
-        Attempts to retrieve masking secret from cache first, then falls back to DB.
+        Retrieves masking secret from the database.
         """
-        # TODO: get rid of the cache check after a few releases
-        # Try cache first
-        cache = get_cache()
-        cache_key = get_masking_secret_cache_key(
-            privacy_request_id=privacy_request_id,
-            masking_strategy=masking_strategy,
-            secret_type=secret_type,
-        )
-        secret = cache.get_encoded_by_key(cache_key)
-        if secret is not None:
-            return secret
-
-        # Cache miss - try database
         session_local = get_db_session(CONFIG)
         with session_local() as session:
             masking_secret: MaskingSecret = (

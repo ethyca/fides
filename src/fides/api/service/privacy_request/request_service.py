@@ -34,13 +34,13 @@ from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
     get_cache,
-    get_dsr_cache_store,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
     reset_privacy_request_retry_count,
 )
 from fides.api.util.lock import redis_lock
 from fides.config import CONFIG
+from lethe.state import DSRStore
 
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
@@ -91,7 +91,7 @@ def cache_data(
     privacy_request.cache_encryption(encryption_key)  # handles None already
 
     if drp_request_body:
-        privacy_request.cache_drp_request_body(drp_request_body)
+        privacy_request.persist_drp_request_body(drp_request_body)
 
 
 def get_async_client() -> AsyncClient:
@@ -332,17 +332,18 @@ def initiate_polling_task_requeue() -> None:
     )
 
 
-def get_cached_task_id(entity_id: str) -> Optional[str]:
-    """Gets the cached task ID for a privacy request or request task by ID.
+def get_cached_task_id(db: Session, entity_id: str) -> Optional[str]:
+    """Gets the persisted Celery task ID for a privacy request or request task by ID.
 
-    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    Raises Exception if database operations fail, allowing callers to handle failures appropriately.
     """
     try:
-        store = get_dsr_cache_store(entity_id)
-        task_id = store.get_async_execution()
+        task_id = DSRStore(db, entity_id).get_async_execution()
         if isinstance(task_id, bytes):
             return task_id.decode(CONFIG.security.encoding)
-        return task_id
+        if task_id is None:
+            return None
+        return str(task_id)
     except Exception as exc:
         logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")
         raise
@@ -607,7 +608,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
 
                 try:
-                    task_id = get_cached_task_id(privacy_request.id)
+                    task_id = get_cached_task_id(db, privacy_request.id)
                 except Exception as cache_exc:
                     # If we can't get the task ID due to cache failure, fail safe by canceling
                     _cancel_interrupted_tasks_and_error_privacy_request(
@@ -655,7 +656,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         awaiting_upstream,
                     ) in request_tasks_in_progress:
                         try:
-                            subtask_id = get_cached_task_id(request_task_id)
+                            subtask_id = get_cached_task_id(db, request_task_id)
                         except Exception as cache_exc:
                             # If we can't get the subtask ID due to cache failure, fail safe by canceling
                             _cancel_interrupted_tasks_and_error_privacy_request(

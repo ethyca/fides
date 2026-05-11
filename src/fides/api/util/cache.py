@@ -1,5 +1,6 @@
 import json
 import os
+from contextlib import closing
 from typing import Any, Dict, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
@@ -28,10 +29,11 @@ from fides.api.tasks import (
     PRIVACY_PREFERENCES_QUEUE_NAME,
     celery_app,
 )
+from fides.api.db.session import get_db_session
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
-from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
 from fides.config import CONFIG
+from lethe.state import DSRStore
 
 # This constant represents every type a redis key may contain, and can be
 # extended if needed
@@ -328,15 +330,6 @@ def get_redis_cache_manager() -> RedisCacheManager:
     return RedisCacheManager(get_cache())
 
 
-def get_dsr_cache_store(dsr_id: str) -> DSRCacheStore:
-    """Return a DSRCacheStore scoped to a single privacy request."""
-    return DSRCacheStore(
-        dsr_id,
-        get_redis_cache_manager(),
-        default_ttl_seconds=CONFIG.redis.default_ttl_seconds,
-    )
-
-
 def get_read_only_cache() -> FidesopsRedis:
     """
     Return a singleton connection to the read-only Redis cache.
@@ -428,32 +421,30 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
     """Return the *legacy* Redis key for async-execution tracking.
 
-    Prefer ``get_dsr_cache_store(dsr_id).get_async_execution()`` for reads and
-    ``cache_task_tracking_key()`` for writes — both route through the
-    DSRCacheStore which handles legacy fallback automatically.
+    Note: async execution IDs are persisted on ``PrivacyRequest`` / ``RequestTask`` rows.
     """
     return f"id-{privacy_request_id}-async-execution"
 
 
-def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
+def persist_dsr_async_task_id(request_id: str, celery_task_id: str) -> None:
     """
-    Cache the celery task id created to run the Privacy Request or Request Task.
+    Persist the Celery task id for the Privacy Request or Request Task (Postgres ``DSRStore``).
 
-    Note that it is possible a Privacy Request or Request Task is queued multiple times
-    over the life of a Privacy Request so the cached id is the latest task queued
+    A Privacy Request or Request Task may be queued multiple times over its lifetime;
+    this stores the latest task id on the corresponding row.
 
-    :param request_id: Can be the Privacy Request Id or a Request Task ID - these are cached in the same place.
-    :param celery_task_id: The id of the Celery task itself that was queued to run the
-    Privacy Request or the Request Task
-    :return: None
+    :param request_id: Privacy Request id or Request Task id.
+    :param celery_task_id: Celery task id queued to run the Privacy Request or Request Task.
     """
 
     try:
-        store = get_dsr_cache_store(request_id)
-        store.write_async_execution(
-            celery_task_id,
-            expire_seconds=CONFIG.redis.default_ttl_seconds,
-        )
+        SessionLocal = get_db_session(CONFIG)
+        with closing(SessionLocal()) as db:
+            DSRStore(db, request_id).write_async_execution(
+                celery_task_id,
+                expire_seconds=CONFIG.redis.default_ttl_seconds,
+            )
+            db.commit()
     except DataError:
         logger.debug(
             "Error tracking task_id for privacy request or request task with id {}",
@@ -466,15 +457,25 @@ def get_privacy_request_retry_cache_key(privacy_request_id: str) -> str:
     return f"id-{privacy_request_id}-privacy-request-retry-count"
 
 
+def _privacy_request_model():
+    """Import ``PrivacyRequest`` lazily to avoid circular imports (``request_task`` → ``cache`` → models)."""
+    from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+
+    return PrivacyRequest
+
+
 def get_privacy_request_retry_count(privacy_request_id: str) -> int:
     """Get the current retry count for a privacy request requeue attempts.
 
-    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    Raises Exception if database operations fail, allowing callers to handle failures appropriately.
     """
-    cache: FidesopsRedis = get_cache()
     try:
-        retry_count = cache.get(get_privacy_request_retry_cache_key(privacy_request_id))
-        return int(retry_count) if retry_count else 0
+        SessionLocal = get_db_session(CONFIG)
+        with closing(SessionLocal()) as db:
+            pr = db.get(_privacy_request_model(), privacy_request_id)
+            if pr is None:
+                return 0
+            return int(pr.requeue_retry_count or 0)
     except Exception as exc:
         logger.error(
             f"Failed to get retry count for privacy request {privacy_request_id}: {exc}"
@@ -485,17 +486,18 @@ def get_privacy_request_retry_count(privacy_request_id: str) -> int:
 def increment_privacy_request_retry_count(privacy_request_id: str) -> int:
     """Increment and return the retry count for a privacy request requeue attempts.
 
-    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    Raises Exception if database operations fail, allowing callers to handle failures appropriately.
     """
-    cache: FidesopsRedis = get_cache()
-    cache_key = get_privacy_request_retry_cache_key(privacy_request_id)
-
     try:
-        # Increment the counter, will be 1 if key doesn't exist
-        new_count = cache.incr(cache_key)
-        # Set expiry to prevent cache buildup (24 hours)
-        cache.expire(cache_key, 86400)
-        return new_count
+        SessionLocal = get_db_session(CONFIG)
+        with closing(SessionLocal()) as db:
+            pr = db.get(_privacy_request_model(), privacy_request_id)
+            if pr is None:
+                raise ValueError(f"Unknown privacy request id: {privacy_request_id}")
+            pr.requeue_retry_count = int(pr.requeue_retry_count or 0) + 1
+            new_count = int(pr.requeue_retry_count)
+            db.commit()
+            return new_count
     except Exception as exc:
         logger.error(
             f"Failed to increment retry count for privacy request {privacy_request_id}: {exc}"
@@ -506,11 +508,16 @@ def increment_privacy_request_retry_count(privacy_request_id: str) -> int:
 def reset_privacy_request_retry_count(privacy_request_id: str) -> None:
     """Reset the retry count for a privacy request requeue attempts.
 
-    Silently fails if cache operations fail since this is cleanup.
+    Silently fails if database operations fail since this is cleanup.
     """
-    cache: FidesopsRedis = get_cache()
     try:
-        cache.delete(get_privacy_request_retry_cache_key(privacy_request_id))
+        SessionLocal = get_db_session(CONFIG)
+        with closing(SessionLocal()) as db:
+            pr = db.get(_privacy_request_model(), privacy_request_id)
+            if pr is None:
+                return
+            pr.requeue_retry_count = 0
+            db.commit()
     except Exception as exc:
         logger.warning(
             f"Failed to reset retry count for privacy request {privacy_request_id}: {exc}"

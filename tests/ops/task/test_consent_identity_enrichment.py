@@ -236,21 +236,12 @@ class TestEnrichIdentitiesForConsent:
     """Tests for the public enrich_identities_for_consent function.
 
     Mocks at the get_connector boundary (Protocol/ABC boundary to external
-    infrastructure) and the DSR cache store (Redis). The connector mock
-    uses a real SQLQueryConfig for query generation.
+    infrastructure). The connector mock uses a real SQLQueryConfig for query generation.
     """
 
     @pytest.fixture(autouse=True)
     def _store_db(self, db):
         self.db = db
-
-    @pytest.fixture(autouse=True)
-    def mock_cache_store(self):
-        with patch(
-            "fides.api.task.consent_identity_enrichment.get_dsr_cache_store"
-        ) as mock_store:
-            mock_store.return_value = MagicMock()
-            yield mock_store
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
     @patch("fides.api.task.task_resources.Connections.build_connector")

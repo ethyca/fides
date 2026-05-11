@@ -154,11 +154,11 @@ Init ==
 \* SYSTEM ACTIONS                                                     *
 \* ================================================================== *
 
-\* Parent dispatches a RequestTask to Celery and caches the task ID.
+\* Parent dispatches a RequestTask to Celery and persists the task ID (Postgres DSRStore).
 \* Sequence in execute_request_tasks.py:
 \*   1. celery_task = celery_task_fn.apply_async(...)
-\*   2. cache_task_tracking_key(request_task.id, celery_task.task_id)
-\* Modeled as atomic (the window between apply_async and cache write
+\*   2. persist_dsr_async_task_id(request_task.id, celery_task.task_id)
+\* Modeled as atomic (the window between apply_async and DB write
 \* is not the failure mode we are investigating here).
 DispatchTask(t) ==
     /\ parent_alive = TRUE

@@ -24,6 +24,8 @@ setup_fidesapi_logger(CONFIG)
 # target_metadata = mymodel.Base.metadata
 from fides.api.models.sql_models import Base
 
+import lethe.state.models  # noqa: F401  # Register lethe-owned models on shared metadata
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

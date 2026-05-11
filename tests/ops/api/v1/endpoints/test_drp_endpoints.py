@@ -18,7 +18,8 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestDRPStatus,
     PrivacyRequestStatus,
 )
-from fides.api.util.cache import cache_task_tracking_key, get_dsr_cache_store
+from fides.api.util.cache import persist_dsr_async_task_id
+from lethe.state import DSRStore
 from fides.common.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
@@ -74,8 +75,8 @@ class TestCreateDrpPrivacyRequest:
         assert response_data["request_id"]
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
-        # test appropriate data is cached
-        store = get_dsr_cache_store(pr.id)
+        # test appropriate data is persisted on the privacy request row
+        store = DSRStore(db, pr.id)
         meta_value = store.get_drp("meta")
         assert meta_value == "DrpMeta(version='0.5')"
         regime_value = store.get_drp("regime")
@@ -122,8 +123,8 @@ class TestCreateDrpPrivacyRequest:
         assert response_data["request_id"]
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
-        # test appropriate data is cached
-        store = get_dsr_cache_store(pr.id)
+        # test appropriate data is persisted on the privacy request row
+        store = DSRStore(db, pr.id)
         meta_value = store.get_drp("meta")
         assert meta_value == "DrpMeta(version='0.5')"
         regime_value = store.get_drp("regime")
@@ -331,8 +332,8 @@ class TestCreateDrpPrivacyRequest:
         assert response_data["request_id"]
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
-        # test appropriate data is cached
-        store = get_dsr_cache_store(pr.id)
+        # test appropriate data is persisted on the privacy request row
+        store = DSRStore(db, pr.id)
         meta_value = store.get_drp("meta")
         assert meta_value == "DrpMeta(version='0.5')"
         regime_value = store.get_drp("regime")
@@ -633,10 +634,10 @@ class TestDrpRevoke:
         privacy_request.save(db)
         canceled_reason = "Accidentally submitted"
 
-        cache_task_tracking_key(
+        persist_dsr_async_task_id(
             privacy_request.id, "mock_celery_task_id_for_privacy_request"
         )
-        cache_task_tracking_key(request_task.id, "mock_celery_task_id_for_request_task")
+        persist_dsr_async_task_id(request_task.id, "mock_celery_task_id_for_request_task")
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
         response = api_client.post(

@@ -16,7 +16,6 @@ from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.graph_task import build_consent_identity_enrichment_graph
 from fides.api.task.task_resources import Connections
-from fides.api.util.cache import FidesopsRedis, get_dsr_cache_store
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
 
@@ -332,13 +331,9 @@ def _cache_and_log_enrichment(
     session: Session,
     source: str,
 ) -> None:
-    """Cache discovered identities in Redis and write an execution log."""
-    store = get_dsr_cache_store(privacy_request.id)
-    for key in new_keys:
-        store.cache_identity_data(
-            {key: FidesopsRedis.encode_obj(enriched[key])},
-            expire_seconds=CONFIG.redis.default_ttl_seconds,
-        )
+    """Write an execution log for discovered identities (identity cache was removed)."""
+    _ = enriched
+    _ = new_keys
     privacy_request.add_success_execution_log(
         session,
         connection_key=None,

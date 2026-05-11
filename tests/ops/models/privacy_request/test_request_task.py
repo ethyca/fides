@@ -5,7 +5,7 @@ from sqlalchemy.orm import Query
 from fides.api.models.privacy_request.request_task import RequestTask, TraversalDetails
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import ActionType
-from fides.api.util.cache import cache_task_tracking_key
+from fides.api.util.cache import persist_dsr_async_task_id
 
 
 @pytest.fixture
@@ -76,9 +76,9 @@ class TestGetCeleryTaskRequestTaskIds:
 
         assert privacy_request.get_request_task_celery_task_ids() == []
 
-        cache_task_tracking_key(request_task.id, "test_celery_task_key")
+        persist_dsr_async_task_id(request_task.id, "test_celery_task_key")
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        cache_task_tracking_key(root_task.id, "test_root_task_celery_key")
+        persist_dsr_async_task_id(root_task.id, "test_root_task_celery_key")
 
         assert set(privacy_request.get_request_task_celery_task_ids()) == {
             "test_celery_task_key",
@@ -92,7 +92,7 @@ class TestGetCeleryTaskRequestTaskIds:
         projection query and NOT load full RequestTask ORM objects. Loading full
         objects pulls in _access_data and _data_for_erasures encrypted blobs,
         which caused OOM crashes when the cancel path ran in the webserver."""
-        cache_task_tracking_key(request_task.id, "test_celery_task_key")
+        persist_dsr_async_task_id(request_task.id, "test_celery_task_key")
 
         # Expire all cached ORM state so the method must query the DB
         db.expire_all()

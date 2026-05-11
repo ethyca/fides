@@ -1,5 +1,5 @@
 from typing import Any, Dict, Generator
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy import text
@@ -159,14 +159,6 @@ def consent_enrichment_dataset_config(
 
 @pytest.mark.usefixtures("enable_identity_enrichment")
 class TestConsentIdentityEnrichmentIntegration:
-    @pytest.fixture(autouse=True)
-    def mock_cache_store(self):
-        with patch(
-            "fides.api.task.consent_identity_enrichment.get_dsr_cache_store"
-        ) as mock_store:
-            mock_store.return_value = MagicMock()
-            yield mock_store
-
     def test_enriches_email_from_external_id(
         self,
         db,
@@ -305,14 +297,6 @@ class TestConsentIdentityEnrichmentIntegration:
 class TestPreferenceBasedEnrichment:
     """Test the fast path: resolving missing identities from
     CurrentPrivacyPreference records before falling back to DB connectors."""
-
-    @pytest.fixture(autouse=True)
-    def mock_cache_store(self):
-        with patch(
-            "fides.api.task.consent_identity_enrichment.get_dsr_cache_store"
-        ) as mock_store:
-            mock_store.return_value = MagicMock()
-            yield mock_store
 
     @pytest.fixture()
     def preference_with_both_identities(self, db):
