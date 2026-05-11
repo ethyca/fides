@@ -80,6 +80,10 @@ const IntegrationPrivacyRequests = ({
   const [datasetSearchValue, setDatasetSearchValue] = useState("");
   const [selectedDatasetKeys, setSelectedDatasetKeys] = useState<string[]>([]);
   const [isLinkingSelected, setIsLinkingSelected] = useState(false);
+  // Track which row's unlink PUT is in flight so we can disable its button
+  // (and gate the confirmation modal's OK) — without a guard, a double-click
+  // races two concurrent PUTs that both overwrite the whole linked-key list.
+  const [unlinkingKey, setUnlinkingKey] = useState<string | null>(null);
 
   const { data: linkedDatasetsPage, isLoading: isLoadingLinkedDatasets } =
     useGetConnectionConfigDatasetConfigsQuery(connection.key, {
@@ -192,22 +196,30 @@ const IntegrationPrivacyRequests = ({
   };
 
   const handleConfirmUnlink = async (datasetKey: string) => {
-    const result = await writeLinkedDatasetKeys(
-      linkedDatasetKeys.filter((k) => k !== datasetKey),
-    );
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      return;
+    setUnlinkingKey(datasetKey);
+    try {
+      const result = await writeLinkedDatasetKeys(
+        linkedDatasetKeys.filter((k) => k !== datasetKey),
+      );
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+      const firstFailure = result.data?.failed?.[0];
+      if (firstFailure) {
+        messageApi.error(firstFailure.message);
+        return;
+      }
+      messageApi.success("Dataset unlinked successfully");
+    } finally {
+      setUnlinkingKey(null);
     }
-    const firstFailure = result.data?.failed?.[0];
-    if (firstFailure) {
-      messageApi.error(firstFailure.message);
-      return;
-    }
-    messageApi.success("Dataset unlinked successfully");
   };
 
   const handleUnlinkClicked = (datasetKey: string, datasetName: string) => {
+    if (unlinkingKey) {
+      return;
+    }
     modalApi.confirm({
       title: "Unlink dataset",
       content: (
@@ -356,7 +368,7 @@ const IntegrationPrivacyRequests = ({
             width={720}
             wrapProps={{ "data-testid": "link-dataset-modal" }}
           >
-            <Flex vertical gap="medium">
+            <Flex vertical gap="middle">
               <Input.Search
                 placeholder="Search datasets..."
                 allowClear
@@ -407,7 +419,7 @@ const IntegrationPrivacyRequests = ({
           </Modal>
 
           {isLoadingLinkedDatasets ? (
-            <div className="h-32">
+            <div className="flex h-32 items-center justify-center">
               <Spin />
             </div>
           ) : (
@@ -444,6 +456,11 @@ const IntegrationPrivacyRequests = ({
                             datasetConfig.fides_key,
                             datasetName,
                           )
+                        }
+                        loading={unlinkingKey === datasetConfig.fides_key}
+                        disabled={
+                          unlinkingKey !== null &&
+                          unlinkingKey !== datasetConfig.fides_key
                         }
                         className="px-1"
                         data-testid={`unlink-dataset-${datasetConfig.fides_key}`}
@@ -486,9 +503,7 @@ const IntegrationPrivacyRequests = ({
                           )}
                         </Flex>
                       }
-                      description={
-                        datasetConfig.ctl_dataset?.description ?? undefined
-                      }
+                      description={datasetConfig.ctl_dataset?.description}
                     />
                   </List.Item>
                 );
