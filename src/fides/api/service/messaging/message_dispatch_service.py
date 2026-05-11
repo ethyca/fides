@@ -685,3 +685,5 @@ def get_email_messaging_config_service_type(db: Session) -> Optional[str]:
         return MessagingServiceType.mailchimp_transactional.value
 
     return None
+
+
