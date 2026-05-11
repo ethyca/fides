@@ -196,7 +196,8 @@ class TestMailchimpTransactionalHeaders:
         )
         msg = payload["message"]
 
-        assert msg["headers"]["Reply-To"] == "reply+token123@replies.example.com"
+        assert msg["reply_to"] == "reply+token123@replies.example.com"
+        assert "Reply-To" not in msg.get("headers", {})
         assert msg["headers"]["Message-ID"] == "<msg-001@example.com>"
         assert msg["headers"]["In-Reply-To"] == "<msg-000@example.com>"
         assert msg["headers"]["References"] == "<msg-000@example.com>"
