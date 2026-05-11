@@ -1,4 +1,5 @@
 import re
+from email import policy as email_policy
 from email.message import EmailMessage
 from typing import Any, Protocol
 
@@ -35,7 +36,7 @@ class SESClient(Protocol):
         Source: str,
         Destinations: list[str],
         RawMessage: dict[str, bytes],
-    ) -> dict[str, str]: ...
+    ) -> dict[str, Any]: ...
 
 
 def _sanitize_aws_error(exc: Exception) -> str:
@@ -170,7 +171,7 @@ class AwsSesService(BaseEmailProviderService):
         from_address: str, to: str, message: EmailForActionType
     ) -> EmailMessage:
         """Build a MIME EmailMessage with optional threading headers."""
-        msg = EmailMessage()
+        msg = EmailMessage(policy=email_policy.SMTP)
         msg["From"] = from_address
         msg["To"] = to
         msg["Subject"] = message.subject

@@ -35,10 +35,12 @@ class MailchimpTransactionalService(BaseEmailProviderService):
             "to": [{"email": to.strip(), "type": "to"}],
         }
 
-        # Threading / envelope headers
-        headers = {}
+        # Reply-to uses Mandrill's native field
         if message.reply_to:
-            headers["Reply-To"] = message.reply_to
+            msg_payload["reply_to"] = message.reply_to
+
+        # Threading headers go in the headers dict (no native Mandrill equivalents)
+        headers = {}
         if message.message_id:
             headers["Message-ID"] = message.message_id
         if message.in_reply_to:

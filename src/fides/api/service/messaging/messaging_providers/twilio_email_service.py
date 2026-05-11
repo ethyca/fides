@@ -65,7 +65,12 @@ class TwilioEmailService(BaseEmailProviderService):
                 if value:
                     mail.header = Header(key, value)
             if message.body_text:
-                mail.add_content(Content("text/plain", message.body_text))
+                # RFC 2046: in multipart/alternative, last part is most preferred.
+                # Place text/plain before text/html so HTML is preferred.
+                mail.contents = [
+                    Content("text/plain", message.body_text),
+                    Content("text/html", message.body),
+                ]
 
             response = sg.client.mail.send.post(request_body=mail.get())
             if response.status_code >= 400:
