@@ -191,6 +191,10 @@ packages = ["src/fides"]
 # populated by our clients/admin-ui build process to allow the Admin UI app to
 # be distributed as part of the ethyca-fides Python package.
 artifacts = ["src/fides/ui-build"]
+# Bundle policy-engine Go source so downstream consumers can build libpbac
+# from the same fides commit they installed.
+[tool.hatch.build.targets.wheel.force-include]
+"policy-engine" = "fides/policy-engine"
 
 [tool.hatch.build.targets.sdist]
 # Ensure that the "ui-build" folder is included in wheel and sdist (see above)

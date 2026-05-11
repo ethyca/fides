@@ -1,0 +1,4 @@
+type: Fixed
+description: Surface integration save errors under the offending form field instead of as a transient toast
+pr: 8092
+labels: []

@@ -41,7 +41,65 @@ export interface FlatNavItem {
   path: string;
   groupTitle: string;
   parentTitle?: string;
+  /** Hand-curated aliases/synonyms; matched by nav search alongside title/group/parent. */
+  keywords?: string[];
 }
+
+/** Relevance tiers for nav search ranking, lower is better. */
+export const NavMatchTier = {
+  TITLE: 0,
+  PARENT: 1,
+  GROUP: 2,
+  KEYWORD: 3,
+  NONE: Number.POSITIVE_INFINITY,
+} as const;
+
+/**
+ * Relevance rank for a nav item against a query, lower is better.
+ * An empty/whitespace query ranks every item as 0 (no preference).
+ */
+export const navMatchRank = (item: FlatNavItem, query: string): number => {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    return NavMatchTier.TITLE;
+  }
+  if (item.title.toLowerCase().includes(q)) {
+    return NavMatchTier.TITLE;
+  }
+  if (item.parentTitle?.toLowerCase().includes(q)) {
+    return NavMatchTier.PARENT;
+  }
+  if (item.groupTitle.toLowerCase().includes(q)) {
+    return NavMatchTier.GROUP;
+  }
+  if (item.keywords?.some((k) => k.toLowerCase().includes(q))) {
+    return NavMatchTier.KEYWORD;
+  }
+  return NavMatchTier.NONE;
+};
+
+/**
+ * Case-insensitive substring match for a nav item. Checks the item's title,
+ * group title, parent title, and any hand-curated keywords.
+ * An empty/whitespace query matches everything.
+ */
+export const matchesNavQuery = (item: FlatNavItem, query: string): boolean =>
+  Number.isFinite(navMatchRank(item, query));
+
+/**
+ * Filter `items` to those matching `query`, then sort by relevance so that
+ * direct title matches appear before parent/group/keyword matches. Stable
+ * within each rank, preserving the original nav-config ordering.
+ */
+export const filterAndRankNavItems = (
+  items: FlatNavItem[],
+  query: string,
+): FlatNavItem[] =>
+  items
+    .map((item) => ({ item, rank: navMatchRank(item, query) }))
+    .filter(({ rank }) => Number.isFinite(rank))
+    .sort((a, b) => a.rank - b.rank)
+    .map(({ item }) => item);
 
 /**
  * Builds the full list of searchable nav items, including:
@@ -68,12 +126,14 @@ const useNavSearchItems = (
               title: child.title,
               path: child.path,
               groupTitle: group.title,
+              keywords: child.keywords,
             },
             ...(child.tabs?.map((tab) => ({
               title: tab.title,
               path: tab.path,
               groupTitle: group.title,
               parentTitle: child.title,
+              keywords: tab.keywords,
             })) ?? []),
           ]),
       ),

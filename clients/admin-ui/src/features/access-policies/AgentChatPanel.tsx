@@ -3,8 +3,8 @@ import {
   Avatar,
   Bubble,
   Flex,
+  Icons,
   Sender,
-  Tag,
   Typography,
   useMessage,
 } from "fidesui";
@@ -131,7 +131,14 @@ const AgentChatPanel = ({
         role: msg.role === "user" ? "user" : "ai",
         content: msg.content,
         footer: msg.yamlApplied ? (
-          <Tag color="success">Policy updated</Tag>
+          <Flex align="center" gap="small">
+            <Icons.CheckmarkFilled
+              style={{ color: "var(--fidesui-color-success)" }}
+            />
+            <Typography.Text type="secondary">
+              The policy was updated
+            </Typography.Text>
+          </Flex>
         ) : undefined,
       })),
     [messages],
@@ -142,6 +149,9 @@ const AgentChatPanel = ({
       user: {
         placement: "end" as const,
         variant: "filled" as const,
+        styles: {
+          content: { background: "var(--fidesui-color-fill-content)" },
+        },
       },
       ai: {
         placement: "start" as const,
@@ -155,7 +165,7 @@ const AgentChatPanel = ({
   return (
     <Flex vertical className={styles.panel} data-testid="agent-chat-panel">
       <Flex align="center" gap="small" className={styles.header}>
-        <Typography.Text strong>Policy builder agent</Typography.Text>
+        <Typography.Title level={3}>Policy builder agent</Typography.Title>
       </Flex>
 
       <div className={styles.body}>
@@ -189,6 +199,7 @@ const AgentChatPanel = ({
           onSubmit={handleSend}
           loading={isLoading}
           placeholder="Describe your policy…"
+          autoSize={{ minRows: 1, maxRows: 12 }}
         />
       </div>
     </Flex>
