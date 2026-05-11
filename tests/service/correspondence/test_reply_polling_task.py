@@ -75,6 +75,34 @@ class TestPollReplyMailboxTask:
 
         mock_service.assert_not_called()
 
+    def test_service_exception_propagates(self, monkeypatch):
+        """Exception from the registered service fn propagates as a Celery task failure."""
+        monkeypatch.setattr(
+            reply_polling_task,
+            "_service_fn",
+            MagicMock(side_effect=RuntimeError("boom")),
+        )
+
+        mock_session = MagicMock()
+
+        @contextmanager
+        def _fake_lock(*_args, **_kwargs):
+            yield MagicMock()
+
+        @contextmanager
+        def _fake_get_new_session(_self):
+            yield mock_session
+
+        with (
+            patch.object(reply_polling_task, "redis_lock", _fake_lock),
+            patch(
+                "fides.service.correspondence.reply_polling_task.DatabaseTask.get_new_session",
+                _fake_get_new_session,
+            ),
+            pytest.raises(RuntimeError, match="boom"),
+        ):
+            poll_reply_mailbox.apply().get()
+
 
 class TestInitiateReplyPolling:
     def test_skips_in_test_mode(self, monkeypatch):

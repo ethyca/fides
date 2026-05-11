@@ -30,6 +30,8 @@ NOTIFICATION_JOB = "dsr_notifications"
 NOTIFICATION_LOCK = "dsr_notifications_lock"
 NOTIFICATION_LOCK_TIMEOUT = 600
 
+# Set once at startup by Fidesplus via the register_* functions;
+# only read thereafter by Celery workers.  Safe under CPython's GIL.
 _sweep_fn: Callable[[Session], None] | None = None
 _notify_fn: Callable[[Session, str, str], None] | None = None
 

@@ -65,6 +65,29 @@ class TestNotifyTask:
             mock_session, "req-123", "request_completed"
         )
 
+    def test_handler_exception_propagates(self, monkeypatch):
+        """Exception from the registered handler propagates as a Celery task failure."""
+        monkeypatch.setattr(
+            notification_task,
+            "_notify_fn",
+            MagicMock(side_effect=RuntimeError("boom")),
+        )
+
+        mock_session = MagicMock()
+
+        @contextmanager
+        def _fake_get_new_session(_self):
+            yield mock_session
+
+        with (
+            patch(
+                "fides.service.notifications.notification_task.DatabaseTask.get_new_session",
+                _fake_get_new_session,
+            ),
+            pytest.raises(RuntimeError, match="boom"),
+        ):
+            notify.apply(args=["req-123", "request_completed"]).get()
+
 
 # ── Sweep task ───────────────────────────────────────────────────────
 
@@ -120,6 +143,34 @@ class TestSweepNotificationsTask:
             sweep_notifications.apply().get()
 
         mock_sweep.assert_not_called()
+
+    def test_sweep_exception_propagates(self, monkeypatch):
+        """Exception from the registered sweep fn propagates as a Celery task failure."""
+        monkeypatch.setattr(
+            notification_task,
+            "_sweep_fn",
+            MagicMock(side_effect=RuntimeError("boom")),
+        )
+
+        mock_session = MagicMock()
+
+        @contextmanager
+        def _fake_lock(*_args, **_kwargs):
+            yield MagicMock()
+
+        @contextmanager
+        def _fake_get_new_session(_self):
+            yield mock_session
+
+        with (
+            patch.object(notification_task, "redis_lock", _fake_lock),
+            patch(
+                "fides.service.notifications.notification_task.DatabaseTask.get_new_session",
+                _fake_get_new_session,
+            ),
+            pytest.raises(RuntimeError, match="boom"),
+        ):
+            sweep_notifications.apply().get()
 
 
 # ── Scheduler wiring ─────────────────────────────────────────────────

@@ -22,6 +22,8 @@ REPLY_POLLING_JOB = "reply_mailbox_polling"
 REPLY_POLLING_LOCK = "reply_mailbox_polling_lock"
 REPLY_POLLING_LOCK_TIMEOUT = 600
 
+# Set once at startup by Fidesplus via register_reply_poll_service();
+# only read thereafter by Celery workers.  Safe under CPython's GIL.
 _service_fn: Callable[[Session], None] | None = None
 
 

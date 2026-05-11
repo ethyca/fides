@@ -9,4 +9,8 @@ This package provides two Celery tasks for DSR lifecycle notifications:
    catch any notifications that were missed or failed on the primary path.
 
 Both are no-ops until Fidesplus registers implementations.
+
+Note: This is distinct from the ``messaging`` package, which is a
+transport layer (email/SMS delivery via SES, Twilio, etc.).  This package
+handles *when* and *why* to notify; ``messaging`` handles *how*.
 """
