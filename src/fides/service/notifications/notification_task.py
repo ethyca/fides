@@ -31,7 +31,10 @@ NOTIFICATION_LOCK = "dsr_notifications_lock"
 NOTIFICATION_LOCK_TIMEOUT = 600
 
 # Set once at startup by Fidesplus via the register_* functions;
-# only read thereafter by Celery workers.  Safe under CPython's GIL.
+# only read thereafter by Celery workers.  Safe under CPython's GIL
+# for threaded workers.  For forked workers (default), registration
+# MUST occur at module import time (before fork) — see registration.py
+# in fidesplus.
 _sweep_fn: Callable[[Session], None] | None = None
 _notify_fn: Callable[[Session, str, str], None] | None = None
 
@@ -58,8 +61,12 @@ def register_notification_handler(fn: Callable[[Session, str, str], None]) -> No
     logger.info("DSR notification handler registered")
 
 
+# No lock: concurrent execution is expected — each invocation targets a
+# distinct privacy_request_id and these can legitimately run in parallel.
 @celery_app.task(base=DatabaseTask, bind=True)
-def notify(self: DatabaseTask, privacy_request_id: str, event_type: str) -> None:
+def send_dsr_notification(
+    self: DatabaseTask, privacy_request_id: str, event_type: str
+) -> None:
     """Send a notification for a specific DSR lifecycle event.
 
     Called directly by DSR lifecycle code (e.g. after a request is

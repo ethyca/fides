@@ -10,9 +10,9 @@ from fides.service.notifications import notification_task
 from fides.service.notifications.notification_task import (
     NOTIFICATION_JOB,
     initiate_notification_task,
-    notify,
     register_notification_handler,
     register_notification_sweep,
+    send_dsr_notification,
     sweep_notifications,
 )
 
@@ -38,11 +38,11 @@ class TestRegisterNotificationHandler:
 # ── Event-driven notify task ─────────────────────────────────────────
 
 
-class TestNotifyTask:
+class TestSendDsrNotificationTask:
     def test_no_op_when_no_handler_registered(self, monkeypatch):
         """No handler registered — task skips without touching the DB."""
         monkeypatch.setattr(notification_task, "_notify_fn", None)
-        notify.apply(args=["req-123", "request_completed"]).get()
+        send_dsr_notification.apply(args=["req-123", "request_completed"]).get()
 
     def test_delegates_to_registered_handler(self, monkeypatch):
         """Handler registered — task calls it with session, request ID, and event type."""
@@ -59,7 +59,7 @@ class TestNotifyTask:
             "fides.service.notifications.notification_task.DatabaseTask.get_new_session",
             _fake_get_new_session,
         ):
-            notify.apply(args=["req-123", "request_completed"]).get()
+            send_dsr_notification.apply(args=["req-123", "request_completed"]).get()
 
         mock_handler.assert_called_once_with(
             mock_session, "req-123", "request_completed"
@@ -86,7 +86,7 @@ class TestNotifyTask:
             ),
             pytest.raises(RuntimeError, match="boom"),
         ):
-            notify.apply(args=["req-123", "request_completed"]).get()
+            send_dsr_notification.apply(args=["req-123", "request_completed"]).get()
 
 
 # ── Sweep task ───────────────────────────────────────────────────────
