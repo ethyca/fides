@@ -21,6 +21,14 @@ const nextConfig = {
     resolveAlias: {
       antd: "antd/lib",
     },
+    rules: {
+      "*.ttf": {
+        type: "asset",
+      },
+      "*.woff2": {
+        type: "asset",
+      },
+    },
   },
   webpack: (config) => {
     config.resolve.alias = {

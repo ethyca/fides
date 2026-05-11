@@ -140,6 +140,9 @@ export const getBrandIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
 
+export const getBrandLogoUrl = (domain: string, size = 300) =>
+  `https://cdn.brandfetch.io/domain/${domain}/type/logo.png/theme/dark/fallback/404/h/${size}/w/${size * 3}?c=1idbRjELpikqQ1PLiqb`;
+
 export const getDomain = (urlOrDomain: string): string => {
   try {
     // Try to parse as URL first

@@ -5,6 +5,8 @@ declare module globalThis {
   let fidesDebugger: (...args: unknown[]) => void;
 }
 
+declare module "*.ttf";
+
 interface Window {
   // Cypress is available on window when running in Cypress tests
   Cypress?: any;

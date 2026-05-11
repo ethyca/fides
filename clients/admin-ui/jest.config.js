@@ -51,6 +51,7 @@ module.exports = {
   transformIgnorePatterns: [
     "/node_modules/(?!(react-hotkeys-hook|@ant-design/x-markdown)/)",
     "^.+\\.module\\.(css|sass|scss)$",
+    "^.+.(ttf)$",
   ],
   watchPathIgnorePatterns: ["node_modules"],
 };

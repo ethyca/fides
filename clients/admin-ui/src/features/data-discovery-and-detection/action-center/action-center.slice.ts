@@ -21,12 +21,14 @@ import {
 import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
+import { ClassificationBreakdownResponse } from "~/types/api/models/ClassificationBreakdownResponse";
 import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
 import { MonitorTaskResponse } from "~/types/api/models/MonitorTaskResponse";
+import { VendorBreakdownResponse } from "~/types/api/models/VendorBreakdownResponse";
 import {
   PaginatedResponse,
   PaginationQueryParams,
@@ -545,7 +547,34 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       providesTags: ["Monitor Tasks"],
     }),
-
+    getVendors: build.query<
+      VendorBreakdownResponse,
+      {
+        monitor_config_id?: string;
+      }
+    >({
+      query: ({ ...params }) => {
+        return {
+          url: `/plus/discovery-monitor/report/vendors`,
+          params,
+        };
+      },
+      // providesTags: ["Monitor Statistics"],
+    }),
+    getClassifications: build.query<
+      ClassificationBreakdownResponse,
+      {
+        monitor_config_id?: string;
+      }
+    >({
+      query: ({ ...params }) => {
+        return {
+          url: `/plus/discovery-monitor/report/classifications`,
+          params,
+        };
+      },
+      // providesTags: ["Monitor Statistics"],
+    }),
     getAggregateStatistics: build.query<
       AggregateStatisticsResponse,
       {
@@ -680,6 +709,7 @@ export const {
   useLazyGetMonitorTreeQuery,
   useLazyGetMonitorTreeAncestorsStatusesQuery,
   useGetMonitorConfigQuery,
+  useLazyGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
   useClassifyStagedResourcesMutation,
   useGetStagedResourceDetailsQuery,
@@ -689,5 +719,9 @@ export const {
   useGetAggregateStatisticsQuery,
   useGetConnectionQuery,
   useCalcAggregateStatisticsMutation,
+  useGetVendorsQuery,
+  useLazyGetVendorsQuery,
+  useGetClassificationsQuery,
+  useLazyGetClassificationsQuery,
   util: actionCenterUtil,
 } = actionCenterApi;
