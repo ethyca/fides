@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed visual bug where long field names in the Action Center monitor results would overflow out of place in some components
-pr: 8095
-labels: []

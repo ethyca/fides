@@ -22,12 +22,10 @@ class MailchimpTransactionalService(BaseEmailProviderService):
 
     def __init__(self, messaging_config: MessagingConfig):
         super().__init__(messaging_config)
-        self.from_email = messaging_config.details[
-            MessagingServiceDetails.EMAIL_FROM.value
-        ]
-        self.api_key = messaging_config.secrets[
-            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
-        ]
+        self.from_email = self._get_detail(MessagingServiceDetails.EMAIL_FROM)
+        self.api_key = self._get_secret(
+            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY
+        )
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
         msg_payload: dict = {
@@ -73,7 +71,12 @@ class MailchimpTransactionalService(BaseEmailProviderService):
                 f"Email failed to send with status code {response.status_code}"
             )
 
-        send_data = response.json()[0]
+        results = response.json()
+        if not isinstance(results, list) or not results:
+            raise MessageDispatchException(
+                "Unexpected empty response from Mailchimp Transactional"
+            )
+        send_data = results[0]
         email_rejected = send_data.get("status", "rejected") == "rejected"
         if email_rejected:
             reason = send_data.get("reject_reason", "Fides Error")

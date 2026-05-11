@@ -1,6 +1,7 @@
 import { ExitGrid } from "fidesui";
 import { HTMLAttributes, useMemo } from "react";
 
+import { APIMonitorType } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { ConfidenceCard } from "./ConfidenceCard";
@@ -14,6 +15,7 @@ interface ConfidenceRowProps extends HTMLAttributes<HTMLDivElement> {
   };
   reviewHref: string;
   monitorId: string;
+  monitorType: APIMonitorType;
 }
 
 export interface ConfidenceCardItem {
@@ -26,6 +28,7 @@ export const ConfidenceRow = ({
   confidenceCounts,
   reviewHref,
   monitorId,
+  monitorType,
   ...props
 }: ConfidenceRowProps) => {
   const dataSource = useMemo<ConfidenceCardItem[]>(
@@ -61,6 +64,7 @@ export const ConfidenceRow = ({
           item={item}
           reviewHref={reviewHref}
           monitorId={monitorId}
+          monitorType={monitorType}
         />
       )}
       {...props}

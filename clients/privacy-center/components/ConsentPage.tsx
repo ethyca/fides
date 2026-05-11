@@ -261,22 +261,21 @@ const ConsentPage: NextPage = () => {
       return;
     }
 
-    initializeI18n(
-      i18n,
-      window?.navigator,
-      experience as PrivacyExperience,
-      {
-        debug: process.env.NODE_ENV === "development",
-      },
-      {},
-    );
+    initializeI18n(i18n, window?.navigator, experience as PrivacyExperience, {
+      debug: process.env.NODE_ENV === "development",
+    });
 
     setI18nInstance(i18n);
     setIsI18nInitialized(true);
   }, [experience, setI18nInstance, isConfigDrivenConsent]);
 
   return (
-    <Stack as="main" align="center" data-testid="consent">
+    <Stack
+      as="main"
+      align="center"
+      data-testid="consent"
+      className="pc-page pc-page--consent pc-consent"
+    >
       <ClientMetadata title="Privacy Center" icon={config.favicon_path} />
 
       {/* Wait until i18n is initalized so we can diplay the correct language and

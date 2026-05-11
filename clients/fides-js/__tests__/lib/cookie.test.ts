@@ -495,10 +495,10 @@ describe("cookies", () => {
     });
 
     it("returns true for wildcard cookies", () => {
-      expect(isWildcardCookie({ name: "_ga[id]" })).toBeTruthy();
+      expect(isWildcardCookie({ name: "_ga-id-" })).toBeTruthy();
       expect(
         isWildcardCookie({
-          name: "_ga_[id]_[id]",
+          name: "_ga_-id-_-id-",
         }),
       ).toBeTruthy();
     });
@@ -615,7 +615,7 @@ describe("cookies", () => {
           other_cookie: "other_value",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          [{ name: "_ga-id-", domain: "foo.com", path: "/bar" }],
           false,
           false,
         );
@@ -629,7 +629,7 @@ describe("cookies", () => {
           other_cookie: "other_value",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          [{ name: "_ga-id-", domain: "foo.com", path: "/bar" }],
           true,
           true,
         );
@@ -644,7 +644,7 @@ describe("cookies", () => {
           foo_abc: "test_value_2",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "_ga[id]" }, { name: "foo_[id]" }],
+          [{ name: "_ga-id-" }, { name: "foo_-id-" }],
           false,
           false,
         );
@@ -659,7 +659,7 @@ describe("cookies", () => {
           cab123: "",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "x[id]" }, { name: "ab[id]" }, { name: "y[id]" }],
+          [{ name: "x-id-" }, { name: "ab-id-" }, { name: "y-id-" }],
           false,
           false,
         );
@@ -670,7 +670,7 @@ describe("cookies", () => {
           ab: "",
           ab123: "",
         } as any);
-        removeCookiesFromBrowser([{ name: "ab[id]" }], false, false);
+        removeCookiesFromBrowser([{ name: "ab-id-" }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
       });
       it("should handle wildcard cookies with special characters", () => {
@@ -679,7 +679,7 @@ describe("cookies", () => {
           [`${prefix}123`]: "test_value",
           other_cookie: "other_value",
         } as any);
-        removeCookiesFromBrowser([{ name: `${prefix}[id]` }], false, false);
+        removeCookiesFromBrowser([{ name: `${prefix}-id-` }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([
           [`${prefix}123`, { path: "/" }],
         ]);
@@ -690,7 +690,7 @@ describe("cookies", () => {
           "_ga_789.101": "test_value_2",
           other_cookie: "other_value",
         } as any);
-        removeCookiesFromBrowser([{ name: "_ga_[id]_[id]" }], false, false);
+        removeCookiesFromBrowser([{ name: "_ga_-id-_-id-" }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([
           ["_ga_123_456", { path: "/" }],
         ]);

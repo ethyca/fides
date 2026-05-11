@@ -619,13 +619,13 @@ export const makeConsentDefaultsLegacy = (
 };
 
 /**
- * Determine if the provided cookie is a wildcard cookie, i.e., the name contains `[id]`.
+ * Determine if the provided cookie is a wildcard cookie, i.e., the name contains `-id-`.
  * These are used to represent sets of cookies that have some sort of a unique identifier
  * in their name. For example, a site might set multiple cookies like `_ga_12345` and
- * `_ga_67890` and both of these will match a wildcard cookie with the name `_ga_[id]`.
+ * `_ga_67890` and both of these will match a wildcard cookie with the name `_ga_-id-`.
  */
 export const isWildcardCookie = (cookie: CookiesType): boolean => {
-  return cookie.name.includes("[id]");
+  return cookie.name.includes("-id-");
 };
 
 /**
@@ -666,7 +666,7 @@ export const removeCookiesFromBrowser = (
     wildcardCookies.forEach((wCookie) => {
       const namePattern = wCookie.name
         .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
-        .replace(/\\\[id\\\]/g, ".+?"); // Replace \[id\] with non-greedy wildcard
+        .replace(/-id-/g, ".+?"); // Replace -id- with non-greedy wildcard
       const pattern = new RegExp(`^(${namePattern})$`);
       Object.keys(allCookies).forEach((name) => {
         if (pattern.test(name)) {

@@ -66,23 +66,20 @@ from fides.config.config_proxy import ConfigProxy
 EMAIL_JOIN_STRING = ", "
 
 
-def _resolve_provider_map() -> dict[
-    MessagingServiceType, type[BaseMessageProviderService]
-]:
-    """Build provider map at call time so test mocks of provider classes are respected."""
-    return {
-        MessagingServiceType.mailgun: MailgunService,
-        MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
-        MessagingServiceType.twilio_text: TwilioSmsService,
-        MessagingServiceType.twilio_email: TwilioEmailService,
-        MessagingServiceType.aws_ses: AwsSesService,
-    }
+_PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = {
+    MessagingServiceType.mailgun: MailgunService,
+    MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
+    MessagingServiceType.twilio_text: TwilioSmsService,
+    MessagingServiceType.twilio_email: TwilioEmailService,
+    MessagingServiceType.aws_ses: AwsSesService,
+}
 
 
-# Static reference for completeness invariant tests
-PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = (
-    _resolve_provider_map()
-)
+def get_provider_class(
+    service_type: MessagingServiceType,
+) -> type[BaseMessageProviderService] | None:
+    """Public accessor for the provider map. Returns the provider class or None."""
+    return _PROVIDER_MAP.get(service_type)
 
 
 @celery_app.task(
@@ -320,7 +317,7 @@ def dispatch_message(
         logger.error(f"Message failed to send. {error_message}")
         raise MessageDispatchException(error_message)
 
-    provider_cls = _resolve_provider_map().get(messaging_service)
+    provider_cls = _PROVIDER_MAP.get(messaging_service)
     if not provider_cls:
         logger.error(
             "Dispatcher has not been implemented for message service type: {}",

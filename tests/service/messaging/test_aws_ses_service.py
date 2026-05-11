@@ -1,3 +1,5 @@
+from unittest.mock import Mock, patch
+
 import boto3
 import pytest
 from moto import mock_aws
@@ -55,7 +57,7 @@ class TestAwsSesServiceValidation:
 
         service = AwsSesService(messaging_config_ses)
         # Should not raise
-        service.validate_email_and_domain_status()
+        service.validate_on_save()
 
     @mock_aws
     def test_validate_success_without_email_from(self, messaging_config_ses):
@@ -66,7 +68,7 @@ class TestAwsSesServiceValidation:
         service.details.email_from = None
 
         # Should not raise — domain is verified
-        service.validate_email_and_domain_status()
+        service.validate_on_save()
 
     @mock_aws
     def test_validate_success_without_domain(self, messaging_config_ses):
@@ -77,7 +79,7 @@ class TestAwsSesServiceValidation:
         service.details.domain = None
 
         # Should not raise — email is verified
-        service.validate_email_and_domain_status()
+        service.validate_on_save()
 
     @mock_aws
     def test_validate_failure_email_not_verified(self, messaging_config_ses):
@@ -90,7 +92,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="test@example.com is not verified in SES."
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
     @mock_aws
     def test_validate_failure_domain_not_verified(self, messaging_config_ses):
@@ -103,7 +105,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="example.com is not verified in SES."
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
     @mock_aws
     def test_validate_failure_neither_verified(self, messaging_config_ses):
@@ -113,7 +115,31 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="test@example.com is not verified in SES."
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
+
+    @pytest.mark.parametrize(
+        "status",
+        ["Pending", "Failed", "TemporaryFailure", "NotStarted"],
+        ids=["pending", "failed", "temporary-failure", "not-started"],
+    )
+    @mock_aws
+    def test_validate_failure_non_success_status(self, messaging_config_ses, status):
+        """Real SES can return statuses other than 'Success' for identities that
+        exist but aren't fully verified. Moto always returns 'Success' for
+        verified identities, so we mock the client response directly."""
+        service = AwsSesService(messaging_config_ses)
+        mock_client = Mock()
+        mock_client.get_identity_verification_attributes.return_value = {
+            "VerificationAttributes": {
+                "test@example.com": {"VerificationStatus": status},
+            }
+        }
+        service._ses_client = mock_client
+
+        with pytest.raises(
+            MessageDispatchException, match="test@example.com is not verified in SES."
+        ):
+            service.validate_on_save()
 
     @mock_aws
     def test_validate_no_identities_configured(self, messaging_config_ses):
@@ -124,7 +150,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="No identity.*configured for SES validation"
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
 
 class TestAwsSesServiceSendEmail:
