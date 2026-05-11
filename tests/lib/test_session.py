@@ -42,3 +42,34 @@ class TestGetDbEngine:
             match="keepalives_idle/interval/count cannot be used with creator",
         ):
             session.get_db_engine(creator=creator, keepalives_idle=30)
+
+    def test_config_with_keepalives(self) -> None:
+        """URI path with keepalives produces a working engine."""
+        config = get_config()
+        engine = session.get_db_engine(
+            config=config,
+            pool_size=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5,
+        )
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT 1"))
+                assert result.scalar() == 1
+        finally:
+            engine.dispose()
+
+    def test_disable_pooling(self) -> None:
+        """disable_pooling uses NullPool — no connections are kept."""
+        from sqlalchemy.pool import NullPool
+
+        config = get_config()
+        engine = session.get_db_engine(config=config, disable_pooling=True)
+        try:
+            assert isinstance(engine.pool, NullPool)
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT 1"))
+                assert result.scalar() == 1
+        finally:
+            engine.dispose()

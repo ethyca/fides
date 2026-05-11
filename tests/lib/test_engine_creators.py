@@ -71,6 +71,18 @@ class TestRawPassword:
         settings = DatabaseSettings(password=password)
         assert settings.raw_password == password
 
+    @pytest.mark.parametrize("password", ["p@ssw0rd", "pass%word"])
+    def test_raw_readonly_password_round_trip(self, password: str) -> None:
+        """readonly_password should also round-trip through quote_plus."""
+        settings = DatabaseSettings(
+            readonly_server="replica", readonly_password=password
+        )
+        assert settings.raw_readonly_password == password
+
+    def test_raw_readonly_password_none_when_not_set(self) -> None:
+        settings = DatabaseSettings()
+        assert settings.raw_readonly_password is None
+
 
 class TestConvertAsyncpgParams:
     def test_converts_sslmode_to_ssl(self) -> None:
