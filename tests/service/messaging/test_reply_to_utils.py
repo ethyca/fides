@@ -1,5 +1,7 @@
 """Tests for reply-to token generation and address formatting."""
 
+import pytest
+
 from fides.api.service.messaging.messaging_providers.reply_to_utils import (
     format_reply_to_address,
     generate_reply_to_token,
@@ -33,3 +35,21 @@ class TestFormatReplyToAddress:
         address = format_reply_to_address(token, "example.com")
         assert address == f"reply+{token}@replies.example.com"
         assert len(token) == 32
+
+    @pytest.mark.parametrize(
+        "token",
+        ["", "not-hex!", "abc\ninjection", None],
+        ids=["empty", "non-hex", "newline-injection", "none"],
+    )
+    def test_invalid_token_raises(self, token):
+        with pytest.raises(ValueError, match="Invalid reply-to token"):
+            format_reply_to_address(token or "", "example.com")
+
+    @pytest.mark.parametrize(
+        "domain",
+        ["", "evil.com\nBcc: attacker@evil.com", "has spaces.com", "has@at.com"],
+        ids=["empty", "header-injection", "spaces", "at-sign"],
+    )
+    def test_invalid_domain_raises(self, domain):
+        with pytest.raises(ValueError, match="Invalid reply-to domain"):
+            format_reply_to_address("abc123", domain)

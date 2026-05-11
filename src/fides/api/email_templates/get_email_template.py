@@ -1,7 +1,9 @@
 import pathlib
 
+import nh3
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 from loguru import logger
+from markupsafe import Markup
 
 from fides.api.common_exceptions import EmailTemplateUnhandledActionType
 from fides.api.email_templates.template_names import (
@@ -31,6 +33,17 @@ template_env = Environment(
     loader=FileSystemLoader(f"{abs_path_to_current_file_dir}/templates"),
     autoescape=select_autoescape(),
 )
+
+
+def _sanitize_html(value: str) -> Markup:
+    """Sanitize HTML, preserving safe formatting tags.
+
+    Returns Markup so Jinja2 won't double-escape the result.
+    """
+    return Markup(nh3.clean(value))
+
+
+template_env.filters["sanitize_html"] = _sanitize_html
 
 
 def get_email_template(  # pylint: disable=too-many-return-statements, too-many-branches

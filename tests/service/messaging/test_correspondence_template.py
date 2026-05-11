@@ -5,10 +5,6 @@ from fides.api.schemas.messaging.messaging import MessagingActionType
 
 
 class TestCorrespondenceTemplate:
-    def test_template_loads(self):
-        template = get_email_template(MessagingActionType.CORRESPONDENCE)
-        assert template is not None
-
     def test_template_renders_with_variables(self):
         template = get_email_template(MessagingActionType.CORRESPONDENCE)
         rendered = template.render(
