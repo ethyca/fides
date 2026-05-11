@@ -899,13 +899,6 @@ export enum FidesModalDefaultView {
  */
 export { FidesOptions };
 
-export type OverrideExperienceTranslations = {
-  fides_title: string;
-  fides_description: string;
-  fides_privacy_policy_url: string;
-  fides_override_language: string;
-};
-
 /**
  * Select the subset of FidesInitOptions that can be overridden at runtime using
  * one of the customer-provided FidesOptions properties above. There's a 1:1
@@ -941,22 +934,13 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesExternalId"
 >;
 
-export type FidesExperienceTranslationOverrides = {
-  title: string;
-  description: string;
-  privacy_policy_url: string;
-  override_language: string;
-};
-
 export type FidesOverrides = {
   optionsOverrides: Partial<FidesInitOptionsOverrides>;
   consentPrefsOverrides: GetPreferencesFnResp | null;
-  experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides>;
 };
 
 export enum OverrideType {
   OPTIONS = "options",
-  EXPERIENCE_TRANSLATION = "language",
 }
 
 export enum ButtonType {
@@ -1156,13 +1140,6 @@ export type FidesOverrideValidatorMap = FidesValidatorMap<
   keyof FidesOptions
 >;
 
-export type FidesExperienceLanguageValidatorMap = FidesValidatorMap<
-  FidesExperienceTranslationOverrides,
-  string
->;
-
-export type FidesWindowOverrides = Partial<
-  FidesOptions & OverrideExperienceTranslations
-> & {
+export type FidesWindowOverrides = Partial<FidesOptions> & {
   [key: string]: string | boolean | undefined;
 };

@@ -1,5 +1,3 @@
-import { CUSTOM_TAG_COLOR } from "fidesui";
-
 export const DATA_USE_LABELS: Record<string, string> = {
   analytics: "Analytics",
   "marketing.advertising": "Marketing & Advertising",
@@ -10,18 +8,6 @@ export const DATA_USE_LABELS: Record<string, string> = {
 
 export const formatDataUse = (key: string): string =>
   DATA_USE_LABELS[key] ?? key;
-
-export const LEGAL_BASIS_LABELS: Record<string, string> = {
-  legitimate_interests: "Legitimate interests",
-  consent: "Consent",
-  contract: "Contract",
-};
-
-export const LEGAL_BASIS_TAG_COLORS: Record<string, CUSTOM_TAG_COLOR> = {
-  legitimate_interests: CUSTOM_TAG_COLOR.OLIVE,
-  consent: CUSTOM_TAG_COLOR.NECTAR,
-  contract: CUSTOM_TAG_COLOR.SANDSTONE,
-};
 
 export type ComplianceStatus = "compliant" | "drift" | "unknown";
 
