@@ -42,10 +42,11 @@ class TestBasicFetch:
         secret = provider.get_secret(SECRET_NAME)
         assert isinstance(secret, SecretValue)
 
-    def test_get_secret_keys(self, aws_env):
+    def test_get_secret_contains_expected_fields(self, aws_env):
         provider = AWSSecretsManagerProvider(region_name=REGION)
         secret = provider.get_secret(SECRET_NAME)
-        assert set(secret.keys()) == {"username", "password"}
+        assert "username" in secret
+        assert "password" in secret
 
     def test_unknown_secret_raises(self, aws_env):
         provider = AWSSecretsManagerProvider(region_name=REGION)

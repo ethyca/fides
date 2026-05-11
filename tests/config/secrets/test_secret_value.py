@@ -45,9 +45,21 @@ class TestSecretValue:
         sv = SecretValue({"k": "v"})
         assert sv != {"k": "v"}
 
-    def test_keys(self):
+    def test_contains_checks_fields(self):
         sv = SecretValue({"username": "admin", "password": "s3cret"})
-        assert set(sv.keys()) == {"username", "password"}
+        assert "username" in sv
+        assert "password" in sv
+        assert "other" not in sv
+
+    def test_dict_conversion_blocked(self):
+        sv = SecretValue({"password": "s3cret"})
+        with pytest.raises(TypeError):
+            dict(sv)
+
+    def test_unpacking_blocked(self):
+        sv = SecretValue({"password": "s3cret"})
+        with pytest.raises(TypeError):
+            {**sv}
 
     def test_vars_blocked(self):
         sv = SecretValue({"password": "s3cret"})

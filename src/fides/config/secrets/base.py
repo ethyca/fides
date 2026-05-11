@@ -1,7 +1,7 @@
 """Base classes for the secret provider abstraction."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, KeysView
+from typing import Any, Dict
 
 
 class SecretProviderError(Exception):
@@ -43,14 +43,16 @@ class SecretValue:
 
     __hash__ = None  # type: ignore[assignment]  # unhashable by design
 
+    def __iter__(self):
+        raise TypeError(
+            "SecretValue cannot be iterated — use 'key in sv' to check fields"
+        )
+
     def __repr__(self) -> str:
         return "<redacted>"
 
     def __str__(self) -> str:
         return "<redacted>"
-
-    def keys(self) -> KeysView[str]:
-        return self._data.keys()
 
 
 class SecretProvider(ABC):
