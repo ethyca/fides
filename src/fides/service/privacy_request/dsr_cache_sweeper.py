@@ -245,10 +245,18 @@ def run_dsr_cache_sweeper(
     ttl = int(tc.maintenance_set_ttl_seconds)
     scan_count = int(tc.redis_scan_count)
     del_batch = max(1, int(tc.redis_delete_batch_size))
+    membership_lookup_batch_size = max(1, int(tc.membership_lookup_batch_size))
 
     manager = get_redis_cache_manager()
     redis = manager._redis
     redis.delete(set_key)
+    logger.info(
+        "DSR cache sweeper single-pass: Postgres staging phase starting "
+        "(eligible ids are written to Redis; SCAN/UNLINK runs after this phase). "
+        "maintenance_set_key={} membership_lookup_batch_size={}",
+        set_key,
+        membership_lookup_batch_size,
+    )
     staging_expire_applied = False
     total_staged_members = 0
     staging_first_sadd_s: Optional[float] = None
@@ -258,13 +266,14 @@ def run_dsr_cache_sweeper(
     last_id = ""
     db_phase_started = time.perf_counter()
     db_page_index = 0
+    terminal_status_list = list(terminal_statuses)
 
     while True:
         page_started = time.perf_counter()
         batch_rows = (
             db.query(PrivacyRequest.id, PrivacyRequest.status)
             .filter(
-                PrivacyRequest.status.in_(list(terminal_statuses)),
+                PrivacyRequest.status.in_(terminal_status_list),
                 PrivacyRequest.updated_at < cutoff,
                 PrivacyRequest.id > last_id,
             )
@@ -374,12 +383,14 @@ def run_dsr_cache_sweeper(
     try:
         logger.info(
             "DSR cache sweeper starting Redis SCAN set_key={} eligible_dsr_count={} "
-            "staging_duration_s={:.3f} ttl_seconds={} redis_scan_count={}",
+            "staging_duration_s={:.3f} ttl_seconds={} redis_scan_count={} "
+            "membership_lookup_batch_size={}",
             set_key,
             eligible_dsr_count,
             staging_duration_s,
             ttl,
             scan_count,
+            membership_lookup_batch_size,
         )
 
         pending_delete: list[str] = []
@@ -412,24 +423,32 @@ def run_dsr_cache_sweeper(
 
             present_rows: list[Any] = []
             if keyed:
-                try:
-                    pipe = redis.pipeline(transaction=False)
-                    for _key_str, cand_list in keyed:
-                        pipe.smismember(set_key, *cand_list)
-                    present_rows = pipe.execute()
-                    if len(present_rows) != len(keyed):
-                        raise ValueError(
-                            "SMISMEMBER pipeline length mismatch: "
-                            f"expected {len(keyed)}, got {len(present_rows)}"
-                        )
-                except Exception:  # noqa: BLE001
-                    present_rows = []
-                    for _key_str, cand_list in keyed:
-                        try:
-                            present_rows.append(redis.smismember(set_key, *cand_list))
-                        except Exception:  # noqa: BLE001
-                            redis_errors += 1
-                            present_rows.append(None)
+                for pipe_off in range(0, len(keyed), membership_lookup_batch_size):
+                    pipe_slice = keyed[
+                        pipe_off : pipe_off + membership_lookup_batch_size
+                    ]
+                    sub_present: list[Any] = []
+                    try:
+                        pipe = redis.pipeline(transaction=False)
+                        for _key_str, cand_list in pipe_slice:
+                            pipe.smismember(set_key, *cand_list)
+                        sub_present = pipe.execute()
+                        if len(sub_present) != len(pipe_slice):
+                            raise ValueError(
+                                "SMISMEMBER pipeline length mismatch: "
+                                f"expected {len(pipe_slice)}, got {len(sub_present)}"
+                            )
+                    except Exception:  # noqa: BLE001
+                        sub_present = []
+                        for _key_str, cand_list in pipe_slice:
+                            try:
+                                sub_present.append(
+                                    redis.smismember(set_key, *cand_list)
+                                )
+                            except Exception:  # noqa: BLE001
+                                redis_errors += 1
+                                sub_present.append(None)
+                    present_rows.extend(sub_present)
 
             for (key_str, cand_list), present in zip(keyed, present_rows):
                 if present is None:

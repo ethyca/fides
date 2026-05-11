@@ -37,10 +37,10 @@ class DsrCacheSweeperSettings(BaseModel):
     )
     batch_size: int = Field(
         default=10000,
-        ge=1000,
+        ge=10,
         description=(
             "Max privacy requests to process per database batch (keyset pagination). "
-            "Minimum 1000; increase for fewer round-trips on large backlogs."
+            "Minimum 10; increase for fewer round-trips on large backlogs."
         ),
     )
     batch_sleep_seconds: float = Field(
@@ -109,6 +109,17 @@ class DsrCacheSweeperSettings(BaseModel):
         ge=1,
         le=10000,
         description="Max keys per pipeline UNLINK/DEL batch in single-pass mode.",
+    )
+    membership_lookup_batch_size: int = Field(
+        default=2048,
+        ge=50,
+        le=20000,
+        description=(
+            "How many staging-set membership checks (SMISMEMBER commands) to send in each "
+            "Redis pipeline round trip while scanning keys in single-pass mode. Default "
+            "2048 balances fewer round trips against predictable latency. Override only if "
+            "you measure a need."
+        ),
     )
 
 
