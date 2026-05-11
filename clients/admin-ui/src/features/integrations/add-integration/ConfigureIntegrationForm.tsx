@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
+import { parseSecretsFieldErrors } from "~/features/common/form/parseSecretsFieldErrors";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_DETAIL_ROUTE } from "~/features/common/nav/routes";
@@ -278,6 +279,15 @@ export const ConfigureIntegrationForm = ({
       patchResult = await patchDatastoreConnectionsTrigger(connectionPayload);
     }
     if (isErrorResult(patchResult)) {
+      const fieldErrors = parseSecretsFieldErrors(patchResult.error, {
+        knownFields: Object.keys(secrets?.properties ?? {}),
+      });
+      if (fieldErrors) {
+        form.setFields(
+          fieldErrors as unknown as Parameters<typeof form.setFields>[0],
+        );
+        return;
+      }
       const patchErrorMsg = getErrorMessage(
         patchResult.error,
         `A problem occurred while ${
@@ -349,6 +359,15 @@ export const ConfigureIntegrationForm = ({
       });
 
       if (isErrorResult(secretsResult)) {
+        const fieldErrors = parseSecretsFieldErrors(secretsResult.error, {
+          knownFields: Object.keys(secrets?.properties ?? {}),
+        });
+        if (fieldErrors) {
+          form.setFields(
+            fieldErrors as unknown as Parameters<typeof form.setFields>[0],
+          );
+          return;
+        }
         const secretsErrorMsg = getErrorMessage(
           secretsResult.error,
           `An error occurred while ${

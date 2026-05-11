@@ -21,6 +21,7 @@ const ConsentHeading = () => {
 
   return (
     <Heading
+      className="pc-page__heading"
       fontSize={["3xl", "4xl"]}
       color="gray.800"
       fontWeight="medium"

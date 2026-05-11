@@ -72,7 +72,9 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
               <Tooltip title={formattedDate}>
                 {`${sentenceCase(distance)}`}
               </Tooltip>
-              {item.user_id ? <span> by {item.user_id}</span> : null}
+              {(item.user_id ?? item.client_id) ? (
+                <span> by {item.user_id ?? item.client_id}</span>
+              ) : null}
             </>
           );
 
