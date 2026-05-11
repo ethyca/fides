@@ -43,7 +43,7 @@ class SecretValue:
 
     __hash__ = None  # type: ignore[assignment]  # unhashable by design
 
-    def __iter__(self):
+    def __iter__(self) -> None:
         raise TypeError(
             "SecretValue cannot be iterated — use 'key in sv' to check fields"
         )
