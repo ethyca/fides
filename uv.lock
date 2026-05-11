@@ -1177,7 +1177,7 @@ dev = [
     { name = "faker", specifier = "==14.1.0" },
     { name = "freezegun", specifier = "==1.5.5" },
     { name = "gitpython", specifier = "==3.1.41" },
-    { name = "moto", extras = ["s3"], specifier = "==5.1.22" },
+    { name = "moto", extras = ["s3", "secretsmanager"], specifier = "==5.1.22" },
     { name = "mypy", specifier = "==1.10.0" },
     { name = "nox", specifier = ">=2025.11" },
     { name = "pre-commit", specifier = "==2.20.0" },
