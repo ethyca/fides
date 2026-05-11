@@ -1,5 +1,5 @@
 import re
-from typing import Any
+from typing import Any, Protocol
 
 from loguru import logger
 
@@ -18,25 +18,23 @@ from fides.api.util.aws_util import get_aws_session
 from fides.config import CONFIG
 
 
-class SESClient:
-    """Hand-rolled type stub for the AWS SES client.
+class SESClient(Protocol):
+    """Structural type for the AWS SES client.
 
     The project does not use boto3-stubs; this gives get_ses_client() a typed
     return value so mypy can check method calls.
     """
 
-    def get_identity_verification_attributes(  # type: ignore[empty-body]
+    def get_identity_verification_attributes(
         self, Identities: list[str]
-    ) -> dict[str, dict[str, dict[str, str]]]:
-        """Returns verification attributes for the given identities."""
+    ) -> dict[str, dict[str, dict[str, str]]]: ...
 
     def send_email(
         self,
         Source: str,
         Destination: dict[str, list[str]],
         Message: dict[str, Any],
-    ) -> None:
-        pass
+    ) -> None: ...
 
 
 def _sanitize_aws_error(exc: Exception) -> str:
@@ -102,10 +100,6 @@ class AwsSesService(BaseEmailProviderService):
         return aws_ses_client
 
     def validate_on_save(self) -> None:
-        """Verify SES identities when secrets are saved."""
-        self.validate_email_and_domain_status()
-
-    def validate_email_and_domain_status(self) -> None:
         """Validate that either the email or domain (or both) are verified in SES.
 
         Raises MessageDispatchException if any configured identity is not verified.

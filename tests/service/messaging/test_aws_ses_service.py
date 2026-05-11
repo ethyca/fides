@@ -57,7 +57,7 @@ class TestAwsSesServiceValidation:
 
         service = AwsSesService(messaging_config_ses)
         # Should not raise
-        service.validate_email_and_domain_status()
+        service.validate_on_save()
 
     @mock_aws
     def test_validate_success_without_email_from(self, messaging_config_ses):
@@ -68,7 +68,7 @@ class TestAwsSesServiceValidation:
         service.details.email_from = None
 
         # Should not raise — domain is verified
-        service.validate_email_and_domain_status()
+        service.validate_on_save()
 
     @mock_aws
     def test_validate_success_without_domain(self, messaging_config_ses):
@@ -79,7 +79,7 @@ class TestAwsSesServiceValidation:
         service.details.domain = None
 
         # Should not raise — email is verified
-        service.validate_email_and_domain_status()
+        service.validate_on_save()
 
     @mock_aws
     def test_validate_failure_email_not_verified(self, messaging_config_ses):
@@ -92,7 +92,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="test@example.com is not verified in SES."
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
     @mock_aws
     def test_validate_failure_domain_not_verified(self, messaging_config_ses):
@@ -105,7 +105,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="example.com is not verified in SES."
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
     @mock_aws
     def test_validate_failure_neither_verified(self, messaging_config_ses):
@@ -115,7 +115,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="test@example.com is not verified in SES."
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
     @pytest.mark.parametrize(
         "status",
@@ -139,7 +139,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="test@example.com is not verified in SES."
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
     @mock_aws
     def test_validate_no_identities_configured(self, messaging_config_ses):
@@ -150,7 +150,7 @@ class TestAwsSesServiceValidation:
         with pytest.raises(
             MessageDispatchException, match="No identity.*configured for SES validation"
         ):
-            service.validate_email_and_domain_status()
+            service.validate_on_save()
 
 
 class TestAwsSesServiceSendEmail:

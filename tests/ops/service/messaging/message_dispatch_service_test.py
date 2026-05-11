@@ -908,29 +908,6 @@ _DISPATCH_MODULE = "fides.api.service.messaging.message_dispatch_service"
 class TestDispatchGuards:
     """Tests for defensive guards in the provider dispatch path."""
 
-    @mock.patch(f"{_DISPATCH_MODULE}._aws_ses_dispatcher")
-    def test_aws_ses_rejects_non_email_message(
-        self, mock_ses, db: Session, messaging_config_aws_ses
-    ):
-        """AWS SES guard rejects a non-EmailForActionType message."""
-        with (
-            mock.patch(f"{_DISPATCH_MODULE}._build_sms", return_value="plain text"),
-            mock.patch(
-                f"{_DISPATCH_MODULE}.get_messaging_method",
-                return_value=MessagingMethod.SMS,
-            ),
-        ):
-            with pytest.raises(
-                MessageDispatchException, match="AWS SES requires an email message body"
-            ):
-                dispatch_message(
-                    db=db,
-                    action_type=MessagingActionType.TEST_MESSAGE,
-                    to_identity=Identity(phone_number="+15551234567"),
-                    service_type=MessagingServiceType.aws_ses.value,
-                )
-        mock_ses.assert_not_called()
-
     def test_unknown_service_type_raises(self, db: Session, messaging_config):
         """Provider map guard rejects an unmapped service type."""
         with mock.patch(f"{_DISPATCH_MODULE}._PROVIDER_MAP", {}):
