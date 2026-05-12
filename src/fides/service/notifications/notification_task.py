@@ -28,6 +28,9 @@ from fides.config import CONFIG
 
 NOTIFICATION_JOB = "dsr_notifications"
 NOTIFICATION_LOCK = "dsr_notifications_lock"
+# Lock auto-expires after this many seconds. If the registered sweep
+# takes longer, another worker may acquire the lock and run concurrently.
+# The implementation must complete within this window or be idempotent.
 NOTIFICATION_LOCK_TIMEOUT = 600
 
 # Set once at startup by Fidesplus via the register_* functions;
@@ -72,6 +75,11 @@ def send_dsr_notification(
     Called directly by DSR lifecycle code (e.g. after a request is
     completed).  Delegates to the registered handler; if none is
     registered the task is a no-op.
+
+    No Redis lock — concurrent execution is expected since each call
+    targets a distinct privacy request.  The registered handler must be
+    idempotent for a given (privacy_request_id, event_type) pair, as
+    Celery's at-least-once delivery may dispatch the same call twice.
     """
     if _notify_fn is None:
         logger.debug(
