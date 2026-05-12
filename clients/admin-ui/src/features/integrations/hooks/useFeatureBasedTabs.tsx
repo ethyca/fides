@@ -10,7 +10,10 @@ import {
 import { useMemo } from "react";
 
 import IdentityResolutionTab from "~/features/integrations/configure-identity-resolution/IdentityResolutionTab";
-import { JiraConfigTab } from "~/features/integrations/configure-jira";
+import {
+  JiraConfigTab,
+  JiraCredentialsTab,
+} from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import QueryLogConfigTab from "~/features/integrations/configure-query-log/QueryLogConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
@@ -105,6 +108,7 @@ export const useFeatureBasedTabs = ({
                     testData={testData}
                     connectionOption={integrationOption}
                     connectionType={connection?.connection_type}
+                    isTestingConnection={testIsLoading}
                   />
                   <Spacer />
                   <Flex gap="medium">
@@ -120,13 +124,27 @@ export const useFeatureBasedTabs = ({
                       </Button>
                     )}
                     {!needsAuthorization && (
-                      <Button
-                        onClick={testConnection}
-                        loading={testIsLoading}
-                        data-testid="test-connection-btn"
-                      >
-                        Test connection
-                      </Button>
+                      <>
+                        <Button
+                          onClick={testConnection}
+                          loading={testIsLoading}
+                          data-testid="test-connection-btn"
+                        >
+                          Test connection
+                        </Button>
+                        {connection?.connection_type ===
+                          ConnectionType.JIRA_TICKET &&
+                          testData.authorized &&
+                          testData.succeeded === false &&
+                          testData.timestamp && (
+                            <Button
+                              onClick={handleAuthorize}
+                              data-testid="reauthorize-integration-btn"
+                            >
+                              Re-authorize
+                            </Button>
+                          )}
+                      </>
                     )}
                     <Button onClick={onOpen} data-testid="manage-btn">
                       Manage
@@ -229,9 +247,21 @@ export const useFeatureBasedTabs = ({
       connection?.connection_type === ConnectionType.JIRA_TICKET
     ) {
       tabItems.push({
+        label: "Credentials",
+        key: "credentials",
+        children: (
+          <JiraCredentialsTab connection={connection!} testData={testData} />
+        ),
+      });
+      tabItems.push({
         label: "Ticket setup",
         key: "configuration",
-        children: <JiraConfigTab connection={connection!} />,
+        children: (
+          <JiraConfigTab
+            connection={connection!}
+            onReauthorize={handleAuthorize}
+          />
+        ),
       });
     }
 

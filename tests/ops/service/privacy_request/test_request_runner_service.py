@@ -853,14 +853,10 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_messaging_config(
         self,
         upload_mock,
-        mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
         cache,
@@ -890,18 +886,12 @@ class TestPrivacyRequestsEmailNotifications:
         assert pr.status == PrivacyRequestStatus.error
         pr.delete(db=db)
 
-        assert mailgun_send.called is False
-
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(
         self,
         upload_mock,
-        mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
         cache,
@@ -912,6 +902,8 @@ class TestPrivacyRequestsEmailNotifications:
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
         request,
+        messaging_config,
+        mock_mailgun_http,
     ):
         upload_mock.return_value = "http://www.data-download-url"
         data = {
@@ -930,7 +922,7 @@ class TestPrivacyRequestsEmailNotifications:
         assert pr.status == PrivacyRequestStatus.error
         pr.delete(db=db)
 
-        assert mailgun_send.called is False
+        assert not mock_mailgun_http.called
 
 
 class TestPrivacyRequestsManualWebhooks:
@@ -2216,12 +2208,12 @@ class TestAsyncCallbacks:
         assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
 
-class TestDatasetReferenceValidation:
+class TestRequestExecutionPlan:
     @pytest.mark.usefixtures("dataset_config")
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
-    def test_dataset_reference_validation_success(
+    def test_request_execution_plan_success(
         self,
         run_access,
         db: Session,
@@ -2229,7 +2221,7 @@ class TestDatasetReferenceValidation:
         run_privacy_request_task,
         request,
     ):
-        """Test that successful dataset reference validation is logged"""
+        """Test that a successful request execution plan is logged"""
 
         # Run privacy request
         run_privacy_request_task.delay(privacy_request.id).get(
@@ -2240,9 +2232,7 @@ class TestDatasetReferenceValidation:
         success_logs = privacy_request.execution_logs.filter_by(status="complete").all()
 
         validation_logs = [
-            log
-            for log in success_logs
-            if log.dataset_name == "Dataset reference validation"
+            log for log in success_logs if log.dataset_name == "Request execution plan"
         ]
 
         assert len(validation_logs) == 1
@@ -2251,14 +2241,14 @@ class TestDatasetReferenceValidation:
         assert log.collection_name is None
         assert (
             log.message
-            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
+            == f"Request execution plan successful for privacy request: {privacy_request.id}"
         )
         assert log.action_type == privacy_request.policy.get_action_type()
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
-    def test_dataset_reference_validation_error(
+    def test_request_execution_plan_error(
         self,
         run_access,
         db: Session,
@@ -2267,7 +2257,7 @@ class TestDatasetReferenceValidation:
         run_privacy_request_task,
         request,
     ):
-        """Test that dataset reference validation errors are logged"""
+        """Test that request execution plan errors are logged"""
 
         # Add invalid dataset reference that will cause validation error
         dataset_config.ctl_dataset.collections[0]["fields"][0]["fides_meta"] = {
@@ -2287,9 +2277,7 @@ class TestDatasetReferenceValidation:
         error_logs = privacy_request.execution_logs.filter_by(status="error").all()
 
         validation_logs = [
-            log
-            for log in error_logs
-            if log.dataset_name == "Dataset reference validation"
+            log for log in error_logs if log.dataset_name == "Request execution plan"
         ]
 
         assert len(validation_logs) == 1

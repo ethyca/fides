@@ -1,0 +1,43 @@
+.consumerCard {
+  background-color: var(--fidesui-neutral-50);
+  position: relative;
+  cursor: pointer;
+
+  &.atRisk {
+    background-color: var(--fidesui-color-warning-bg);
+    border-color: var(--fidesui-color-warning-border);
+  }
+
+  &:hover .datasetCount {
+    display: none;
+  }
+
+  &:hover .removeButton {
+    display: inline-flex;
+  }
+}
+
+.datasetCount {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+}
+
+.removeButton {
+  position: absolute;
+  right: 0.25rem;
+  top: 0.25rem;
+  display: none;
+  height: 1.25rem !important;
+  width: 1.25rem !important;
+  min-width: 0 !important;
+}
+
+.removeIcon {
+  font-size: 10px;
+}
+
+.warningIcon {
+  color: var(--fidesui-color-warning);
+  line-height: 0;
+}

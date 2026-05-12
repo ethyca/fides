@@ -1,4 +1,4 @@
-import { Button, Flex, Form, Input, Text } from "fidesui";
+import { Button, Flex, Form, Input, Text, Title } from "fidesui";
 import React, { useEffect } from "react";
 
 import { ModalViews, VerificationType } from "../types";
@@ -12,6 +12,10 @@ type VerificationFormProps = {
   resetView: ModalViews;
   verificationType: VerificationType;
   successHandler: () => void;
+  verificationTitle?: string | null;
+  verificationDescription?: string | null;
+  verificationSubmitButtonText?: string | null;
+  verificationResendButtonText?: string | null;
 };
 
 const VerificationForm = ({
@@ -22,6 +26,10 @@ const VerificationForm = ({
   resetView,
   verificationType,
   successHandler,
+  verificationTitle,
+  verificationDescription,
+  verificationSubmitButtonText,
+  verificationResendButtonText,
 }: VerificationFormProps) => {
   const {
     errors,
@@ -48,9 +56,14 @@ const VerificationForm = ({
 
   return (
     <Flex gap="medium" vertical>
+      {verificationTitle && (
+        <Title level={4} style={{ margin: 0 }}>
+          {verificationTitle}
+        </Title>
+      )}
       <Text type="secondary">
-        A verification code has been sent. Return to this window and enter the
-        code below.
+        {verificationDescription ??
+          "A verification code has been sent. Return to this window and enter the code below."}
       </Text>
       <Form
         onFinish={handleSubmit}
@@ -58,6 +71,7 @@ const VerificationForm = ({
         layout="vertical"
       >
         <Form.Item
+          className="pc-field pc-field--code"
           required
           validateStatus={touched.code && !!errors.code ? "error" : undefined}
           label="Verification code"
@@ -73,17 +87,23 @@ const VerificationForm = ({
           />
         </Form.Item>
         <Flex justify="stretch" gap="medium">
-          <Button variant="outlined" onClick={resetVerificationProcess} block>
-            Resend code
+          <Button
+            className="pc-button pc-button--resend"
+            variant="outlined"
+            onClick={resetVerificationProcess}
+            block
+          >
+            {verificationResendButtonText ?? "Resend code"}
           </Button>
           <Button
+            className="pc-button pc-button--verify"
             htmlType="submit"
             type="primary"
             loading={isSubmitting}
             disabled={isSubmitting || !(isValid && dirty)}
             block
           >
-            Submit code
+            {verificationSubmitButtonText ?? "Submit code"}
           </Button>
         </Flex>
       </Form>

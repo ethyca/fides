@@ -4,6 +4,7 @@ import { Flex } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
+import useActionFromRoute from "~/common/hooks/useActionFromRoute";
 import { ModalViews, VerificationType } from "~/components/modals/types";
 
 import VerificationForm from "../modals/verification-request/VerificationForm";
@@ -18,6 +19,7 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
   const propertyPath = params?.propertyPath as string | undefined;
   const basePath = propertyPath ? `/${propertyPath}` : "";
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
+  const action = useActionFromRoute(actionKey);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -58,6 +60,10 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
         resetView={ModalViews.PrivacyRequest}
         verificationType={VerificationType.PrivacyRequest}
         successHandler={handleSuccess}
+        verificationTitle={action?.verification_title}
+        verificationDescription={action?.verification_description}
+        verificationSubmitButtonText={action?.verification_submit_button_text}
+        verificationResendButtonText={action?.verification_resend_button_text}
       />
     </Flex>
   );

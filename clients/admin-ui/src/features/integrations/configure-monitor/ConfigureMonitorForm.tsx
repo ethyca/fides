@@ -143,7 +143,7 @@ const ConfigureMonitorForm = ({
 
     if (integrationOption.identifier === ConnectionType.DYNAMODB) {
       payload.datasource_params = {
-        single_dataset: false,
+        single_dataset: true,
       };
     }
     if (databasesAvailable) {

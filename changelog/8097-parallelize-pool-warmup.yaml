@@ -1,4 +1,0 @@
-type: Changed
-description: Parallelized async pool warm-up to reduce startup time for large pools
-pr: 8097
-labels: []

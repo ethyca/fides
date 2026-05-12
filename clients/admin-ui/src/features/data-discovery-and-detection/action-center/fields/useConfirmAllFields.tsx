@@ -1,10 +1,12 @@
 import { useMessage, useModal } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
+import { APIMonitorType } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult } from "~/types/errors";
 
+import { useCalcAggregateStatisticsMutation } from "../action-center.slice";
 import {
   FIELD_ACTION_CONFIRMATION_MESSAGE,
   FIELD_ACTION_INTERMEDIATE,
@@ -13,9 +15,13 @@ import {
 import { useFieldActionsMutation } from "./monitor-fields.slice";
 import { getActionErrorMessage, getActionModalProps } from "./utils";
 
-export const useConfirmAllFields = (monitorId: string) => {
+export const useConfirmAllFields = (
+  monitorId: string,
+  monitorType: APIMonitorType,
+) => {
   const modalApi = useModal();
   const [bulkAction] = useFieldActionsMutation();
+  const [calcStats] = useCalcAggregateStatisticsMutation();
   const messageApi = useMessage();
 
   const confirmAll = async (
@@ -73,6 +79,8 @@ export const useConfirmAllFields = (monitorId: string) => {
       content: `${count} ${pluralize(count, "field", "fields")} approved — stronger governance, less busywork.`,
       duration: 10,
     });
+
+    calcStats({ monitor_type: monitorType, monitor_config_id: monitorId });
   };
 
   return { confirmAll };
