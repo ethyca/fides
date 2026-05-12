@@ -1,7 +1,5 @@
 import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
-import * as uuid from "uuid";
-
 import { FidesCookie } from "../../src/lib/consent-types";
 import {
   getFidesConsentCookie,
@@ -15,9 +13,9 @@ jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 
 // Setup mock uuid
 const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
-jest.mock("uuid");
-const mockUuid = jest.mocked(uuid);
-(mockUuid.v4 as jest.Mock).mockReturnValue(MOCK_UUID);
+jest.mock("uuid", () => ({
+  v4: jest.fn(() => "fae7e16d-37fd-40ed-b2a8-a020ad90106d"),
+}));
 
 // Constant to make it clear we're using the default cookie name (no suffix)
 const NO_COOKIE_SUFFIX = undefined;
