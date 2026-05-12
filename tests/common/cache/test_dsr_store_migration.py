@@ -100,10 +100,16 @@ class TestLegacyKeyMigration:
         )
 
     def test_clear_removes_mixed_keys(self, mock_redis, manager, dsr_id):
-        """clear() removes both legacy and new keys using SCAN."""
+        """clear() deletes all keys listed in the DSR index (including registered legacy)."""
         store = DSRCacheStore(dsr_id, manager)
-        mock_redis.set(make_legacy_key(dsr_id, "identity", "email"), "legacy@test.com")
-        mock_redis.set(make_legacy_key(dsr_id, "encryption", "key"), "legacy-key")
+        idx = f"dsr:{dsr_id}"
+        legacy_email = make_legacy_key(dsr_id, "identity", "email")
+        legacy_enc = make_legacy_key(dsr_id, "encryption", "key")
+        mock_redis.set(legacy_email, "legacy@test.com")
+        mock_redis.set(legacy_enc, "legacy-key")
+        manager.add_key_to_index(idx, legacy_email)
+        manager.add_key_to_index(idx, legacy_enc)
+
         store.write_identity("phone_number", "+1234567890", _TTL)
         store.write_custom_field("department", "Engineering", _TTL)
 

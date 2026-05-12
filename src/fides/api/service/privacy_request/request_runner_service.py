@@ -88,7 +88,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import get_all_masking_secret_keys
+from fides.api.util.cache import get_cache, get_masking_secret_cache_key
 from fides.api.util.collection_util import Row
 from fides.api.util.consent_util import (
     filter_privacy_preferences_for_propagation,
@@ -1397,12 +1397,21 @@ def _verify_masking_secrets(
     if resume_step is None:
         return
 
-    # if masking can be performed without any masking secrets, we skip the cache check
-    if (
-        policy.generate_masking_secrets()
-        and not get_all_masking_secret_keys(privacy_request.id)
-        and not privacy_request.masking_secrets
-    ):
-        raise MaskingSecretsExpired(
-            f"The masking secrets for privacy request ID '{privacy_request.id}' have expired. Please submit a new erasure request."
+    needed = policy.generate_masking_secrets()
+    if not needed:
+        return
+
+    if privacy_request.masking_secrets:
+        return
+
+    cache = get_cache()
+    for meta in needed:
+        key = get_masking_secret_cache_key(
+            privacy_request.id, meta.masking_strategy, meta.secret_type
         )
+        if cache.get(key):
+            return
+
+    raise MaskingSecretsExpired(
+        f"The masking secrets for privacy request ID '{privacy_request.id}' have expired. Please submit a new erasure request."
+    )

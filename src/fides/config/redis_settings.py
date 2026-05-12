@@ -49,6 +49,14 @@ class RedisSettings(FidesSettings):
         default=600,
         description="Sets TTL for cached identity verification code as part of subject requests.",
     )
+    dsr_cache_strict_index: bool = Field(
+        default=False,
+        description=(
+            "When True, DSRCacheStore.get_all_keys() returns only keys registered in the "
+            "per-DSR Redis index (no SCAN). Enable only after migration burn-in; otherwise "
+            "legacy keys not yet backfilled into the index may be omitted from listings."
+        ),
+    )
     password: str = Field(
         default="testpassword",
         description="The password with which to login to the Redis cache.",

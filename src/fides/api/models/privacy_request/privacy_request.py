@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union, cast
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -106,7 +106,6 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
-    get_cache,
     get_dsr_cache_store,
 )
 from fides.api.util.collection_util import Row
@@ -837,13 +836,11 @@ class PrivacyRequest(
         self, step: CurrentStep, dataset: str
     ) -> List[CheckpointActionRequired]:
         """Retrieve the raw details to populate an email template for collections on a given dataset."""
-        cache: FidesopsRedis = get_cache()
-        email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
-            f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
-        )
+        store = get_dsr_cache_store(self.id)
+        email_contents = store.list_decoded_email_info_for_dataset(step.value, dataset)
 
         actions: List[CheckpointActionRequired] = []
-        for email_content in email_contents.values():
+        for email_content in email_contents:
             if email_content:
                 actions.append(
                     _parse_cache_to_checkpoint_action_required(email_content)
@@ -909,12 +906,12 @@ class PrivacyRequest(
 
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
-        cache: FidesopsRedis = get_cache()
         parsed_data = manual_webhook.fields_schema.model_validate(input_data)
 
-        cache.set_encoded_object(
-            f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
+        get_dsr_cache_store(self.id).write_encoded_webhook_manual_access(
+            str(manual_webhook.id),
             parsed_data.model_dump(mode="json"),
+            CONFIG.redis.default_ttl_seconds,
         )
 
     def cache_manual_webhook_erasure_input(
@@ -925,12 +922,12 @@ class PrivacyRequest(
 
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
-        cache: FidesopsRedis = get_cache()
         parsed_data = manual_webhook.erasure_fields_schema.model_validate(input_data)
 
-        cache.set_encoded_object(
-            f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
+        get_dsr_cache_store(self.id).write_encoded_webhook_manual_erasure(
+            str(manual_webhook.id),
             parsed_data.model_dump(mode="json"),
+            CONFIG.redis.default_ttl_seconds,
         )
 
     def get_manual_webhook_access_input_strict(
@@ -1030,18 +1027,20 @@ class PrivacyRequest(
         Cache a dict of collections traversed in the privacy request
         mapped to their associated data uses
         """
-        cache: FidesopsRedis = get_cache()
-        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
+        get_dsr_cache_store(self.id).write_encoded_data_use_map(
+            value, CONFIG.redis.default_ttl_seconds
+        )
 
     def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
         """
         Fetch the collection -> data use map cached for this privacy request
         """
-        cache: FidesopsRedis = get_cache()
-        value_dict: Optional[Dict[str, Optional[Dict[str, Set[str]]]]] = (
-            cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        )
-        return list(value_dict.values())[0] if value_dict else None
+        raw = get_dsr_cache_store(self.id).read_encoded_data_use_map()
+        if raw is None:
+            return None
+        if isinstance(raw, dict):
+            return cast(Dict[str, Set[str]], raw)
+        return None
 
     def trigger_pre_approval_webhook(
         self,
@@ -1666,14 +1665,13 @@ def _get_manual_access_input_from_cache(
 ) -> Optional[Dict[str, Any]]:
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
-    cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    raw = get_dsr_cache_store(privacy_request.id).read_encoded_webhook_manual_access(
+        str(manual_webhook.id)
     )
-    if cached_results:
-        return list(cached_results.values())[0]
+    if raw is None:
+        return None
+    if isinstance(raw, dict):
+        return raw
     return None
 
 
@@ -1682,14 +1680,13 @@ def _get_manual_erasure_input_from_cache(
 ) -> Optional[Dict[str, Any]]:
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
-    cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    raw = get_dsr_cache_store(privacy_request.id).read_encoded_webhook_manual_erasure(
+        str(manual_webhook.id)
     )
-    if cached_results:
-        return list(cached_results.values())[0]
+    if raw is None:
+        return None
+    if isinstance(raw, dict):
+        return raw
     return None
 
 
@@ -1806,17 +1803,32 @@ def cache_action_required(
 
     The "step" describes whether action is needed in the access or the erasure portion of the request.
     """
-    cache: FidesopsRedis = get_cache()
     action_required: Optional[CheckpointActionRequired] = None
     if step:
         action_required = CheckpointActionRequired(
             step=step, collection=collection, action_needed=action_needed
         )
 
-    cache.set_encoded_object(
-        cache_key,
-        action_required.model_dump() if action_required else None,
-    )
+    action_dict = action_required.model_dump() if action_required else None
+    ttl = CONFIG.redis.default_ttl_seconds
+
+    if cache_key.startswith("EMAIL_INFORMATION__"):
+        rest = cache_key[len("EMAIL_INFORMATION__") :]
+        pr_id, step_v, ds, coll = rest.rsplit("__", 3)
+        get_dsr_cache_store(pr_id).write_encoded_email_info(
+            step_v, ds, coll, action_dict, ttl
+        )
+        return
+    if cache_key.startswith("PAUSED_LOCATION__"):
+        pr_id = cache_key[len("PAUSED_LOCATION__") :]
+        get_dsr_cache_store(pr_id).write_encoded_paused_location(action_dict, ttl)
+        return
+    if cache_key.startswith("FAILED_LOCATION__"):
+        pr_id = cache_key[len("FAILED_LOCATION__") :]
+        get_dsr_cache_store(pr_id).write_encoded_failed_location(action_dict, ttl)
+        return
+
+    raise ValueError(f"Unsupported cache_action_required cache_key={cache_key!r}")
 
 
 def get_action_required_details(
@@ -1828,9 +1840,19 @@ def get_action_required_details(
     The "collection" is the node in question, and the "action_needed" describes actions that must be manually
     performed to complete the request.
     """
-    cache: FidesopsRedis = get_cache()
-    cached_stopped: Optional[dict[str, Any]] = cache.get_encoded_by_key(cached_key)
-    if cached_stopped:
+    if not cached_key.startswith("EN_"):
+        return None
+    logical = cached_key[len("EN_") :]
+    if logical.startswith("PAUSED_LOCATION__"):
+        pr_id = logical[len("PAUSED_LOCATION__") :]
+        cached_stopped = get_dsr_cache_store(pr_id).read_encoded_paused_location()
+    elif logical.startswith("FAILED_LOCATION__"):
+        pr_id = logical[len("FAILED_LOCATION__") :]
+        cached_stopped = get_dsr_cache_store(pr_id).read_encoded_failed_location()
+    else:
+        return None
+
+    if cached_stopped and isinstance(cached_stopped, dict):
         return _parse_cache_to_checkpoint_action_required(cached_stopped)
 
     return None

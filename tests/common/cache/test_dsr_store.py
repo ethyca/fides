@@ -6,7 +6,9 @@ No real Redis required.
 import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
+from fides.common.cache.key_mapping import KeyMapper
 from fides.common.cache.manager import RedisCacheManager
+from fides.common.cache.redis_json_codec import encode_cache_obj
 
 _TTL = 3600  # Test TTL
 
@@ -115,3 +117,16 @@ class TestDSRCacheStoreWithInMemoryManager:
         store2 = DSRCacheStore("pr-2", manager)
         assert store2.get_encryption("key") == "legacy-enc"
         assert mock_redis.get("id-pr-2-encryption-key") is None
+
+    def test_encoded_data_use_map_round_trip(self, dsr_store: DSRCacheStore) -> None:
+        payload = {"ds": ["marketing"]}
+        dsr_store.write_encoded_data_use_map(payload, _TTL)
+        assert dsr_store.read_encoded_data_use_map() == payload
+
+    def test_encoded_data_use_map_migrates_legacy_en_key(
+        self, dsr_store: DSRCacheStore, mock_redis
+    ) -> None:
+        _, logical = KeyMapper.data_use_map("pr-1")
+        mock_redis.set(f"EN_{logical}", encode_cache_obj({"k": ["v"]}))
+        assert dsr_store.read_encoded_data_use_map() == {"k": ["v"]}
+        assert mock_redis.get(f"EN_{logical}") is None

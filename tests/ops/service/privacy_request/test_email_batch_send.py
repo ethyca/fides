@@ -23,7 +23,7 @@ from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
-from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
+from fides.api.util.cache import get_cache
 from fides.api.util.lock import redis_lock
 from fides.config import get_config
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
