@@ -1828,7 +1828,11 @@ def cache_action_required(
         get_dsr_cache_store(pr_id).write_encoded_failed_location(action_dict, ttl)
         return
 
-    raise ValueError(f"Unsupported cache_action_required cache_key={cache_key!r}")
+    logger.warning(
+        "cache_action_required: unsupported cache_key={!r}; skipping write (no-op)",
+        cache_key,
+    )
+    return
 
 
 def get_action_required_details(

@@ -463,7 +463,7 @@ class DSRCacheStore:
         legacy_key = self._legacy_en_key(legacy_logical)
         raw = self._redis.get(legacy_key)
         if raw is None:
-            return decode_cache_obj(self._redis_str(self._redis.get(new_key)))
+            return None
 
         payload = self._redis_str(raw)
         decoded = decode_cache_obj(payload)
@@ -503,7 +503,15 @@ class DSRCacheStore:
         self._set_encoded_json(part, legacy_logical, obj, expire_seconds)
 
     def list_decoded_email_info_for_dataset(self, step: str, dataset: str) -> List[Any]:
-        """Return decoded email checkpoint payloads for a dataset without prefix SCAN."""
+        """Return decoded email checkpoint payloads for a dataset.
+
+        Always reads ``dsr:{id}:email_info:…`` keys registered in the per-DSR index.
+
+        When ``CONFIG.redis.dsr_cache_strict_index`` is False, also runs a **narrow**
+        ``SCAN … MATCH EN_EMAIL_INFORMATION__{id}__{step}__{dataset}__*`` to discover
+        legacy encoded keys not yet represented under ``dsr:`` parts. When strict
+        mode is True, legacy ``EN_*`` keys are ignored here (index-only listing).
+        """
         index_prefix = _dsr_index_prefix(self._dsr_id)
         dsr_full_prefix = f"{DSR_KEY_PREFIX}{self._dsr_id}:"
         part_prefix = f"email_info:{step}:{dataset}:"
@@ -521,6 +529,41 @@ class DSRCacheStore:
             decoded = self._get_decoded_encoded_with_legacy(part, legacy_logical)
             if decoded is not None:
                 items.append((part, decoded))
+
+        seen_collections = {part[len(part_prefix) :] for part, _ in items}
+
+        if not CONFIG.redis.dsr_cache_strict_index:
+            en_match_prefix = (
+                f"EN_EMAIL_INFORMATION__{self._dsr_id}__{step}__{dataset}__"
+            )
+            for raw_key in self._redis.scan_iter(match=f"{en_match_prefix}*", count=500):
+                redis_key = decode_dsr_redis_key(raw_key)
+                if not redis_key.startswith("EN_"):
+                    continue
+                logical = redis_key[len("EN_") :]
+                em_pfx = "EMAIL_INFORMATION__"
+                if not logical.startswith(em_pfx):
+                    continue
+                rest = logical[len(em_pfx) :]
+                try:
+                    pr_id, step_v, ds, coll = rest.rsplit("__", 3)
+                except ValueError:
+                    continue
+                if pr_id != self._dsr_id or step_v != step or ds != dataset:
+                    continue
+                if coll in seen_collections:
+                    continue
+                raw_val = self._redis.get(redis_key)
+                payload = self._redis_str(raw_val)
+                if not payload:
+                    continue
+                decoded = decode_cache_obj(payload)
+                if decoded is None:
+                    continue
+                part = f"email_info:{step}:{dataset}:{coll}"
+                items.append((part, decoded))
+                seen_collections.add(coll)
+
         items.sort(key=lambda t: t[0])
         return [d for _, d in items]
 
@@ -623,8 +666,12 @@ class DSRCacheStore:
         """
         Delete all indexed cache keys for this DSR and remove the index.
 
-        Does not scan the keyspace. Legacy keys that were never registered in the
-        index may remain until TTL expiry or the DSR cache sweeper removes them.
+        Intentionally **does not** scan Redis: only keys registered in
+        ``__idx:dsr:{id}`` are removed (via ``delete_keys_by_index``). Legacy
+        ``EN_*`` or ``id-{id}-*`` values that never entered that index can remain
+        until TTL expiry or until the **DSR cache sweeper** (and related hygiene)
+        deletes them. Prefer running index backfill / migration before relying on
+        ``clear()`` alone for compliance-sensitive teardown.
         """
         index_prefix = _dsr_index_prefix(self._dsr_id)
         self._manager.delete_keys_by_index(index_prefix)

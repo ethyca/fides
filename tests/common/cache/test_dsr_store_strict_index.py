@@ -15,6 +15,7 @@ import pytest
 from fides.common.cache import dsr_store as dsr_store_module
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
+from fides.common.cache.redis_json_codec import encode_cache_obj
 
 _TTL = 3600
 
@@ -193,3 +194,86 @@ class TestNonStrictLegacyAndScan:
         idx_members = mock_redis.smembers(f"__idx:dsr:{dsr_id}")
         assert _make_legacy_key(dsr_id, "identity", "email") in idx_members
         assert _make_legacy_key(dsr_id, "identity", "phone_number") in idx_members
+
+
+def _en_email_key(dsr_id: str, step: str, dataset: str, collection: str) -> str:
+    return (
+        f"EN_EMAIL_INFORMATION__{dsr_id}__{step}__{dataset}__{collection}"
+    )
+
+
+@pytest.mark.unit
+class TestListEmailInfoLegacyEnScan:
+    """Legacy ``EN_EMAIL_INFORMATION__*`` listing is gated on strict index mode."""
+
+    def test_list_email_strict_index_skips_legacy_en_without_scan(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        mock_redis: Any,
+        manager: RedisCacheManager,
+    ) -> None:
+        monkeypatch.setattr(
+            dsr_store_module.CONFIG.redis, "dsr_cache_strict_index", True, raising=False
+        )
+        scan_calls = _wrap_scan_iter(mock_redis)
+        dsr_id = "pri_test_email_strict"
+        step, dataset, coll = "access", "postgres", "addresses"
+        mock_redis.set(
+            _en_email_key(dsr_id, step, dataset, coll),
+            encode_cache_obj({"step": step, "collection": None, "action_needed": None}),
+        )
+        store = DSRCacheStore(dsr_id, manager)
+        out = store.list_decoded_email_info_for_dataset(step, dataset)
+        assert out == []
+        assert scan_calls == []
+
+    def test_list_email_non_strict_finds_legacy_en_with_scan(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        mock_redis: Any,
+        manager: RedisCacheManager,
+    ) -> None:
+        monkeypatch.setattr(
+            dsr_store_module.CONFIG.redis,
+            "dsr_cache_strict_index",
+            False,
+            raising=False,
+        )
+        scan_calls = _wrap_scan_iter(mock_redis)
+        dsr_id = "pri_test_email_nonstrict"
+        step, dataset, coll = "access", "postgres", "addresses"
+        payload = {"step": step, "collection": None, "action_needed": None}
+        mock_redis.set(_en_email_key(dsr_id, step, dataset, coll), encode_cache_obj(payload))
+
+        store = DSRCacheStore(dsr_id, manager)
+        out = store.list_decoded_email_info_for_dataset(step, dataset)
+
+        assert out == [payload]
+        assert scan_calls, "expected narrow scan_iter for legacy EN email keys"
+
+    def test_list_email_non_strict_prefers_index_over_duplicate_legacy_en(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        mock_redis: Any,
+        manager: RedisCacheManager,
+    ) -> None:
+        monkeypatch.setattr(
+            dsr_store_module.CONFIG.redis,
+            "dsr_cache_strict_index",
+            False,
+            raising=False,
+        )
+        dsr_id = "pri_test_email_dedupe"
+        step, dataset, coll = "access", "crm", "contacts"
+        indexed_payload = {"step": step, "collection": None, "action_needed": None}
+        legacy_payload = {"step": step, "collection": {"dataset": "x"}, "action_needed": None}
+
+        store = DSRCacheStore(dsr_id, manager)
+        store.write_encoded_email_info(step, dataset, coll, indexed_payload, _TTL)
+        mock_redis.set(
+            _en_email_key(dsr_id, step, dataset, coll), encode_cache_obj(legacy_payload)
+        )
+
+        out = store.list_decoded_email_info_for_dataset(step, dataset)
+        assert len(out) == 1
+        assert out[0] == indexed_payload

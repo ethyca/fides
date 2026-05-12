@@ -1,14 +1,21 @@
 """JSON encode/decode for Redis-cached objects (matches FidesopsRedis semantics).
 
-Kept in ``fides.common.cache`` so DSRCacheStore can serialize consistently with
-``FidesopsRedis.set_encoded_object`` / ``get_encoded_by_key`` without importing
-``fides.api.util.cache`` (circular import).
+DSRCacheStore uses this module so it does not import ``fides.api.util.cache``
+(which would cycle back into ``fides.common.cache``).
+
+**Encoder location:** ``CustomJSONEncoder`` / ``_custom_decoder`` still live under
+``fides.api.util.custom_json_encoder`` so payloads stay byte-for-byte compatible
+with ``FidesopsRedis.encode_obj`` / ``decode_obj``. That creates a deliberate
+``fides.common`` → ``fides.api.util`` dependency (``fidesplus`` and others also
+import the encoder from ``fides.api.util``). Moving the encoder into a neutral
+``fides.common.*`` module is deferred to a dedicated refactor to avoid churn
+across repos in this change set.
 """
 
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
