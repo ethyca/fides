@@ -404,31 +404,6 @@ class DSRCacheStore:
         """
         return self._has_cached_by_type(":drp:", "-drp-")
 
-    # --- Convenience: masking secret ---
-
-    def write_masking_secret(
-        self,
-        strategy: str,
-        secret_type: str,
-        value: RedisValue,
-        expire_seconds: int,
-    ) -> Optional[bool]:
-        """Write masking secret. New key: dsr:{id}:masking_secret:{strategy}:{secret_type}."""
-        part = f"masking_secret:{strategy}:{secret_type}"
-        return self.set(part, value, expire_seconds)
-
-    def get_masking_secret(
-        self,
-        strategy: str,
-        secret_type: str,
-    ) -> Optional[Union[str, bytes]]:
-        """Get masking secret; reads from legacy id-{id}-masking-secret-{strategy}-{type} if needed."""
-        part = f"masking_secret:{strategy}:{secret_type}"
-        return self.get_with_legacy(
-            part,
-            KeyMapper.masking_secret(self._dsr_id, strategy, secret_type)[1],
-        )
-
     # --- Convenience: async execution (single value per DSR) ---
 
     def write_async_execution(

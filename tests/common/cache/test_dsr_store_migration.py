@@ -45,7 +45,6 @@ class TestLegacyKeyMigration:
             ("async-execution", "get_async_execution", "", "celery-task-123"),
             ("privacy-request-retry-count", "get_retry_count", "", "3"),
             ("drp", "get_drp", "email", "drp@example.com"),
-            ("masking-secret-hash", "get_masking_secret", "salt", "secret-123"),
         ],
     )
     def test_legacy_keys_readable(
@@ -56,10 +55,7 @@ class TestLegacyKeyMigration:
         legacy_key = make_legacy_key(dsr_id, field_type, field_key)
         mock_redis.set(legacy_key, value)
 
-        # Call appropriate getter
-        if getter == "get_masking_secret":
-            result = store.get_masking_secret("hash", field_key)
-        elif field_key:
+        if field_key:
             result = getattr(store, getter)(field_key)
         else:
             result = getattr(store, getter)()

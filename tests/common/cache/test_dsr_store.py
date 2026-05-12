@@ -115,18 +115,3 @@ class TestDSRCacheStoreWithInMemoryManager:
         store2 = DSRCacheStore("pr-2", manager)
         assert store2.get_encryption("key") == "legacy-enc"
         assert mock_redis.get("id-pr-2-encryption-key") is None
-
-    def test_masking_secret(
-        self, dsr_store: DSRCacheStore, mock_redis, manager
-    ) -> None:
-        """Mirrors secrets_util.get_masking_secret cache read (and write path)."""
-        dsr_store.write_masking_secret(
-            "hash", "salt", "encoded-secret", expire_seconds=600
-        )
-        assert dsr_store.get_masking_secret("hash", "salt") == "encoded-secret"
-        assert dsr_store.get_masking_secret("hash", "other") is None
-        # Legacy key migration (different DSR)
-        mock_redis.set("id-pr-2-masking-secret-hash-pepper", "legacy-masking")
-        store2 = DSRCacheStore("pr-2", manager)
-        assert store2.get_masking_secret("hash", "pepper") == "legacy-masking"
-        assert mock_redis.get("id-pr-2-masking-secret-hash-pepper") is None

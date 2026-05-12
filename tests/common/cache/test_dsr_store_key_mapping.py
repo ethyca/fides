@@ -32,11 +32,6 @@ class TestKeyMapper:
         assert new_key == f"{DSR_KEY_PREFIX}pr-abc:encryption:key"
         assert legacy_key == "id-pr-abc-encryption-key"
 
-    def test_masking_secret(self) -> None:
-        new_key, legacy_key = KeyMapper.masking_secret("pr-def", "hash", "salt")
-        assert new_key == f"{DSR_KEY_PREFIX}pr-def:masking_secret:hash:salt"
-        assert legacy_key == "id-pr-def-masking-secret-hash-salt"
-
     def test_async_execution(self) -> None:
         new_key, legacy_key = KeyMapper.async_execution("pr-ghi")
         assert new_key == f"{DSR_KEY_PREFIX}pr-ghi:async_execution"

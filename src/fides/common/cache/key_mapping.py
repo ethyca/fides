@@ -61,14 +61,6 @@ class KeyMapper:
         return _new_key(dsr_id, part), f"id-{dsr_id}-encryption-{attr}"
 
     @staticmethod
-    def masking_secret(dsr_id: str, strategy: str, secret_type: str) -> Tuple[str, str]:
-        """New: dsr:{id}:masking_secret:{strategy}:{secret_type}. Legacy: id-{id}-masking-secret-{strategy}-{secret_type}."""
-        part = f"masking_secret:{strategy}:{secret_type}"
-        return _new_key(
-            dsr_id, part
-        ), f"id-{dsr_id}-masking-secret-{strategy}-{secret_type}"
-
-    @staticmethod
     def async_execution(dsr_id: str) -> Tuple[str, str]:
         """New: dsr:{id}:async_execution. Legacy: id-{id}-async-execution."""
         part = "async_execution"
