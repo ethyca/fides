@@ -1,3 +1,5 @@
+import { defaultSerializeQueryArgs } from "@reduxjs/toolkit/query";
+
 import { baseApi } from "~/features/common/api.slice";
 
 import { ActionType, TraversalPreviewResponse } from "./types";
@@ -30,6 +32,23 @@ export const traversalPreviewApi = baseApi
             refresh,
           },
         }),
+        // Exclude `refresh` from the cache key so a regenerate call writes
+        // back into the same entry instead of creating a parallel one. The
+        // `forceRefetch` below triggers the network round-trip when the
+        // caller opts in to a fresh build.
+        serializeQueryArgs: ({
+          queryArgs,
+          endpointDefinition,
+          endpointName,
+        }) => {
+          const { refresh: _refresh, ...rest } = queryArgs;
+          return defaultSerializeQueryArgs({
+            queryArgs: rest,
+            endpointDefinition,
+            endpointName,
+          });
+        },
+        forceRefetch: ({ currentArg }) => Boolean(currentArg?.refresh),
         providesTags: (_result, _error, { propertyId, actionType }) => [
           { type: "TraversalPreview", id: `${propertyId}:${actionType}` },
         ],
