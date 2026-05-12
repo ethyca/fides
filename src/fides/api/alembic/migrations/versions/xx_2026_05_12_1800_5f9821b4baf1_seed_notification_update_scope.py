@@ -4,7 +4,7 @@ Revision ID: 5f9821b4baf1
 Revises: e3f4a5b6c7d8
 Create Date: 2026-05-12 18:00:00.000000
 
-Seeds the notification:update RBAC permission and assigns it to the owner role.
+Seeds the notification:update RBAC permission and assigns it to the owner and contributor roles.
 """
 
 from uuid import uuid4
@@ -19,7 +19,7 @@ branch_labels = None
 depends_on = None
 
 NOTIFICATION_SCOPES = {
-    "notification:update": "Update notification status",
+    "notification:update": "Mark notifications as read",
 }
 
 
@@ -37,31 +37,33 @@ def upgrade():
                 "id": str(uuid4()),
                 "code": scope_code,
                 "description": description,
-                "resource_type": "notification",
+                "resource_type": scope_code.split(":")[0],
             },
         )
 
-    owner_role = bind.execute(
-        text("SELECT id FROM rbac_role WHERE key = 'owner'")
-    ).fetchone()
-    if owner_role:
-        for scope_code in NOTIFICATION_SCOPES:
-            permission = bind.execute(
-                text("SELECT id FROM rbac_permission WHERE code = :code"),
-                {"code": scope_code},
-            ).fetchone()
-            if permission:
-                bind.execute(
-                    text(
-                        "INSERT INTO rbac_role_permission (role_id, permission_id, created_at) "
-                        "VALUES (:role_id, :permission_id, now()) "
-                        "ON CONFLICT DO NOTHING"
-                    ),
-                    {
-                        "role_id": owner_role.id,
-                        "permission_id": permission.id,
-                    },
-                )
+    for role_key in ("owner", "contributor"):
+        role = bind.execute(
+            text("SELECT id FROM rbac_role WHERE key = :key"),
+            {"key": role_key},
+        ).fetchone()
+        if role:
+            for scope_code in NOTIFICATION_SCOPES:
+                permission = bind.execute(
+                    text("SELECT id FROM rbac_permission WHERE code = :code"),
+                    {"code": scope_code},
+                ).fetchone()
+                if permission:
+                    bind.execute(
+                        text(
+                            "INSERT INTO rbac_role_permission (role_id, permission_id, created_at) "
+                            "VALUES (:role_id, :permission_id, now()) "
+                            "ON CONFLICT DO NOTHING"
+                        ),
+                        {
+                            "role_id": role.id,
+                            "permission_id": permission.id,
+                        },
+                    )
 
 
 def downgrade():
