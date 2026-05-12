@@ -171,6 +171,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Request workflows",
         path: routes.DSR_TRAVERSAL_ROUTE,
         requiresPlus: true,
+        requiresFlag: "dsrTraversalVisualizer",
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
       },
     ],
