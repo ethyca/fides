@@ -39,7 +39,7 @@ jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
 jest.mock("uuid");
 const mockUuid = jest.mocked(uuid);
-mockUuid.v4.mockReturnValue(MOCK_UUID as any);
+(mockUuid.v4 as jest.Mock).mockReturnValue(MOCK_UUID);
 
 // Setup mock js-cookie
 const mockGetCookie = jest.fn(
