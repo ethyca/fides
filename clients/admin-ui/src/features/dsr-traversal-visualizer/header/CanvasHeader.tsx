@@ -1,7 +1,6 @@
-import { Button, Flex, Radio, Switch, Text } from "fidesui";
+import { Button, Flex, Icons, Radio, Switch, Text, Tooltip } from "fidesui";
 
 import { ActionType, Reachability, TraversalPreviewResponse } from "../types";
-import styles from "./CanvasHeader.module.scss";
 import { PropertyPicker } from "./PropertyPicker";
 
 interface Props {
@@ -37,46 +36,42 @@ export const CanvasHeader = ({
   onShowNotTouchedChange,
   onRegenerate,
 }: Props) => (
-  <Flex
-    align="center"
-    gap="middle"
-    justify="space-between"
-    className={styles.root}
-    data-testid="canvas-header"
-  >
-    <Flex align="center" gap="middle">
-      <PropertyPicker value={propertyKey} onChange={onPropertyChange} />
-      <Radio.Group
-        value={actionType}
-        onChange={(e) => onActionChange(e.target.value)}
-        data-testid="action-type-toggle"
-        className={styles.actionToggle}
-      >
-        <Radio.Button value={ActionType.ACCESS}>Access</Radio.Button>
-        <Radio.Button value={ActionType.ERASURE}>Erasure</Radio.Button>
-      </Radio.Group>
-      <Switch
-        checked={showNotTouched}
-        onChange={onShowNotTouchedChange}
-        data-testid="show-not-touched"
-      />
-      <Text type="secondary" className="text-xs">
-        Show not touched
-      </Text>
-    </Flex>
-    <Flex align="center" gap="middle">
-      {payload && (
+  <Flex vertical gap="small" className="py-3" data-testid="canvas-header">
+    <Flex align="center" gap="middle" justify="space-between">
+      <Flex align="center" gap="middle">
+        <PropertyPicker value={propertyKey} onChange={onPropertyChange} />
+        <Radio.Group
+          value={actionType}
+          onChange={(e) => onActionChange(e.target.value)}
+          data-testid="action-type-toggle"
+          className="shrink-0 whitespace-nowrap"
+        >
+          <Radio.Button value={ActionType.ACCESS}>Access</Radio.Button>
+          <Radio.Button value={ActionType.ERASURE}>Erasure</Radio.Button>
+        </Radio.Group>
+        <Switch
+          checked={showNotTouched}
+          onChange={onShowNotTouchedChange}
+          data-testid="show-not-touched"
+        />
         <Text type="secondary" className="text-xs">
-          {summarize(payload)}
+          Show not touched
         </Text>
-      )}
-      <Button
-        onClick={onRegenerate}
-        data-testid="regenerate"
-        disabled={!propertyKey}
-      >
-        Regenerate
-      </Button>
+      </Flex>
+      <Tooltip title="Regenerate">
+        <Button
+          icon={<Icons.Renew />}
+          onClick={onRegenerate}
+          data-testid="regenerate"
+          disabled={!propertyKey}
+          aria-label="Regenerate"
+        />
+      </Tooltip>
     </Flex>
+    {payload && (
+      <Text type="secondary" className="text-xs">
+        {summarize(payload)}
+      </Text>
+    )}
   </Flex>
 );

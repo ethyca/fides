@@ -102,8 +102,3 @@ export const LANE_IDS: readonly LaneId[] = [
   LaneId.GATED,
   LaneId.SKIPPED,
 ];
-
-// Reserved height for app chrome (top nav + breadcrumb + canvas header)
-// subtracted from viewport height when sizing the canvas area.
-export const CANVAS_VIEWPORT_OFFSET = 240;
-export const CANVAS_HEIGHT_CSS = `calc(100vh - ${CANVAS_VIEWPORT_OFFSET}px)`;

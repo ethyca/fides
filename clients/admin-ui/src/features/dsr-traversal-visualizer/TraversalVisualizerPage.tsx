@@ -1,17 +1,17 @@
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Flex, Spin, Text } from "fidesui";
+import { Card, Flex, Spin, Text } from "fidesui";
 import { useRouter } from "next/router";
 import { ReactNode, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-import { CANVAS_HEIGHT_CSS } from "./constants";
 import { CanvasHeader } from "./header/CanvasHeader";
 import {
   useGetTraversalPreviewQuery,
   useLazyGetTraversalPreviewQuery,
 } from "./traversal-preview.slice";
 import { TraversalCanvas } from "./TraversalCanvas";
+import styles from "./TraversalVisualizerPage.module.scss";
 import { ActionType, Reachability } from "./types";
 
 interface Props {
@@ -52,11 +52,7 @@ export const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
   let canvasContent: ReactNode;
   if (!propertyKey) {
     canvasContent = (
-      <Flex
-        align="center"
-        justify="center"
-        style={{ height: CANVAS_HEIGHT_CSS }}
-      >
+      <Flex align="center" justify="center" flex={1}>
         <Text type="secondary">
           Select a property to preview its DSR traversal.
         </Text>
@@ -64,11 +60,7 @@ export const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
     );
   } else if (isLoading) {
     canvasContent = (
-      <Flex
-        align="center"
-        justify="center"
-        style={{ height: CANVAS_HEIGHT_CSS }}
-      >
+      <Flex align="center" justify="center" flex={1}>
         <Spin />
       </Flex>
     );
@@ -96,7 +88,7 @@ export const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
           })
         }
       />
-      {canvasContent}
+      <Card className={styles.canvasCard}>{canvasContent}</Card>
     </>
   );
 };
