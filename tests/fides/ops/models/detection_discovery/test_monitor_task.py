@@ -8,7 +8,7 @@ from fides.api.models.detection_discovery.monitor_task import (
     MonitorTaskType,
     TaskRunType,
     create_monitor_task_with_execution_log,
-    is_monitor_task_cancelled,
+    is_monitor_task_paused,
     update_monitor_task_with_execution_log,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -511,8 +511,8 @@ class TestUpdateMonitorTaskWithExecutionLog:
         assert "Either celery_id or task_record must be provided" in str(exc)
 
 
-class TestMonitorTaskCancellation:
-    """Tests for cancellation-related features: group_id and is_cancelled."""
+class TestMonitorTaskStopFeatures:
+    """Tests for stop-related features: group_id and is_monitor_task_paused."""
 
     def test_group_id(self, db: Session, monitor_config) -> None:
         """Tasks from the same classify operation share a group_id."""
@@ -563,8 +563,8 @@ class TestMonitorTaskCancellation:
             pytest.param(ExecutionLogStatus.error.value, False, id="error"),
         ],
     )
-    def test_is_cancelled(self, db: Session, monitor_config, status, expected) -> None:
-        celery_id = f"celery-is-cancelled-{status}"
+    def test_is_paused(self, db: Session, monitor_config, status, expected) -> None:
+        celery_id = f"celery-is-paused-{status}"
         task = MonitorTask.create(
             db=db,
             data={
@@ -575,10 +575,10 @@ class TestMonitorTaskCancellation:
             },
         )
 
-        assert is_monitor_task_cancelled(db, celery_id) is expected
+        assert is_monitor_task_paused(db, celery_id) is expected
 
         db.delete(task)
         db.commit()
 
-    def test_is_cancelled_unknown_celery_id(self, db: Session) -> None:
-        assert is_monitor_task_cancelled(db, "non-existent-celery-id") is False
+    def test_is_paused_unknown_celery_id(self, db: Session) -> None:
+        assert is_monitor_task_paused(db, "non-existent-celery-id") is False

@@ -164,11 +164,10 @@ def update_monitor_task_with_execution_log(
     return task_record
 
 
-def is_monitor_task_cancelled(db: Session, celery_id: str) -> bool:
-    """Check if a monitor task has been cancelled by inspecting its status.
+def is_monitor_task_paused(db: Session, celery_id: str) -> bool:
+    """Check if a monitor task has been paused (awaiting_processing).
 
-    Cancellation uses awaiting_processing because partial classification
-    results are preserved — the task is paused, not discarded.
+    Tasks enter this state when stopped via the /stop endpoint.
     """
     task = MonitorTask.get_by(db=db, field="celery_id", value=celery_id)
     if not task:
