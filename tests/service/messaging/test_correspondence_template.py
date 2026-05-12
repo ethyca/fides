@@ -67,7 +67,7 @@ class TestCorrespondenceTemplate:
             body='<a href="javascript:alert(1)">click</a><a href="https://safe.com">safe</a>',
         )
         assert "javascript:" not in rendered
-        assert "https://safe.com" in rendered
+        assert 'href="https://safe.com"' in rendered
 
     def test_subject_is_html_escaped(self):
         """subject uses Jinja2 autoescape, not sanitize_html."""
@@ -124,5 +124,5 @@ class TestInboundSanitization:
         )
         assert "javascript:" not in result
         assert "http://insecure.com" not in result
-        assert "https://safe.com" in result
-        assert "mailto:user@example.com" in result
+        assert 'href="https://safe.com"' in result
+        assert 'href="mailto:user@example.com"' in result
