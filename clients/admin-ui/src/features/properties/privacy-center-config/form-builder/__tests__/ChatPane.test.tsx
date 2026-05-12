@@ -18,6 +18,36 @@ describe("ChatPane", () => {
     expect(screen.getByRole("textbox")).toBeDisabled();
   });
 
+  it("shows a thinking indicator while streaming", () => {
+    render(
+      <ChatPane
+        messages={[{ role: "user", content: "Add an email field" }]}
+        status="streaming"
+        error={null}
+        onSend={jest.fn()}
+        onAbort={jest.fn()}
+      />,
+    );
+    const status = screen.getByRole("status", { name: /thinking/i });
+    expect(status).toBeInTheDocument();
+    expect(status.querySelector('[aria-busy="true"]')).toBeInTheDocument();
+  });
+
+  it("does not show a thinking indicator when idle", () => {
+    render(
+      <ChatPane
+        messages={[]}
+        status="idle"
+        error={null}
+        onSend={jest.fn()}
+        onAbort={jest.fn()}
+      />,
+    );
+    expect(
+      screen.queryByRole("status", { name: /thinking/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("calls onSend with the typed text and clears input", async () => {
     const onSend = jest.fn();
     render(

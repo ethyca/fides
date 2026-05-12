@@ -1,0 +1,4 @@
+type: Added
+description: Loading spinner in the privacy center form builder chat while the LLM is streaming a response
+pr: 8135
+labels: []

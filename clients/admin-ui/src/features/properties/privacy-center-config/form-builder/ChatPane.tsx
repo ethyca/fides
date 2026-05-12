@@ -1,4 +1,4 @@
-import { Alert, Button, Input, SparkleIcon } from "fidesui";
+import { Alert, Button, Input, SparkleIcon, Spin } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import type { ChatMessage, Status } from "./useFormBuilder";
@@ -84,6 +84,21 @@ export const ChatPane = ({
             {m.content}
           </div>
         ))}
+        {isStreaming && (
+          <div
+            role="status"
+            aria-live="polite"
+            aria-label="Assistant is thinking"
+            style={{
+              padding: 8,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <Spin size="small" />
+          </div>
+        )}
       </div>
       <div style={composerStyle}>
         <Input.TextArea
