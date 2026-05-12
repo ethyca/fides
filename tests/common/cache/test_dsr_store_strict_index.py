@@ -197,9 +197,7 @@ class TestNonStrictLegacyAndScan:
 
 
 def _en_email_key(dsr_id: str, step: str, dataset: str, collection: str) -> str:
-    return (
-        f"EN_EMAIL_INFORMATION__{dsr_id}__{step}__{dataset}__{collection}"
-    )
+    return f"EN_EMAIL_INFORMATION__{dsr_id}__{step}__{dataset}__{collection}"
 
 
 @pytest.mark.unit
@@ -243,7 +241,9 @@ class TestListEmailInfoLegacyEnScan:
         dsr_id = "pri_test_email_nonstrict"
         step, dataset, coll = "access", "postgres", "addresses"
         payload = {"step": step, "collection": None, "action_needed": None}
-        mock_redis.set(_en_email_key(dsr_id, step, dataset, coll), encode_cache_obj(payload))
+        mock_redis.set(
+            _en_email_key(dsr_id, step, dataset, coll), encode_cache_obj(payload)
+        )
 
         store = DSRCacheStore(dsr_id, manager)
         out = store.list_decoded_email_info_for_dataset(step, dataset)
@@ -266,7 +266,11 @@ class TestListEmailInfoLegacyEnScan:
         dsr_id = "pri_test_email_dedupe"
         step, dataset, coll = "access", "crm", "contacts"
         indexed_payload = {"step": step, "collection": None, "action_needed": None}
-        legacy_payload = {"step": step, "collection": {"dataset": "x"}, "action_needed": None}
+        legacy_payload = {
+            "step": step,
+            "collection": {"dataset": "x"},
+            "action_needed": None,
+        }
 
         store = DSRCacheStore(dsr_id, manager)
         store.write_encoded_email_info(step, dataset, coll, indexed_payload, _TTL)

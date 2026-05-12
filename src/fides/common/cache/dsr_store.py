@@ -536,7 +536,9 @@ class DSRCacheStore:
             en_match_prefix = (
                 f"EN_EMAIL_INFORMATION__{self._dsr_id}__{step}__{dataset}__"
             )
-            for raw_key in self._redis.scan_iter(match=f"{en_match_prefix}*", count=500):
+            for raw_key in self._redis.scan_iter(
+                match=f"{en_match_prefix}*", count=500
+            ):
                 redis_key = decode_dsr_redis_key(raw_key)
                 if not redis_key.startswith("EN_"):
                     continue
