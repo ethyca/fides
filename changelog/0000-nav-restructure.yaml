@@ -1,0 +1,4 @@
+type: Changed
+description: Restructure admin-ui navigation — break out Data governance and Integrations as top-level groups, flatten Settings, move Locations and Regulations to Data governance, rename duplicate labels
+pr: 0000
+labels: []

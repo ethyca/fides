@@ -85,13 +85,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "dataCatalog",
         requiresPlus: true,
       },
-      {
-        title: "Access control",
-        path: routes.ACCESS_CONTROL_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        requiresPlus: true,
-      },
     ],
   },
   {
@@ -138,6 +131,26 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Integrations",
+    icon: <Icons.WorkflowAutomation />,
+    routes: [
+      {
+        title: "Integrations",
+        path: routes.INTEGRATION_MANAGEMENT_ROUTE,
+        requiresPlus: true,
+        keywords: ["connectors", "connections"],
+        scopes: [
+          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
+          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.CONNECTION_DELETE,
+          ScopeRegistryEnum.CONNECTION_INSTANTIATE,
+          ScopeRegistryEnum.CONNECTION_READ,
+          ScopeRegistryEnum.CONNECTION_TYPE_READ,
+        ],
+      },
+    ],
+  },
+  {
     title: "Privacy requests",
     icon: <Icons.MessageQueue />,
     routes: [
@@ -166,19 +179,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.WEBHOOK_READ,
           ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
         ],
-      },
-    ],
-  },
-  {
-    title: "Privacy assessments",
-    icon: <Icons.Document />,
-    routes: [
-      {
-        title: "Assessments",
-        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
-        scopes: [],
-        requiresFlag: "privacyAssessments",
-        keywords: ["PIA", "DPIA"],
       },
     ],
   },
@@ -217,8 +217,8 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Core configuration",
-    icon: <Icons.WorkflowAutomation />,
+    title: "Data governance",
+    icon: <Icons.RuleDraft />,
     routes: [
       {
         title: "Taxonomy",
@@ -230,64 +230,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Integrations",
-        path: routes.INTEGRATION_MANAGEMENT_ROUTE,
-        requiresPlus: true,
-        keywords: ["connectors", "connections"],
-        scopes: [
-          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
-          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
-          ScopeRegistryEnum.CONNECTION_DELETE,
-          ScopeRegistryEnum.CONNECTION_INSTANTIATE,
-          ScopeRegistryEnum.CONNECTION_READ,
-          ScopeRegistryEnum.CONNECTION_TYPE_READ,
-        ],
-      },
-      {
-        title: "Notifications",
-        path: routes.NOTIFICATIONS_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
-          ScopeRegistryEnum.DIGEST_CONFIG_READ,
-          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
-        ],
-        tabs: NOTIFICATION_TAB_ITEMS,
-      },
-      {
-        title: "Custom fields",
-        path: routes.CUSTOM_FIELDS_ROUTE,
-        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
-        requiresPlus: true,
-      },
-      {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
-      },
-      {
-        title: "Domain verification",
-        path: routes.DOMAIN_RECORDS_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: true,
-        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
-      },
-      {
-        title: "Domains",
-        path: routes.DOMAIN_MANAGEMENT_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: false,
-        scopes: [
-          ScopeRegistryEnum.CONFIG_READ,
-          ScopeRegistryEnum.CONFIG_UPDATE,
-        ],
-      },
-      {
-        title: "Data purposes",
+        title: "Purposes",
         path: routes.DATA_PURPOSES_ROUTE,
         requiresPlus: true,
         requiresFlag: "alphaPurposeBasedAccessControl",
         scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
+      },
+      {
+        title: "Access policies",
+        path: routes.ACCESS_POLICIES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [],
       },
       {
         title: "Data consumers",
@@ -297,18 +251,19 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
       },
       {
-        title: "Access policies",
-        path: routes.ACCESS_POLICIES_ROUTE,
-        requiresPlus: true,
+        title: "Access control",
+        path: routes.ACCESS_CONTROL_ROUTE,
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresFlag: "alphaPurposeBasedAccessControl",
-        scopes: [],
+        requiresPlus: true,
       },
-    ],
-  },
-  {
-    title: "Compliance",
-    icon: <Icons.RuleDraft />,
-    routes: [
+      {
+        title: "Assessments",
+        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
+        scopes: [],
+        requiresFlag: "privacyAssessments",
+        keywords: ["PIA", "DPIA"],
+      },
       {
         title: "Locations",
         path: routes.LOCATIONS_ROUTE,
@@ -336,7 +291,84 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     icon: <Icons.Settings />,
     routes: [
       {
-        title: "Privacy requests",
+        title: "Organization",
+        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+        ],
+      },
+      {
+        title: "Users",
+        path: routes.USER_MANAGEMENT_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.USER_UPDATE,
+          ScopeRegistryEnum.USER_CREATE,
+          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+          ScopeRegistryEnum.USER_READ,
+        ],
+      },
+      {
+        title: "User detail",
+        path: routes.USER_DETAIL_ROUTE,
+        hidden: true,
+        scopes: [],
+      },
+      {
+        title: "Role Management",
+        path: routes.RBAC_ROUTE,
+        requiresPlus: true,
+        requiresRbac: true,
+        keywords: ["RBAC", "permissions"],
+        scopes: [ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS],
+      },
+      {
+        title: "Notifications",
+        path: routes.NOTIFICATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
+          ScopeRegistryEnum.DIGEST_CONFIG_READ,
+          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
+        ],
+        tabs: NOTIFICATION_TAB_ITEMS,
+      },
+      {
+        title: "Email templates",
+        path: routes.EMAIL_TEMPLATES_ROUTE,
+        requiresOss: true,
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
+      {
+        title: "Domain verification",
+        path: routes.DOMAIN_RECORDS_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: true,
+        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
+      },
+      {
+        title: "Domains",
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+      },
+      {
+        title: "Custom fields",
+        path: routes.CUSTOM_FIELDS_ROUTE,
+        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "DSR configuration",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
         keywords: ["redaction", "deduplication", "duplicate detection"],
@@ -353,13 +385,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Users",
-        path: routes.USER_MANAGEMENT_ROUTE,
+        title: "TCF configuration",
+        path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        module: "consent",
+        requiresPlus: true,
+        requiresFidesCloud: false,
         scopes: [
-          ScopeRegistryEnum.USER_UPDATE,
-          ScopeRegistryEnum.USER_CREATE,
-          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
-          ScopeRegistryEnum.USER_READ,
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
         ],
       },
       {
@@ -374,51 +407,9 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.CLIENT_READ],
       },
       {
-        title: "User detail",
-        path: routes.USER_DETAIL_ROUTE,
-        hidden: true, // Don't show in nav but allow access
-        scopes: [], // Any authenticated user can access their own profile
-      },
-      {
-        title: "Role Management",
-        path: routes.RBAC_ROUTE,
-        requiresPlus: true,
-        requiresRbac: true,
-        keywords: ["RBAC", "permissions"],
-        scopes: [
-          // Only Owners can access Role Management - they have assign_owners scope
-          ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
-        ],
-      },
-      {
-        title: "Organization",
-        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.ORGANIZATION_READ,
-          ScopeRegistryEnum.ORGANIZATION_UPDATE,
-        ],
-      },
-      {
-        title: "Email templates",
-        path: routes.EMAIL_TEMPLATES_ROUTE,
-        requiresOss: true,
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
-      },
-      {
-        title: "Consent",
-        path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
-        module: "consent",
-        requiresPlus: true,
-        requiresFidesCloud: false,
-        scopes: [
-          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
-          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
-        ],
-      },
-      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
-        scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
+        scopes: [ScopeRegistryEnum.USER_READ],
       },
     ],
   },

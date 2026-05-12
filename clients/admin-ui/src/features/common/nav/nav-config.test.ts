@@ -163,7 +163,7 @@ describe("configureNavGroups", () => {
 
       const coreConfigChildren = findGroup(
         navGroups,
-        "Core configuration",
+        "Settings",
       ).children.map((c) => c.title);
       expect(coreConfigChildren).toContain("Domain verification");
     });
@@ -179,7 +179,7 @@ describe("configureNavGroups", () => {
 
       const coreConfigChildren = findGroup(
         navGroups,
-        "Core configuration",
+        "Settings",
       ).children.map((c) => c.title);
       expect(coreConfigChildren).not.toContain("Domain verification");
     });
@@ -200,7 +200,7 @@ describe("configureNavGroups", () => {
 
       const coreConfigChildren = findGroup(
         navGroups,
-        "Core configuration",
+        "Settings",
       ).children.map((c) => ({ title: c.title, path: c.path }));
       expect(coreConfigChildren).toContainEqual({
         title: "Domains",
@@ -222,7 +222,7 @@ describe("configureNavGroups", () => {
       });
 
       const coreConfig = navGroups.find(
-        (g) => g.title === "Core configuration",
+        (g) => g.title === "Settings",
       );
       expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
         "Domains",
@@ -242,7 +242,7 @@ describe("configureNavGroups", () => {
       });
 
       const coreConfig = navGroups.find(
-        (g) => g.title === "Core configuration",
+        (g) => g.title === "Settings",
       );
       expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
         "Domains",
@@ -262,7 +262,7 @@ describe("configureNavGroups", () => {
       expect(navGroups.find((g) => g.title === "Consent")).toBeUndefined();
     });
 
-    it("hides Settings > Consent route when consentModuleEnabled is false", () => {
+    it("hides Settings > TCF configuration route when consentModuleEnabled is false", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -273,7 +273,7 @@ describe("configureNavGroups", () => {
       const settingsChildren = findGroup(navGroups, "Settings").children.map(
         (c) => c.title,
       );
-      expect(settingsChildren).not.toContain("Consent");
+      expect(settingsChildren).not.toContain("TCF configuration");
     });
 
     it("shows the Consent nav group when consentModuleEnabled is true", () => {
