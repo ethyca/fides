@@ -1,4 +1,5 @@
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.APPROVED, "Approved"],
@@ -39,6 +40,22 @@ export const SubjectRequestActionTypeOptions = [
   label: value,
   value: key,
 }));
+
+export const SubjectRequestSourceMap = new Map<PrivacyRequestSource, string>([
+  [PrivacyRequestSource.PRIVACY_CENTER, "Privacy Center"],
+  [PrivacyRequestSource.REQUEST_MANAGER, "Request Manager"],
+  [PrivacyRequestSource.CONSENT_WEBHOOK, "Consent Webhook"],
+  [PrivacyRequestSource.FIDES_JS, "Fides.js"],
+  [PrivacyRequestSource.DATASET_TEST, "Dataset Test"],
+  [PrivacyRequestSource.JANUS_SDK, "Janus SDK"],
+]);
+
+export const SubjectRequestSourceOptions = [...SubjectRequestSourceMap].map(
+  ([key, value]) => ({
+    label: value,
+    value: key,
+  }),
+);
 
 export const messagingProviders = {
   mailgun: "mailgun",
