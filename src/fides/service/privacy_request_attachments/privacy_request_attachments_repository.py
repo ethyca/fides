@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 
 from fides.api.models.attachment import (
@@ -61,13 +62,13 @@ class AttachmentUserProvidedRepository:
         """
         if not ids:
             return {}
-        rows = (
-            session.query(AttachmentUserProvided)
-            .filter(AttachmentUserProvided.id.in_(ids))
+        query = (
+            select(AttachmentUserProvided)
+            .where(AttachmentUserProvided.id.in_(ids))
             .order_by(AttachmentUserProvided.id)
             .with_for_update()
-            .all()
         )
+        rows = session.execute(query).scalars().all()
         return {row.id: row for row in rows}
 
     @staticmethod
@@ -102,11 +103,8 @@ class AttachmentUserProvidedRepository:
         session: Session,
     ) -> list[AttachmentUserProvided]:
         """Return every ``uploaded`` row created before ``cutoff`` (exclusive)."""
-        return (
-            session.query(AttachmentUserProvided)
-            .filter(
-                AttachmentUserProvided.status == AttachmentUserProvidedStatus.uploaded
-            )
-            .filter(AttachmentUserProvided.created_at < cutoff)
-            .all()
+        query = select(AttachmentUserProvided).where(
+            AttachmentUserProvided.status == AttachmentUserProvidedStatus.uploaded,
+            AttachmentUserProvided.created_at < cutoff,
         )
+        return list(session.execute(query).scalars().all())

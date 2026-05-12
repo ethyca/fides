@@ -78,4 +78,4 @@ def downgrade() -> None:
         table_name="attachment_user_provided",
     )
     op.drop_table("attachment_user_provided")
-    op.execute("DROP TYPE attachmentuserprovidedstatus")
+    sa.Enum(name="attachmentuserprovidedstatus").drop(op.get_bind(), checkfirst=True)
