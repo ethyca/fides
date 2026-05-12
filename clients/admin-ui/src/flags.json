@@ -146,5 +146,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "formBuilder": {
+    "label": "Form builder",
+    "description": "Visual drag-and-drop form builder for privacy center request forms",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
