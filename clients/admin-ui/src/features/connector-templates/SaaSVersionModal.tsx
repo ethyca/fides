@@ -1,6 +1,7 @@
 import { Button, Flex, Modal, Spin, Tabs, Text } from "fidesui";
 import React from "react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { Editor } from "~/features/common/yaml/helpers";
 
@@ -13,6 +14,21 @@ interface SaaSVersionContentProps {
   connectorType: string;
   version: string;
 }
+
+const EditorWithCopy = ({ yaml }: { yaml: string }) => (
+  <div className="relative">
+    <Editor
+      defaultLanguage="yaml"
+      value={yaml}
+      height="60vh"
+      options={EDITOR_OPTIONS}
+      theme="light"
+    />
+    <div className="absolute right-2 top-2 z-10">
+      <ClipboardButton copyText={yaml} size="small" />
+    </div>
+  </div>
+);
 
 const EDITOR_OPTIONS = {
   readOnly: true,
@@ -53,15 +69,7 @@ const SaaSVersionContent = ({
         </Text>
       );
     }
-    return (
-      <Editor
-        defaultLanguage="yaml"
-        value={configYaml}
-        height="60vh"
-        options={EDITOR_OPTIONS}
-        theme="light"
-      />
-    );
+    return <EditorWithCopy yaml={configYaml} />;
   };
 
   const renderDataset = () => {
@@ -86,15 +94,7 @@ const SaaSVersionContent = ({
         </Text>
       );
     }
-    return (
-      <Editor
-        defaultLanguage="yaml"
-        value={datasetYaml}
-        height="60vh"
-        options={EDITOR_OPTIONS}
-        theme="light"
-      />
-    );
+    return <EditorWithCopy yaml={datasetYaml} />;
   };
 
   const tabItems = [
