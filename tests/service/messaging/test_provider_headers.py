@@ -14,6 +14,18 @@ import pytest
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.schemas.messaging.messaging import EmailForActionType
+from fides.api.service.messaging.messaging_providers.aws_ses_service import (
+    AwsSesService,
+)
+from fides.api.service.messaging.messaging_providers.mailchimp_transactional_service import (
+    MailchimpTransactionalService,
+)
+from fides.api.service.messaging.messaging_providers.mailgun_service import (
+    MailgunService,
+)
+from fides.api.service.messaging.messaging_providers.twilio_email_service import (
+    TwilioEmailService,
+)
 
 
 def _make_messaging_config(service_type, details=None, secrets=None):
@@ -48,10 +60,6 @@ def _email_without_headers():
 class TestMailgunHeaders:
     @pytest.fixture()
     def mailgun_service(self):
-        from fides.api.service.messaging.messaging_providers.mailgun_service import (
-            MailgunService,
-        )
-
         config = _make_messaging_config(
             "mailgun",
             details={
@@ -99,10 +107,6 @@ class TestMailgunHeaders:
 class TestTwilioEmailHeaders:
     @pytest.fixture()
     def twilio_email_service(self):
-        from fides.api.service.messaging.messaging_providers.twilio_email_service import (
-            TwilioEmailService,
-        )
-
         config = _make_messaging_config(
             "twilio_email",
             details={"twilio_email_from": "from@test.com"},
@@ -169,10 +173,6 @@ class TestTwilioEmailHeaders:
 class TestMailchimpTransactionalHeaders:
     @pytest.fixture()
     def mailchimp_service(self):
-        from fides.api.service.messaging.messaging_providers.mailchimp_transactional_service import (
-            MailchimpTransactionalService,
-        )
-
         config = _make_messaging_config(
             "mailchimp_transactional",
             details={"email_from": "from@test.com"},
@@ -228,10 +228,6 @@ class TestAwsSesHeaders:
 
     @pytest.fixture()
     def ses_service(self):
-        from fides.api.service.messaging.messaging_providers.aws_ses_service import (
-            AwsSesService,
-        )
-
         config = _make_messaging_config(
             "aws_ses",
             details={
