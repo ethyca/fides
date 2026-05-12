@@ -8,7 +8,7 @@ describe("Nav Bar", () => {
   it("renders all navigation groups with links inside", () => {
     cy.visit("/");
 
-    // Without Plus: Overview, Data inventory, Privacy requests, Core configuration, Settings (Compliance hidden)
+    // Without Plus: Overview, Data inventory, Privacy requests, Data governance, Settings
     cy.get(".ant-menu-submenu-title").should("have.length", 5);
     cy.getByTestId("Overview-nav-group")
       .click()
@@ -30,7 +30,7 @@ describe("Nav Bar", () => {
       .within(() => {
         cy.getByTestId("Request manager-nav-link");
       });
-    cy.getByTestId("Core configuration-nav-group")
+    cy.getByTestId("Data governance-nav-group")
       .click()
       .parents(".ant-menu-submenu")
       .within(() => {
@@ -40,7 +40,7 @@ describe("Nav Bar", () => {
       .click()
       .parents(".ant-menu-submenu")
       .within(() => {
-        cy.getByTestId("Privacy requests-nav-link");
+        cy.getByTestId("DSR configuration-nav-link");
         cy.getByTestId("Users-nav-link");
         cy.getByTestId("Organization-nav-link");
         cy.getByTestId("About Fides-nav-link");
@@ -51,7 +51,7 @@ describe("Nav Bar", () => {
     stubPlus(true);
     cy.visit("/");
 
-    // With Plus: Overview, Detection & Discovery, Data inventory, Privacy requests, Consent, Core configuration, Compliance, Settings
+    // With Plus: Overview, Detection & Discovery, Data inventory, Integrations, Privacy requests, Consent, Data governance, Settings
     cy.get(".ant-menu-submenu-title").should("have.length", 8);
     cy.getByTestId("Detection & Discovery-nav-group")
       .click()
@@ -59,8 +59,8 @@ describe("Nav Bar", () => {
       .within(() => {
         cy.getByTestId("Action center-nav-link").should("exist");
       });
-    cy.getByTestId("Core configuration-nav-group").should("exist");
-    cy.getByTestId("Compliance-nav-group").should("exist");
+    cy.getByTestId("Integrations-nav-group").should("exist");
+    cy.getByTestId("Data governance-nav-group").should("exist");
   });
 
   it("styles the active navigation link based on the current route", () => {

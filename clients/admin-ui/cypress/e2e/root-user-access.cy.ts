@@ -187,16 +187,14 @@ describe("Root User Access", () => {
     it("can see and expand Settings nav group with all links", () => {
       cy.getByTestId("Settings-nav-group").should("be.visible").click();
 
-      cy.getByTestId("Privacy requests-nav-link").should("be.visible");
+      cy.getByTestId("DSR configuration-nav-link").should("be.visible");
       cy.getByTestId("Users-nav-link").should("be.visible");
       cy.getByTestId("Organization-nav-link").should("be.visible");
       cy.getByTestId("About Fides-nav-link").should("be.visible");
     });
 
-    it("can see Core configuration nav group", () => {
-      cy.getByTestId("Core configuration-nav-group")
-        .should("be.visible")
-        .click();
+    it("can see Data governance nav group", () => {
+      cy.getByTestId("Data governance-nav-group").should("be.visible").click();
       cy.getByTestId("Taxonomy-nav-link").should("be.visible");
     });
   });
@@ -235,7 +233,7 @@ describe("Root User Access", () => {
     });
 
     it("can navigate to Taxonomy page", () => {
-      cy.getByTestId("Core configuration-nav-group").click();
+      cy.getByTestId("Data governance-nav-group").click();
       cy.getByTestId("Taxonomy-nav-link").click();
       cy.url().should("include", "/taxonomy");
       cy.url().should("not.include", "/login");
