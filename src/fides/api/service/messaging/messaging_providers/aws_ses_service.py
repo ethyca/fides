@@ -29,12 +29,12 @@ class SESClient(Protocol):
         self, Identities: list[str]
     ) -> dict[str, dict[str, dict[str, str]]]: ...
 
-    def send_email(
+    def send_raw_email(
         self,
         Source: str,
-        Destination: dict[str, list[str]],
-        Message: dict[str, Any],
-    ) -> None: ...
+        Destinations: list[str],
+        RawMessage: dict[str, bytes],
+    ) -> dict[str, Any]: ...
 
 
 def _sanitize_aws_error(exc: Exception) -> str:
@@ -133,10 +133,10 @@ class AwsSesService(BaseEmailProviderService):
                 raise MessageDispatchException(f"{identity} is not verified in SES.")
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
-        """Send an email using AWS SES simple API.
+        """Send an email using AWS SES raw API for custom header support.
 
-        Does NOT call validate_email_and_domain_status() — that is done at
-        config save/test time. SES rejects sends from unverified identities.
+        Builds a MIME message using ``email.message.EmailMessage`` (modern
+        Python 3.6+ API).
         """
         ses_client = self.get_ses_client()
 
@@ -149,14 +149,14 @@ class AwsSesService(BaseEmailProviderService):
             from_address = f"noreply@{self.details.domain}"
 
         try:
-            ses_client.send_email(
+            msg = self.build_mime(from_address, to.strip(), message)
+            ses_client.send_raw_email(
                 Source=from_address,
-                Destination={"ToAddresses": [to.strip()]},
-                Message={
-                    "Subject": {"Data": message.subject},
-                    "Body": {"Html": {"Data": message.body}},
-                },
+                Destinations=[to.strip()],
+                RawMessage={"Data": msg.as_bytes()},
             )
+        except MessageDispatchException:
+            raise
         except Exception as exc:
             logger.error("Email failed to send: {}", str(exc))
             raise MessageDispatchException(

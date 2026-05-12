@@ -161,7 +161,7 @@ class SecuritySettings(FidesSettings):
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",
     )
     domain_validation_mode: DomainValidationMode = Field(
-        default=DomainValidationMode.monitor,
+        default=DomainValidationMode.enabled,
         description="Controls domain validation for SaaS connector params globally. "
         "'enabled' enforces validation and blocks disallowed domains. "
         "'monitor' validates but only logs warnings instead of blocking. "
