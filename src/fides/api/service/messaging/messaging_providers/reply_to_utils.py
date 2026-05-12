@@ -1,15 +1,17 @@
 """Reply-to address utilities for correspondence threading.
 
-Consumed by CorrespondenceService (ENG-3299) to generate unique reply-to
-addresses for outbound correspondence emails and store the token for
-inbound reply matching.
+Generates unique reply-to addresses for outbound correspondence emails
+and stores the token for inbound reply matching.
 """
 
 import re
 import secrets
 
-_SAFE_TOKEN_RE = re.compile(r"^[0-9a-f]+$")
-_SAFE_DOMAIN_RE = re.compile(r"^[a-zA-Z0-9.\-]+$")
+# Prevent email header injection — tokens must be hex-only, domains must be
+# alphanumeric with dots/hyphens. Rejects newlines, spaces, and @ characters
+# that could alter the address structure.
+_SAFE_TOKEN_RE = re.compile(r"^[0-9a-f]{32}$")
+_SAFE_DOMAIN_RE = re.compile(r"^(?!.*\.\.)[a-zA-Z0-9]([a-zA-Z0-9.\-]*[a-zA-Z0-9])$")
 
 
 def generate_reply_to_token() -> str:
