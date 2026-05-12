@@ -32,6 +32,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingMethod,
+    MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
@@ -40,8 +41,10 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
+    dispatch_message,
     dispatch_message_task,
     get_email_messaging_config_service_type,
+    get_provider_class,
     message_send_enabled,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME
@@ -135,6 +138,40 @@ class MessagingService:
             messaging_status.config_status == MessagingConfigStatus.configured
             and self.config_proxy.admin_ui.url is not None
         )
+
+    def send_test_message(
+        self,
+        service_type: MessagingServiceType,
+        to_identity: Identity,
+    ) -> None:
+        """Send a test message synchronously. Raises MessageDispatchException on failure."""
+        dispatch_message(
+            self.db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=to_identity,
+            service_type=service_type.value,
+        )
+
+    def validate_provider_on_save(
+        self,
+        messaging_config: MessagingConfig,
+    ) -> str | None:
+        """Run provider-specific validation after secrets are saved.
+        Returns failure reason string, or None if validation passed."""
+        provider_cls = get_provider_class(
+            MessagingServiceType(messaging_config.service_type)
+        )
+        if not provider_cls:
+            return None
+        try:
+            provider = provider_cls(messaging_config)
+            provider.validate_on_save()
+        except MessageDispatchException as exc:
+            logger.warning(
+                "Provider validation failed during config save: %s", str(exc)
+            )
+            return str(exc)
+        return None
 
     def send_request_approved(self, privacy_request: PrivacyRequest) -> None:
         if message_send_enabled(

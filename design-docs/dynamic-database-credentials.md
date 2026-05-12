@@ -107,7 +107,7 @@ This depends on a SQLAlchemy internal (`greenlet_spawn`), which is acceptable be
 - The planned SQLAlchemy 2.0 upgrade will replace this with the public `async_creator` API.
 - The code should include a clear TODO and comments explaining this constraint.
 
-The module-level engines in `ctl_session.py` need to be refactored into lazy factories (similar to how `session_management.py` already works) so the `creator` can be injected at construction time.
+The module-level engines in `ctl_session.py` remain as module-level singletons. The `creator` closure captures a provider reference, not credentials themselves — credentials are resolved inside the closure body on every call. This means the engine can be constructed at any time (including module import) and credential rotation still works correctly.
 
 ### 4. Automatic Retry on Auth Failure
 
