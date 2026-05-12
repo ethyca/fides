@@ -1,4 +1,5 @@
 import { useViewport } from "@xyflow/react";
+import classNames from "classnames";
 import { Tooltip } from "fidesui";
 import { CSSProperties } from "react";
 
@@ -35,19 +36,17 @@ export const LaneChrome = ({ lanes, onToggleCollapse }: Props) => {
                 width: lane.width,
                 height: lane.height,
               };
-              const classes = [
-                styles.lane,
-                styles[`lane-${lane.id}`],
-                lane.collapsed ? styles.collapsed : "",
-                lane.outOfFlow ? styles.outOfFlow : "",
-              ]
-                .filter(Boolean)
-                .join(" ");
-
               return (
                 <div
                   key={lane.id}
-                  className={classes}
+                  className={classNames(
+                    styles.lane,
+                    styles[`lane-${lane.id}`],
+                    {
+                      [styles.collapsed]: lane.collapsed,
+                      [styles.outOfFlow]: lane.outOfFlow,
+                    },
+                  )}
                   style={style}
                   data-testid={`lane-${lane.id}`}
                   data-collapsed={lane.collapsed ? "true" : "false"}
