@@ -1,4 +1,5 @@
 import { CookieAttributes } from "js-cookie";
+
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
   Cookies as CookiesType,

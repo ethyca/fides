@@ -1,4 +1,5 @@
 import { CookieAttributes } from "js-cookie";
+
 import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
 import { makeFidesCookie } from "~/lib/cookie";
 import {
@@ -19,7 +20,6 @@ const MOCK_DATE = "2023-01-01T12:00:00.000Z";
 jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 
 // Setup mock uuid
-const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
 jest.mock("uuid", () => ({
   v4: jest.fn(() => "fae7e16d-37fd-40ed-b2a8-a020ad90106d"),
 }));

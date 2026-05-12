@@ -1,5 +1,6 @@
 import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
+
 import { FidesCookie } from "../../src/lib/consent-types";
 import {
   getFidesConsentCookie,
