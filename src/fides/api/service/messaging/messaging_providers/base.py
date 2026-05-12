@@ -80,6 +80,11 @@ class BaseMessageProviderService(ABC):
 class BaseEmailProviderService(BaseMessageProviderService):
     """Base class for email provider services."""
 
+    HEADER_REPLY_TO = "Reply-To"
+    HEADER_MESSAGE_ID = "Message-ID"
+    HEADER_IN_REPLY_TO = "In-Reply-To"
+    HEADER_REFERENCES = "References"
+
     @abstractmethod
     def send_email(self, to: str, message: EmailForActionType) -> None: ...
 
@@ -89,10 +94,10 @@ class BaseEmailProviderService(BaseMessageProviderService):
     ) -> dict[str, str]:
         """Return non-None threading headers from the message."""
         candidates = {
-            "Reply-To": message.reply_to,
-            "Message-ID": message.message_id,
-            "In-Reply-To": message.in_reply_to,
-            "References": message.references,
+            BaseEmailProviderService.HEADER_REPLY_TO: message.reply_to,
+            BaseEmailProviderService.HEADER_MESSAGE_ID: message.message_id,
+            BaseEmailProviderService.HEADER_IN_REPLY_TO: message.in_reply_to,
+            BaseEmailProviderService.HEADER_REFERENCES: message.references,
         }
         return {f"{header_prefix}{k}": v for k, v in candidates.items() if v}
 
@@ -115,6 +120,9 @@ class BaseEmailProviderService(BaseMessageProviderService):
             msg[header] = value
 
         if message.body_text:
+            # The RFC 2046 multipart/alternative spec says parts should be
+            # ordered from simplest to richest. The email client picks the
+            # richest part it can render successfully.
             msg.set_content(message.body_text)
             msg.add_alternative(message.body, subtype="html")
         else:

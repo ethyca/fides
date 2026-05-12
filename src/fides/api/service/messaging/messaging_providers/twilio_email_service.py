@@ -60,7 +60,7 @@ class TwilioEmailService(BaseEmailProviderService):
 
             # Threading / envelope headers
             for key, value in self.get_threading_headers(message).items():
-                if key == "Reply-To":
+                if key == BaseEmailProviderService.HEADER_REPLY_TO:
                     mail.reply_to = ReplyTo(value)
                 else:
                     mail.header = Header(key, value)

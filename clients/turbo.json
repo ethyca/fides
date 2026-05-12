@@ -15,6 +15,7 @@
       "cache": false
     },
     "dev": {
+      "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
       "cache": false,
       "persistent": true

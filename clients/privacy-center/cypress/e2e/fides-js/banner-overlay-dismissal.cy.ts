@@ -1,5 +1,6 @@
 import { CONSENT_COOKIE_NAME, ConsentMethod, FidesCookie } from "fides-js";
 
+import { mockCookie } from "../../support/mocks";
 import { stubConfig, stubTCFExperience } from "../../support/stubs";
 
 describe("Banner and modal dismissal", () => {
@@ -245,4 +246,61 @@ describe("Banner and modal dismissal", () => {
       });
     },
   );
+
+  // When the saved cookie has prior decisions for some notices but lists a
+  // currently-served notice in `non_applicable_notice_keys` (i.e. that notice
+  // was non-applicable in a prior region), dismissing the banner must record
+  // a default preference for the now-applicable notice. Otherwise the banner
+  // would resurface on every reload until the user explicitly saved.
+  describe("when a served notice has no recorded preference but is in non_applicable_notice_keys", () => {
+    beforeEach(() => {
+      cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
+        const experienceItem = config.experience;
+        experienceItem.experience_config.dismissable = true;
+
+        // Seed a cookie with consent for an unrelated notice and "advertising"
+        // recorded as previously non-applicable. The current experience serves
+        // "advertising" as applicable, so the banner should resurface once.
+        const cookie = mockCookie({
+          consent: { essential: true },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: "2024-01-01T12:00:00.000Z",
+            updatedAt: "2024-01-01T12:00:00.000Z",
+            consentMethod: ConsentMethod.ACCEPT,
+          },
+          non_applicable_notice_keys: ["advertising"],
+        });
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+        stubConfig({
+          options: { tcfEnabled: false },
+          experience: experienceItem,
+        });
+      });
+    });
+
+    it("records a default preference for the served notice on dismiss and stops resurfacing", () => {
+      cy.get("#fides-banner").should("be.visible");
+      cy.get("#fides-banner .fides-close-button").click();
+      cy.get("#fides-banner").should("not.be.visible");
+
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const fidesCookie: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value),
+          );
+          // The dismiss flow should have recorded a default value for the
+          // newly-applicable notice while preserving the existing decision.
+          expect(fidesCookie.consent).to.have.property("advertising");
+          expect(fidesCookie.fides_meta.consentMethod).to.eql(
+            ConsentMethod.DISMISS,
+          );
+        });
+      });
+
+      cy.reload();
+      cy.get("#fides-banner").should("not.be.visible");
+    });
+  });
 });

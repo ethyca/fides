@@ -41,7 +41,7 @@ class MailchimpTransactionalService(BaseEmailProviderService):
 
         # Threading headers (exclude Reply-To — handled natively above)
         threading_headers = self.get_threading_headers(message)
-        threading_headers.pop("Reply-To", None)
+        threading_headers.pop(BaseEmailProviderService.HEADER_REPLY_TO, None)
         if threading_headers:
             msg_payload["headers"] = threading_headers
         if message.body_text:
