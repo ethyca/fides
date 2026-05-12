@@ -161,10 +161,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: true,
       });
 
-      const coreConfigChildren = findGroup(
-        navGroups,
-        "Settings",
-      ).children.map((c) => c.title);
+      const coreConfigChildren = findGroup(navGroups, "Settings").children.map(
+        (c) => c.title,
+      );
       expect(coreConfigChildren).toContain("Domain verification");
     });
 
@@ -177,10 +176,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfigChildren = findGroup(
-        navGroups,
-        "Settings",
-      ).children.map((c) => c.title);
+      const coreConfigChildren = findGroup(navGroups, "Settings").children.map(
+        (c) => c.title,
+      );
       expect(coreConfigChildren).not.toContain("Domain verification");
     });
   });
@@ -198,10 +196,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfigChildren = findGroup(
-        navGroups,
-        "Settings",
-      ).children.map((c) => ({ title: c.title, path: c.path }));
+      const coreConfigChildren = findGroup(navGroups, "Settings").children.map(
+        (c) => ({ title: c.title, path: c.path }),
+      );
       expect(coreConfigChildren).toContainEqual({
         title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
@@ -221,9 +218,7 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfig = navGroups.find(
-        (g) => g.title === "Settings",
-      );
+      const coreConfig = navGroups.find((g) => g.title === "Settings");
       expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
         "Domains",
       );
@@ -241,9 +236,7 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfig = navGroups.find(
-        (g) => g.title === "Settings",
-      );
+      const coreConfig = navGroups.find((g) => g.title === "Settings");
       expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
         "Domains",
       );
