@@ -3,11 +3,17 @@ import { CUSTOM_TAG_COLOR } from "fidesui";
 import { LaneId, Reachability } from "./types";
 
 export const NODE_WIDTH = 320;
-// Matches the rendered height of an integration card with our pinned chip
-// row. Dagre uses this to allocate vertical space in the LR layout -- if
-// it lags the real height, sibling cards crowd together and the spacing
-// between stacked nodes reads as inconsistent.
-export const NODE_HEIGHT = 160;
+
+// Minimum rendered height of an integration card. Short chip rows pad up
+// to this so vertically-stacked cards in the same column read as uniform.
+// Applied as an inline `min-height` on the card so this constant is the
+// single source of truth for both layout math (CARD_PITCH below) and
+// what gets painted.
+export const INTEGRATION_CARD_MIN_HEIGHT = 210;
+
+// Vertical gap between stacked cards. CARD_PITCH derives from this so
+// changing the card height or the gap propagates everywhere.
+export const INTER_CARD_GAP = 20;
 
 export const NODE_TYPES = {
   IDENTITY_ROOT: "identityRoot",
@@ -42,12 +48,10 @@ export const LANE_X = {
 
 export const LANE_Y_TOP = 0;
 
-// Cards stack vertically with this pitch (card height + gap between rows).
-// The +70 leaves room for an integration card whose chip row has wrapped to
-// up to three lines (each wrapped row adds ~24px) plus a 20px visual gap to
-// the next card. The .node SCSS sets min-height to match so cards in the
-// same column read as uniformly tall regardless of chip wrap.
-export const CARD_PITCH = NODE_HEIGHT + 70;
+// Cards stack vertically with this pitch (card min-height + inter-card
+// gap). Derived from the constants above so a card-height change can't
+// silently drift from the layout math.
+export const CARD_PITCH = INTEGRATION_CARD_MIN_HEIGHT + INTER_CARD_GAP;
 
 // Horizontal gap between adjacent columns in a multi-column lane.
 export const INTER_COL_GAP = 16;

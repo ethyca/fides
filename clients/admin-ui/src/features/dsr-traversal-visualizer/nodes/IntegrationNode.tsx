@@ -8,7 +8,11 @@ import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeL
 import type { ConnectionConfigurationResponse } from "~/types/api";
 import { ConnectionType } from "~/types/api/models/ConnectionType";
 
-import { REACHABILITY_COLOR, REACHABILITY_LABEL } from "../constants";
+import {
+  INTEGRATION_CARD_MIN_HEIGHT,
+  REACHABILITY_COLOR,
+  REACHABILITY_LABEL,
+} from "../constants";
 import { IntegrationNodeData } from "../types";
 import styles from "./IntegrationNode.module.scss";
 
@@ -54,6 +58,7 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
   return (
     <div
       className={styles.node}
+      style={{ minHeight: INTEGRATION_CARD_MIN_HEIGHT }}
       data-testid={`integration-node:${connectionKey}`}
     >
       <Handle
