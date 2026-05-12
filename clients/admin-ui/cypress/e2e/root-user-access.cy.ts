@@ -190,7 +190,9 @@ describe("Root User Access", () => {
       cy.getByTestId("DSR configuration-nav-link").should("be.visible");
       cy.getByTestId("Users-nav-link").should("be.visible");
       cy.getByTestId("Organization-nav-link").should("be.visible");
-      cy.getByTestId("About Fides-nav-link").should("be.visible");
+      cy.getByTestId("About Fides-nav-link")
+        .scrollIntoView()
+        .should("be.visible");
     });
 
     it("can see Data governance nav group", () => {
