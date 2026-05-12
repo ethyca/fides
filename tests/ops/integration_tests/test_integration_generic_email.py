@@ -1,12 +1,11 @@
 from unittest import mock
-from unittest.mock import ANY, Mock
+from unittest.mock import Mock
 
 import pytest as pytest
 
 from fides.api.email_templates import get_email_template
 from fides.api.models.connectionconfig import AccessLevel
 from fides.api.schemas.messaging.messaging import (
-    EmailForActionType,
     MessagingActionType,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
@@ -14,6 +13,7 @@ from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
+from tests.fixtures.messaging_fixtures import mailgun_post_body
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
@@ -24,9 +24,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email(
-    mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -35,6 +33,7 @@ async def test_erasure_email(
     run_privacy_request_task,
     test_fides_org,
     messaging_config,
+    mock_mailgun_http,
 ) -> None:
     """
     Run an erasure privacy request with only a generic erasure email connector.
@@ -66,20 +65,19 @@ async def test_erasure_email(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_dispatcher.assert_called_once_with(
-        ANY,
-        EmailForActionType(
-            subject="Notification of user erasure requests from Test Org",
-            body=erasure_email_template.render(
-                {
-                    "controller": "Test Org",
-                    "third_party_vendor_name": "Attentive Email",
-                    "identities": ["customer-1@example.com"],
-                }
-            ),
-        ),
-        "attentive@example.com",
-    )
+    assert mock_mailgun_http.called
+    body = mailgun_post_body(mock_mailgun_http.request_history)
+    assert body["to"] == ["attentive@example.com"]
+    assert body["subject"] == ["Notification of user erasure requests from Test Org"]
+    assert body["html"] == [
+        erasure_email_template.render(
+            {
+                "controller": "Test Org",
+                "third_party_vendor_name": "Attentive Email",
+                "identities": ["customer-1@example.com"],
+            }
+        )
+    ]
 
     # verify the privacy request was queued for further processing
     mock_requeue_privacy_requests.assert_called()
@@ -90,9 +88,7 @@ async def test_erasure_email(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_property_specific_messaging(
-    mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -102,6 +98,7 @@ async def test_erasure_email_property_specific_messaging(
     run_privacy_request_task,
     test_fides_org,
     messaging_config,
+    mock_mailgun_http,
 ) -> None:
     """
     Run an erasure privacy request with only a generic erasure email connector.
@@ -133,20 +130,19 @@ async def test_erasure_email_property_specific_messaging(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_dispatcher.assert_called_once_with(
-        ANY,
-        EmailForActionType(
-            subject="Notification of user erasure requests from Test Org",
-            body=erasure_email_template.render(
-                {
-                    "controller": "Test Org",
-                    "third_party_vendor_name": "Attentive Email",
-                    "identities": ["customer-1@example.com"],
-                }
-            ),
-        ),
-        "attentive@example.com",
-    )
+    assert mock_mailgun_http.called
+    body = mailgun_post_body(mock_mailgun_http.request_history)
+    assert body["to"] == ["attentive@example.com"]
+    assert body["subject"] == ["Notification of user erasure requests from Test Org"]
+    assert body["html"] == [
+        erasure_email_template.render(
+            {
+                "controller": "Test Org",
+                "third_party_vendor_name": "Attentive Email",
+                "identities": ["customer-1@example.com"],
+            }
+        )
+    ]
 
     # verify the privacy request was queued for further processing
     mock_requeue_privacy_requests.assert_called()
@@ -157,9 +153,7 @@ async def test_erasure_email_property_specific_messaging(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_no_messaging_config(
-    mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -195,7 +189,6 @@ async def test_erasure_email_no_messaging_config(
     # job will fail because there is no messaging config
     assert exit_state == EmailExitState.email_send_failed
 
-    mock_mailgun_dispatcher.assert_not_called()
     mock_requeue_privacy_requests.assert_not_called()
 
 
@@ -204,9 +197,7 @@ async def test_erasure_email_no_messaging_config(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_no_email_for_access_and_erasure_policy(
-    mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -216,6 +207,7 @@ async def test_erasure_email_no_email_for_access_and_erasure_policy(
     run_privacy_request_task,
     test_fides_org,
     messaging_config,
+    mock_mailgun_http,
 ) -> None:
     """
     Run a privacy request with both access and erasure policy types.
@@ -245,7 +237,7 @@ async def test_erasure_email_no_email_for_access_and_erasure_policy(
     assert exit_state == EmailExitState.no_applicable_privacy_requests
 
     # verify no emails were sent
-    mock_mailgun_dispatcher.assert_not_called()
+    assert not mock_mailgun_http.called
     mock_requeue_privacy_requests.assert_not_called()
 
 
@@ -326,9 +318,7 @@ async def test_erasure_email_no_updates_needed(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_disabled_connector(
-    mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -337,6 +327,7 @@ async def test_erasure_email_disabled_connector(
     run_privacy_request_task,
     test_fides_org,
     messaging_config,
+    mock_mailgun_http,
 ) -> None:
     """
     Run an erasure privacy request with only a generic erasure email connector.
@@ -371,9 +362,7 @@ async def test_erasure_email_disabled_connector(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_unsupported_identity(
-    mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
     db,
     request,
@@ -382,6 +371,7 @@ async def test_erasure_email_unsupported_identity(
     run_privacy_request_task,
     test_fides_org,
     messaging_config,
+    mock_mailgun_http,
 ) -> None:
     """
     Run an erasure privacy request with only a generic erasure email connector.

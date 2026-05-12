@@ -1027,11 +1027,18 @@ class TestPutMessagingConfigSecretsAWSSES:
 
         db.refresh(messaging_config_aws_ses)
 
-        assert json.loads(response.text) == {
-            "msg": "Secrets updated for MessagingConfig with key: my_aws_ses_config.",
-            "test_status": None,
-            "failure_reason": None,
-        }
+        body = json.loads(response.text)
+        assert (
+            body["msg"]
+            == "Secrets updated for MessagingConfig with key: my_aws_ses_config."
+        )
+        assert body["test_status"] is None
+        # validate_on_save runs SES identity verification, which fails with fake creds
+        assert body["failure_reason"] is not None
+        assert (
+            "InvalidClientTokenId" in body["failure_reason"]
+            or "AWS" in body["failure_reason"]
+        )
         assert (
             messaging_config_aws_ses.secrets[
                 MessagingServiceSecrets.AWS_ACCESS_KEY_ID.value

@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed FidesJS banner resurfacing when a served notice was previously stored as non-applicable
+pr: 8137
+labels: []
