@@ -41,9 +41,10 @@ export const traversalPreviewApi = baseApi
           endpointDefinition,
           endpointName,
         }) => {
-          const { refresh: _refresh, ...rest } = queryArgs;
+          const argsForKey = { ...queryArgs };
+          delete argsForKey.refresh;
           return defaultSerializeQueryArgs({
-            queryArgs: rest,
+            queryArgs: argsForKey,
             endpointDefinition,
             endpointName,
           });

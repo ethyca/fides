@@ -87,9 +87,7 @@ export const CanvasHeader = ({
         </Flex>
         <Flex align="baseline" gap="small">
           <Statistic value={manual} />
-          <Text type="secondary">
-            manual review{manual === 1 ? "" : "s"}
-          </Text>
+          <Text type="secondary">manual review{manual === 1 ? "" : "s"}</Text>
         </Flex>
         <Flex align="baseline" gap="small">
           <Statistic value={skipped} />
