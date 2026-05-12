@@ -320,6 +320,11 @@ describe("New Privacy Requests", () => {
         cy.getByTestId(
           "input-custom_privacy_request_fields.field_with_default_value.value",
         ).should("have.value", "The default value");
+
+        // Department field should render as a select dropdown with configured options
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.department.value",
+        ).antSelect("Engineering");
       });
 
       it("can submit a privacy request", () => {
@@ -359,7 +364,35 @@ describe("New Privacy Requests", () => {
         }).as("postPrivacyRequest");
         cy.getByTestId("submit-btn").click();
         cy.shouldShowMessage("success");
-        cy.wait("@postPrivacyRequest");
+        cy.wait("@postPrivacyRequest")
+          .its("request.body")
+          .then((body) => {
+            const fields = body[0].custom_privacy_request_fields;
+            expect(fields.required_field).to.have.property(
+              "label",
+              "Required example field",
+            );
+            expect(fields.required_field).to.have.property(
+              "value",
+              "A value for the required field",
+            );
+            expect(fields.field_with_default_value).to.have.property(
+              "label",
+              "Example field with default value",
+            );
+            expect(fields.field_with_default_value).to.have.property(
+              "value",
+              "The default value",
+            );
+            expect(fields.hidden_field).to.have.property(
+              "label",
+              "Hidden example field",
+            );
+            expect(fields.hidden_field).to.have.property(
+              "value",
+              "A value for the hidden but required field",
+            );
+          });
         cy.wait("@getPrivacyRequests");
       });
     });

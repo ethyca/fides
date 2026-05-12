@@ -8,12 +8,13 @@ import {
   Text,
   useMessage,
 } from "fidesui";
-import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
+import { parseSecretsFieldErrors } from "~/features/common/form/parseSecretsFieldErrors";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_DETAIL_ROUTE } from "~/features/common/nav/routes";
@@ -30,10 +31,7 @@ import { useDatasetConfigField } from "~/features/datastore-connections/system_p
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { useSetSystemLinksMutation } from "~/features/integrations/system-links.slice";
 import { useIntegrationPropertySelect } from "~/features/properties/useIntegrationPropertySelect";
-import {
-  useGetSystemsQuery,
-  usePatchSystemConnectionConfigsMutation,
-} from "~/features/system";
+import { useGetSystemsQuery } from "~/features/system";
 import {
   AccessLevel,
   BigQueryDocsSchema,
@@ -88,8 +86,6 @@ export const ConfigureIntegrationForm = ({
   ] = usePatchDatastoreConnectionSecretsMutation();
   const [patchDatastoreConnectionsTrigger, { isLoading: patchIsLoading }] =
     usePatchDatastoreConnectionMutation();
-  const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
-    usePatchSystemConnectionConfigsMutation();
   const router = useRouter();
 
   const [createUnlinkedSassConnectionConfigTrigger] =
@@ -244,25 +240,42 @@ export const ConfigureIntegrationForm = ({
           description: values.description,
           secrets: undefined,
         }
-      : {
+      : // enabled_actions is intentionally omitted here. Both
+        // POST /connection/instantiate/{type} and PATCH /connection drop unknown
+        // fields, so connections created from this form land with
+        // enabled_actions=NULL. The DSR runner treats NULL as "all actions
+        // enabled" for access/erasure but disables consent. SaaS consent
+        // integrations created through this form need request types set via the
+        // System → Integrations form until we expose the field on the Privacy
+        // requests tab (deferred — needs a base-schema addition).
+        {
           name: values.name,
           key: formatKey(values.name),
-          connection_type: connectionOption.identifier as ConnectionType,
+          connection_type: (isSaas
+            ? ConnectionType.SAAS
+            : connectionOption.identifier) as ConnectionType,
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
           secrets: processedValues.secrets,
           dataset: values.dataset,
+          ...(isSaas
+            ? { saas_connector_type: connectionOption.identifier }
+            : {}),
         };
 
-    // if system is attached, use patch request that attaches to system
+    // Two-step approach for both create and edit, intentionally avoiding the
+    // deprecated /system/{key}/connection endpoints (atomic but conflate the
+    // connection and link, and don't compose with multi-integration systems):
+    //   1. Create or update the connection config via the top-level endpoints.
+    //      For new SaaS connections this is POST /connection/instantiate/{type}
+    //      (createUnlinkedSassConnectionConfig) which builds the connection,
+    //      saas_config, and dataset from the template. For everything else
+    //      (non-SaaS create, all edits) it's PATCH /connection.
+    //   2. Reconcile the system link state via PUT /connection/{key}/system-links
+    //      below — only if the desired state differs from the initial state.
     let patchResult;
-    if (values.system_fides_key) {
-      patchResult = await patchSystemConnectionsTrigger({
-        systemFidesKey: values.system_fides_key,
-        connectionConfigs: [connectionPayload],
-      });
-    } else if (isSaas && !isEditing) {
+    if (!isEditing && isSaas) {
       patchResult = await createUnlinkedSassConnectionConfigTrigger({
         ...connectionPayload,
         instance_key: formatKey(values.name),
@@ -273,6 +286,15 @@ export const ConfigureIntegrationForm = ({
       patchResult = await patchDatastoreConnectionsTrigger(connectionPayload);
     }
     if (isErrorResult(patchResult)) {
+      const fieldErrors = parseSecretsFieldErrors(patchResult.error, {
+        knownFields: Object.keys(secrets?.properties ?? {}),
+      });
+      if (fieldErrors) {
+        form.setFields(
+          fieldErrors as unknown as Parameters<typeof form.setFields>[0],
+        );
+        return;
+      }
       const patchErrorMsg = getErrorMessage(
         patchResult.error,
         `A problem occurred while ${
@@ -282,26 +304,37 @@ export const ConfigureIntegrationForm = ({
       messageApi.error(patchErrorMsg);
       return;
     }
-    if (!hasSecrets || !values.secrets) {
-      // Link system if provided (using system-links API)
-      if (values.system_fides_key && connectionPayload.key) {
-        try {
-          await setSystemLinks({
-            connectionKey: connectionPayload.key,
-            body: {
-              links: [
-                {
-                  system_fides_key: values.system_fides_key,
-                },
-              ],
-            },
-          }).unwrap();
-        } catch (error) {
-          messageApi.error(
-            "Integration saved but system linking failed. You can link it later.",
-          );
-        }
+    // Reconcile the system link state via PUT /connection/{key}/system-links —
+    // but only when the desired state differs from the initial state. The
+    // endpoint is idempotent, so this is purely a no-op-skip optimisation.
+    const desiredSystemFidesKey = values.system_fides_key || undefined;
+    const linkStateChanged = desiredSystemFidesKey !== initialSystemFidesKey;
+    const reconcileSystemLink = async () => {
+      if (!linkStateChanged || !connectionPayload.key) {
+        return;
       }
+      try {
+        await setSystemLinks({
+          connectionKey: connectionPayload.key,
+          body: {
+            links: desiredSystemFidesKey
+              ? [{ system_fides_key: desiredSystemFidesKey }]
+              : [],
+          },
+        }).unwrap();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to reconcile system link:", error);
+        messageApi.error(
+          isEditing
+            ? "Failed to update the system link for this integration. The integration was saved, please try again."
+            : "Integration saved but system linking failed. You can link it later.",
+        );
+      }
+    };
+
+    if (!hasSecrets || !values.secrets) {
+      await reconcileSystemLink();
 
       // Save property assignments if editing
       if (isEditing && values.property_ids !== undefined && hasDatasets) {
@@ -344,6 +377,15 @@ export const ConfigureIntegrationForm = ({
       });
 
       if (isErrorResult(secretsResult)) {
+        const fieldErrors = parseSecretsFieldErrors(secretsResult.error, {
+          knownFields: Object.keys(secrets?.properties ?? {}),
+        });
+        if (fieldErrors) {
+          form.setFields(
+            fieldErrors as unknown as Parameters<typeof form.setFields>[0],
+          );
+          return;
+        }
         const secretsErrorMsg = getErrorMessage(
           secretsResult.error,
           `An error occurred while ${
@@ -368,28 +410,7 @@ export const ConfigureIntegrationForm = ({
       `Integration secret ${isEditing ? "updated" : "created"} successfully`,
     );
 
-    // If a system is provided, link it to the integration
-    if (values.system_fides_key && connectionPayload.key) {
-      try {
-        await setSystemLinks({
-          connectionKey: connectionPayload.key,
-          body: {
-            links: [
-              {
-                system_fides_key: values.system_fides_key,
-              },
-            ],
-          },
-        }).unwrap();
-      } catch (error) {
-        // Log error but don't fail the form submission
-        // eslint-disable-next-line no-console
-        console.error("Failed to link system:", error);
-        messageApi.error(
-          "Failed to link this integration to a system.  The integration was saved, please try again.",
-        );
-      }
-    }
+    await reconcileSystemLink();
 
     onClose();
 
@@ -414,12 +435,15 @@ export const ConfigureIntegrationForm = ({
     }
   };
 
-  const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
+  const loading = secretsIsLoading || patchIsLoading;
 
   // Form state tracking for parent component
   const allValues = Form.useWatch([], form);
   const [submittable, setSubmittable] = useState(false);
-  const isDirty = form.isFieldsTouched();
+  const isDirty = useMemo(
+    () => allValues !== undefined && !isEqual(allValues, initialValues),
+    [allValues, initialValues],
+  );
 
   useEffect(() => {
     form

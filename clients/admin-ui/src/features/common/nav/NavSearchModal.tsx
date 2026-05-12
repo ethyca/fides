@@ -1,5 +1,4 @@
 import { Icons, Input, InputRef, Modal } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -8,15 +7,18 @@ import { pluralize } from "~/features/common/utils";
 import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
 import { RouterLink } from "./RouterLink";
-import useNavSearchItems, { FlatNavItem } from "./useNavSearchItems";
+import useNavSearchItems, {
+  filterAndRankNavItems,
+  FlatNavItem,
+} from "./useNavSearchItems";
 
 const SEARCH_ICON_STYLE = {
-  color: palette.FIDESUI_NEUTRAL_400,
+  color: "var(--fidesui-neutral-400)",
   fontSize: 16,
 };
 const COLLAPSED_ICON_STYLE = {
   fontSize: 16,
-  color: palette.FIDESUI_CORINTH,
+  color: "var(--fidesui-brand-corinth)",
 };
 const isMac =
   typeof navigator !== "undefined" &&
@@ -99,10 +101,8 @@ const NavSearchModal = ({ groups }: NavSearchModalProps) => {
   const [activeIndex, setActiveIndex] = useState(-1);
 
   const visibleItems = useMemo(() => {
-    const query = searchValue.trim().toLowerCase();
-    return query
-      ? flatItems.filter((item) => item.title.toLowerCase().includes(query))
-      : [];
+    const query = searchValue.trim();
+    return query ? filterAndRankNavItems(flatItems, query) : [];
   }, [flatItems, searchValue]);
 
   useEffect(() => {

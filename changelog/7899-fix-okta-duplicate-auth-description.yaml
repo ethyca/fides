@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed duplicated authentication description on Okta integration page
-pr: 7899
-labels: []

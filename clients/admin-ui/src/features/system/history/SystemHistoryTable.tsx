@@ -10,7 +10,6 @@ import {
   ChakraTr as Tr,
   Icons,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -100,7 +99,7 @@ const SystemHistoryTable = ({ system }: Props) => {
               p="16px"
               fontSize="12px"
               border="1px solid #E2E8F0"
-              background={palette.FIDESUI_NEUTRAL_50}
+              background="var(--fidesui-neutral-50)"
             >
               System created on {formattedDate} at {formattedTime}
             </Td>

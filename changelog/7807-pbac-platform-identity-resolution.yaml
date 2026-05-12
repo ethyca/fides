@@ -1,4 +1,0 @@
-type: Added
-description: Added PBAC platform identity resolution types, consumer scope field, and Google Workspace connection type
-pr: 7807
-labels: ["db-migration"]

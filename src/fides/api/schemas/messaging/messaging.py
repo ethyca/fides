@@ -96,6 +96,7 @@ class MessagingActionType(StrEnum):
     EXTERNAL_USER_WELCOME = "external_user_welcome"
     MANUAL_TASK_DIGEST = "manual_task_digest"
     TEST_MESSAGE = "test_message"
+    CORRESPONDENCE = "correspondence"
 
 
 CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
@@ -308,8 +309,14 @@ class EmailForActionType(BaseModel):
     """
 
     subject: str
-    body: str
+    body: str  # HTML body
     template_variables: Optional[Dict[str, Any]] = {}
+    # Threading / envelope fields (all optional, backward compatible)
+    reply_to: str | None = None
+    message_id: str | None = None  # RFC 5322 Message-ID
+    in_reply_to: str | None = None
+    references: str | None = None
+    body_text: str | None = None  # plaintext alternative for multipart/alternative
 
 
 class MessagingServiceDetails(Enum):
@@ -533,6 +540,7 @@ class UserEmailInviteStatus(BaseModel):
 class MessagingTemplateWithPropertiesBase(BaseModel):
     id: str
     type: str
+    label: str
     is_enabled: bool
     properties: Optional[List[MinimalProperty]] = None
 
@@ -541,6 +549,7 @@ class MessagingTemplateWithPropertiesBase(BaseModel):
 
 class MessagingTemplateDefault(BaseModel):
     type: str
+    label: str
     is_enabled: bool
     content: Dict[str, Any] = Field(
         examples=[
@@ -570,6 +579,7 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
+    label: str | None = Field(None, min_length=1)
     content: Dict[str, Any] = Field(
         examples=[
             {
@@ -583,6 +593,7 @@ class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
 
 class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
+    label: str | None = Field(None, min_length=1)
     content: Optional[Dict[str, Any]] = Field(
         None,
         examples=[

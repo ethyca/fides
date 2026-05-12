@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated privacy notice forms from Formik/Chakra to Ant Design
-pr: 7950
-labels: []

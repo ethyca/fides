@@ -34,8 +34,13 @@ import {
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  JiraCredentialLinkStatus,
+  JiraLinkSaasRequest,
+  JiraLinkSaasResponse,
   JiraPreviewRequest,
+  JiraSaasConnectionInfo,
   JiraTicketData,
+  JiraUnlinkSaasResponse,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   SystemPurposeSummary,
@@ -50,6 +55,32 @@ import {
 interface ClassifyInstancesParams {
   fides_keys?: string[];
   resource_type: GenerateTypes;
+}
+
+export interface JiraProject {
+  id: string;
+  key: string;
+  name: string;
+}
+
+export interface JiraIssueType {
+  id: string;
+  name: string;
+  description?: string;
+  subtask: boolean;
+}
+
+export interface JiraStatus {
+  id: string;
+  name: string;
+  category_key: string;
+  category_name: string | null;
+}
+
+export interface JiraTemplateVariable {
+  name: string;
+  description: string;
+  example_value?: string;
 }
 
 const plusApi = baseApi.injectEndpoints({
@@ -524,33 +555,30 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Datastore Connection"],
     }),
-    getJiraProjects: build.query<
-      Array<{ id: string; key: string; name: string }>,
-      { connectionKey: string }
-    >({
+    getJiraProjects: build.query<JiraProject[], { connectionKey: string }>({
       query: ({ connectionKey }) => ({
         url: `plus/connection/${connectionKey}/jira/projects`,
       }),
     }),
     getJiraIssueTypes: build.query<
-      Array<{
-        id: string;
-        name: string;
-        description?: string;
-        subtask: boolean;
-      }>,
+      JiraIssueType[],
       { connectionKey: string; projectKey: string }
     >({
       query: ({ connectionKey, projectKey }) => ({
         url: `plus/connection/${connectionKey}/jira/projects/${projectKey}/issuetypes`,
       }),
     }),
+    getJiraStatuses: build.query<
+      JiraStatus[],
+      { connectionKey: string; projectKey: string; issueType: string }
+    >({
+      query: ({ connectionKey, projectKey, issueType }) => ({
+        url: `plus/connection/${connectionKey}/jira/statuses`,
+        params: { project_key: projectKey, issue_type: issueType },
+      }),
+    }),
     getJiraTemplateVariables: build.query<
-      Array<{
-        name: string;
-        description: string;
-        example_value?: string;
-      }>,
+      JiraTemplateVariable[],
       { connectionKey: string }
     >({
       query: ({ connectionKey }) => ({
@@ -566,6 +594,45 @@ const plusApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+    }),
+    getJiraSaasConnections: build.query<
+      JiraSaasConnectionInfo[],
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/available-saas-connections`,
+      }),
+      providesTags: ["Jira Credentials"],
+    }),
+    getJiraCredentialLinkStatus: build.query<
+      JiraCredentialLinkStatus,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/link-saas-credentials`,
+      }),
+      providesTags: ["Jira Credentials"],
+    }),
+    linkJiraSaasCredentials: build.mutation<
+      JiraLinkSaasResponse,
+      { connectionKey: string } & JiraLinkSaasRequest
+    >({
+      query: ({ connectionKey, ...body }) => ({
+        url: `plus/connection/${connectionKey}/jira/link-saas-credentials`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Jira Credentials", "Datastore Connection"],
+    }),
+    unlinkJiraSaasCredentials: build.mutation<
+      JiraUnlinkSaasResponse,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/link-saas-credentials`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Jira Credentials", "Datastore Connection"],
     }),
   }),
 });
@@ -611,8 +678,13 @@ export const {
   useInitiateJiraOAuthMutation,
   useGetJiraProjectsQuery,
   useGetJiraIssueTypesQuery,
+  useGetJiraStatusesQuery,
   useGetJiraTemplateVariablesQuery,
   usePreviewJiraTicketMutation,
+  useGetJiraSaasConnectionsQuery,
+  useGetJiraCredentialLinkStatusQuery,
+  useLinkJiraSaasCredentialsMutation,
+  useUnlinkJiraSaasCredentialsMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

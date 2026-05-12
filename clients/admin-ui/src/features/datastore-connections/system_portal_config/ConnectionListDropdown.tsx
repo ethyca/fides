@@ -11,7 +11,6 @@ import {
   Popover,
   Tooltip,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -219,7 +218,7 @@ const ConnectionListDropdown = ({
       <Box px="8px" mt={2}>
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">
-            <Icons.Search color={palette.FIDESUI_NEUTRAL_500} />
+            <Icons.Search color="var(--fidesui-neutral-500)" />
           </InputLeftElement>
           <Input
             data-testid="input-search-integrations"

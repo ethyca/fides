@@ -1,0 +1,24 @@
+dataset:
+- fides_key: marketing
+  organization_fides_key: default_organization
+  name: Marketing Campaigns
+  description: Campaign definitions and targeting rules.
+  data_categories:
+  - user.contact
+  data_purposes:
+  - marketing
+  collections:
+  - name: campaigns
+    description: Campaign definitions.
+    data_categories:
+    - user.contact
+    fields:
+    - name: campaign_id
+      data_categories:
+      - system.operations
+    - name: name
+      data_categories:
+      - system.operations
+    - name: audience_rule
+      data_categories:
+      - user.contact

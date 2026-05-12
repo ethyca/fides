@@ -1,3 +1,4 @@
+import time
 from typing import Callable, List, Optional, Tuple
 
 from celery.app.task import Task
@@ -436,46 +437,61 @@ def run_consent_node(
 ) -> None:
     """Run an individual task in the consent graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
-    with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
-            session, privacy_request_id, privacy_request_task_id
-        )
-        with logger.contextualize(
-            privacy_request_source=(
-                privacy_request.source.value if privacy_request.source else None
-            ),
-            collection=request_task.collection_address,
-        ):
-            log_task_starting(request_task)
+    try:
+        with self.get_new_session() as session:
+            privacy_request, request_task, upstream_results = (
+                run_prerequisite_task_checks(
+                    session, privacy_request_id, privacy_request_task_id
+                )
+            )
+            with logger.contextualize(
+                privacy_request_source=(
+                    privacy_request.source.value if privacy_request.source else None
+                ),
+                collection=request_task.collection_address,
+            ):
+                log_task_starting(request_task)
 
-            if can_run_task_body(request_task):
-                # Build GraphTask resource to facilitate execution
-                with TaskResources(
-                    privacy_request,
-                    privacy_request.policy,
-                    session.query(ConnectionConfig).all(),
-                    request_task,
-                    session,
-                ) as resources:
-                    graph_task: GraphTask = create_graph_task(
-                        session, request_task, resources
+                if can_run_task_body(request_task):
+                    consent_start = time.monotonic()
+                    # Build GraphTask resource to facilitate execution
+                    with TaskResources(
+                        privacy_request,
+                        privacy_request.policy,
+                        session.query(ConnectionConfig).all(),
+                        request_task,
+                        session,
+                    ) as resources:
+                        graph_task: GraphTask = create_graph_task(
+                            session, request_task, resources
+                        )
+                        access_data: List = []
+                        if upstream_results:
+                            # For consent, expected that there is only one upstream node, the root node,
+                            # and it holds the identity data (stored in a list for consistency with other
+                            # data stored in access_data)
+                            access_data = upstream_results[0].get_access_data() or []
+
+                        graph_task.consent_request(
+                            access_data[0] if access_data else {}
+                        )
+                    consent_elapsed = time.monotonic() - consent_start
+                    logger.info(
+                        "Consent task {} completed in {:.2f}s",
+                        request_task.collection_address,
+                        consent_elapsed,
                     )
-                    access_data: List = []
-                    if upstream_results:
-                        # For consent, expected that there is only one upstream node, the root node,
-                        # and it holds the identity data (stored in a list for consistency with other
-                        # data stored in access_data)
-                        access_data = upstream_results[0].get_access_data() or []
 
-                    graph_task.consent_request(access_data[0] if access_data else {})
-
-    queue_downstream_tasks_with_retries(
-        self,
-        privacy_request_id,
-        privacy_request_task_id,
-        CurrentStep.finalize_consent,
-        privacy_request_proceed,
-    )
+        queue_downstream_tasks_with_retries(
+            self,
+            privacy_request_id,
+            privacy_request_task_id,
+            CurrentStep.finalize_consent,
+            privacy_request_proceed,
+        )
+    except Exception as exc:
+        logger.error("Error in run_consent_node: {}", exc)
+        raise
 
 
 def logger_method(request_task: RequestTask) -> Callable:

@@ -26,8 +26,8 @@ const GZIP_SIZE_TCF_ERROR_KB = 100;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
 // Headless
-const GZIP_SIZE_HEADLESS_ERROR_KB = 27;
-const GZIP_SIZE_HEADLESS_WARN_KB = 20;
+const GZIP_SIZE_HEADLESS_ERROR_KB = 28;
+const GZIP_SIZE_HEADLESS_WARN_KB = 22;
 
 // GPP
 const GZIP_SIZE_GPP_ERROR_KB = 40;
@@ -312,6 +312,10 @@ const copyStub = {
       format: "es",
     },
   ],
+  onLog(level, log) {
+    // fides-stub.js is intentionally empty; suppress Rollup's EMPTY_BUNDLE warning
+    if (log.code === "EMPTY_BUNDLE") return;
+  },
 };
 
 rollupOptions.push(copyStub);

@@ -19,6 +19,7 @@ from fides.api.models.attachment import (
 )
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
+from fides.api.request_context import reset_request_context, set_client_id
 from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.service.storage.util import get_local_filename
 from fides.service.attachment_service import AttachmentService
@@ -219,6 +220,54 @@ class TestAttachmentCreation:
 
         # Cleanup
         AttachmentService(db).delete(attachment)
+
+    def test_create_and_upload_injects_client_id_from_context(
+        self, db, attachment_data
+    ):
+        """client_id is pulled from request context when not provided in data."""
+        attachment_data.pop("client_id", None)  # ensure it's absent
+
+        set_client_id("test-api-client-id")
+        try:
+            captured = {}
+
+            def capture_data(cls_or_self=None, **kwargs):
+                captured.update(kwargs.get("data", {}))
+                raise RuntimeError("stop here")
+
+            with patch.object(Attachment, "_create_record", side_effect=capture_data):
+                with pytest.raises(RuntimeError, match="stop here"):
+                    AttachmentService(db).create_and_upload(
+                        data=attachment_data, file_data=BytesIO(b"x")
+                    )
+
+            assert captured.get("client_id") == "test-api-client-id"
+        finally:
+            reset_request_context()
+
+    def test_create_and_upload_does_not_overwrite_explicit_client_id(
+        self, db, attachment_data
+    ):
+        """client_id already in data is not overwritten by the request context."""
+        attachment_data["client_id"] = "caller-supplied-id"
+
+        set_client_id("context-client-id")
+        try:
+            captured = {}
+
+            def capture_data(cls_or_self=None, **kwargs):
+                captured.update(kwargs.get("data", {}))
+                raise RuntimeError("stop here")
+
+            with patch.object(Attachment, "_create_record", side_effect=capture_data):
+                with pytest.raises(RuntimeError, match="stop here"):
+                    AttachmentService(db).create_and_upload(
+                        data=attachment_data, file_data=BytesIO(b"x")
+                    )
+
+            assert captured.get("client_id") == "caller-supplied-id"
+        finally:
+            reset_request_context()
 
 
 class TestAttachmentRetrieval:

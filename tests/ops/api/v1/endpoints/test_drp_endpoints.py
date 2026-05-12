@@ -269,19 +269,16 @@ class TestCreateDrpPrivacyRequest:
         "set_notification_service_type_to_mailgun",
     )
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
-    @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_error_notification(
         self,
-        mailgun_dispatcher_mock,
         run_access_request_mock,
         url,
         db,
         api_client: TestClient,
         policy_drp_action,
+        mock_mailgun_http,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_PHONE_NUMBER = "+12345678910"
@@ -354,7 +351,7 @@ class TestCreateDrpPrivacyRequest:
         assert len(sent_errors) == 1
 
         assert run_access_request_mock.called
-        assert mailgun_dispatcher_mock.called
+        assert mock_mailgun_http.called
 
 
 class TestGetPrivacyRequestDRP:

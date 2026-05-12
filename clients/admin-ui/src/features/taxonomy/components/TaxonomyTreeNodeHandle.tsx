@@ -1,5 +1,4 @@
 import { Handle, HandleType, Position } from "@xyflow/react";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 interface TaxonomyTreeNodeHandleProps {
   type: HandleType;
@@ -20,8 +19,8 @@ const TaxonomyTreeNodeHandle = ({
         width: handleRadius,
         height: handleRadius,
         backgroundColor: inactive
-          ? palette.FIDESUI_NEUTRAL_400
-          : palette.FIDESUI_MINOS,
+          ? "var(--fidesui-neutral-400)"
+          : "var(--fidesui-brand-minos)",
       }}
       className="transition-colors duration-300 ease-in"
     />

@@ -29,7 +29,7 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
       <Flex vertical justify="space-between" className="flex-1">
         <Flex vertical gap="small">
           {/* Header */}
-          <Flex justify="space-between" align="flex-start">
+          <Flex justify="space-between" align="flex-start" gap="small">
             <Flex gap="small" align="center" className="min-w-0">
               <RouterLink
                 href={{

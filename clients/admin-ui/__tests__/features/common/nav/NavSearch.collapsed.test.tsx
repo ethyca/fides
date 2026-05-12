@@ -58,11 +58,6 @@ jest.mock("fidesui", () => {
   };
 });
 
-jest.mock("fidesui/src/palette/palette.module.scss", () => ({
-  FIDESUI_CORINTH: "#fafafa",
-  FIDESUI_NEUTRAL_400: "#a8aaad",
-}));
-
 // Mock react-hotkeys-hook so fireEvent.keyDown works in tests
 jest.mock("react-hotkeys-hook", () => {
   // eslint-disable-next-line global-require
@@ -138,6 +133,7 @@ jest.mock("next/link", () => {
 
 const mockDynamicItems: FlatNavItem[] = [];
 jest.mock("~/features/common/nav/useNavSearchItems", () => ({
+  ...jest.requireActual("~/features/common/nav/useNavSearchItems"),
   __esModule: true,
   default: (groups: any[]) => {
     const items: any[] = [];

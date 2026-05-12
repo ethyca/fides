@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed login page showing SSO configuration error instead of generic login failure message when entering incorrect credentials
-pr: 7882
-labels: []

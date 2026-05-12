@@ -1,0 +1,24 @@
+dataset:
+- fides_key: events
+  organization_fides_key: default_organization
+  name: Product Events
+  description: Page views and behavioral events.
+  data_categories:
+  - user.behavior
+  data_purposes:
+  - analytics
+  collections:
+  - name: page_views
+    description: Page view events from the web application.
+    data_categories:
+    - user.behavior
+    fields:
+    - name: user_id
+      data_categories:
+      - user.unique_id
+    - name: page_path
+      data_categories:
+      - user.behavior
+    - name: event_date
+      data_categories:
+      - system.operations

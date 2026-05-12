@@ -1,3 +1,0 @@
-type: Fixed
-description: Fixed property-based DAG filtering for SaaS connector datasets.
-pr: 7868

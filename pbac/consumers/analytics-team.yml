@@ -1,0 +1,8 @@
+consumer:
+- name: Analytics Team
+  description: Product analysts running reporting queries.
+  members:
+  - alice@demo.example
+  - priya@demo.example
+  purposes:
+  - analytics

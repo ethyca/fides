@@ -58,7 +58,7 @@ const ClassificationSelect = ({
       }}
       style={
         {
-          "--ant-select-multiple-selector-bg-disabled": "transparent",
+          "--fidesui-select-multiple-selector-bg-disabled": "transparent",
         } as React.CSSProperties
       }
       variant="borderless"

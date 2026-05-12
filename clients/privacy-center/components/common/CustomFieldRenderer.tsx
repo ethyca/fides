@@ -26,15 +26,13 @@ interface ICustomSelectFieldProps extends CustomSelectField, ICustomFieldProps {
 }
 
 interface ICustomMultiSelectFieldProps
-  extends CustomMultiSelectField,
-    ICustomFieldProps {
+  extends CustomMultiSelectField, ICustomFieldProps {
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }
 
 interface ICustomLocationFieldProps
-  extends CustomLocationField,
-    ICustomFieldProps {
+  extends CustomLocationField, ICustomFieldProps {
   value: string;
   onChange: (value: string) => void;
 }

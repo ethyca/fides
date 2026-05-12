@@ -1,7 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  ChakraText as Text,
   ConfirmationModal,
   Space,
   Switch,
@@ -100,7 +99,7 @@ export const TCFOverrideToggle = ({
   return (
     <>
       <Space orientation="vertical" size="small">
-        <Text>Configure overrides for TCF related purposes.</Text>
+        <span>Configure overrides for TCF related purposes.</span>
         <Space size="small">
           <Switch
             size="small"
@@ -112,7 +111,7 @@ export const TCFOverrideToggle = ({
             onClick={handleBeforeChange}
             data-testid="tcf-override-toggle"
           />
-          <Text>Override vendor purposes</Text>
+          <span>Override vendor purposes</span>
           <InfoTooltip label="Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP" />
         </Space>
       </Space>

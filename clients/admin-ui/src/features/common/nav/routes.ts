@@ -19,6 +19,7 @@ export const DATASET_COLLECTION_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]";
 export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]/[...subfieldNames]";
+export const DATASET_GRAPH_EDITOR_ROUTE = "/dataset/[datasetId]/graph-editor";
 
 // Detection and discovery
 export const ACTION_CENTER_ROUTE = "/data-discovery/action-center";
@@ -34,6 +35,10 @@ export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE =
   "/data-discovery/action-center/infrastructure/[monitorId]";
 export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
   "/data-discovery/action-center/infrastructure/[monitorId]/activity";
+export const ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ROUTE =
+  "/data-discovery/action-center/cloud_infrastructure/[monitorId]";
+export const ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
+  "/data-discovery/action-center/cloud_infrastructure/[monitorId]/activity";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
 
 // End-to-end datasets
@@ -58,6 +63,8 @@ export const PROPERTIES_ROUTE = "/properties";
 export const ADD_PROPERTY_ROUTE = "/properties/add-property";
 export const EDIT_PROPERTY_ROUTE = "/properties/[id]";
 
+export const API_CLIENTS_ROUTE = "/api-clients";
+export const API_CLIENT_DETAIL_ROUTE = "/api-clients/[id]";
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const USER_PROFILE_ROUTE = "/user-management/profile/[id]";
 export const USER_DETAIL_ROUTE = "/user-management/profile/[id]";
@@ -124,7 +131,6 @@ export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
 
 // Data Purposes (Core Configuration)
 export const DATA_PURPOSES_ROUTE = "/data-purposes";
-export const DATA_PURPOSES_NEW_ROUTE = "/data-purposes/new";
 export const DATA_PURPOSES_EDIT_ROUTE = "/data-purposes/[fidesKey]";
 
 // Data Consumers (Core Configuration)

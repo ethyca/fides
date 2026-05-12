@@ -13,7 +13,6 @@ import {
   Tooltip,
   Typography,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useState } from "react";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
@@ -41,6 +40,7 @@ const MONITOR_RESULT_COUNT_TYPES = {
   [APIMonitorType.WEBSITE]: ["asset", "assets"],
   [APIMonitorType.DATASTORE]: ["field", "fields"],
   [APIMonitorType.INFRASTRUCTURE]: ["system", "systems"],
+  [APIMonitorType.CLOUD_INFRASTRUCTURE]: ["resource", "resources"],
 } as const;
 
 interface MonitorResultProps extends ListItemProps {
@@ -122,6 +122,7 @@ export const MonitorResult = ({
               confidenceCounts={confidenceCounts}
               reviewHref={href}
               monitorId={key}
+              monitorType={monitorType}
               id={`confidence-row-${key}`}
             />
           </ExpandCollapse>
@@ -211,14 +212,14 @@ export const MonitorResult = ({
         <Avatar.Group
           max={{
             count: 5,
-            style: { background: palette.FIDESUI_NEUTRAL_700 },
+            style: { background: "var(--fidesui-neutral-700)" },
           }}
           className="hidden flex-[6.5rem] grow-0 justify-end lg:flex"
           size="small"
         >
           {stewards.map((steward) => (
             <Tooltip title={formatUser(steward)} key={steward.id}>
-              <Avatar rootClassName="bg-[--fidesui-bg-default] text-[--fidesui-minos]">
+              <Avatar rootClassName="bg-[--fidesui-color-bg-layout] text-[--fidesui-brand-minos]">
                 {steward.first_name?.charAt(0)}
                 {steward.last_name?.charAt(0)}
               </Avatar>

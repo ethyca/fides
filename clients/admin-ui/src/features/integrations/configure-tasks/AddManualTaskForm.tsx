@@ -8,7 +8,6 @@ import {
   Select,
   Tooltip,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useEffect } from "react";
 
 import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
@@ -36,7 +35,7 @@ const HelpIcon = ({ text }: { text: string }) => (
   <Tooltip title={text}>
     <Icons.Information
       style={{
-        color: palette.FIDESUI_NEUTRAL_500,
+        color: "var(--fidesui-neutral-500)",
         marginLeft: 4,
         cursor: "help",
       }}

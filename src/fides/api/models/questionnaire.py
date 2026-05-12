@@ -29,7 +29,7 @@ class QuestionnaireStatus(str, EnumType):
 
     in_progress = "in_progress"
     completed = "completed"
-    abandoned = "abandoned"
+    stopped = "stopped"
 
 
 class Questionnaire(Base):

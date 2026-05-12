@@ -18,7 +18,11 @@ export const GOOGLE_CLOUD_SQL_MYSQL_PLACEHOLDER = {
   created_at: "",
 };
 
-export const GOOGLE_CLOUD_SQL_MYSQL_TAGS = ["Discovery", "Detection"];
+export const GOOGLE_CLOUD_SQL_MYSQL_TAGS = [
+  "DSR Automation",
+  "Discovery",
+  "Detection",
+];
 
 export const GoogleCloudSQLMySQLOverview = () => (
   <>

@@ -107,6 +107,7 @@ router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 def post_config(
     *,
     db: Session = Depends(get_db),
+    messaging_service: MessagingService = Depends(get_messaging_service),
     messaging_config_request: MessagingConfigRequest,
 ) -> MessagingConfigResponse:
     """
@@ -127,11 +128,17 @@ def post_config(
             db=db, config=messaging_config_request
         )
         if messaging_config_request.secrets:
-            update_config_secrets(
+            secrets_result = update_config_secrets(
                 db,
                 messaging_config,
                 unvalidated_messaging_secrets=messaging_config_request.secrets,
+                messaging_service=messaging_service,
             )
+            if secrets_result.failure_reason:
+                logger.warning(
+                    "Provider validation failed during config creation: {}",
+                    secrets_result.failure_reason,
+                )
 
         # if there is only one messaging config, make it the default
         messaging_config_count = db.query(MessagingConfig).count()
@@ -336,6 +343,7 @@ def put_default_config_secrets(
     service_type: MessagingServiceType,
     *,
     db: Session = Depends(get_db),
+    messaging_service: MessagingService = Depends(get_messaging_service),
     unvalidated_messaging_secrets: PossibleMessagingSecrets,
 ) -> TestMessagingStatusMessage:
     messaging_config = MessagingConfig.get_by_type(db, service_type=service_type)
@@ -344,7 +352,9 @@ def put_default_config_secrets(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No default messaging config found of type '{service_type}'",
         )
-    return update_config_secrets(db, messaging_config, unvalidated_messaging_secrets)
+    return update_config_secrets(
+        db, messaging_config, unvalidated_messaging_secrets, messaging_service
+    )
 
 
 @router.put(
@@ -357,6 +367,7 @@ def put_config_secrets(
     config_key: FidesKey,
     *,
     db: Session = Depends(get_db),
+    messaging_service: MessagingService = Depends(get_messaging_service),
     unvalidated_messaging_secrets: PossibleMessagingSecrets,
 ) -> TestMessagingStatusMessage:
     """
@@ -369,13 +380,16 @@ def put_config_secrets(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No messaging configuration with key {config_key}.",
         )
-    return update_config_secrets(db, messaging_config, unvalidated_messaging_secrets)
+    return update_config_secrets(
+        db, messaging_config, unvalidated_messaging_secrets, messaging_service
+    )
 
 
 def update_config_secrets(
     db: Session,
     messaging_config: MessagingConfig,
     unvalidated_messaging_secrets: PossibleMessagingSecrets,
+    messaging_service: MessagingService,
 ) -> TestMessagingStatusMessage:
     try:
         secrets_schema = get_schema_for_secrets(
@@ -412,9 +426,12 @@ def update_config_secrets(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
+    save_failure_reason = messaging_service.validate_provider_on_save(messaging_config)
+
     msg = f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
-    # todo- implement test status for messaging service
-    return TestMessagingStatusMessage(msg=msg, test_status=None)
+    return TestMessagingStatusMessage(
+        msg=msg, test_status=None, failure_reason=save_failure_reason
+    )
 
 
 @router.get(
@@ -522,6 +539,7 @@ def send_test_message(
     service_type: MessagingServiceType,
     *,
     db: Session = Depends(get_db),
+    messaging_service: MessagingService = Depends(get_messaging_service),
     params: MessagingTestBodyParams,
 ) -> Dict[str, str]:
     """
@@ -534,14 +552,12 @@ def send_test_message(
             detail=f"No messaging config found with service type: {service_type}",
         )
     try:
-        dispatch_message(
-            db,
-            action_type=MessagingActionType.TEST_MESSAGE,
+        messaging_service.send_test_message(
+            service_type=service_type,
             to_identity=Identity(
                 email=params.to_identity.email,
                 phone_number=params.to_identity.phone_number,
             ),
-            service_type=service_type.value,
         )
     except MessageDispatchException as exc:
         config.update_test_status(
@@ -616,7 +632,7 @@ def get_basic_messaging_templates(
         BasicMessagingTemplateResponse(
             type=template.type,
             content=template.content,
-            label=DEFAULT_MESSAGING_TEMPLATES.get(template.type, {}).get("label", None),
+            label=template.label,
         )
         for template in get_all_basic_messaging_templates(db=db)
     ]
@@ -653,7 +669,7 @@ def update_basic_messaging_templates(
             # For Basic Messaging Templates, we ignore the is_enabled flag at runtime. This is because
             # enabling/disabling by template is only supported for property-specific messaging templates,
             # not basic templates.
-            create_or_update_basic_templates(
+            updated_template = create_or_update_basic_templates(
                 db,
                 data={"type": template_type, "content": content, "is_enabled": False},
             )
@@ -662,7 +678,7 @@ def update_basic_messaging_templates(
                 BasicMessagingTemplateResponse(
                     type=template_type,
                     content=content,
-                    label=default_template.get("label"),
+                    label=updated_template.label,
                 )
             )
 
@@ -724,6 +740,7 @@ def get_messaging_template_by_id(
         return MessagingTemplateWithPropertiesDetail(
             id=template_id,
             type=messaging_template.type,
+            label=messaging_template.label,
             content=messaging_template.content,
             is_enabled=messaging_template.is_enabled,
             properties=messaging_template.properties,

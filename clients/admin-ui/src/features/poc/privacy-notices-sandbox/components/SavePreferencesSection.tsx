@@ -1,6 +1,5 @@
 import type { Key } from "antd/es/table/interface";
 import { Button, Empty, Flex, Typography } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -234,7 +233,7 @@ const SavePreferencesSection = ({
                 }`
               : null
           }
-          headerColor={palette.FIDESUI_ALERT}
+          headerColor="var(--fidesui-brand-alert)"
           body={postResponse}
           emptyMessage="POST response will appear here after saving preferences"
         />

@@ -346,9 +346,10 @@ class IdentityValue(BaseModel):
     """Represents an identity value with a label in API responses.
 
     The value field accepts MultiValue types which match what LabeledIdentity supports:
+    - bool
     - int
     - str
-    - List[Union[int, str]]
+    - List[Union[bool, int, str]]
 
     This allows the schema to accept list values that were previously causing
     validation errors.
@@ -388,6 +389,7 @@ class PrivacyRequestResponse(FidesSchema):
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
     source: Optional[PrivacyRequestSource] = None
     location: Optional[str] = None
+    property_id: Optional[str] = None
     deleted_at: Optional[datetime] = None
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
@@ -592,6 +594,7 @@ class PrivacyRequestFilter(FidesSchema):
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
+    include_consent_webhook_requests: Optional[bool] = False
     include_deleted_requests: Optional[bool] = False
     is_overdue: Optional[bool] = None
     download_csv: Optional[bool] = False

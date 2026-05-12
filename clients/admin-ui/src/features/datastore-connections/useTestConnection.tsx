@@ -48,6 +48,7 @@ const useTestConnection = (
       : Boolean(integration?.last_test_succeeded),
     authorized: Boolean(integration?.authorized),
     connectionKey: integration?.key,
+    failureReason: data?.failure_reason,
   };
 
   const isLoading = queryIsLoading || isFetching;

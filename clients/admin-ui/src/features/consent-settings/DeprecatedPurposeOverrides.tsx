@@ -1,9 +1,7 @@
-import { ColumnsType, Table } from "fidesui";
-import { FieldArray, useFormikContext } from "formik";
+import { ColumnsType, Form, Switch, Table } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomSwitch } from "~/features/common/form/inputs";
 import { selectPurposes } from "~/features/common/purpose.slice";
 
 type FormPurposeOverride = {
@@ -23,18 +21,23 @@ const HIDDEN_PURPOSES = [1, 3, 4, 5, 6];
  * @deprecated
  */
 const DeprecatedPurposeOverrides = () => {
-  const { values, setFieldValue } = useFormikContext<{
+  const form = Form.useFormInstance<{
     purposeOverrides: FormPurposeOverride[];
   }>();
+  const watchedOverrides = Form.useWatch("purposeOverrides", form);
+  const purposeOverrides: FormPurposeOverride[] = useMemo(
+    () => watchedOverrides ?? [],
+    [watchedOverrides],
+  );
   const { purposes: purposeMapping } = useAppSelector(selectPurposes);
 
   const dataSourceWithIndex: FormPurposeOverrideWithIndex[] = useMemo(
     () =>
-      values.purposeOverrides.map((override, index) => ({
+      purposeOverrides.map((override, index) => ({
         ...override,
         index,
       })),
-    [values.purposeOverrides],
+    [purposeOverrides],
   );
 
   const columns: ColumnsType<FormPurposeOverrideWithIndex> = useMemo(
@@ -54,20 +57,22 @@ const DeprecatedPurposeOverrides = () => {
         width: 100,
         align: "center",
         render: (_, record) => (
-          <CustomSwitch
-            name={`purposeOverrides[${record.index}].is_included`}
+          <Switch
+            size="small"
+            checked={record.is_included}
             onChange={(checked) => {
-              if (!checked) {
-                setFieldValue(
-                  `purposeOverrides[${record.index}].is_consent`,
-                  false,
-                );
-                setFieldValue(
-                  `purposeOverrides[${record.index}].is_legitimate_interest`,
-                  false,
-                );
-              }
+              const updated = [...purposeOverrides];
+              updated[record.index] = {
+                ...updated[record.index],
+                is_included: checked,
+                ...(checked
+                  ? {}
+                  : { is_consent: false, is_legitimate_interest: false }),
+              };
+              form.setFieldValue("purposeOverrides", updated);
             }}
+            data-testid={`input-purposeOverrides[${record.index}].is_included`}
+            className="mr-2"
           />
         ),
       },
@@ -81,12 +86,23 @@ const DeprecatedPurposeOverrides = () => {
             return null;
           }
           return (
-            <CustomSwitch
-              isDisabled={
-                !values.purposeOverrides[record.index].is_included ||
-                values.purposeOverrides[record.index].is_legitimate_interest
+            <Switch
+              size="small"
+              checked={record.is_consent}
+              disabled={
+                !purposeOverrides[record.index]?.is_included ||
+                purposeOverrides[record.index]?.is_legitimate_interest
               }
-              name={`purposeOverrides[${record.index}].is_consent`}
+              onChange={(checked) => {
+                const updated = [...purposeOverrides];
+                updated[record.index] = {
+                  ...updated[record.index],
+                  is_consent: checked,
+                };
+                form.setFieldValue("purposeOverrides", updated);
+              }}
+              data-testid={`input-purposeOverrides[${record.index}].is_consent`}
+              className="mr-2"
             />
           );
         },
@@ -101,34 +117,40 @@ const DeprecatedPurposeOverrides = () => {
             return null;
           }
           return (
-            <CustomSwitch
-              isDisabled={
-                !values.purposeOverrides[record.index].is_included ||
-                values.purposeOverrides[record.index].is_consent
+            <Switch
+              size="small"
+              checked={record.is_legitimate_interest}
+              disabled={
+                !purposeOverrides[record.index]?.is_included ||
+                purposeOverrides[record.index]?.is_consent
               }
-              name={`purposeOverrides[${record.index}].is_legitimate_interest`}
+              onChange={(checked) => {
+                const updated = [...purposeOverrides];
+                updated[record.index] = {
+                  ...updated[record.index],
+                  is_legitimate_interest: checked,
+                };
+                form.setFieldValue("purposeOverrides", updated);
+              }}
+              data-testid={`input-purposeOverrides[${record.index}].is_legitimate_interest`}
+              className="mr-2"
             />
           );
         },
       },
     ],
-    [purposeMapping, values.purposeOverrides, setFieldValue],
+    [purposeMapping, purposeOverrides, form],
   );
 
   return (
-    <FieldArray
-      name="purposeOverrides"
-      render={() => (
-        <Table
-          dataSource={dataSourceWithIndex}
-          columns={columns}
-          rowKey="purpose"
-          pagination={false}
-          size="small"
-          bordered
-          data-testid="deprecated-purpose-overrides-table"
-        />
-      )}
+    <Table
+      dataSource={dataSourceWithIndex}
+      columns={columns}
+      rowKey="purpose"
+      pagination={false}
+      size="small"
+      bordered
+      data-testid="deprecated-purpose-overrides-table"
     />
   );
 };

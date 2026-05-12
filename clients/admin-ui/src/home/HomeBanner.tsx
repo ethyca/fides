@@ -1,5 +1,4 @@
 import { Flex, Text, Title, useThemeMode } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import * as React from "react";
 
 import { useFeatures } from "~/features/common/features";
@@ -13,8 +12,8 @@ const HomeBanner = () => {
   // Once we're using ant Layout globally, we won't need to hard-code the colors.
   const bgColor =
     resolvedMode === "dark"
-      ? palette.FIDESUI_BG_MINOS
-      : palette.FIDESUI_CORINTH;
+      ? "var(--fidesui-brand-bg-minos)"
+      : "var(--fidesui-brand-corinth)";
 
   const hasSystems = systemsCount > 0;
 

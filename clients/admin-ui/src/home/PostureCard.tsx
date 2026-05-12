@@ -11,7 +11,6 @@ import {
   Tooltip,
   useThemeMode,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo } from "react";
 
 import {
@@ -40,12 +39,12 @@ export const PostureCard = () => {
         Alert: {
           colorInfoBg:
             resolvedMode === "dark"
-              ? palette.FIDESUI_BG_MINOS
-              : palette.FIDESUI_LIMESTONE,
+              ? "var(--fidesui-brand-bg-minos)"
+              : "var(--fidesui-brand-limestone)",
           colorInfoBorder:
             resolvedMode === "dark"
-              ? palette.FIDESUI_MINOS
-              : palette.FIDESUI_LIMESTONE,
+              ? "var(--fidesui-brand-minos)"
+              : "var(--fidesui-brand-limestone)",
         },
       },
     }),
