@@ -45,6 +45,7 @@ const PrivacyRequestForm = ({
     },
     customIdentityFields,
     customPrivacyRequestFields,
+    applicableFields,
   } = usePrivacyRequestForm({
     onExit,
     action,
@@ -140,7 +141,7 @@ const PrivacyRequestForm = ({
           ...customIdentityFields,
           ...customPrivacyRequestFields,
         })
-          .filter(([, field]) => !field?.hidden)
+          .filter(([key, field]) => !field?.hidden && applicableFields.has(key))
           .map(([key, item]) => {
             const customFieldProps = (
               value: string | string[],

@@ -11,6 +11,7 @@ export interface CustomPrivacyRequestField {
   hidden?: boolean;
   query_param_key?: string;
   ip_geolocation_hint?: boolean;
+  display_condition?: import("./config").Condition | null;
 }
 
 export interface CustomPrivacyRequestFields {

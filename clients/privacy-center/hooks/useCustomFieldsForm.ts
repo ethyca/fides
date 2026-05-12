@@ -9,6 +9,47 @@ interface UseCustomFieldsFormProps {
   searchParams?: URLSearchParams | null;
 }
 
+/**
+ * Build a Yup validation schema for custom fields, filtering out fields that
+ * are hidden or not in the applicable set.
+ */
+export const buildCustomFieldsValidationSchema = (
+  fields: Record<string, CustomConfigField>,
+  applicableFields?: Set<string>,
+) => {
+  return Yup.object({
+    ...Object.fromEntries(
+      Object.entries(fields)
+        .filter(([key, field]) => {
+          if (field.hidden) {
+            return false;
+          }
+          if (applicableFields && !applicableFields.has(key)) {
+            return false;
+          }
+          return true;
+        })
+        .map(([key, { label, required, field_type }]) => {
+          const isRequired = required !== false;
+          if (field_type === "multiselect") {
+            return [
+              key,
+              isRequired
+                ? Yup.array().min(1, `${label} is required`)
+                : Yup.array().notRequired(),
+            ];
+          }
+          return [
+            key,
+            isRequired
+              ? Yup.string().required(`${label} is required`)
+              : Yup.string().notRequired(),
+          ];
+        }),
+    ),
+  });
+};
+
 export const useCustomFieldsForm = ({
   customPrivacyRequestFields,
   searchParams,
@@ -58,33 +99,11 @@ export const useCustomFieldsForm = ({
     return values;
   };
 
-  const getValidationSchema = () => {
-    const schema = Yup.object({
-      ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields)
-          .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required, field_type }]) => {
-            const isRequired = required !== false;
-            if (field_type === "multiselect") {
-              return [
-                key,
-                isRequired
-                  ? Yup.array().min(1, `${label} is required`)
-                  : Yup.array().notRequired(),
-              ];
-            }
-            return [
-              key,
-              isRequired
-                ? Yup.string().required(`${label} is required`)
-                : Yup.string().notRequired(),
-            ];
-          }),
-      ),
-    });
-
-    return schema;
-  };
+  const getValidationSchema = (applicableFields?: Set<string>) =>
+    buildCustomFieldsValidationSchema(
+      customPrivacyRequestFields,
+      applicableFields,
+    );
 
   return { getInitialValues, getValidationSchema };
 };

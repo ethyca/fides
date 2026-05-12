@@ -2,7 +2,7 @@ import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
@@ -16,6 +16,7 @@ import {
 import { DEFAULT_IDENTITY_INPUTS } from "~/constants";
 import { useProperty } from "~/features/common/property.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { useApplicableFields } from "~/hooks/useApplicableFields";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
@@ -84,6 +85,52 @@ const usePrivacyRequestForm = ({
     searchParams,
   });
 
+  const initialValues = getInitialValues();
+
+  // Ref to hold current applicable fields — updated after useApplicableFields,
+  // read inside validate/onSubmit closures to satisfy no-use-before-define
+  const applicableFieldsRef = useRef<Set<string>>(
+    new Set(Object.keys(customPrivacyRequestFields)),
+  );
+
+  // Build the static portion of the validation schema (identity fields)
+  const identityValidationSchema = Yup.object().shape({
+    name: nameValidation(nameInput),
+    email: emailValidation(emailInput).test(
+      "one of email or phone entered",
+      "You must enter either email or phone",
+      (_value, context) => {
+        if (emailInput === "optional" && phoneInput === "optional") {
+          return Boolean(context.parent.phone || context.parent.email);
+        }
+        return true;
+      },
+    ),
+    phone: phoneValidation(phoneInput).test(
+      "one of email or phone entered",
+      "You must enter either email or phone",
+      (_value, context) => {
+        if (emailInput === "optional" && phoneInput === "optional") {
+          return Boolean(context.parent.phone || context.parent.email);
+        }
+        return true;
+      },
+    ),
+    ...Object.fromEntries(
+      Object.entries(customIdentityFields).flatMap(([key, value]) => {
+        return value
+          ? [[key, Yup.string().required(`${value.label} is required`)]]
+          : [];
+      }),
+    ),
+  });
+
+  // Cache the last applicable-aware schema to avoid rebuilding on every keystroke
+  const schemaCache = useRef<{
+    applicableKey: string;
+    schema: Yup.AnyObjectSchema;
+  } | null>(null);
+
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
@@ -92,7 +139,7 @@ const usePrivacyRequestForm = ({
           ...customIdentityFields,
         }).map(([key]) => [key, ""]),
       ),
-      ...getInitialValues(),
+      ...initialValues,
       ...Object.fromEntries(
         Object.entries({
           ...legacyIdentityFields,
@@ -134,7 +181,16 @@ const usePrivacyRequestForm = ({
         action.custom_privacy_request_fields
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
-                .filter(([, field]) => field.field_type !== "location")
+                .filter(([key, field]) => {
+                  if (field.field_type === "location") {
+                    return false;
+                  }
+                  // Exclude fields gated off by display_condition
+                  if (!applicableFieldsRef.current.has(key) && !field.hidden) {
+                    return false;
+                  }
+                  return true;
+                })
                 .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&
@@ -253,38 +309,64 @@ const usePrivacyRequestForm = ({
         });
       }
     },
-    validationSchema: Yup.object().shape({
-      name: nameValidation(nameInput),
-      email: emailValidation(emailInput).test(
-        "one of email or phone entered",
-        "You must enter either email or phone",
-        (_value, context) => {
-          if (emailInput === "optional" && phoneInput === "optional") {
-            return Boolean(context.parent.phone || context.parent.email);
-          }
-          return true;
-        },
-      ),
-      phone: phoneValidation(phoneInput).test(
-        "one of email or phone entered",
-        "You must enter either email or phone",
-        (_value, context) => {
-          if (emailInput === "optional" && phoneInput === "optional") {
-            return Boolean(context.parent.phone || context.parent.email);
-          }
-          return true;
-        },
-      ),
-      ...Object.fromEntries(
-        Object.entries(customIdentityFields).flatMap(([key, value]) => {
-          return value
-            ? [[key, Yup.string().required(`${value.label} is required`)]]
-            : [];
-        }),
-      ),
-      ...getValidationSchema().fields,
-    }),
+
+    validate: (values) => {
+      // Build the custom fields schema filtered by applicable fields
+      const currentApplicable = applicableFieldsRef.current;
+      const applicableKey = Array.from(currentApplicable).sort().join(",");
+      let combinedSchema: Yup.AnyObjectSchema;
+
+      if (schemaCache.current?.applicableKey === applicableKey) {
+        combinedSchema = schemaCache.current.schema;
+      } else {
+        const customFieldSchema = getValidationSchema(currentApplicable);
+        combinedSchema = identityValidationSchema.concat(
+          customFieldSchema,
+        ) as Yup.AnyObjectSchema;
+        schemaCache.current = { applicableKey, schema: combinedSchema };
+      }
+
+      try {
+        combinedSchema.validateSync(values, { abortEarly: false });
+        return {};
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const errors: Record<string, string> = {};
+          err.inner.forEach((e) => {
+            if (e.path && !errors[e.path]) {
+              errors[e.path] = e.message;
+            }
+          });
+          return errors;
+        }
+        return {};
+      }
+    },
   });
+
+  // Resolve which custom fields are applicable based on current form values
+  const applicableFields = useApplicableFields(
+    customPrivacyRequestFields,
+    formik.values,
+  );
+  applicableFieldsRef.current = applicableFields;
+
+  // Clear values when fields become non-applicable
+  const prevApplicable = useRef<Set<string>>(applicableFields);
+  useEffect(() => {
+    const prev = prevApplicable.current;
+    prevApplicable.current = applicableFields;
+
+    prev.forEach((key) => {
+      if (!applicableFields.has(key) && key in customPrivacyRequestFields) {
+        const fieldInitial = initialValues[key];
+        if (formik.values[key] !== fieldInitial) {
+          formik.setFieldValue(key, fieldInitial ?? "");
+        }
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applicableFields]);
 
   return {
     ...formik,
@@ -292,6 +374,7 @@ const usePrivacyRequestForm = ({
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,
+    applicableFields,
   };
 };
 

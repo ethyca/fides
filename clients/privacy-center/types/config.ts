@@ -17,11 +17,36 @@ export type CustomIdentityFields = Record<
 
 export type IdentityInputs = DefaultIdentities & CustomIdentityFields;
 
+// Display condition types — mirrors the backend's Condition schema but restricted
+// to the 5 operators allowed for display_condition on custom fields.
+export type DisplayOperator =
+  | "eq"
+  | "neq"
+  | "exists"
+  | "not_exists"
+  | "list_contains";
+
+export type DisplayGroupOperator = "and" | "or";
+
+export interface ConditionLeaf {
+  field_address: string;
+  operator: DisplayOperator;
+  value?: string | number | boolean | Array<string | number | boolean> | null;
+}
+
+export interface ConditionGroup {
+  logical_operator: DisplayGroupOperator;
+  conditions: Array<ConditionLeaf | ConditionGroup>;
+}
+
+export type Condition = ConditionLeaf | ConditionGroup;
+
 export interface ICustomField {
   label: string;
   required?: boolean;
   query_param_key?: string | null;
   hidden?: boolean;
+  display_condition?: Condition | null;
 }
 
 export interface CustomTextField extends ICustomField {
