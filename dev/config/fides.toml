@@ -587,7 +587,7 @@ subject_request_download_link_ttl_seconds = 432000 # integer
 # 'monitor' validates but only logs warnings instead of blocking.
 # 'disabled' skips validation entirely. Set via
 # FIDES__SECURITY__DOMAIN_VALIDATION_MODE.
-domain_validation_mode = "monitor" # 
+domain_validation_mode = "enabled" # 
 
 # Either enables the collection of audit log resource data or bypasses
 # the middleware
