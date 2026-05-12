@@ -2,9 +2,12 @@ import { Button, Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures, useFlags } from "~/features/common/features";
+import { RouterLink } from "~/features/common/nav/RouterLink";
+import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { useGetPropertyByIdQuery } from "~/features/properties/property.slice";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ClipboardButton from "../common/ClipboardButton";
@@ -20,7 +23,7 @@ type RequestDetailsProps = {
 const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   const { plus: hasPlus } = useFeatures();
   const {
-    flags: { alphaJiraIntegration },
+    flags: { jiraIntegration },
   } = useFlags();
   const {
     id,
@@ -29,6 +32,11 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
     identity,
     identity_verified_at: identityVerifiedAt,
   } = subjectRequest;
+
+  const { data: propertyData } = useGetPropertyByIdQuery(
+    subjectRequest.property_id!,
+    { skip: !hasPlus || !subjectRequest.property_id },
+  );
 
   return (
     <div>
@@ -49,11 +57,24 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <RequestDetailsRow label="Request type">
           <RequestType rules={policy.rules} />
         </RequestDetailsRow>
-        <RequestDetailsRow label="Source">
-          {hasPlus && (
+        {hasPlus && (
+          <RequestDetailsRow label="Source">
             <Typography.Text>{subjectRequest.source || "-"}</Typography.Text>
-          )}
-        </RequestDetailsRow>
+          </RequestDetailsRow>
+        )}
+        {hasPlus && subjectRequest.property_id && (
+          <RequestDetailsRow label="Property">
+            <RouterLink
+              href={EDIT_PROPERTY_ROUTE.replace(
+                "[id]",
+                subjectRequest.property_id,
+              )}
+              ellipsis
+            >
+              {propertyData?.name ?? subjectRequest.property_id}
+            </RouterLink>
+          </RequestDetailsRow>
+        )}
         {subjectRequest.submitted_by && (
           <RequestDetailsRow label="Created by">
             <Typography.Text>
@@ -111,7 +132,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Form.Item>
       </Form>
       <RequestAttachments subjectRequest={subjectRequest} />
-      {hasPlus && alphaJiraIntegration && (
+      {hasPlus && jiraIntegration && (
         <RequestJiraTickets subjectRequest={subjectRequest} />
       )}
     </div>

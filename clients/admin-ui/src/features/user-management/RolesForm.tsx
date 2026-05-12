@@ -1,7 +1,7 @@
 /**
  * RolesForm - RBAC-enabled role assignment form
  *
- * This component is used when the alphaRbac feature flag is enabled.
+ * This component is used when RBAC is enabled via the Plus health endpoint.
  * It displays roles from the database (including custom roles) and uses
  * the RBAC APIs for role assignment.
  */
@@ -16,12 +16,12 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import NextLink from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import {
   useAssignUserRoleMutation,
@@ -350,10 +350,10 @@ const RolesForm = () => {
                 cursor: isDisabled ? "not-allowed" : "pointer",
                 opacity: isDisabled ? 0.6 : 1,
                 borderColor: isSelected
-                  ? "var(--ant-color-primary)"
+                  ? "var(--fidesui-color-primary)"
                   : undefined,
                 backgroundColor: isSelected
-                  ? "var(--ant-color-primary-bg)"
+                  ? "var(--fidesui-color-primary-bg)"
                   : undefined,
               }}
               onClick={() => !isDisabled && handleRoleToggle(role.id)}
@@ -383,7 +383,7 @@ const RolesForm = () => {
                           type="secondary"
                           style={{
                             fontSize: 12,
-                            color: "var(--fidesui-success)",
+                            color: "var(--fidesui-color-success)",
                           }}
                         >
                           Custom role
@@ -445,9 +445,9 @@ const RolesForm = () => {
       )}
 
       <Flex gap={12}>
-        <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+        <RouterLink href={USER_MANAGEMENT_ROUTE}>
           <Button>Cancel</Button>
-        </NextLink>
+        </RouterLink>
         <Button
           type="primary"
           onClick={handleSave}

@@ -1,26 +1,22 @@
-import {
-  Button,
-  ChakraHStack as HStack,
-  ChakraPortal as Portal,
-  ChakraStackProps as StackProps,
-  ChakraText as Text,
-  Icons,
-  useChakraDisclosure as useDisclosure,
-  useModal,
-} from "fidesui";
+import { Button, Flex, FlexProps, Icons, Typography, useModal } from "fidesui";
+import { useState } from "react";
 
 import Restrict from "~/features/common/Restrict";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetActiveMessagingProviderQuery } from "~/features/messaging/messaging.slice";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
-import { PrivacyRequestResponse, ScopeRegistryEnum } from "~/types/api";
+import {
+  PrivacyRequestResponse,
+  PrivacyRequestStatus,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
 import { getButtonVisibility } from "./helpers";
 import { useMutations } from "./hooks/useMutations";
 import { PrivacyRequestEntity } from "./types";
 
-interface RequestTableActionsProps extends StackProps {
+interface RequestTableActionsProps extends FlexProps {
   subjectRequest: PrivacyRequestResponse | PrivacyRequestEntity;
 }
 
@@ -28,8 +24,8 @@ export const RequestTableActions = ({
   subjectRequest,
   ...props
 }: RequestTableActionsProps): JSX.Element | null => {
-  const approvalModal = useDisclosure();
-  const denyModal = useDisclosure();
+  const [approvalModalOpen, setApprovalModalOpen] = useState(false);
+  const [denyModalOpen, setDenyModalOpen] = useState(false);
   const modal = useModal();
   const {
     handleApproveRequest,
@@ -48,8 +44,17 @@ export const RequestTableActions = ({
     useGetActiveMessagingProviderQuery();
   const sendRequestCompletionNotification =
     config?.notifications?.send_request_completion_notification;
+  const identityVerificationRequired =
+    config?.execution?.subject_identity_verification_required ?? false;
 
-  const buttonVisibility = getButtonVisibility(subjectRequest.status);
+  const isUnverifiedDuplicate =
+    subjectRequest.status === PrivacyRequestStatus.DUPLICATE &&
+    !subjectRequest.identity_verified_at &&
+    identityVerificationRequired;
+  const buttonVisibility = {
+    ...getButtonVisibility(subjectRequest.status),
+    ...(isUnverifiedDuplicate && { approve: false }),
+  };
 
   const renderApproveButton = () => {
     if (!buttonVisibility.approve) {
@@ -61,7 +66,7 @@ export const RequestTableActions = ({
         title="Approve"
         aria-label="Approve"
         icon={<Icons.Checkmark />}
-        onClick={approvalModal.onOpen}
+        onClick={() => setApprovalModalOpen(true)}
         loading={isLoading}
         disabled={isLoading}
         data-testid="privacy-request-approve-btn"
@@ -80,7 +85,7 @@ export const RequestTableActions = ({
         title="Deny"
         aria-label="Deny"
         icon={<Icons.Close />}
-        onClick={denyModal.onOpen}
+        onClick={() => setDenyModalOpen(true)}
         loading={isLoading}
         disabled={isLoading}
         data-testid="privacy-request-deny-btn"
@@ -93,7 +98,7 @@ export const RequestTableActions = ({
     modal.confirm({
       title: "Finalize privacy request",
       content: (
-        <Text>
+        <Typography.Text>
           You are about to finalize this privacy request. The status will be
           updated to &#34;Complete&#34;
           {sendRequestCompletionNotification &&
@@ -101,7 +106,7 @@ export const RequestTableActions = ({
             ? " and the requesting user will be notified"
             : ""}
           . Would you like to continue?
-        </Text>
+        </Typography.Text>
       ),
       centered: true,
       icon: null,
@@ -134,14 +139,16 @@ export const RequestTableActions = ({
   const handleDeleteConfirm = () => {
     modal.confirm({
       content: (
-        <Text>
+        <Typography.Text>
           You are about to permanently delete the privacy request. Are you sure
           you would like to continue?
-        </Text>
+        </Typography.Text>
       ),
       centered: true,
-      icon: null,
       onOk: handleDeleteRequest,
+      okButtonProps: {
+        danger: true,
+      },
     });
   };
 
@@ -167,29 +174,25 @@ export const RequestTableActions = ({
 
   return (
     <>
-      <HStack {...props}>
+      <Flex {...props}>
         {renderApproveButton()}
         {renderDenyButton()}
         {renderFinalizeButton()}
         {renderDeleteButton()}
-      </HStack>
+      </Flex>
 
-      <Portal>
-        <ApprovePrivacyRequestModal
-          isOpen={approvalModal.isOpen}
-          isLoading={isLoading}
-          onClose={approvalModal.onClose}
-          onApproveRequest={handleApproveRequest}
-          subjectRequest={subjectRequest}
-        />
-      </Portal>
-      <Portal>
-        <DenyPrivacyRequestModal
-          isOpen={denyModal.isOpen}
-          onClose={denyModal.onClose}
-          onDenyRequest={handleDenyRequest}
-        />
-      </Portal>
+      <ApprovePrivacyRequestModal
+        isOpen={approvalModalOpen}
+        isLoading={isLoading}
+        onClose={() => setApprovalModalOpen(false)}
+        onApproveRequest={handleApproveRequest}
+        subjectRequest={subjectRequest}
+      />
+      <DenyPrivacyRequestModal
+        isOpen={denyModalOpen}
+        onClose={() => setDenyModalOpen(false)}
+        onDenyRequest={handleDenyRequest}
+      />
     </>
   );
 };

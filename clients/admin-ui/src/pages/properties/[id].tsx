@@ -1,4 +1,4 @@
-import { ChakraBox as Box, useMessage } from "fidesui";
+import { useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -11,14 +11,16 @@ import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
 } from "~/features/properties/property.slice";
-import PropertyForm, { FormValues } from "~/features/properties/PropertyForm";
+import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
   const message = useMessage();
   const router = useRouter();
   const { id: propertyId } = router.query;
-  const { data, error } = useGetPropertyByIdQuery(propertyId as string);
+  const { data, error, isLoading } = useGetPropertyByIdQuery(
+    propertyId as string,
+  );
   const [updateProperty] = useUpdatePropertyMutation();
 
   const handleSubmit = async (values: FormValues) => {
@@ -60,9 +62,13 @@ const EditPropertyPage: NextPage = () => {
           },
         ]}
       />
-      <Box maxWidth="720px">
-        <PropertyForm property={data} handleSubmit={handleSubmit} />
-      </Box>
+      <div className="max-w-[720px]">
+        <PropertyForm
+          property={data}
+          isLoading={isLoading}
+          handleSubmit={handleSubmit}
+        />
+      </div>
     </Layout>
   );
 };

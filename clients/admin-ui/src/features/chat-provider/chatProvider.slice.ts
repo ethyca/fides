@@ -3,17 +3,17 @@ import type {
   ChatChannelsResponse,
   ChatConfigCreate,
   ChatConfigListResponse,
+  ChatConfigResponse,
+  ChatConfigSecrets,
+  ChatConfigTestResponse,
   ChatConfigUpdate,
-  ChatProviderSecrets,
-  ChatProviderSettingsResponse,
-  ChatProviderTestResponse,
   SendMessageRequest,
   SendMessageResponse,
 } from "~/types/api";
 
 const chatProviderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    testChatConnection: build.mutation<ChatProviderTestResponse, void>({
+    testChatConnection: build.mutation<ChatConfigTestResponse, void>({
       query: () => ({
         url: "plus/chat/test",
         method: "POST",
@@ -24,10 +24,7 @@ const chatProviderApi = baseApi.injectEndpoints({
       query: () => ({ url: "plus/chat/config" }),
       providesTags: ["Chat Provider Config"],
     }),
-    createChatConfig: build.mutation<
-      ChatProviderSettingsResponse,
-      ChatConfigCreate
-    >({
+    createChatConfig: build.mutation<ChatConfigResponse, ChatConfigCreate>({
       query: (body) => ({
         url: "plus/chat/config",
         method: "POST",
@@ -35,14 +32,14 @@ const chatProviderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Chat Provider Config"],
     }),
-    getChatConfig: build.query<ChatProviderSettingsResponse, string>({
+    getChatConfig: build.query<ChatConfigResponse, string>({
       query: (configId) => ({ url: `plus/chat/config/${configId}` }),
       providesTags: (_result, _error, id) => [
         { type: "Chat Provider Config", id },
       ],
     }),
     updateChatConfig: build.mutation<
-      ChatProviderSettingsResponse,
+      ChatConfigResponse,
       { configId: string; data: ChatConfigUpdate }
     >({
       query: ({ configId, data }) => ({
@@ -62,7 +59,7 @@ const chatProviderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Chat Provider Config"],
     }),
-    enableChatConfig: build.mutation<ChatProviderSettingsResponse, string>({
+    enableChatConfig: build.mutation<ChatConfigResponse, string>({
       query: (configId) => ({
         url: `plus/chat/config/${configId}/enable`,
         method: "PUT",
@@ -70,8 +67,8 @@ const chatProviderApi = baseApi.injectEndpoints({
       invalidatesTags: ["Chat Provider Config"],
     }),
     updateChatConfigSecrets: build.mutation<
-      ChatProviderSettingsResponse,
-      { configId: string; secrets: ChatProviderSecrets }
+      ChatConfigResponse,
+      { configId: string; secrets: ChatConfigSecrets }
     >({
       query: ({ configId, secrets }) => ({
         url: `plus/chat/config/${configId}/secret`,

@@ -23,6 +23,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
+  DATASET_GRAPH_EDITOR_ROUTE,
   DATASET_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -36,7 +37,7 @@ import {
 } from "~/features/common/table/v2";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
 import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
-import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
+import { EditCollectionDrawer } from "~/features/dataset/EditCollectionDrawer";
 import { DatasetCollection } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetCollection>();
@@ -163,7 +164,24 @@ const DatasetDetailPage: NextPage = () => {
 
   return (
     <Layout title={`Dataset - ${datasetId}`}>
-      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
+      <PageHeader
+        heading="Datasets"
+        breadcrumbItems={breadcrumbs}
+        rightContent={
+          <Button
+            icon={<Icons.Flow />}
+            onClick={() =>
+              router.push({
+                pathname: DATASET_GRAPH_EDITOR_ROUTE,
+                query: { datasetId: encodeURIComponent(datasetId) },
+              })
+            }
+            data-testid="graph-editor-btn"
+          >
+            Visual editor
+          </Button>
+        }
+      />
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />

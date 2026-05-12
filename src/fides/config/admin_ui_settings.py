@@ -31,4 +31,8 @@ class AdminUISettings(FidesSettings):
         default=ErrorNotificationMode.CONSOLE_ONLY.value,
         description="This setting controls how errors are notified to users.",
     )
+    consent_module_enabled: bool = Field(
+        default=True,
+        description="Toggle whether consent-related UI is shown in the Admin UI navigation.",
+    )
     model_config = SettingsConfigDict(env_prefix="FIDES__ADMIN_UI__")

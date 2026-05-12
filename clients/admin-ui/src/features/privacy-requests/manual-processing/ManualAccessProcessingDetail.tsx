@@ -1,21 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
-  ChakraBox as Box,
-  ChakraDivider as Divider,
-  ChakraFormControl as FormControl,
-  ChakraFormLabel as FormLabel,
-  ChakraHStack as HStack,
-  ChakraInput as Input,
-  ChakraText as Text,
-  ChakraVStack as VStack,
+  Divider,
   Drawer,
   Flex,
+  Form,
+  Input,
+  Typography,
 } from "fidesui";
-import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useState } from "react";
-import * as Yup from "yup";
 
 import { ManualProcessingDetailProps } from "./types";
 
@@ -26,8 +19,9 @@ const ManualAccessProcessingDetail = ({
   onSaveClick,
 }: ManualProcessingDetailProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [form] = Form.useForm();
 
-  const handleSubmit = async (values: any, _actions: any) => {
+  const handleFinish = async (values: Record<string, string>) => {
     const params: PatchUploadManualWebhookDataRequest = {
       connection_key: data.connection_key,
       privacy_request_id: data.privacy_request_id,
@@ -49,85 +43,69 @@ const ManualAccessProcessingDetail = ({
           Begin manual input
         </Button>
       )}
-      <Formik
-        enableReinitialize
-        initialValues={{ ...data.fields }}
-        onSubmit={handleSubmit}
-        validateOnBlur={false}
-        validateOnChange={false}
-        validationSchema={Yup.object().shape({})}
+      <Drawer
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        size="large"
+        title={
+          <>
+            <Typography.Text className="mb-8 text-xl">
+              {connectorName}
+            </Typography.Text>
+            <Divider />
+            <Typography.Text className="mt-4 text-base">
+              Manual access
+            </Typography.Text>
+            <div className="mt-2">
+              <Typography.Text
+                type="secondary"
+                size="sm"
+                className="font-normal"
+              >
+                Please complete the following PII fields that have been
+                collected for the selected subject.
+              </Typography.Text>
+            </div>
+          </>
+        }
+        footer={
+          <Flex gap="small">
+            <Button onClick={() => setIsOpen(false)}>Cancel</Button>
+            <Button
+              form="manual-detail-form"
+              loading={isSubmitting}
+              htmlType="submit"
+            >
+              Save
+            </Button>
+          </Flex>
+        }
       >
-        {(_props) => (
-          <Drawer
-            open={isOpen}
-            onClose={() => setIsOpen(false)}
-            size="large"
-            title={
-              <>
-                <Text fontSize="xl" mb={8}>
-                  {connectorName}
-                </Text>
-                <Divider />
-                <Text fontSize="md" mt="4">
-                  Manual access
-                </Text>
-                <Box mt="8px">
-                  <Text color="gray.700" fontSize="sm" fontWeight="normal">
-                    Please complete the following PII fields that have been
-                    collected for the selected subject.
-                  </Text>
-                </Box>
-              </>
-            }
-            footer={
-              <Flex gap="small">
-                <Button onClick={() => setIsOpen(false)}>Cancel</Button>
-                <Button
-                  form="manual-detail-form"
-                  loading={isSubmitting}
-                  htmlType="submit"
-                >
-                  Save
-                </Button>
+        <Form
+          form={form}
+          id="manual-detail-form"
+          initialValues={{ ...data.fields }}
+          onFinish={handleFinish}
+          key={JSON.stringify(data.fields)}
+        >
+          <Flex vertical gap="large">
+            {Object.entries(data.fields).map(([key]) => (
+              <Flex key={key} align="baseline">
+                <Typography.Text strong size="sm" className="w-1/2">
+                  {key}
+                </Typography.Text>
+                <Form.Item name={key} className="mb-0 flex-1">
+                  <Input
+                    autoComplete="off"
+                    placeholder={`Please enter ${key}`}
+                    size="small"
+                  />
+                </Form.Item>
               </Flex>
-            }
-          >
-            <Form id="manual-detail-form" noValidate>
-              <VStack align="stretch" gap="16px">
-                {Object.entries(data.fields).map(([key]) => (
-                  <HStack key={key}>
-                    <Field id={key} name={key}>
-                      {({ field }: { field: FieldInputProps<string> }) => (
-                        <FormControl
-                          alignItems="baseline"
-                          display="inline-flex"
-                        >
-                          <FormLabel
-                            color="gray.900"
-                            fontSize="14px"
-                            fontWeight="semibold"
-                            htmlFor={key}
-                            w="50%"
-                          >
-                            {key}
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            autoComplete="off"
-                            color="gray.700"
-                            placeholder={`Please enter ${key}`}
-                            size="sm"
-                          />
-                        </FormControl>
-                      )}
-                    </Field>
-                  </HStack>
-                ))}
-              </VStack>
-            </Form>
-          </Drawer>
-        )}
-      </Formik>
+            ))}
+          </Flex>
+        </Form>
+      </Drawer>
     </>
   );
 };

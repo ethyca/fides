@@ -14,28 +14,18 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import {
-  Button,
-  Flex,
-  Icons,
-  Popconfirm,
-  SelectProps,
-  Space,
-  Tabs,
-  useMessage,
-} from "fidesui";
+import { Flex, SelectProps, Switch, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import Layout from "~/features/common/Layout";
-import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
-import {
-  AccessPolicy,
-  useGetControlGroupsQuery,
-} from "./access-policies.slice";
+import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
+import styles from "./AccessPolicyEditor.module.scss";
+import AgentChatPanel from "./AgentChatPanel";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
@@ -47,6 +37,7 @@ import {
   POLICY_NODE_ID,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
+import PolicyEditorPanel from "./PolicyEditorPanel";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
@@ -68,7 +59,7 @@ export enum EditorMode {
 export interface SidebarFormValues {
   name: string;
   description: string;
-  control_group?: string;
+  control?: string | null;
 }
 
 interface AccessPolicyEditorProps {
@@ -90,9 +81,9 @@ const edgeTypes: EdgeTypes = {
 };
 
 interface PolicyCanvasPanelProps {
-  controls: string[];
+  control: string | null;
   controlOptions: NonNullable<SelectProps["options"]>;
-  onControlsChange: (value: string[]) => void;
+  onControlChange: (value: string | null) => void;
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
   syncKey?: number;
@@ -182,7 +173,7 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       fidesKey: "",
       enabled: false,
       priority: 0,
-      controls: props.controls,
+      control: props.control,
       controlOptions: props.controlOptions,
       actionMessage: "",
       onNameChange: () => {},
@@ -190,7 +181,7 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       onFidesKeyChange: () => {},
       onEnabledChange: () => {},
       onPriorityChange: () => {},
-      onControlsChange: props.onControlsChange,
+      onControlChange: props.onControlChange,
       onActionMessageChange: () => {},
     },
   } satisfies PolicyNodeType,
@@ -239,9 +230,9 @@ const findFirstOfType = (
 
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
-    controls,
+    control,
     controlOptions,
-    onControlsChange,
+    onControlChange,
     onYamlChange,
     initialYaml,
     syncKey,
@@ -444,12 +435,12 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData],
   );
 
-  const handleControlsChange = useCallback(
-    (value: string[]) => {
-      updateNodeData(POLICY_NODE_ID, { controls: value });
-      onControlsChange(value);
+  const handleControlChange = useCallback(
+    (value: string | null) => {
+      updateNodeData(POLICY_NODE_ID, { control: value });
+      onControlChange(value);
     },
-    [updateNodeData, onControlsChange],
+    [updateNodeData, onControlChange],
   );
 
   // Derive YAML from nodes/edges
@@ -637,14 +628,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
-              controls,
+              control,
               controlOptions,
               onNameChange: handleNameChange,
               onDescriptionChange: handleDescriptionChange,
               onFidesKeyChange: handleFidesKeyChange,
               onEnabledChange: handleEnabledChange,
               onPriorityChange: handlePriorityChange,
-              onControlsChange: handleControlsChange,
+              onControlChange: handleControlChange,
               onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
             },
@@ -734,14 +725,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [
       layoutedNodes,
       edges,
-      controls,
+      control,
       controlOptions,
       handleNameChange,
       handleDescriptionChange,
       handleFidesKeyChange,
       handleEnabledChange,
       handlePriorityChange,
-      handleControlsChange,
+      handleControlChange,
       handleAddCondition,
       handleAddActionFromNode,
       handleAddConstraint,
@@ -758,13 +749,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
 
   return (
-    <div
-      style={{
-        height: "calc(100vh - 220px)",
-        border: "1px solid var(--ant-color-border)",
-        borderRadius: "var(--ant-border-radius-lg)",
-      }}
-    >
+    <div className={styles.canvasContainer}>
       <ReactFlow
         nodes={nodesWithCallbacks}
         edges={edges}
@@ -798,7 +783,13 @@ const AccessPolicyEditor = ({
   const isNew = !policyId;
   const messageApi = useMessage();
 
-  const { data: controlGroups = [] } = useGetControlGroupsQuery();
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const agentChatEnabled =
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
+
+  const { data: controlGroups = [] } = useGetControlsQuery();
 
   const controlOptions = useMemo(
     () => controlGroups.map((cg) => ({ value: cg.key, label: cg.label })),
@@ -807,10 +798,18 @@ const AccessPolicyEditor = ({
 
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
-  const [controls, setControls] = useState<string[]>(
-    initialValues?.controls ?? [],
+  const [control, setControl] = useState<string | null>(
+    initialValues?.control ?? null,
   );
   const [syncKey, setSyncKey] = useState(0);
+  const [chatVisible, setChatVisible] = useLocalStorage<boolean>(
+    "access-policies:chat-visible",
+    true,
+  );
+  const toggleChat = useCallback(
+    () => setChatVisible((v) => !v),
+    [setChatVisible],
+  );
 
   const handleModeChange = useCallback(
     (newMode: EditorMode) => {
@@ -837,16 +836,25 @@ const AccessPolicyEditor = ({
       {
         name,
         description: parsed?.description ?? "",
-        control_group: controls.length > 0 ? controls.join(",") : undefined,
+        control,
       },
       yamlValue,
     );
   };
 
-  const handleControlsChange = useCallback(
-    (value: string[]) => setControls(value),
+  const handleControlChange = useCallback(
+    (value: string | null) => setControl(value),
     [],
   );
+
+  const handleYamlProposed = useCallback((newYaml: string) => {
+    setYamlValue(newYaml);
+    setSyncKey((k) => k + 1);
+    const parsed = parseYaml(newYaml);
+    if (parsed?.control !== undefined) {
+      setControl(parsed.control ?? null);
+    }
+  }, []);
 
   const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
   const displayName = parsedForDisplay?.name ?? "";
@@ -868,117 +876,119 @@ const AccessPolicyEditor = ({
 
   const canvasPanel = (
     <PolicyCanvasPanel
-      controls={controls}
+      control={control}
       controlOptions={controlOptions}
-      onControlsChange={handleControlsChange}
+      onControlChange={handleControlChange}
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
     />
   );
 
-  return (
-    <Layout title={title}>
-      <PageHeader
-        heading={title}
-        breadcrumbItems={[
-          { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
-          { title: breadcrumbTitle },
-        ]}
-        isSticky
-        rightContent={
-          <Space>
-            {!isNew && (
-              <Popconfirm
-                title="Delete policy"
-                description="Are you sure you want to delete this policy?"
-                onConfirm={onDelete}
-                okText="Delete"
-                okButtonProps={{ danger: true }}
-                cancelText="Cancel"
-              >
-                <Button
-                  icon={<Icons.TrashCan />}
-                  danger
-                  aria-label="Delete policy"
-                  data-testid="delete-btn"
-                />
-              </Popconfirm>
-            )}
-            <Button
-              icon={<Icons.Download />}
-              onClick={handleExport}
-              data-testid="export-btn"
-            >
-              Export
-            </Button>
-            <Button type="primary" onClick={handleSave} data-testid="save-btn">
-              Save
-            </Button>
-          </Space>
-        }
-      />
-
-      <Tabs
-        activeKey={mode}
-        onChange={(key) => handleModeChange(key as EditorMode)}
-        data-testid="mode-toggle"
-        items={[
+  const tabItems = [
+    {
+      key: EditorMode.Builder,
+      label: "Builder",
+      children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
+    },
+    ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
+      ? [
           {
-            key: EditorMode.Builder,
-            label: "Builder",
-            children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
-          },
-          ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
-            ? [
-                {
-                  key: EditorMode.Split,
-                  label: "Split (dev only)",
-                  children: (
-                    <Flex gap="middle">
-                      <div style={{ flex: "0 0 60%" }}>
-                        <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
-                      </div>
-                      <div style={{ flex: "0 0 calc(40% - 8px)" }}>
-                        <Editor
-                          defaultLanguage="yaml"
-                          value={yamlValue}
-                          height="calc(100vh - 220px)"
-                          options={{
-                            fontFamily: "Menlo",
-                            fontSize: 13,
-                            minimap: { enabled: false },
-                            readOnly: true,
-                            domReadOnly: true,
-                          }}
-                          theme="light"
-                        />
-                      </div>
-                    </Flex>
-                  ),
-                },
-              ]
-            : []),
-          {
-            key: EditorMode.Code,
-            label: "Code",
+            key: EditorMode.Split,
+            label: "Split (dev only)",
             children: (
-              <Editor
-                defaultLanguage="yaml"
-                value={yamlValue}
-                height="calc(100vh - 220px)"
-                onChange={(val) => setYamlValue(val ?? "")}
-                options={{
-                  fontFamily: "Menlo",
-                  fontSize: 13,
-                  minimap: { enabled: false },
-                }}
-                theme="light"
-              />
+              <Flex gap="middle" className="h-full">
+                <div style={{ flex: "0 0 60%" }}>
+                  <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
+                </div>
+                <div style={{ flex: "0 0 calc(40% - 8px)" }}>
+                  <Editor
+                    defaultLanguage="yaml"
+                    value={yamlValue}
+                    height="100%"
+                    options={{
+                      fontFamily: "Menlo",
+                      fontSize: 13,
+                      minimap: { enabled: false },
+                      readOnly: true,
+                      domReadOnly: true,
+                    }}
+                    theme="light"
+                  />
+                </div>
+              </Flex>
             ),
           },
-        ]}
-      />
+        ]
+      : []),
+    {
+      key: EditorMode.Code,
+      label: "Code",
+      children: (
+        <Editor
+          defaultLanguage="yaml"
+          value={yamlValue}
+          height="100%"
+          onChange={(val) => setYamlValue(val ?? "")}
+          options={{
+            fontFamily: "Menlo",
+            fontSize: 13,
+            minimap: { enabled: false },
+          }}
+          theme="light"
+        />
+      ),
+    },
+  ];
+
+  const tabsNode = (
+    <Tabs
+      activeKey={mode}
+      onChange={(key) => handleModeChange(key as EditorMode)}
+      data-testid="mode-toggle"
+      items={tabItems}
+      className={styles.tabs}
+      tabBarExtraContent={
+        agentChatEnabled ? (
+          <Flex align="center" gap="small">
+            <span>Policy agent</span>
+            <Switch
+              checked={chatVisible}
+              onChange={toggleChat}
+              aria-label={chatVisible ? "Hide agent" : "Show agent"}
+              size="small"
+              data-testid="toggle-agent-switch"
+            />
+          </Flex>
+        ) : undefined
+      }
+    />
+  );
+
+  return (
+    <Layout title={title} padded={false}>
+      <Flex className="h-full">
+        <div className="flex-1">
+          <PolicyEditorPanel
+            title={title}
+            breadcrumbTitle={breadcrumbTitle}
+            isNew={isNew}
+            onDelete={onDelete}
+            onExport={handleExport}
+            onSave={handleSave}
+          >
+            {tabsNode}
+          </PolicyEditorPanel>
+        </div>
+        {agentChatEnabled && chatVisible && (
+          <div className={`h-full pb-2 ${styles.chatWrapper}`}>
+            <AgentChatPanel
+              currentYaml={yamlValue}
+              onYamlProposed={handleYamlProposed}
+            />
+          </div>
+        )}
+      </Flex>
     </Layout>
   );
 };

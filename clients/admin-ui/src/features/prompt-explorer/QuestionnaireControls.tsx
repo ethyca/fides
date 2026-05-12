@@ -2,6 +2,7 @@ import { Card, Input, Select, Space, Switch, Typography } from "fidesui";
 
 import { ACTION_TYPES } from "./constants";
 import type { PromptInfo, TemplateSummary } from "./types";
+import { PromptCategory, PromptType } from "./types";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -35,6 +36,10 @@ interface QuestionnaireControlsProps {
   setQuestionToRephrase: (value: string) => void;
   previousPhrasings: string;
   setPreviousPhrasings: (value: string) => void;
+  agentPrompt: string;
+  setAgentPrompt: (value: string) => void;
+  currentPolicyYaml: string;
+  setCurrentPolicyYaml: (value: string) => void;
 }
 
 /**
@@ -64,8 +69,17 @@ export const QuestionnaireControls = ({
   setQuestionToRephrase,
   previousPhrasings,
   setPreviousPhrasings,
+  agentPrompt,
+  setAgentPrompt,
+  currentPolicyYaml,
+  setCurrentPolicyYaml,
 }: QuestionnaireControlsProps) => {
-  if (!selectedPrompt || selectedPrompt.category !== "questionnaire") {
+  if (
+    !selectedPrompt ||
+    ![PromptCategory.QUESTIONNAIRE, PromptCategory.ACCESS_POLICIES].includes(
+      selectedPrompt.category as PromptCategory,
+    )
+  ) {
     return null;
   }
 
@@ -107,7 +121,7 @@ export const QuestionnaireControls = ({
       {/* Intent Classification specific controls */}
       {promptType === "intent_classification" && (
         <Card title="Conversation State" size="small">
-          <Space direction="vertical" className="w-full">
+          <Space orientation="vertical" className="w-full">
             <div>
               <Text strong className="mb-1 block">
                 Current Question ({currentQuestionIndex + 1} of{" "}
@@ -158,7 +172,7 @@ export const QuestionnaireControls = ({
       {/* Message Generation specific controls */}
       {promptType === "message_generation" && (
         <Card title="Action Context" size="small">
-          <Space direction="vertical" className="w-full">
+          <Space orientation="vertical" className="w-full">
             <div>
               <Text strong className="mb-1 block">
                 Action Type
@@ -208,7 +222,7 @@ export const QuestionnaireControls = ({
       {/* Question Rephrase specific controls */}
       {promptType === "question_rephrase" && (
         <Card title="Rephrase Input" size="small">
-          <Space direction="vertical" className="w-full">
+          <Space orientation="vertical" className="w-full">
             <div>
               <Text strong className="mb-1 block">
                 Question to Rephrase
@@ -249,6 +263,38 @@ export const QuestionnaireControls = ({
               </div>
             ))}
           </div>
+        </Card>
+      )}
+
+      {/* Access Policy Chat specific controls */}
+      {promptType === PromptType.ACCESS_POLICY_CHAT && (
+        <Card title="Policy Chat Input" size="small">
+          <Space orientation="vertical" className="w-full">
+            <div>
+              <Text strong className="mb-1 block">
+                User Prompt
+              </Text>
+              <TextArea
+                value={agentPrompt}
+                onChange={(e) => setAgentPrompt(e.target.value)}
+                rows={3}
+                placeholder="e.g., Create a policy that denies marketing use"
+              />
+            </div>
+            <div>
+              <Text strong className="mb-1 block">
+                Current Policy YAML{" "}
+                <Text type="secondary">(leave empty for first turn)</Text>
+              </Text>
+              <TextArea
+                value={currentPolicyYaml}
+                onChange={(e) => setCurrentPolicyYaml(e.target.value)}
+                rows={8}
+                placeholder="Paste existing policy YAML here..."
+                className="font-mono text-xs"
+              />
+            </div>
+          </Space>
         </Card>
       )}
     </>

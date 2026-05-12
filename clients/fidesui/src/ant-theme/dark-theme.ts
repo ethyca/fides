@@ -1,7 +1,7 @@
 import { generate } from "@ant-design/colors";
 import { theme, ThemeConfig } from "antd";
 
-import palette from "../palette/palette.module.scss";
+import { palette } from "../palette/palette";
 import { defaultAntTheme } from "./default-theme";
 
 /**
@@ -19,8 +19,16 @@ const errorDark = dark(palette.FIDESUI_ERROR);
 const warningDark = dark(palette.FIDESUI_WARNING);
 const corinthDark = dark(palette.FIDESUI_CORINTH);
 
+// Brand palette tokens (--fidesui-brand-minos, --fidesui-brand-corinth, etc.) are
+// semantic anchors used as fixed accents/borders/surfaces across the codebase
+// — they stay constant across themes. Theme-aware flipping happens via Ant's
+// built-in tokens (colorText, colorBgBase, colorPrimary, etc.) below.
+
 export const darkAntTheme: ThemeConfig = {
   ...defaultAntTheme,
+  // Distinct cssVar key so antd emits a separate `.fidesui-dark` block we can
+  // scope to dark-mode subtrees without colliding with the outer light block.
+  cssVar: { ...defaultAntTheme.cssVar, key: "fidesui-dark" },
   algorithm: theme.darkAlgorithm,
   token: {
     ...defaultAntTheme.token,
@@ -53,6 +61,12 @@ export const darkAntTheme: ThemeConfig = {
     },
     Card: {
       colorBgContainer: palette.FIDESUI_MINOS,
+    },
+    Select: {
+      ...defaultAntTheme.components?.Select,
+      colorBgElevated: palette.FIDESUI_BG_MINOS,
+      optionActiveBg: minosDark[2],
+      optionSelectedBg: minosDark[3],
     },
   },
 };

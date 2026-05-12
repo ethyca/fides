@@ -21,7 +21,6 @@ import PageHeader from "~/features/common/PageHeader";
 import { DEFAULT_DATA_SECTIONS } from "~/features/prompt-explorer/constants";
 import {
   DataSectionConfig,
-  PromptCategory,
   PromptInfo,
   TemplateSummary,
   useExecutePromptMutation,
@@ -33,6 +32,7 @@ import {
   useRenderPromptMutation,
 } from "~/features/prompt-explorer/prompt-explorer.slice";
 import { QuestionnaireControls } from "~/features/prompt-explorer/QuestionnaireControls";
+import { PromptCategory } from "~/features/prompt-explorer/types";
 import { buildQuestionnaireVariables } from "~/features/prompt-explorer/utils";
 
 const { Content } = Layout;
@@ -79,6 +79,10 @@ const PromptExplorer: NextPage = () => {
   const [previousPhrasings, setPreviousPhrasings] = useState<string>(
     "How long do you keep this data?",
   );
+
+  // State for access policy chat prompt inputs
+  const [agentPrompt, setAgentPrompt] = useState<string>("");
+  const [currentPolicyYaml, setCurrentPolicyYaml] = useState<string>("");
 
   // State for rendered prompt and response
   const [renderedPrompt, setRenderedPrompt] = useState<string>("");
@@ -168,7 +172,8 @@ const PromptExplorer: NextPage = () => {
 
     try {
       const questionnaireVariables =
-        selectedPrompt.category === "questionnaire"
+        selectedPrompt.category === PromptCategory.QUESTIONNAIRE ||
+        selectedPrompt.category === PromptCategory.ACCESS_POLICIES
           ? buildQuestionnaireVariables({
               promptType: selectedPrompt.prompt_type,
               questions,
@@ -182,6 +187,8 @@ const PromptExplorer: NextPage = () => {
               isFinalQuestion,
               questionToRephrase,
               previousPhrasings,
+              agentPrompt,
+              currentPolicyYaml,
             })
           : {};
 
@@ -211,6 +218,8 @@ const PromptExplorer: NextPage = () => {
     isFinalQuestion,
     questionToRephrase,
     previousPhrasings,
+    agentPrompt,
+    currentPolicyYaml,
     dataSections,
     selectedAssessmentId,
     selectedTemplateKey,
@@ -261,7 +270,7 @@ const PromptExplorer: NextPage = () => {
       <Layout>
         <Content className="overflow-auto px-10 py-6">
           <Alert
-            message="Plus Required"
+            title="Plus Required"
             description="The Prompt Explorer requires Fides Plus."
             type="warning"
             showIcon
@@ -282,7 +291,7 @@ const PromptExplorer: NextPage = () => {
 
         {promptsError && (
           <Alert
-            message="Failed to load prompts"
+            title="Failed to load prompts"
             description="Make sure fidesplus is running in dev mode."
             type="error"
             showIcon
@@ -307,8 +316,18 @@ const PromptExplorer: NextPage = () => {
                   value={selectedCategory}
                   onChange={(value) => setSelectedCategory(value)}
                   options={[
-                    { label: "Assessment", value: "assessment" },
-                    { label: "Questionnaire", value: "questionnaire" },
+                    {
+                      label: "Access Policies",
+                      value: PromptCategory.ACCESS_POLICIES,
+                    },
+                    {
+                      label: "Assessment",
+                      value: PromptCategory.ASSESSMENT,
+                    },
+                    {
+                      label: "Questionnaire",
+                      value: PromptCategory.QUESTIONNAIRE,
+                    },
                   ]}
                 />
               }
@@ -321,7 +340,7 @@ const PromptExplorer: NextPage = () => {
                   onChange={(e) => setSelectedPromptId(e.target.value)}
                   className="w-full"
                 >
-                  <Space direction="vertical" className="w-full">
+                  <Space orientation="vertical" className="w-full">
                     {prompts?.map((prompt: PromptInfo) => (
                       <Card
                         key={prompt.id}
@@ -351,14 +370,14 @@ const PromptExplorer: NextPage = () => {
 
           {/* Middle - Configuration */}
           <Col xs={24} md={6}>
-            <Space direction="vertical" className="w-full" size="medium">
+            <Space orientation="vertical" className="w-full" size="medium">
               {/* Data Sections - only for assessment prompts */}
               {selectedPrompt?.category === "assessment" && (
                 <Card title="Data Sections" size="small">
                   <Text type="secondary" className="mb-3 block">
                     Toggle which Fides data to include in the prompt context.
                   </Text>
-                  <Space direction="vertical" className="w-full">
+                  <Space orientation="vertical" className="w-full">
                     {dataSectionsList?.map(
                       (section: { id: string; name: string }) => (
                         <Checkbox
@@ -386,7 +405,7 @@ const PromptExplorer: NextPage = () => {
                   <Text type="secondary" className="mb-3 block">
                     Select a template for questions, or an existing assessment.
                   </Text>
-                  <Space direction="vertical" className="w-full">
+                  <Space orientation="vertical" className="w-full">
                     <div>
                       <Text strong className="mb-1 block">
                         Template (for questions)
@@ -462,11 +481,15 @@ const PromptExplorer: NextPage = () => {
                 setQuestionToRephrase={setQuestionToRephrase}
                 previousPhrasings={previousPhrasings}
                 setPreviousPhrasings={setPreviousPhrasings}
+                agentPrompt={agentPrompt}
+                setAgentPrompt={setAgentPrompt}
+                currentPolicyYaml={currentPolicyYaml}
+                setCurrentPolicyYaml={setCurrentPolicyYaml}
               />
 
               {/* Actions */}
               <Card size="small">
-                <Space direction="vertical" className="w-full">
+                <Space orientation="vertical" className="w-full">
                   <Button
                     type="primary"
                     block
@@ -503,7 +526,7 @@ const PromptExplorer: NextPage = () => {
 
           {/* Right - Output */}
           <Col xs={24} md={12}>
-            <Space direction="vertical" className="size-full" size="medium">
+            <Space orientation="vertical" className="size-full" size="medium">
               {/* Rendered Prompt */}
               <Card
                 title="Rendered Prompt"

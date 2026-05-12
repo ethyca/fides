@@ -2,6 +2,7 @@ import { format, isValid } from "date-fns";
 import type { RefObject } from "react";
 import { useEffect, useState } from "react";
 
+import { usePrefersReducedMotion } from "../../hooks";
 import { MAX_INTERVAL_HOURS } from "./chart-constants";
 
 export const HOUR_MS = 3_600_000;
@@ -34,8 +35,11 @@ export const useContainerSize = (
 
 export const useChartAnimation = (animationDuration: number): boolean => {
   const [animationActive, setAnimationActive] = useState(true);
+  const reduceMotion = usePrefersReducedMotion();
+
   useEffect(() => {
-    if (animationDuration <= 0) {
+    if (reduceMotion || animationDuration <= 0) {
+      setAnimationActive(false);
       return undefined;
     }
     const startTime = performance.now();
@@ -49,8 +53,9 @@ export const useChartAnimation = (animationDuration: number): boolean => {
     };
     animationId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animationId);
-  }, [animationDuration]);
-  return animationActive;
+  }, [animationDuration, reduceMotion]);
+
+  return reduceMotion ? false : animationActive;
 };
 
 /** Format a timestamp for chart axes (verbose=false) or tooltips (verbose=true). */

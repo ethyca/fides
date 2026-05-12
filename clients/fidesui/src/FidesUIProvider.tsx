@@ -209,7 +209,9 @@ export const FidesUIProvider = ({
           {messageContextHolder}
           {modalContextHolder}
           {notificationContextHolder}
-          {children}
+          <div className="fidesui" style={{ display: "contents" }}>
+            {children}
+          </div>
         </AntComponentAPIsContext.Provider>
       </BaseChakraProvider>
     </BaseAntDesignProvider>

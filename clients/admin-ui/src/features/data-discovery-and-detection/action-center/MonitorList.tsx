@@ -11,8 +11,8 @@ import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-an
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
-import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetUserMonitorsQuery } from "~/features/user-management";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import MonitorListSearchForm from "./forms/MonitorListSearchForm";
 import {
@@ -20,19 +20,21 @@ import {
   MonitorSearchFormQuerySchema,
   SearchFormQueryState,
 } from "./MonitorList.const";
+import MonitorStats from "./MonitorStats";
 
 const MonitorList = () => {
   const message = useMessage();
   const {
-    flags: { webMonitor: webMonitorEnabled },
+    flags: { webMonitor: webMonitorEnabled, awsMonitor: awsMonitorEnabled },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
 
   const availableMonitorTypes = [
-    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    MONITOR_TYPES.DATASTORE,
-    MONITOR_TYPES.INFRASTRUCTURE,
+    ...(webMonitorEnabled ? [APIMonitorType.WEBSITE] : []),
+    APIMonitorType.DATASTORE,
+    APIMonitorType.INFRASTRUCTURE,
+    ...(awsMonitorEnabled ? [APIMonitorType.CLOUD_INFRASTRUCTURE] : []),
   ] as const;
 
   const currentUser = useAppSelector(selectUser);
@@ -48,12 +50,12 @@ const MonitorList = () => {
   const defaultStewardFilter =
     (userMonitors ?? []).length > 0 ? currentUser?.id : undefined;
 
-  const { requestData, ...formProps } = useSearchForm<any, MonitorSearchForm>({
+  const { requestData, setSearchForm, ...formProps } = useSearchForm<
+    Partial<Parameters<typeof useGetAggregateMonitorResultsQuery>[0]>,
+    MonitorSearchForm
+  >({
     schema: MonitorSearchFormQuerySchema([...availableMonitorTypes]),
-    queryState: SearchFormQueryState(
-      [...availableMonitorTypes],
-      defaultStewardFilter,
-    ),
+    queryState: SearchFormQueryState([...availableMonitorTypes]),
     initialValues: {
       search: null,
       monitor_type: null,
@@ -64,7 +66,9 @@ const MonitorList = () => {
         search: search || undefined,
         monitor_type: monitor_type
           ? [monitor_type]
-          : availableMonitorTypes /** this should be handled via ant binding ideally. * */,
+          : [
+              ...availableMonitorTypes,
+            ] /** this should be handled via ant binding ideally. * */,
         steward_user_id:
           typeof steward_key === "undefined" || !steward_key
             ? []
@@ -78,6 +82,12 @@ const MonitorList = () => {
     page: pageIndex,
     size: pageSize,
   });
+
+  useEffect(() => {
+    if (defaultStewardFilter) {
+      setSearchForm({ steward_key: defaultStewardFilter });
+    }
+  }, [setSearchForm, defaultStewardFilter]);
 
   useEffect(() => {
     if (isError) {
@@ -100,6 +110,7 @@ const MonitorList = () => {
         }}
         availableMonitorTypes={availableMonitorTypes}
       />
+      <MonitorStats />
       <List
         loading={isLoading}
         dataSource={results}

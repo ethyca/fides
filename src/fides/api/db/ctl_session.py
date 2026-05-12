@@ -1,5 +1,4 @@
-import ssl
-from asyncio import Lock
+from asyncio import Lock, gather
 from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
 from typing import Any, AsyncGenerator, Callable, Dict
 
@@ -11,24 +10,17 @@ from sqlalchemy.orm import sessionmaker
 
 from fides.api.db.session import ExtendedSession
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
+from fides.common.engine_creators import make_async_creator, make_sync_creator
 from fides.config import CONFIG
 
 # asyncio lock and flag for warming up the async pool
 ASYNC_READONLY_POOL_LOCK = Lock()
 ASYNC_READONLY_POOL_WARMED = False
 
-# Associated with a workaround in fides.core.config.database_settings
-# ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
-connect_args: Dict[str, Any] = {}
-if CONFIG.database.params.get("sslrootcert"):
-    ssl_ctx = ssl.create_default_context(cafile=CONFIG.database.params["sslrootcert"])
-    ssl_ctx.verify_mode = ssl.CERT_REQUIRED
-    connect_args["ssl"] = ssl_ctx
-
-# Parameters are hidden for security
+# Primary async engine — credentials resolved per-connection via creator
 async_engine = create_async_engine(
-    CONFIG.database.async_database_uri,
-    connect_args=connect_args,
+    "postgresql+asyncpg://",
+    creator=make_async_creator(),
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
     logging_name="AsyncEngine",
@@ -49,21 +41,12 @@ readonly_async_session_factory: Callable[[], AsyncSession] = async_session_facto
 
 if CONFIG.database.async_readonly_database_uri:
     logger.info("Creating read-only async engine and session factory")
-    # Build connect_args for readonly (similar to primary)
-    readonly_connect_args: Dict[str, Any] = {}
-    readonly_params = CONFIG.database.readonly_params or {}
-
-    if readonly_params.get("sslrootcert"):
-        ssl_ctx = ssl.create_default_context(cafile=readonly_params["sslrootcert"])
-        ssl_ctx.verify_mode = ssl.CERT_REQUIRED
-        readonly_connect_args["ssl"] = ssl_ctx
-
     logger.info(
         f"Read-only async settings: max-overflow: {CONFIG.database.api_async_engine_max_overflow}, pool-size: {CONFIG.database.async_readonly_database_pool_size},  pre-warm = {CONFIG.database.async_readonly_database_prewarm}, autocommit = {CONFIG.database.async_readonly_database_autocommit}, skip rollback = {CONFIG.database.async_readonly_database_pool_skip_rollback}"
     )
     readonly_async_engine = create_async_engine(
-        CONFIG.database.async_readonly_database_uri,
-        connect_args=readonly_connect_args,
+        "postgresql+asyncpg://",
+        creator=make_async_creator(readonly=True),
         echo=False,
         hide_parameters=not CONFIG.dev_mode,
         logging_name="ReadOnlyAsyncEngine",
@@ -92,7 +75,8 @@ if CONFIG.database.async_readonly_database_uri:
 # and they do not respect engine settings like pool_size, max_overflow, etc.
 # these should be removed, and we should standardize on what's provided in `session.py`
 sync_engine = create_engine(
-    CONFIG.database.sync_database_uri,
+    "postgresql+psycopg2://",
+    creator=make_sync_creator(),
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
     logging_name="SyncEngine",
@@ -169,19 +153,56 @@ async def warm_async_pool(pool_id: str, pool_size: int, engine: AsyncEngine) -> 
     logger.info(f"Warming up {pool_id} connection pool with {pool_size} connections...")
     connections = []
     try:
-        # Check out connections
-        for _ in range(pool_size):
-            # This is actually async, even though the type checker may not think so
-            conn = await engine.connect()
-            connections.append(conn)
-        logger.info(f"Pool {pool_id} warmed up. Releasing connections...")
-    except Exception as e:
-        logger.error(f"An error occurred during warming of {pool_id}: {e}")
+        # Open all connections concurrently to avoid paying N * RTT sequentially
+        results = await gather(
+            *(engine.connect() for _ in range(pool_size)),
+            return_exceptions=True,
+        )
+        for result in results:
+            if isinstance(result, BaseException):
+                logger.error(
+                    f"A connection failed during warming of {pool_id}: {result}"
+                )
+            else:
+                connections.append(result)
+        logger.info(
+            f"Pool {pool_id} warmed up with {len(connections)}/{pool_size} connections. Releasing connections..."
+        )
     finally:
         # Release all connections back to the pool
-        for conn in connections:
-            await conn.close()
+        await gather(*(conn.close() for conn in connections))
         logger.info(f"Connections released back to the pool for {pool_id}.")
+
+
+async def ensure_async_readonly_pool_prewarmed() -> bool:
+    """Warm the readonly async pool if enabled and not already warmed.
+
+    Returns True when the readonly async pool is configured and marked warmed.
+    """
+    if not CONFIG.database.async_readonly_database_uri:
+        return False
+
+    if not CONFIG.database.async_readonly_database_prewarm:
+        return False
+
+    async with ASYNC_READONLY_POOL_LOCK:
+        global ASYNC_READONLY_POOL_WARMED
+        if not ASYNC_READONLY_POOL_WARMED:
+            await warm_async_pool(
+                "readonly-async-pool",
+                CONFIG.database.async_readonly_database_pool_size,
+                readonly_async_engine,
+            )
+            ASYNC_READONLY_POOL_WARMED = True
+
+    # Lock only serializes warm_async_pool; the flag read below is safe without the lock
+    # (bool write above is atomic; we only need to avoid concurrent double-warming).
+    return ASYNC_READONLY_POOL_WARMED
+
+
+def is_async_readonly_pool_prewarmed() -> bool:
+    """Return current readonly async pool warm state."""
+    return ASYNC_READONLY_POOL_WARMED
 
 
 async def get_async_db() -> AsyncGenerator:

@@ -6,7 +6,7 @@ import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
+import { ConfigureIntegrationForm } from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType, {
   useIntegrationFilters,

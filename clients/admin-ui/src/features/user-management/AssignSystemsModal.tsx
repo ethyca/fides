@@ -1,15 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraFlex as Flex,
-  ChakraFormControl as FormControl,
-  ChakraFormLabel as FormLabel,
-  ChakraStack as Stack,
-  ChakraText as Text,
-  Modal,
-  Switch,
-  Tag,
-} from "fidesui";
+import { Button, Flex, Modal, Switch, Tag, Typography } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
@@ -18,6 +7,8 @@ import { useGetAllSystemsQuery } from "~/features/system";
 import { System } from "~/types/api";
 
 import AssignSystemsTable from "./AssignSystemsTable";
+
+const { Text } = Typography;
 
 export const SEARCH_FILTER = (system: System, search: string) =>
   system.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
@@ -34,7 +25,7 @@ const AssignSystemsModal = ({
   assignedSystems: System[];
   onAssignedSystemChange: (systems: System[]) => void;
 }) => {
-  const { data: allSystems } = useGetAllSystemsQuery();
+  const { data: allSystems, isLoading } = useGetAllSystemsQuery();
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedSystems, setSelectedSystems] =
     useState<System[]>(assignedSystems);
@@ -44,7 +35,7 @@ const AssignSystemsModal = ({
     onClose();
   };
 
-  const emptySystems = !allSystems || allSystems.length === 0;
+  const emptySystems = (!allSystems || allSystems.length === 0) && !isLoading;
 
   const filteredSystems = useMemo(() => {
     if (!allSystems) {
@@ -107,25 +98,21 @@ const AssignSystemsModal = ({
         {emptySystems ? (
           <Text>No systems found</Text>
         ) : (
-          <Stack spacing={4}>
-            <Flex justifyContent="space-between">
-              <Text fontSize="sm" flexGrow={1} fontWeight="medium">
+          <Flex vertical gap={16}>
+            <Flex justify="space-between" align="center">
+              <Text className="flex-1 text-sm font-medium">
                 Assign systems in your organization to this user
               </Text>
-              <Box>
-                <FormControl display="flex" alignItems="center">
-                  <FormLabel fontSize="sm" htmlFor="assign-all-systems" mb="0">
-                    Assign all systems
-                  </FormLabel>
-                  <Switch
-                    size="small"
-                    id="assign-all-systems"
-                    checked={allSystemsAssigned}
-                    onChange={handleToggleAllSystems}
-                    data-testid="assign-all-systems-toggle"
-                  />
-                </FormControl>
-              </Box>
+              <Flex align="center" gap={8}>
+                <Text className="text-sm">Assign all systems</Text>
+                <Switch
+                  size="small"
+                  id="assign-all-systems"
+                  checked={allSystemsAssigned}
+                  onChange={handleToggleAllSystems}
+                  data-testid="assign-all-systems-toggle"
+                />
+              </Flex>
             </Flex>
             <SearchInput
               value={searchFilter}
@@ -136,9 +123,10 @@ const AssignSystemsModal = ({
             <AssignSystemsTable
               allSystems={filteredSystems}
               assignedSystems={selectedSystems}
+              isLoading={isLoading}
               onChange={setSelectedSystems}
             />
-          </Stack>
+          </Flex>
         )}
       </div>
     </Modal>

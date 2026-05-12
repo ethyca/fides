@@ -2,8 +2,8 @@ import {
   Button,
   Collapse,
   CUSTOM_TAG_COLOR,
+  Drawer,
   Flex,
-  notification,
   Space,
   Tag,
   TagList,
@@ -11,14 +11,18 @@ import {
   Tooltip,
   Typography,
   useMessage,
+  useNotification,
 } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RTKErrorResult } from "~/types/errors/api";
 
+import { useGetChatConfigsQuery } from "../chat-provider/chatProvider.slice";
 import { SlackLogo } from "../common/logos/SlackLogo";
 import styles from "./AssessmentDetail.module.scss";
 import { EvidenceDrawer } from "./EvidenceDrawer";
@@ -30,6 +34,7 @@ import {
 } from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
+import QuestionnaireChat from "./QuestionnaireChat";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import {
   AnswerSource,
@@ -37,6 +42,7 @@ import {
   EvidenceItem,
   PrivacyAssessmentDetailResponse,
   QuestionGroup,
+  QuestionnaireSessionStatus,
 } from "./types";
 import { deduplicateEvidence, filterEvidence } from "./utils";
 
@@ -48,8 +54,9 @@ const POLL_INTERVAL = 15_000;
 
 export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const message = useMessage();
-  const [notificationApi, notificationHolder] = notification.useNotification();
+  const notificationApi = useNotification();
   const { getDataCategoryDisplayName } = useTaxonomies();
+  const currentUser = useAppSelector(selectUser);
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -90,14 +97,22 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   }, []);
 
   const { data: config } = useGetAssessmentConfigQuery();
+  const { data: chatConfigs } = useGetChatConfigsQuery();
   const [createQuestionnaire, { isLoading: isSending }] =
     useCreateQuestionnaireMutation();
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
 
-  const slackChannelName = config?.slack_channel_name
+  const enabledChatConfig = chatConfigs?.items.find((c) => c.enabled);
+  const isFidesProvider = enabledChatConfig?.provider_type === "fides";
+
+  const channelName = config?.slack_channel_name
     ? `#${config.slack_channel_name}`
     : null;
+  const hasChannel = isFidesProvider || !!channelName;
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatSessionKey, setChatSessionKey] = useState<string>("new");
 
   const allQuestions = useMemo(
     () => (assessment.question_groups ?? []).flatMap((g) => g.questions),
@@ -133,13 +148,15 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     const prevIds = teamInputIdsRef.current!;
     const hasNewAnswers = [...currentIds].some((id) => !prevIds.has(id));
 
-    if (hasNewAnswers) {
+    if (hasNewAnswers && !chatOpen) {
       notificationApi.success({
-        message: "New answer from Slack",
+        message: isFidesProvider
+          ? "New answer received"
+          : "New answer from Slack",
       });
     }
     teamInputIdsRef.current = currentIds;
-  }, [allQuestions, notificationApi]);
+  }, [allQuestions, notificationApi, isFidesProvider, chatOpen]);
 
   const questionnaireSentAt = useMemo(
     () =>
@@ -152,7 +169,18 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const timeSinceSent = useRelativeTime(questionnaireSentAt);
 
   const handleRequestInput = async () => {
-    if (!slackChannelName) {
+    if (!hasChannel) {
+      return;
+    }
+
+    if (isFidesProvider) {
+      setChatSessionKey(
+        assessment.questionnaire?.status ===
+          QuestionnaireSessionStatus.IN_PROGRESS
+          ? (assessment.questionnaire?.questionnaire_id ?? "new")
+          : `new-${Date.now()}`,
+      );
+      setChatOpen(true);
       return;
     }
 
@@ -164,11 +192,11 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
       await createQuestionnaire({
         id: assessment.id,
         body: {
-          channel: slackChannelName,
+          channel: channelName!,
           include_question_ids: needsInputIds,
         },
       }).unwrap();
-      message.success(`Questions sent to ${slackChannelName} on Slack.`);
+      message.success(`Questions sent to ${channelName} on Slack.`);
     } catch (error) {
       message.error(
         getErrorMessage(
@@ -182,7 +210,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const handleSendReminder = async () => {
     try {
       await createReminder({ id: assessment.id }).unwrap();
-      message.success(`Reminder sent to ${slackChannelName}.`);
+      message.success(`Reminder sent to ${channelName}.`);
     } catch (error) {
       message.error(
         getErrorMessage(
@@ -205,7 +233,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           />
         ),
         children: (
-          <Space direction="vertical" size="medium" className="w-full">
+          <Space orientation="vertical" size="medium" className="w-full">
             {group.questions.map((q) => (
               <QuestionCard
                 key={q.id}
@@ -225,11 +253,10 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   );
 
   return (
-    <Space direction="vertical" size="small" className="w-full">
-      {notificationHolder}
+    <Space orientation="vertical" size="small" className="w-full">
       <div>
         <Flex align="center" gap="small" className="mb-1">
-          <Typography.Title level={4} className="m-0">
+          <Typography.Title level={2} className="m-0">
             {assessment.name}
           </Typography.Title>
           <Tag
@@ -240,56 +267,71 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
             {isComplete ? "Completed" : "In progress"}
           </Tag>
         </Flex>
-        <Text type="secondary" size="sm" className="block">
-          System: {assessment.system_name}
-        </Text>
+        {assessment.template_name && (
+          <Text type="secondary" size="sm" className="block">
+            Template: {assessment.template_name}
+          </Text>
+        )}
       </div>
 
       <Flex justify="space-between" align="center" className="mb-2 w-full">
-        <Text type="secondary" className="leading-loose">
-          Processing{" "}
+        <div>
+          <Text type="secondary" size="sm">
+            Data categories:{" "}
+          </Text>
           {(assessment.data_categories ?? []).length > 0 ? (
             <TagList
               tags={(assessment.data_categories ?? []).map((key) => ({
                 value: key,
                 label: getDataCategoryDisplayName(key),
               }))}
-              maxTags={1}
+              maxTags={2}
               expandable
             />
           ) : (
-            <Tag>0 data categories</Tag>
-          )}{" "}
-          for{" "}
-          <TagList
-            tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-            maxTags={1}
-          />
-        </Text>
+            <Text type="secondary" size="sm">
+              None
+            </Text>
+          )}
+        </div>
         {!isComplete && (
           <Tooltip
             title={
-              !slackChannelName
-                ? "Configure a Slack channel in assessment settings to enable this feature"
+              !hasChannel
+                ? "Configure a chat provider in assessment settings to enable this feature"
                 : undefined
             }
           >
             <Button
-              icon={<SlackLogo size={14} />}
+              icon={isFidesProvider ? undefined : <SlackLogo size={14} />}
               size="small"
               onClick={handleRequestInput}
-              disabled={!slackChannelName}
+              disabled={!hasChannel}
               loading={isSending}
             >
-              Request input from team
+              {!isFidesProvider && "Request input from team"}
+              {isFidesProvider &&
+                assessment.questionnaire?.sent_at &&
+                assessment.questionnaire?.status ===
+                  QuestionnaireSessionStatus.IN_PROGRESS &&
+                "Resume questionnaire"}
+              {isFidesProvider &&
+                !(
+                  assessment.questionnaire?.sent_at &&
+                  assessment.questionnaire?.status ===
+                    QuestionnaireSessionStatus.IN_PROGRESS
+                ) &&
+                "Start questionnaire"}
             </Button>
           </Tooltip>
         )}
       </Flex>
 
-      {!isComplete && questionnaireSentAt && (
+      {questionnaireSentAt && (
         <QuestionnaireStatusBar
-          channel={slackChannelName ?? ""}
+          status={assessment.questionnaire!.status}
+          stopReason={assessment.questionnaire!.stop_reason}
+          channel={isFidesProvider ? "Fides" : (channelName ?? "")}
           timeSinceSent={timeSinceSent}
           answeredCount={assessment.questionnaire!.answered_questions}
           totalCount={assessment.questionnaire!.total_questions}
@@ -315,6 +357,41 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         searchQuery={evidenceSearchQuery}
         onSearchChange={setEvidenceSearchQuery}
       />
+
+      {isFidesProvider && (
+        <Drawer
+          title="Privacy Assessment Questionnaire"
+          open={chatOpen}
+          onClose={() => setChatOpen(false)}
+          width={480}
+          destroyOnHidden={
+            assessment.questionnaire?.status !==
+            QuestionnaireSessionStatus.IN_PROGRESS
+          }
+          styles={{
+            body: { padding: 0, display: "flex", flexDirection: "column" },
+          }}
+        >
+          <QuestionnaireChat
+            key={chatSessionKey}
+            assessmentId={assessment.id}
+            questionnaireId={
+              assessment.questionnaire?.status ===
+              QuestionnaireSessionStatus.IN_PROGRESS
+                ? (assessment.questionnaire?.questionnaire_id ?? undefined)
+                : undefined
+            }
+            userName={
+              currentUser?.isRootUser
+                ? "Root User"
+                : `${currentUser?.first_name ?? ""} ${currentUser?.last_name ?? ""}`.trim() ||
+                  currentUser?.username ||
+                  currentUser?.email_address ||
+                  "User"
+            }
+          />
+        </Drawer>
+      )}
     </Space>
   );
 };

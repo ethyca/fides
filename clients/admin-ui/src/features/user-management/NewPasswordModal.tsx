@@ -1,39 +1,34 @@
 import {
   Button,
-  ChakraStack as Stack,
-  ChakraText as Text,
   Flex,
+  Form,
+  Input,
   Modal,
-  useChakraDisclosure as useDisclosure,
+  Typography,
   useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
-import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth/auth.slice";
-import { CustomTextInput } from "~/features/common/form/inputs";
-import { passwordValidation } from "~/features/common/form/validation";
+import { passwordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
 import { isErrorResult } from "~/types/errors";
 
 import { clearAuthAndLogout } from "./logout-helpers";
 import { useForceResetUserPasswordMutation } from "./user-management.slice";
 
-const ValidationSchema = Yup.object().shape({
-  password: passwordValidation.label("Password"),
-  passwordConfirmation: Yup.string()
-    .required()
-    .oneOf([Yup.ref("password")], "Passwords must match")
-    .label("Password confirmation"),
-});
-const initialValues = { password: "", passwordConfirmation: "" };
-type FormValues = typeof initialValues;
+const { Text } = Typography;
+
+interface FormValues {
+  password: string;
+  passwordConfirmation: string;
+}
 
 const useNewPasswordModal = (id: string) => {
-  const modal = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const message = useMessage();
   const [resetPassword] = useForceResetUserPasswordMutation();
   const router = useRouter();
@@ -51,7 +46,7 @@ const useNewPasswordModal = (id: string) => {
       message.success(
         "Successfully reset user's password. Please inform the user of their new password.",
       );
-      modal.onClose();
+      setIsOpen(false);
 
       // Only logout if admin reset their own password
       if (currentUser?.id === id) {
@@ -61,7 +56,9 @@ const useNewPasswordModal = (id: string) => {
   };
 
   return {
-    ...modal,
+    isOpen,
+    onOpen: () => setIsOpen(true),
+    onClose: () => setIsOpen(false),
     handleResetPassword,
   };
 };
@@ -73,6 +70,19 @@ interface Props {
 const NewPasswordModal = ({ id }: Props) => {
   const { handleResetPassword, isOpen, onClose, onOpen } =
     useNewPasswordModal(id);
+  const [form] = Form.useForm<FormValues>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  Form.useWatch([], form);
+
+  const handleFinish = async (values: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      await handleResetPassword(values);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -87,51 +97,65 @@ const NewPasswordModal = ({ id }: Props) => {
         destroyOnHidden
         footer={null}
       >
-        <Formik
-          initialValues={initialValues}
-          validationSchema={ValidationSchema}
-          onSubmit={handleResetPassword}
-        >
-          {({ isSubmitting, dirty, isValid }) => (
-            <Form>
-              <Stack direction="column" spacing={4}>
-                <Text mb={2}>Choose a new password for this user.</Text>
-                <CustomTextInput
-                  name="password"
-                  label="Password"
-                  placeholder="********"
-                  type="password"
-                  tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  autoComplete="new-password"
-                />
-                <CustomTextInput
-                  name="passwordConfirmation"
-                  label="Confirm Password"
-                  placeholder="********"
-                  type="password"
-                  tooltip="Must match above password."
-                  autoComplete="confirm-password"
-                />
-              </Stack>
+        <Form form={form} layout="vertical" onFinish={handleFinish}>
+          <Text className="mb-2 block">
+            Choose a new password for this user.
+          </Text>
+          <Form.Item
+            name="password"
+            label="Password"
+            tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+            rules={passwordRules}
+          >
+            <Input.Password
+              placeholder="********"
+              autoComplete="new-password"
+              data-testid="input-password"
+            />
+          </Form.Item>
+          <Form.Item
+            name="passwordConfirmation"
+            label="Confirm Password"
+            tooltip="Must match above password."
+            dependencies={["password"]}
+            rules={[
+              { required: true, message: "Password confirmation is required" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("Passwords must match"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              placeholder="********"
+              autoComplete="confirm-password"
+              data-testid="input-passwordConfirmation"
+            />
+          </Form.Item>
 
-              <Flex className="mt-4 w-full" gap="small">
-                <Button onClick={onClose} className="w-1/2">
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  disabled={!dirty || !isValid}
-                  loading={isSubmitting}
-                  htmlType="submit"
-                  className="w-1/2"
-                  data-testid="submit-btn"
-                >
-                  Change Password
-                </Button>
-              </Flex>
-            </Form>
-          )}
-        </Formik>
+          <Flex className="mt-4 w-full" gap="small">
+            <Button onClick={onClose} className="w-1/2">
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              disabled={
+                !form.isFieldsTouched(true) ||
+                form.getFieldsError().some(({ errors }) => errors.length > 0)
+              }
+              loading={isSubmitting}
+              htmlType="submit"
+              className="w-1/2"
+              data-testid="submit-btn"
+            >
+              Change Password
+            </Button>
+          </Flex>
+        </Form>
       </Modal>
     </>
   );

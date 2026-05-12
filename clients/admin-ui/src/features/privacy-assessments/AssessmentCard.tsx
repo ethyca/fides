@@ -9,14 +9,15 @@ import {
   Icons,
   Paragraph,
   Progress,
+  Spin,
   Tag,
   TagList,
   Text,
   Typography,
 } from "fidesui";
-import NextLink from "next/link";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { formatDate } from "~/features/common/utils";
 
@@ -60,11 +61,14 @@ export const AssessmentCard = ({
 
   const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : "N/A";
   const statusLabel = status ? ASSESSMENT_STATUS_LABELS[status] : "N/A";
-  const isComplete = completeness === 100;
+  const isGenerating = status === AssessmentStatus.GENERATING;
+  const isComplete = status === AssessmentStatus.COMPLETED;
   const completionDate =
     isComplete && assessment.updated_at
       ? `Completed on ${formatDate(assessment.updated_at, { showTime: false })}`
       : statusLabel;
+
+  const titleText = assessment.template_name ?? assessment.name;
 
   return (
     <Card
@@ -74,13 +78,24 @@ export const AssessmentCard = ({
     >
       <Flex vertical gap="small" justify="space-between" className="flex-1">
         <div>
-          <Title level={5} className={`!mb-1 ${styles.titleLink}`}>
-            <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
-              {assessment.name}
-            </NextLink>
+          <Title level={3} className={`!mb-1 ${styles.titleLink}`}>
+            {isGenerating ? (
+              titleText
+            ) : (
+              <RouterLink
+                unstyled
+                href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
+              >
+                {titleText}
+              </RouterLink>
+            )}
           </Title>
-          <Text type="secondary" size="sm" className={styles.textWithTags}>
-            Processing{" "}
+          {assessment.system_name && (
+            <Text type="secondary" size="sm" className="block">
+              {assessment.system_name}
+            </Text>
+          )}
+          <div className={styles.textWithTags}>
             {(assessment.data_categories ?? []).length > 0 ? (
               <TagList
                 tags={(assessment.data_categories ?? []).map((key) => ({
@@ -92,13 +107,8 @@ export const AssessmentCard = ({
               />
             ) : (
               <Tag>0 data categories</Tag>
-            )}{" "}
-            for{" "}
-            <TagList
-              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-              maxTags={1}
-            />
-          </Text>
+            )}
+          </div>
           {riskLevel && (
             <div>
               <Tag
@@ -112,7 +122,17 @@ export const AssessmentCard = ({
         <div>
           <Divider className="my-3" />
           <div>
-            {isComplete ? (
+            {isGenerating && (
+              <Flex align="center" justify="center" gap="small">
+                <div>
+                  <Spin size="small" />
+                </div>
+                <Text type="secondary" size="sm">
+                  Generating this assessment
+                </Text>
+              </Flex>
+            )}
+            {isComplete && (
               <Flex
                 justify="space-between"
                 align="center"
@@ -123,11 +143,11 @@ export const AssessmentCard = ({
                     shape="circle"
                     size={28}
                     icon={<Icons.Checkmark size={14} />}
-                    style={{ backgroundColor: "var(--fidesui-success)" }}
+                    style={{ backgroundColor: "var(--fidesui-color-success)" }}
                   />
                   <div>
                     <Text strong type="success" size="sm">
-                      Assessment complete
+                      Completed
                     </Text>
                     <Paragraph type="secondary" size="sm">
                       {completionDate}
@@ -138,16 +158,18 @@ export const AssessmentCard = ({
                   View
                 </Button>
               </Flex>
-            ) : (
+            )}
+            {!isGenerating && !isComplete && (
               <>
-                <Flex justify="space-between">
-                  <Text type="secondary" size="sm">
-                    Completeness
-                  </Text>
+                <div>
                   <Text strong size="sm">
-                    {completeness}%
+                    {Math.round(completeness)}%
                   </Text>
-                </Flex>
+                  <Text type="secondary" size="sm">
+                    {" "}
+                    of questions answered
+                  </Text>
+                </div>
                 <Progress
                   percent={completeness}
                   showInfo={false}

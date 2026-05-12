@@ -35,6 +35,11 @@ class AccessEvaluationRequest:
     dataset_purposes: frozenset[str]
     collection: str | None = None
 
+    # Raw identity of the caller that triggered the evaluation.
+    # Carried through the engine (not consulted by the current match
+    # logic) so identity-aware policies remain an additive change.
+    identity: str | None = None
+
     # For Policy v2 match resolution
     system_fides_key: str | None = None
     data_uses: tuple[str, ...] = ()
@@ -73,7 +78,6 @@ class PolicyEvaluationResult:
     unless_triggered: bool = False
     evaluated_policies: list[EvaluatedPolicyInfo] = field(default_factory=list)
     action: PolicyAction | None = None
-    reason: str | None = None
 
 
 @runtime_checkable

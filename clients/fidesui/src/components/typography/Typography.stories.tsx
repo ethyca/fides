@@ -348,7 +348,6 @@ const BrandGuidelinesStory = () => {
 };
 
 export const BrandGuidelines: Story = {
-  name: "Brand Guidelines",
   render: () => <BrandGuidelinesStory />,
 };
 
@@ -398,7 +397,6 @@ const FontFamiliesStory = () => {
 };
 
 export const FontFamilies: Story = {
-  name: "Font Families",
   render: () => <FontFamiliesStory />,
 };
 

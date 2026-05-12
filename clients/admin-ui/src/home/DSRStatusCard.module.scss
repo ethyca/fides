@@ -30,9 +30,9 @@
   }
 
   :global(.ant-statistic-title) {
-    font-size: var(--ant-font-size-sm);
+    font-size: var(--fidesui-font-size-sm);
     margin-bottom: 0;
-    color: var(--ant-color-text-secondary);
+    color: var(--fidesui-color-text-secondary);
   }
 }
 
@@ -42,13 +42,19 @@
   }
 }
 
-.overdueLink {
-  margin-top: var(--ant-margin-sm);
-  color: var(--ant-color-error);
+.overdueBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--fidesui-color-error) 10%, transparent);
+  border: 1px solid var(--fidesui-color-error);
+  border-radius: var(--fidesui-border-radius, 6px);
   text-decoration: none;
+  margin-top: var(--fidesui-margin-xs, 4px);
 
   &:hover {
-    opacity: 0.8;
+    opacity: 0.85;
   }
 
   &:focus-visible {

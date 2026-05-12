@@ -2,30 +2,36 @@ import { saveAs } from "file-saver";
 
 import { baseApi } from "~/features/common/api.slice";
 import type {
-  CreateAssessmentRequest,
+  CreateAssessmentTaskRequest,
   Page_TemplateResponse_,
 } from "~/types/api";
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentStatus,
   AssessmentTaskPage,
   AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
+  ChatReplyRequest,
+  ChatReplyResponse,
   CreateAssessmentTaskResponse,
   CreateQuestionnaireRequest,
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
-  GetPrivacyAssessmentsParams,
-  Page_PrivacyAssessmentResponse_,
+  GroupedAssessmentsResponse,
   PrivacyAssessmentConfigDefaults,
   PrivacyAssessmentConfigResponse,
   PrivacyAssessmentConfigUpdate,
   PrivacyAssessmentDetailResponse,
   PrivacyAssessmentResponse,
+  QuestionnaireChatMessage,
   QuestionnaireResponse,
+  QuestionnaireSessionStatus,
   QuestionnaireStatusResponse,
   ReminderResponse,
+  StartChatRequest,
+  StartChatResponse,
   UpdateAnswerRequest,
   UpdateAnswerResponse,
   UpdatePrivacyAssessmentRequest,
@@ -35,8 +41,8 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
     getPrivacyAssessments: build.query<
-      Page_PrivacyAssessmentResponse_,
-      GetPrivacyAssessmentsParams | void
+      GroupedAssessmentsResponse,
+      { page?: number; size?: number; status?: AssessmentStatus } | void
     >({
       query: (params) => ({
         url: "plus/privacy-assessments",
@@ -66,7 +72,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 
     createPrivacyAssessment: build.mutation<
       CreateAssessmentTaskResponse,
-      CreateAssessmentRequest
+      CreateAssessmentTaskRequest
     >({
       query: (body) => ({
         url: "plus/privacy-assessments",
@@ -274,6 +280,98 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         },
       }),
     }),
+
+    // ── Questionnaire chat ──────────────────────────────────────
+
+    startQuestionnaireChat: build.mutation<StartChatResponse, StartChatRequest>(
+      {
+        query: (body) => ({
+          url: "plus/chat/questionnaire/start",
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Privacy Assessment"],
+        async onQueryStarted({ assessment_id }, { dispatch, queryFulfilled }) {
+          try {
+            const { data } = await queryFulfilled;
+            dispatch(
+              privacyAssessmentsApi.util.updateQueryData(
+                "getPrivacyAssessment",
+                assessment_id,
+                (draft) => {
+                  if (draft.questionnaire) {
+                    draft.questionnaire.status =
+                      QuestionnaireSessionStatus.IN_PROGRESS;
+                    draft.questionnaire.questionnaire_id =
+                      data.questionnaire_id;
+                    draft.questionnaire.answered_questions = 0;
+                    draft.questionnaire.total_questions = data.total_questions;
+                  } else {
+                    draft.questionnaire = {
+                      questionnaire_id: data.questionnaire_id,
+                      status: QuestionnaireSessionStatus.IN_PROGRESS,
+                      stop_reason: null,
+                      sent_at: new Date().toISOString(),
+                      channel: "fides",
+                      total_questions: data.total_questions,
+                      answered_questions: 0,
+                      last_reminder_at: null,
+                      reminder_count: 0,
+                    };
+                  }
+                },
+              ),
+            );
+          } catch {
+            // refetch will reconcile
+          }
+        },
+      },
+    ),
+
+    sendQuestionnaireChatReply: build.mutation<
+      ChatReplyResponse,
+      ChatReplyRequest
+    >({
+      query: ({ assessment_id: _, ...body }) => ({
+        url: "plus/chat/questionnaire/reply",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { assessment_id }) => [
+        { type: "Privacy Assessment", id: assessment_id },
+      ],
+      async onQueryStarted({ assessment_id }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            privacyAssessmentsApi.util.updateQueryData(
+              "getPrivacyAssessment",
+              assessment_id,
+              (draft) => {
+                if (draft.questionnaire) {
+                  draft.questionnaire.status = data.status;
+                  draft.questionnaire.answered_questions =
+                    data.answered_questions;
+                  draft.questionnaire.total_questions = data.total_questions;
+                }
+              },
+            ),
+          );
+        } catch {
+          // refetch will reconcile on next poll
+        }
+      },
+    }),
+
+    getQuestionnaireChatMessages: build.query<
+      QuestionnaireChatMessage[],
+      string
+    >({
+      query: (questionnaireId) => ({
+        url: `plus/chat/questionnaire/messages/${questionnaireId}`,
+      }),
+    }),
   }),
 });
 
@@ -298,6 +396,10 @@ export const {
   useDownloadAssessmentReportMutation,
   // Assessment Tasks
   useGetAssessmentTasksQuery,
+  // Questionnaire Chat
+  useStartQuestionnaireChatMutation,
+  useSendQuestionnaireChatReplyMutation,
+  useGetQuestionnaireChatMessagesQuery,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };

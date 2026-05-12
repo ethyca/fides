@@ -10,7 +10,6 @@ import {
   SparkleIcon,
   Tag,
   Text,
-  Tooltip,
 } from "fidesui";
 import _ from "lodash";
 
@@ -52,7 +51,7 @@ export const tagRender: TagRender = (props) => {
       onClose={onClose}
       /** Style required because of tailwind limitations and our ui package presets */
       style={{
-        marginInlineEnd: "calc((var(--ant-padding-xs) * 0.5))",
+        marginInlineEnd: "calc((var(--fidesui-padding-xs) * 0.5))",
       }}
       icon={isFromClassifier && <SparkleIcon />}
     >
@@ -108,7 +107,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
 }) => {
   const preferredDataCategories =
     "preferred_data_categories" in restProps
-      ? restProps.preferred_data_categories
+      ? (restProps.preferred_data_categories as string[] | null | undefined)
       : [];
 
   const onSelectDataCategory = (value: string) => {
@@ -156,10 +155,10 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
             <Button
               type="text"
               size="small"
-              className="-mx-2"
+              className={`-mx-2 ${styles["monitor-field__name"]}`}
               onClick={() => onNavigate && onNavigate(urn)}
             >
-              {name}
+              <Text ellipsis={{ tooltip: name }}>{name}</Text>
             </Button>
             {diff_status && diff_status !== DiffStatus.ADDITION && (
               <Tag
@@ -171,17 +170,15 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
                 {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
               </Tag>
             )}
-            <Tooltip title={urn} mouseEnterDelay={0.5}>
-              <Breadcrumb
-                className={styles["monitor-field__breadcrumb"]}
-                items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
-                // @ts-expect-error - role works here, but Ant's type system doesn't know that
-                role="presentation"
-                style={{
-                  overflow: "hidden",
-                }}
-              />
-            </Tooltip>
+            <Breadcrumb
+              className={styles["monitor-field__breadcrumb"]}
+              items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
+              // @ts-expect-error - role works here, but Ant's type system doesn't know that
+              role="presentation"
+              style={{
+                overflow: "hidden",
+              }}
+            />
           </Flex>
         }
         description={

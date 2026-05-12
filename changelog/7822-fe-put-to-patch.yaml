@@ -1,5 +1,0 @@
-type: Changed
-description: |
-  Change access policy update endpoint from PUT to PATCH for
-  correct partial-update semantics.
-pr: 7822

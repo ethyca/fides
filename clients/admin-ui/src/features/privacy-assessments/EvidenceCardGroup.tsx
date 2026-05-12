@@ -13,7 +13,7 @@ export interface EvidenceCardGroupProps {
 }
 
 export const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => (
-  <Space direction="vertical" size="small" className={styles.itemList}>
+  <Space orientation="vertical" size="small" className={styles.itemList}>
     {items.map((item) =>
       item.type === EvidenceType.TEAM_INPUT ? (
         <SlackThreadCard key={item.id} item={item} />

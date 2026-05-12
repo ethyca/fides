@@ -12,13 +12,10 @@ import { URL } from "url";
 
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
-import {
-  isV1ConsentConfig,
-  translateV1ConfigToV2,
-} from "~/features/consent/helpers";
+import { transformConfig, validateConfig } from "~/common/validation";
 import { Property } from "~/types/api";
 import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
-import { Config, LegacyConfig } from "~/types/config";
+import { Config } from "~/types/config";
 
 /**
  * Subset of PrivacyCenterSettings that are for use only on server-side and
@@ -78,6 +75,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "ATTRIBUTION_ANCHOR_TEXT"
   | "ATTRIBUTION_DESTINATION_URL"
   | "ATTRIBUTION_NOFOLLOW"
+  | "PRIVACY_REQUEST_DISCLOSURE_ENABLED"
 >;
 
 export type Styles = string;
@@ -153,80 +151,6 @@ const loadConfigFile = async (
 };
 
 /**
- * Transform the config to the latest version so that components can
- * reference config variables uniformly.
- */
-export const transformConfig = (config: LegacyConfig): Config => {
-  if (isV1ConsentConfig(config.consent)) {
-    const translatedConsent = translateV1ConfigToV2({
-      v1ConsentConfig: config.consent,
-    });
-
-    return { ...config, consent: translatedConsent };
-  }
-
-  return { ...config, consent: config.consent };
-};
-
-/**
- * Validate the config object
- */
-export const validateConfig = (
-  input: Config | LegacyConfig,
-): { isValid: boolean; message: string } => {
-  // First, ensure we support LegacyConfig type if provided
-  const config = transformConfig(input);
-
-  // Cannot currently have more than one consent be executable
-  if (config.consent) {
-    const options = config.consent.page.consentOptions;
-    const executables = options.filter((option) => option.executable);
-    if (executables.length > 1) {
-      return {
-        isValid: false,
-        message: "Cannot have more than one consent option be executable",
-      };
-    }
-  }
-
-  const invalidFieldMessages = config.actions.flatMap((action) => {
-    /*
-      Validate that hidden fields must have a default_value or a query_param_key
-      defined, otherwise the field would never get a value assigned.
-    */
-    const invalidFields = Object.entries(
-      action.custom_privacy_request_fields || {},
-    )
-      .filter(
-        ([, field]) =>
-          field.hidden &&
-          field.default_value === undefined &&
-          field.query_param_key === undefined,
-      )
-      .map(([key]) => `'${key}'`);
-
-    return invalidFields.length > 0
-      ? [
-          `${invalidFields.join(", ")} in the action with policy_key '${
-            action.policy_key
-          }'`,
-        ]
-      : [];
-  });
-
-  if (invalidFieldMessages.length > 0) {
-    return {
-      isValid: false,
-      message: `A default_value or query_param_key is required for hidden field(s) ${invalidFieldMessages.join(
-        ", ",
-      )}`,
-    };
-  }
-
-  return { isValid: true, message: "Config is valid" };
-};
-
-/**
  * Load the config.json file from the given URL, or fallback to default filesystem paths.
  *
  * Loading precedence is:
@@ -249,15 +173,13 @@ export const loadConfigFromFile = async (
   const file = await loadConfigFile(urls);
   if (file) {
     const parsedConfig = JSON.parse(file);
-    const config = transformConfig(parsedConfig);
     const { isValid, message } = validateConfig(parsedConfig);
-    // DEFER: add more validations here, log helpful warnings, etc.
-    // (see https://github.com/ethyca/fides/issues/3171)
     if (!isValid) {
-      console.warn("WARN: Configuration file is invalid! Message:", message);
-
-      return;
+      throw new Error(
+        `Privacy Center configuration is invalid and cannot start: ${message}`,
+      );
     }
+    const config = transformConfig(parsedConfig);
     return config;
   }
 };
@@ -357,6 +279,8 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     ATTRIBUTION_ANCHOR_TEXT: settings.ATTRIBUTION_ANCHOR_TEXT,
     ATTRIBUTION_DESTINATION_URL: settings.ATTRIBUTION_DESTINATION_URL,
     ATTRIBUTION_NOFOLLOW: settings.ATTRIBUTION_NOFOLLOW,
+    PRIVACY_REQUEST_DISCLOSURE_ENABLED:
+      settings.PRIVACY_REQUEST_DISCLOSURE_ENABLED,
   };
 
   return clientSettings;

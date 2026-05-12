@@ -1,0 +1,4 @@
+type: Changed
+description: Refactored database engines to use SQLAlchemy creator pattern for per-connection credential resolution
+pr: 8148
+labels: []

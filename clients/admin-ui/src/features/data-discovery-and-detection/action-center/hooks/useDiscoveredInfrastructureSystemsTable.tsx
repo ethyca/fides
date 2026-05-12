@@ -7,10 +7,10 @@ import {
 } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { StagedResourceAPIResponse } from "~/types/api";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import { useGetIdentityProviderMonitorResultsQuery } from "../../discovery-detection.slice";
-import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
@@ -123,7 +123,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     (record: StagedResourceAPIResponse) => {
       const recordId = record.urn ?? UNCATEGORIZED_SEGMENT;
       const activeTabHash = activeTab ? `#${activeTab}` : "";
-      return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.INFRASTRUCTURE}/${monitorId}/${recordId}${activeTabHash}`;
+      return `${ACTION_CENTER_ROUTE}/${APIMonitorType.INFRASTRUCTURE}/${monitorId}/${recordId}${activeTabHash}`;
     },
     [monitorId, activeTab],
   );

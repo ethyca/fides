@@ -14,6 +14,7 @@ from fides.api.models.connection_config_saas_history import ConnectionConfigSaaS
 from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.consent_automation import ConsentAutomation
+from fides.api.models.correspondence_metadata import CorrespondenceMetadata
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.custom_report import CustomReport

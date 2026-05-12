@@ -166,7 +166,7 @@ const PrivacyNoticeSandboxRealData = () => {
       {/* Info Banner */}
       <Alert
         type="info"
-        message="This page makes real API calls to the Consent V3 API."
+        title="This page makes real API calls to the Consent V3 API."
         description={
           <>
             <Typography.Paragraph className="mb-0 mt-3">

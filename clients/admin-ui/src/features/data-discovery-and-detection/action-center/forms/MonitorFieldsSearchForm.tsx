@@ -1,4 +1,13 @@
-import { Button, Flex, Form, Icons, Select, Tooltip } from "fidesui";
+import {
+  Button,
+  Flex,
+  Form,
+  Icons,
+  Select,
+  Space,
+  Text,
+  Tooltip,
+} from "fidesui";
 import { capitalize } from "lodash";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -10,6 +19,7 @@ import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { RESOURCE_STATUS } from "../fields/MonitorFields.const";
 import { MonitorFieldSearchForm } from "./MonitorFieldSearchForm.util";
+import RegexToggle from "./RegexToggle";
 
 const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
   ConfidenceBucket.HIGH,
@@ -34,6 +44,7 @@ const MonitorFieldsSearchForm = ({
   form,
   shortcutCallback,
   availableFilters,
+  regexError,
   ...formProps
 }: Omit<
   ReturnType<typeof useSearchForm<any, MonitorFieldSearchForm>>,
@@ -43,6 +54,7 @@ const MonitorFieldsSearchForm = ({
   availableFilters: {
     data_category?: string[];
   };
+  regexError?: string | null;
 }) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
@@ -77,32 +89,42 @@ const MonitorFieldsSearchForm = ({
   );
 
   return (
-    <Form
-      form={form}
-      {...formProps}
-      layout="inline"
-      className="flex grow gap-2"
-    >
-      <Flex className="grow gap-2 self-stretch">
-        <Form.Item name="search" className="!me-0 self-end">
-          <SearchInput />
-        </Form.Item>
+    <Form form={form} {...formProps} layout="inline" className="contents">
+      <Flex className="col-span-3 gap-2 2xl:col-span-1" vertical>
+        <Space.Compact>
+          <Form.Item name="search" className="!me-0 contents grow">
+            <SearchInput
+              className="!min-w-[300px]"
+              placeholder="Search by name or URN"
+              status={regexError ? "error" : undefined}
+            />
+          </Form.Item>
 
-        <Tooltip title="Display keyboard shortcuts">
-          <Button
-            aria-label="Display keyboard shortcuts"
-            icon={<Icons.Keyboard />}
-            onClick={shortcutCallback}
-          />
-        </Tooltip>
+          <Form.Item name="search_regex" className="!me-0 contents">
+            <RegexToggle />
+          </Form.Item>
+        </Space.Compact>
+        {regexError && (
+          <Text type="danger" className="text-xs">
+            {regexError}
+          </Text>
+        )}
       </Flex>
-      <Form.Item name="resource_status" className="!me-0 self-end">
+
+      <Tooltip title="Display keyboard shortcuts">
+        <Button
+          aria-label="Display keyboard shortcuts"
+          icon={<Icons.Keyboard />}
+          onClick={shortcutCallback}
+          className="col-span-1 justify-self-end 2xl:col-span-1 2xl:justify-self-start"
+        />
+      </Tooltip>
+      <Form.Item name="resource_status" className="!me-0">
         <Select
           options={RESOURCE_STATUS_OPTIONS.map((resourceStatus) => ({
             value: resourceStatus,
             label: resourceStatus,
           }))}
-          className="!w-[200px]"
           placeholder="Status"
           allowClear
           aria-label="Filter by status"
@@ -111,13 +133,12 @@ const MonitorFieldsSearchForm = ({
         />
       </Form.Item>
 
-      <Form.Item name="confidence_bucket" className="!me-0 self-end">
+      <Form.Item name="confidence_bucket" className="!me-0">
         <Select
           options={CONFIDENCE_BUCKETS.map((confidenceBucket) => ({
             value: confidenceBucket,
             label: capitalize(confidenceBucket),
           }))}
-          className="!w-[200px]"
           placeholder="Confidence"
           allowClear
           aria-label="Filter by confidence score"
@@ -126,9 +147,9 @@ const MonitorFieldsSearchForm = ({
         />
       </Form.Item>
 
-      <Form.Item name="data_category" className="!me-0 self-end">
+      <Form.Item name="data_category" className="!me-0 overflow-hidden">
         <DataCategorySelect
-          className="!w-[200px]"
+          rootClassName="overflow-hidden"
           variant="outlined"
           allowClear
           maxTagCount="responsive"
@@ -136,6 +157,7 @@ const MonitorFieldsSearchForm = ({
           mode="multiple"
           options={options}
           autoFocus={false}
+          popupMatchSelectWidth={false}
         />
       </Form.Item>
     </Form>

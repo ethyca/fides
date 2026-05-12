@@ -1,6 +1,7 @@
 import { formatDate } from "common/utils";
 import {
   ChakraBox as Box,
+  ChakraFlex as Flex,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -10,9 +11,10 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   CUSTOM_TAG_COLOR,
+  Icons,
   Tag,
+  Tooltip,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import {
   ExecutionLog,
   ExecutionLogStatus,
@@ -22,7 +24,52 @@ import {
 } from "privacy-requests/types";
 import React from "react";
 
+import { useSaaSVersionModal } from "~/features/connector-templates/hooks/useSaaSVersionModal";
 import { ActionType } from "~/types/api";
+
+import styles from "./EventLog.module.scss";
+
+/**
+ * Unwraps a Python bytes literal (e.g. b'{"key":"val"}') produced by
+ * str(response.content), returning the inner string. Returns the original
+ * value unchanged if it doesn't match that format.
+ */
+const unwrapPythonBytesLiteral = (value: string): string => {
+  const match = value.match(/^b'([\s\S]*)'$/);
+  if (match) {
+    return match[1].replace(/\\'/g, "'");
+  }
+  return value;
+};
+
+/**
+ * Returns the user-configured extracted content from a log message, or null
+ * for system-generated messages like "success - retrieved N records".
+ * Unwraps Python bytes literals and pretty-prints JSON objects/arrays.
+ */
+const extractMessageContent = (
+  message: string | null | undefined,
+): string | null => {
+  if (!message) {
+    return null;
+  }
+  const withoutSuffix = message
+    .replace(/\s*-\s*(?:retrieved|masked|processed)\s+\d+\s+records?$/i, "")
+    .trim();
+  if (!withoutSuffix || withoutSuffix.toLowerCase() === "success") {
+    return null;
+  }
+  const unwrapped = unwrapPythonBytesLiteral(withoutSuffix);
+  try {
+    const parsed = JSON.parse(unwrapped);
+    if (parsed !== null && typeof parsed === "object") {
+      return JSON.stringify(parsed, null, 2);
+    }
+  } catch {
+    // not JSON — return as-is
+  }
+  return unwrapped;
+};
 
 const AUDIT_STATUSES_WITH_DETAILS: ExecutionLogStatus[] = [
   ExecutionLogStatus.DENIED,
@@ -158,12 +205,39 @@ const extractRecordCountOrTotal = (
   return extractRecordCount(detail);
 };
 
+const VersionBadge = ({
+  versionIdentifier,
+  onClick,
+}: {
+  versionIdentifier: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}) =>
+  onClick ? (
+    <Tooltip title="View version config">
+      <button
+        type="button"
+        title="View version config"
+        className={styles.versionButton}
+        onClick={onClick}
+        data-testid="version-badge-wrapper"
+      >
+        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
+      </button>
+    </Tooltip>
+  ) : (
+    <span data-testid="version-badge-wrapper">
+      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
+    </span>
+  );
+
 const EventLog = ({
   eventLogs,
   allEventLogs,
   onDetailPanel,
   privacyRequest,
 }: EventDetailsProps) => {
+  const { openVersionModal, modal: versionModal } = useSaaSVersionModal();
+
   // Check if any logs have collection_name OR if there's a finished entry to determine if we should show Records and Collection columns
   const hasDatasetEntries =
     eventLogs?.some((log) => log.collection_name) ||
@@ -194,29 +268,57 @@ const EventLog = ({
     return "-";
   };
 
+  const renderVersionCell = (log: ExecutionLog) => {
+    const { saas_version: versionIdentifier, connection_key: key } = log;
+    if (!versionIdentifier) {
+      return (
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          -
+        </Text>
+      );
+    }
+    return (
+      <VersionBadge
+        versionIdentifier={versionIdentifier}
+        onClick={
+          key
+            ? (e) => {
+                e.stopPropagation();
+                openVersionModal(key, versionIdentifier);
+              }
+            : undefined
+        }
+      />
+    );
+  };
+
   const tableItems = eventLogs?.map((detail) => {
+    const extractedContent =
+      detail.status === ExecutionLogStatus.COMPLETE
+        ? extractMessageContent(detail.message)
+        : null;
+
     const hasExpandableDetails =
       detail.status === ExecutionLogStatus.ERROR ||
       (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
       detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
       detail.status === ExecutionLogStatus.POLLING ||
-      (isAuditStatusWithDetails(detail.status) && detail.message);
+      (isAuditStatusWithDetails(detail.status) && detail.message) ||
+      !!extractedContent;
 
     return (
       <Tr
         key={detail.updated_at}
-        backgroundColor={
-          hasExpandableDetails ? palette.FIDESUI_NEUTRAL_50 : "unset"
-        }
+        backgroundColor="unset"
         onClick={() => {
           if (hasExpandableDetails) {
-            onDetailPanel(detail.message, detail.status);
+            onDetailPanel(extractedContent ?? detail.message, detail.status);
           }
         }}
         style={{
           cursor: hasExpandableDetails ? "pointer" : "unset",
         }}
-        _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
+        _hover={{ backgroundColor: "var(--fidesui-neutral-50)" }}
       >
         <Td>
           <Text
@@ -239,20 +341,30 @@ const EventLog = ({
           </Text>
         </Td>
         <Td>
-          {ExecutionLogStatusLabels[detail.status] ? (
-            <Tag color={ExecutionLogStatusColors[detail.status]}>
-              {ExecutionLogStatusLabels[detail.status]}
-            </Tag>
-          ) : (
-            <Text
-              color="gray.600"
-              fontSize="xs"
-              lineHeight="4"
-              fontWeight="medium"
-            >
-              {detail.status}
-            </Text>
-          )}
+          <Flex alignItems="center" gap="6px">
+            {ExecutionLogStatusLabels[detail.status] ? (
+              <Tag color={ExecutionLogStatusColors[detail.status]}>
+                {ExecutionLogStatusLabels[detail.status]}
+              </Tag>
+            ) : (
+              <Text
+                color="gray.600"
+                fontSize="xs"
+                lineHeight="4"
+                fontWeight="medium"
+              >
+                {detail.status}
+              </Text>
+            )}
+            {extractedContent && (
+              <Tooltip title="Contains extracted log data">
+                <Icons.InformationFilled
+                  color="var(--fidesui-neutral-400)"
+                  size={14}
+                />
+              </Tooltip>
+            )}
+          </Flex>
         </Td>
         {hasDatasetEntries && (
           <Td>
@@ -271,34 +383,21 @@ const EventLog = ({
           </Td>
         )}
         {hasDatasetEntries && !isRequestFinishedView && (
-          <Td>
-            <Text
-              color="gray.600"
-              fontSize="xs"
-              lineHeight="4"
-              fontWeight="medium"
-            >
-              {(detail.status as string) === "finished"
-                ? "Request completed"
-                : detail.collection_name}
-            </Text>
-          </Td>
-        )}
-        {hasDatasetEntries && !isRequestFinishedView && (
-          <Td>
-            {detail.saas_version ? (
-              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
-            ) : (
+          <>
+            <Td>
               <Text
                 color="gray.600"
                 fontSize="xs"
                 lineHeight="4"
                 fontWeight="medium"
               >
-                -
+                {(detail.status as string) === "finished"
+                  ? "Request completed"
+                  : detail.collection_name}
               </Text>
-            )}
-          </Td>
+            </Td>
+            <Td>{renderVersionCell(detail)}</Td>
+          </>
         )}
       </Tr>
     );
@@ -306,6 +405,7 @@ const EventLog = ({
 
   return (
     <Box width="100%" paddingTop="0px" height="100%">
+      {versionModal}
       <TableContainer
         id="tableContainer"
         height="100%"
@@ -365,28 +465,28 @@ const EventLog = ({
                 </Th>
               )}
               {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Collection
-                  </Text>
-                </Th>
-              )}
-              {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Version
-                  </Text>
-                </Th>
+                <>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Collection
+                    </Text>
+                  </Th>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Version
+                    </Text>
+                  </Th>
+                </>
               )}
             </Tr>
           </Thead>

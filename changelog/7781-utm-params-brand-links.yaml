@@ -1,4 +1,0 @@
-type: Changed
-description: Added UTM tracking parameters to brand and attribution links in fides-js and privacy center
-pr: 7781
-labels: []

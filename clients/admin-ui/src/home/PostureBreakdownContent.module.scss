@@ -1,5 +1,44 @@
+.scoreValue {
+  font-size: 32px;
+  font-weight: 600;
+  font-family: var(--fidesui-font-family-code);
+  line-height: 1;
+}
+
+.scoreDenominator {
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 0.4;
+  margin-left: 2px;
+}
+
+.dimScore {
+  font-family: var(--fidesui-font-family-code);
+  font-size: var(--fidesui-font-size-sm);
+  color: var(--fidesui-color-text) !important;
+}
+
 .dimensionCard {
-  border-radius: var(--ant-border-radius-lg);
-  padding: var(--ant-padding);
-  background-color: var(--ant-color-fill-quaternary);
+  border-radius: var(--fidesui-border-radius-lg);
+  padding: var(--fidesui-padding-sm) var(--fidesui-padding);
+  background-color: var(--fidesui-color-fill-quaternary);
+  transition: background-color 0.15s ease;
+}
+
+.dimensionLink {
+  display: block;
+
+  &:hover .dimensionCard {
+    background-color: var(--fidesui-color-fill-tertiary);
+  }
+
+  &:hover .launchIcon {
+    color: var(--fidesui-color-text);
+  }
+}
+
+.launchIcon {
+  flex-shrink: 0;
+  color: var(--fidesui-color-text-quaternary);
+  transition: color 0.15s ease;
 }

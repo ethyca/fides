@@ -6,14 +6,14 @@ import {
   TabsProps,
   useNotification,
 } from "fidesui";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   EDIT_SYSTEM_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
@@ -21,6 +21,7 @@ import {
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import ToastLink from "~/features/common/ToastLink";
+import { selectConsentModuleEnabled } from "~/features/config-settings/config-settings.slice";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
 import {
@@ -84,6 +85,7 @@ const useSystemFormTabs = ({
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
+  const consentModuleEnabled = useAppSelector(selectConsentModuleEnabled);
   const showNewIntegrationNotice = isPlusEnabled;
 
   const systemFidesKey = router.query.id as string;
@@ -178,13 +180,9 @@ const useSystemFormTabs = ({
                 data-testid="save-help-message"
               >
                 Now that you have saved this new system it is{" "}
-                <Link
-                  as={NextLink}
-                  href={systemOrDatamapRoute}
-                  textDecor="underline"
-                >
+                <RouterLink href={systemOrDatamapRoute}>
                   ready to view in your data map
-                </Link>
+                </RouterLink>
                 . You can return to this setup at any time to add privacy
                 declarations to this system.
               </Text>
@@ -255,12 +253,13 @@ const useSystemFormTabs = ({
             connectionConfig={activeSystem.connection_configs?.[0] ?? null}
             systemFidesKey={activeSystem.fides_key}
           />
-          {activeSystem.connection_configs?.[0]?.key && (
-            <ConsentAutomationForm
-              m={6}
-              connectionKey={activeSystem.connection_configs?.[0]?.key}
-            />
-          )}
+          {consentModuleEnabled &&
+            activeSystem.connection_configs?.[0]?.key && (
+              <ConsentAutomationForm
+                m={6}
+                connectionKey={activeSystem.connection_configs?.[0]?.key}
+              />
+            )}
         </Box>
       ) : null,
       disabled: !activeSystem,

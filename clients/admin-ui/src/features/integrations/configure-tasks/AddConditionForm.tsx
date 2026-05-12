@@ -3,6 +3,7 @@ import {
   Button,
   ChakraFlex as Flex,
   Form,
+  FormInstance,
   Radio,
   RadioChangeEvent,
   Select,
@@ -42,6 +43,7 @@ interface AddConditionFormProps {
   editingCondition?: ConditionLeaf | null;
   isSubmitting?: boolean;
   connectionKey: string;
+  form?: FormInstance<FormValues>;
   /**
    * When true, hides the dataset field source option and filters privacy request
    * fields to only those available for consent requests.
@@ -56,9 +58,11 @@ const AddConditionForm = ({
   editingCondition,
   isSubmitting = false,
   connectionKey,
+  form: formProp,
   isConsentOnly = false,
 }: AddConditionFormProps) => {
-  const [form] = Form.useForm();
+  const [internalForm] = Form.useForm();
+  const form = formProp ?? internalForm;
   const isEditing = !!editingCondition;
 
   const [fieldSource, setFieldSource] = useState<FieldSource>(

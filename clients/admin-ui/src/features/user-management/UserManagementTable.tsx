@@ -1,9 +1,9 @@
 import { Button, Flex, Table } from "fidesui";
-import NextLink from "next/link";
 import React, { useEffect } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -30,15 +30,11 @@ const UserManagementTable = () => {
           data-testid="user-search"
         />
         <Restrict scopes={[ScopeRegistryEnum.USER_CREATE]}>
-          <NextLink
-            href={`${USER_MANAGEMENT_ROUTE}/new`}
-            passHref
-            legacyBehavior
-          >
+          <RouterLink href={`${USER_MANAGEMENT_ROUTE}/new`}>
             <Button type="primary" data-testid="add-new-user-btn">
               Add new user
             </Button>
-          </NextLink>
+          </RouterLink>
         </Restrict>
       </Flex>
       <Table

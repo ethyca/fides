@@ -1,7 +1,9 @@
 import { DigestConfigRequest, DigestConfigResponse } from "~/types/api";
 
-export interface DigestConfigFormValues
-  extends Omit<DigestConfigRequest, "config_metadata"> {
+export interface DigestConfigFormValues extends Omit<
+  DigestConfigRequest,
+  "config_metadata"
+> {
   id?: string; // For edit mode
 }
 

@@ -23,7 +23,7 @@ export const CustomTableHeaderCell = (
             placement="bottomRight"
             {...(columnKey
               ? {
-                  overlayClassName: `${columnKey}-header-menu-list`,
+                  classNames: { root: `${columnKey}-header-menu-list` },
                 }
               : {})}
           >

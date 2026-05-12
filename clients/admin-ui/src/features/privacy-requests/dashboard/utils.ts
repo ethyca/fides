@@ -2,7 +2,7 @@ import { isEmpty, isNil, pickBy } from "lodash";
 import { createParser } from "nuqs";
 
 import {
-  IdentityValue,
+  fides__api__schemas__privacy_request__IdentityValue as IdentityValue,
   PrivacyRequestOption,
   PrivacyRequestResponse,
 } from "~/types/api";
@@ -109,8 +109,11 @@ export const getCustomFields = (
 
   return customFields
     ? Object.entries(customFields)
-        .filter(([, field]) => !isNil(field.value) && field.value !== "")
-        .map(([key, field]) => ({
+        .filter(
+          ([, field]: [string, any]) =>
+            !isNil(field.value) && field.value !== "",
+        )
+        .map(([key, field]: [string, any]) => ({
           key,
           label: field.label,
           value: field.value,

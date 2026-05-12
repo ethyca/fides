@@ -35,7 +35,7 @@ class SystemHistory(Base):
 
     @property
     def edited_by(self) -> Optional[str]:
-        """Derive the username from the user_id"""
+        """Derive the display name from user_id (or client_id once that column exists)."""
         if not self.user_id:
             return None
 
@@ -44,5 +44,4 @@ class SystemHistory(Base):
 
         db = Session.object_session(self)
         user: Optional[FidesUser] = FidesUser.get_by(db, field="id", value=self.user_id)
-
         return user.username if user else self.user_id

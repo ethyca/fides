@@ -45,7 +45,7 @@ const JavaScriptTag = () => {
       <Button
         onClick={modal.onOpen}
         icon={<Icons.Copy />}
-        iconPosition="end"
+        iconPlacement="end"
         data-testid="js-tag-btn"
       >
         Get JavaScript tag

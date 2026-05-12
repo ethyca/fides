@@ -4,18 +4,21 @@ import {
   Flex,
   Form,
   Input,
-  Modal,
   Select,
   Spin,
   Switch,
   useMessage,
 } from "fidesui";
-import NextLink from "next/link";
 import { useEffect, useMemo } from "react";
 
-import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
+import {
+  useGetChatChannelsQuery,
+  useGetChatConfigsQuery,
+} from "~/features/chat-provider/chatProvider.slice";
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
@@ -60,8 +63,14 @@ const AssessmentSettingsModal = ({
     isLoading: isLoadingChannels,
     refetch: refetchChannels,
   } = useGetChatChannelsQuery(undefined, { skip: !open });
+  const { data: chatConfigs } = useGetChatConfigsQuery(undefined, {
+    skip: !open,
+  });
   const [updateConfig, { isLoading: isUpdating }] =
     useUpdateAssessmentConfigMutation();
+
+  const enabledChatConfig = chatConfigs?.items.find((c) => c.enabled);
+  const isFidesProvider = enabledChatConfig?.provider_type === "fides";
 
   // Derive initial form values from config
   const initialValues = useMemo(() => {
@@ -135,10 +144,11 @@ const AssessmentSettingsModal = ({
     })) ?? [];
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="Assessment settings"
       open={open}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       destroyOnHidden
       footer={
         <Flex justify="flex-end" gap={8}>
@@ -184,21 +194,37 @@ const AssessmentSettingsModal = ({
             modelOverrideTestId="chat-model"
           />
 
-          {/* Slack Configuration Section */}
-          {channelOptions.length === 0 && !isLoadingChannels ? (
+          {/* Chat Provider Configuration Section */}
+          {isFidesProvider && (
             <Alert
-              type="info"
-              message="Configure Slack to enable channel notifications."
-              action={
-                <NextLink href={CHAT_PROVIDERS_ROUTE} target="_blank" passHref>
-                  <Button size="small" type="link">
-                    Configure Slack
-                  </Button>
-                </NextLink>
-              }
+              type="success"
+              title="Fides provider active"
+              description="Start questionnaire conversations from the chat drawer. Launch one from any assessment detail page, and progress will appear here automatically."
+              showIcon
               className="mb-4"
             />
-          ) : (
+          )}
+          {!isFidesProvider &&
+            channelOptions.length === 0 &&
+            !isLoadingChannels && (
+              <Alert
+                type="info"
+                title="Configure a chat provider to enable questionnaires."
+                action={
+                  <RouterLink
+                    href={CHAT_PROVIDERS_ROUTE}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button size="small" type="link">
+                      Configure provider
+                    </Button>
+                  </RouterLink>
+                }
+                className="mb-4"
+              />
+            )}
+          {!isFidesProvider && channelOptions.length > 0 && (
             <Form.Item
               name="slack_channel_id"
               label="Notifications channel"
@@ -295,7 +321,7 @@ const AssessmentSettingsModal = ({
           )}
         </Form>
       )}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

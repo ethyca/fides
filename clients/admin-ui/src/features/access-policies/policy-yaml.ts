@@ -41,6 +41,48 @@ export const parseYaml = (yamlString: string): AccessPolicyYaml | null => {
   }
 };
 
+/**
+ * Extract top-level fields from a policy YAML string for list display.
+ * Avoids building the full node graph — just reads the scalar fields.
+ */
+export const extractPolicyFields = (
+  yamlString?: string,
+): { enabled: boolean; priority: number; decision?: ActionType } => {
+  if (!yamlString) {
+    return { enabled: true, priority: 0 };
+  }
+  const parsed = parseYaml(yamlString);
+  if (!parsed) {
+    return { enabled: true, priority: 0 };
+  }
+  return {
+    enabled: parsed.enabled ?? true,
+    priority: parsed.priority ?? 0,
+    decision: parsed.decision,
+  };
+};
+
+/**
+ * Update a single field in a policy YAML string without disturbing the rest.
+ * Returns the modified YAML string.
+ */
+export const updateYamlField = (
+  yamlString: string,
+  field: string,
+  value: unknown,
+): string => {
+  try {
+    const parsed = yaml.load(yamlString) as Record<string, unknown> | null;
+    if (!parsed || typeof parsed !== "object") {
+      return yamlString;
+    }
+    parsed[field] = value;
+    return yaml.dump(parsed, { lineWidth: 120 });
+  } catch {
+    return yamlString;
+  }
+};
+
 const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
   ConditionProperty.DATA_CATEGORIES,
   ConditionProperty.DATA_USE,
@@ -82,7 +124,7 @@ export const yamlToNodesAndEdges = (
       fidesKey: policy.fides_key ?? "",
       enabled: policy.enabled ?? true,
       priority: policy.priority ?? 0,
-      controls: policy.controls ?? [],
+      control: policy.control ?? null,
       controlOptions: [],
       actionMessage: policy.action?.message ?? "",
       onNameChange: () => {},
@@ -90,7 +132,7 @@ export const yamlToNodesAndEdges = (
       onFidesKeyChange: () => {},
       onEnabledChange: () => {},
       onPriorityChange: () => {},
-      onControlsChange: () => {},
+      onControlChange: () => {},
       onActionMessageChange: () => {},
     },
   };
@@ -352,7 +394,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     return "";
   }
 
-  const { name, description, fidesKey, enabled, priority, controls } =
+  const { name, description, fidesKey, enabled, priority, control } =
     policyNode.data as PolicyNodeData;
 
   // Find action node (connected from policy)
@@ -379,8 +421,8 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   if (priority !== undefined && priority !== 0) {
     policyYaml.priority = priority;
   }
-  if (controls && controls.length > 0) {
-    policyYaml.controls = controls;
+  if (control) {
+    policyYaml.control = control;
   }
 
   if (!actionNode) {

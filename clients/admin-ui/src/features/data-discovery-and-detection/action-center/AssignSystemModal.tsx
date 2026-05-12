@@ -42,7 +42,7 @@ export const AssignSystemModal = ({
       open={isOpen}
       onCancel={handleClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={null}
       data-testid="add-modal-content"
     >

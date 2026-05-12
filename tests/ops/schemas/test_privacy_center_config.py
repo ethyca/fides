@@ -4,7 +4,6 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
-    BaseCustomPrivacyRequestField,
     ConsentConfigPage,
     CustomPrivacyRequestField,
     IdentityInputs,
@@ -13,6 +12,7 @@ from fides.api.schemas.privacy_center_config import (
     get_field_type_discriminator,
     reorder_custom_privacy_request_fields,
 )
+from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
 from fides.api.util.saas_util import load_as_string
 
 
@@ -334,6 +334,247 @@ class TestPrivacyCenterConfig:
         assert "LocationCustomPrivacyRequestField does not support options" in str(
             exc_info.value
         )
+
+    @pytest.mark.parametrize(
+        "kwargs,expected",
+        [
+            (
+                {"label": "Confirm", "field_type": "checkbox", "required": True},
+                {"field_type": "checkbox", "required": True, "options": None},
+            ),
+            (
+                {"label": "Subscribe", "field_type": "checkbox", "required": False},
+                {"required": False},
+            ),
+            (
+                {"label": "Agree", "field_type": "checkbox", "default_value": "true"},
+                {"default_value": "true"},
+            ),
+            (
+                {
+                    "label": "Flag",
+                    "field_type": "checkbox",
+                    "hidden": True,
+                    "default_value": "false",
+                },
+                {"hidden": True, "default_value": "false"},
+            ),
+            (
+                {
+                    "label": "Pick",
+                    "field_type": "checkbox_group",
+                    "options": ["Profile", "Purchase history", "Email preferences"],
+                },
+                {
+                    "field_type": "checkbox_group",
+                    "options": ["Profile", "Purchase history", "Email preferences"],
+                },
+            ),
+            (
+                {"label": "Describe", "field_type": "textarea"},
+                {"field_type": "textarea", "options": None},
+            ),
+            (
+                {
+                    "label": "Context",
+                    "field_type": "textarea",
+                    "default_value": "N/A",
+                    "required": False,
+                },
+                {"default_value": "N/A", "required": False},
+            ),
+        ],
+    )
+    def test_custom_field_valid(self, kwargs, expected):
+        field = CustomPrivacyRequestField(**kwargs)
+        for attr, val in expected.items():
+            assert getattr(field, attr) == val
+
+    @pytest.mark.parametrize(
+        "kwargs,error_msg",
+        [
+            (
+                {"label": "x", "field_type": "checkbox_group"},
+                "checkbox_group fields require at least one option",
+            ),
+            (
+                {"label": "x", "field_type": "checkbox_group", "options": []},
+                "checkbox_group fields require at least one option",
+            ),
+            (
+                {"label": "x", "field_type": "textarea", "hidden": True},
+                "default_value or query_param_key are required when hidden is True",
+            ),
+            (
+                {
+                    "label": "x",
+                    "field_type": "checkbox_group",
+                    "options": ["A", "B"],
+                    "hidden": True,
+                    "default_value": "A",
+                },
+                "checkbox_group fields cannot be hidden",
+            ),
+            (
+                {
+                    "label": "x",
+                    "field_type": "multiselect",
+                    "options": ["A", "B"],
+                    "hidden": True,
+                    "default_value": "A",
+                },
+                "multiselect fields cannot be hidden",
+            ),
+            (
+                {"label": "x", "field_type": "checkbox", "options": ["A"]},
+                "checkbox fields do not support options",
+            ),
+            (
+                {"label": "x", "field_type": "textarea", "options": ["A"]},
+                "textarea fields do not support options",
+            ),
+        ],
+    )
+    def test_custom_field_invalid(self, kwargs, error_msg):
+        with pytest.raises(ValidationError, match=error_msg):
+            CustomPrivacyRequestField(**kwargs)
+
+    def test_privacy_center_config_with_new_field_types(self):
+        """All three new field types round-trip through PrivacyCenterConfig."""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "agree": {
+                "label": "I confirm this is my own data",
+                "field_type": "checkbox",
+                "required": True,
+            },
+            "data_types": {
+                "label": "Which data should we delete?",
+                "field_type": "checkbox_group",
+                "options": ["Profile", "Orders", "Preferences"],
+            },
+            "context": {
+                "label": "Additional context",
+                "field_type": "textarea",
+                "required": False,
+            },
+        }
+        config = PrivacyCenterConfig(**config_data)
+        fields = config.actions[0].custom_privacy_request_fields
+
+        assert isinstance(fields["agree"], CustomPrivacyRequestField)
+        assert fields["agree"].field_type == "checkbox"
+
+        assert isinstance(fields["data_types"], CustomPrivacyRequestField)
+        assert fields["data_types"].field_type == "checkbox_group"
+        assert fields["data_types"].options == ["Profile", "Orders", "Preferences"]
+
+        assert isinstance(fields["context"], CustomPrivacyRequestField)
+        assert fields["context"].field_type == "textarea"
+
+    def test_new_field_types_serialization(self):
+        """New field types serialize correctly (no location-specific fields leak)."""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "agree": {"label": "I agree", "field_type": "checkbox"},
+            "reasons": {
+                "label": "Reasons",
+                "field_type": "checkbox_group",
+                "options": ["A", "B"],
+            },
+            "notes": {"label": "Notes", "field_type": "textarea"},
+        }
+        config = PrivacyCenterConfig(**config_data)
+        serialized = config.model_dump(mode="json")
+        fields = serialized["actions"][0]["custom_privacy_request_fields"]
+
+        for name, data in fields.items():
+            assert "ip_geolocation_hint" not in data, (
+                f"Field '{name}' should not have ip_geolocation_hint"
+            )
+            assert data["field_type"] in ("checkbox", "checkbox_group", "textarea")
+
+    def test_valid_url_fields(self, privacy_center_config: PrivacyCenterConfig):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["server_url_development"] = "http://localhost:8080"
+        config_data["server_url_production"] = "https://api.example.com"
+        config_data["logo_url"] = "https://cdn.example.com/logo.png"
+        config_data["privacy_policy_url"] = "https://example.com/privacy"
+        config = PrivacyCenterConfig(**config_data)
+        assert config.server_url_development == "http://localhost:8080"
+        assert config.server_url_production == "https://api.example.com"
+        assert config.logo_url == "https://cdn.example.com/logo.png"
+        assert config.privacy_policy_url == "https://example.com/privacy"
+
+    def test_invalid_server_url_development(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["server_url_development"] = "ftp://example.com"
+        with pytest.raises(ValidationError) as exc:
+            PrivacyCenterConfig(**config_data)
+        assert "URL must use the http or https scheme" in str(exc.value)
+
+    def test_invalid_logo_url(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["logo_url"] = "not-a-url"
+        with pytest.raises(ValidationError) as exc:
+            PrivacyCenterConfig(**config_data)
+        assert "URL must use the http or https scheme" in str(exc.value)
+
+    def test_null_url_fields_are_valid(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["server_url_development"] = None
+        config_data["logo_url"] = None
+        config = PrivacyCenterConfig(**config_data)
+        assert config.server_url_development is None
+        assert config.logo_url is None
+
+    def test_error_message_defaults_to_none_when_omitted(self):
+        config = PrivacyCenterConfig(
+            **json.loads(
+                load_as_string("tests/ops/resources/privacy_center_config.json")
+            )
+        )
+        assert config.error_message is None
+
+    def test_error_message_round_trips_when_provided(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["error_message"] = "Our team is on it, please hold."
+        config = PrivacyCenterConfig(**config_data)
+        assert config.error_message == "Our team is on it, please hold."
+        assert (
+            config.model_dump(mode="json")["error_message"]
+            == "Our team is on it, please hold."
+        )
+
+    def test_empty_actions(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"] = []
+        config = PrivacyCenterConfig(**config_data)
+        assert config.actions == []
+
+    def test_missing_actions_defaults_to_empty(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        del config_data["actions"]
+        config = PrivacyCenterConfig(**config_data)
+        assert config.actions == []
 
     def test_invalid_executable_consent(
         self, privacy_center_config: PrivacyCenterConfig

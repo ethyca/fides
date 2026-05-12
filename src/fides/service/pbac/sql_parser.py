@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def parse_query(
     query_text: str,
-    user_email: str,
+    user_identity: str,
     timestamp: datetime | None = None,
     source_id: str = "sql_parser",
 ) -> RawQueryLogEntry:
@@ -36,11 +36,11 @@ def parse_query(
     return RawQueryLogEntry(
         source_id=source_id,
         external_job_id=str(uuid4()),
-        user_email=user_email,
         query_text=query_text,
         statement_type=stmt_type,
         referenced_tables=tables,
         timestamp=timestamp or datetime.now(timezone.utc),
+        identity=user_identity,
     )
 
 
@@ -62,8 +62,8 @@ def extract_table_refs(query_text: str) -> list[TableRef]:
                 continue
             refs.append(
                 TableRef(
-                    project=table.catalog or "",
-                    dataset=table.db or "",
+                    catalog=table.catalog or "",
+                    schema=table.db or "",
                     table=table.name,
                 )
             )

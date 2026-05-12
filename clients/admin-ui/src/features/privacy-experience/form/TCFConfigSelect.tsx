@@ -1,12 +1,24 @@
-import { Tooltip } from "fidesui";
+import { Form, Select } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   selectTCFConfigFilters,
   useGetTCFConfigurationsQuery,
 } from "~/features/consent-settings/tcf/tcf-config.slice";
+
+const getTcfTooltip = (
+  overridesEnabled: boolean,
+  hasOptions: boolean,
+): string => {
+  if (!overridesEnabled) {
+    return "You must enable the Override vendor purposes setting in consent settings to select a TCF configuration.";
+  }
+  if (!hasOptions) {
+    return "No TCF configurations found. Please create a TCF configuration in 'Consent settings' to select one.";
+  }
+  return 'Select a TCF configuration. Configurations are defined in "Consent settings" and apply to TCF privacy experiences.';
+};
 
 export const TCFConfigSelect = ({
   overridesEnabled,
@@ -24,29 +36,21 @@ export const TCFConfigSelect = ({
       })) ?? [],
     [tcfConfigs],
   );
+
   return (
-    <Tooltip
-      title={
-        // eslint-disable-next-line no-nested-ternary
-        !overridesEnabled
-          ? "You must enable the Override vendor purposes setting in consent settings to select a TCF configuration."
-          : !tcfConfigOptions?.length
-            ? "No TCF configurations found. Please create a TCF configuration in 'Consent settings' to select one."
-            : undefined
-      }
+    <Form.Item
+      name="tcf_configuration_id"
+      label="TCF Configuration"
+      tooltip={getTcfTooltip(overridesEnabled, !!tcfConfigOptions?.length)}
     >
-      <div>
-        <ControlledSelect
-          name="tcf_configuration_id"
-          id="tcf_configuration_id"
-          label="TCF Configuration"
-          options={tcfConfigOptions}
-          layout="stacked"
-          disabled={!tcfConfigOptions?.length || !overridesEnabled}
-          tooltip='Select a TCF configuration. Configurations are defined in "Consent settings" and apply to TCF privacy experiences.'
-          allowClear
-        />
-      </div>
-    </Tooltip>
+      <Select
+        options={tcfConfigOptions}
+        disabled={!tcfConfigOptions?.length || !overridesEnabled}
+        allowClear
+        id="tcf_configuration_id"
+        aria-label="TCF Configuration"
+        data-testid="controlled-select-tcf_configuration_id"
+      />
+    </Form.Item>
   );
 };

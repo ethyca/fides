@@ -13,7 +13,7 @@ import { ColumnBuilderParams } from "./columnTypes";
 
 export const isIdentityProvider = (
   resourceType?: StagedResourceTypeValue,
-): boolean => resourceType === StagedResourceTypeValue.OKTA_APP;
+): boolean => resourceType === StagedResourceTypeValue.IDP_APP;
 
 export const isIdentityProviderColumns = ({
   rowClickUrl,
@@ -56,7 +56,11 @@ export const isIdentityProviderColumns = ({
     ) => (
       <VendorMatchBadge
         vendorName={vendorId}
-        vendorLogoUrl={record.metadata?.vendor_logo_url}
+        vendorLogoUrl={
+          record.metadata?.domain
+            ? `https://logo.clearbit.com/${record.metadata.domain}`
+            : undefined
+        }
         confidence={record.metadata?.vendor_match_confidence}
       />
     ),

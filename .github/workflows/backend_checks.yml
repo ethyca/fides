@@ -41,10 +41,10 @@ jobs:
       has_backend_changes: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for backend file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           list-files: shell
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -88,7 +88,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -109,7 +109,7 @@ jobs:
           echo '<h1>Placeholder</h1>' > admin-ui-out/index.html
 
       - name: Upload admin-ui placeholder
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: admin-ui-build
           path: admin-ui-out/
@@ -121,17 +121,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download admin-ui build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: admin-ui-build
           path: prebuilt/fides/clients/admin-ui/out
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build container
         uses: docker/build-push-action@v6
@@ -149,7 +149,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Upload container
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
@@ -172,7 +172,7 @@ jobs:
         shell: bash
 
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -181,7 +181,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -200,7 +200,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -208,7 +208,7 @@ jobs:
             ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
@@ -233,7 +233,7 @@ jobs:
     continue-on-error: false
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -242,7 +242,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -261,7 +261,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -269,7 +269,7 @@ jobs:
             ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
@@ -293,7 +293,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -302,7 +302,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -321,7 +321,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -329,7 +329,7 @@ jobs:
             ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-qq
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
@@ -415,7 +415,7 @@ jobs:
         shell: bash
 
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -424,7 +424,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -443,7 +443,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -451,7 +451,7 @@ jobs:
             ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
@@ -489,7 +489,7 @@ jobs:
         shell: bash
 
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -498,7 +498,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -517,7 +517,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-pytest_redis_cluster_docker-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -525,7 +525,7 @@ jobs:
             ${{ runner.os }}-uv-nox-pytest_redis_cluster_docker-${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
@@ -547,7 +547,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -556,7 +556,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -575,7 +575,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -583,7 +583,7 @@ jobs:
             ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
@@ -622,7 +622,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -631,7 +631,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -650,7 +650,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -658,7 +658,7 @@ jobs:
             ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
@@ -743,7 +743,7 @@ jobs:
       max-parallel: 1 # This prevents collisions in shared external resources
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -752,7 +752,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -771,7 +771,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -779,7 +779,7 @@ jobs:
             ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}

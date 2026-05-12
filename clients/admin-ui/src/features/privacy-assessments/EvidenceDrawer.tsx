@@ -52,7 +52,7 @@ export const EvidenceDrawer = ({
         />
       </div>
       <div className={styles.body}>
-        <Space direction="vertical" size="large" className={styles.content}>
+        <Space orientation="vertical" size="large" className={styles.content}>
           {focusedGroupId && (
             <EvidenceSection
               groupId={focusedGroupId}

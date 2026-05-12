@@ -1,0 +1,70 @@
+.cardContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  :global(.ant-card-head) {
+    flex-shrink: 0;
+  }
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.scrollContainer {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.feedItem {
+  display: block;
+  padding: var(--fidesui-padding-xs, 8px) var(--fidesui-padding, 16px);
+  border-radius: var(--fidesui-border-radius, 6px);
+  transition: background-color 0.15s;
+
+  &:focus-visible {
+    outline: auto;
+  }
+}
+
+.clickable {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    background-color: var(--fidesui-color-fill-quaternary);
+  }
+}
+
+.nonClickable {
+  cursor: default;
+}
+
+.actorIcon {
+  color: var(--fidesui-color-text-secondary);
+  background-color: var(--fidesui-color-fill-quaternary);
+  border: 1px solid var(--fidesui-color-border-secondary);
+  flex-shrink: 0;
+}
+
+.emptyState {
+  height: 100%;
+  min-height: 120px;
+}
+
+.attributionText {
+  font-size: var(--fidesui-font-size-sm);
+  color: var(--fidesui-color-text-quaternary);
+}
+
+.timestampText {
+  font-size: var(--fidesui-font-size-sm);
+  flex-shrink: 0;
+}

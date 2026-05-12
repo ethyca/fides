@@ -1,12 +1,13 @@
 import {
   ChakraBox as Box,
   ChakraVStack as VStack,
-  Modal,
+  Form,
   useMessage,
 } from "fidesui";
 import React, { useState } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import {
   useCreateManualFieldMutation,
@@ -39,6 +40,7 @@ const AddManualTaskModal = ({
   const message = useMessage();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form] = Form.useForm();
 
   const [createManualField] = useCreateManualFieldMutation();
   const [updateManualField] = useUpdateManualFieldMutation();
@@ -97,10 +99,11 @@ const AddManualTaskModal = ({
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       centered
       open={isOpen}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       destroyOnHidden
       wrapProps={{ "data-testid": "add-manual-task-modal" }}
       width={MODAL_SIZE.lg}
@@ -118,9 +121,10 @@ const AddManualTaskModal = ({
           onSaveClick={handleSubmit}
           onCancel={handleCancel}
           editingTask={editingTask}
+          form={form}
         />
       </VStack>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

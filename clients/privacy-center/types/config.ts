@@ -70,9 +70,15 @@ export type LegacyConfig = {
   server_url_development?: string;
   server_url_production?: string;
   logo_path: string;
-  actions: PrivacyRequestOption[];
+  actions?: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: LegacyConsentConfig | ConsentConfig;
+};
+
+export type MetricsConfig = {
+  title?: string;
+  description?: string;
+  link_text?: string;
 };
 
 export type Config = {
@@ -86,7 +92,7 @@ export type Config = {
   logo_url?: string;
   favicon_path?: string;
   page_title?: string;
-  actions: PrivacyRequestOption[];
+  actions?: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
@@ -94,6 +100,8 @@ export type Config = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string;
   links?: PrivacyCenterLink[];
+  metrics?: MetricsConfig;
+  error_message?: string | null;
 };
 
 export type PrivacyCenterLink = {
@@ -141,6 +149,13 @@ export type PrivacyRequestOption = {
   cancelButtonText?: string | null;
   identity_inputs?: IdentityInputs | null;
   custom_privacy_request_fields?: CustomPrivacyRequestFields | null;
+  verification_title?: string | null;
+  verification_description?: string | null;
+  verification_submit_button_text?: string | null;
+  verification_resend_button_text?: string | null;
+  success_title?: string | null;
+  success_description?: string | null;
+  success_button_text?: string | null;
 };
 
 export enum ConsentNonApplicableFlagMode {

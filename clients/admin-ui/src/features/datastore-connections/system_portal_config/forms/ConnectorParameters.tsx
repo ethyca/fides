@@ -21,6 +21,7 @@ import { useMemo, useState } from "react";
 
 import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
+import { parseSecretsFieldErrors } from "~/features/common/form/parseSecretsFieldErrors";
 import { useAPIHelper } from "~/features/common/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
@@ -52,6 +53,13 @@ import {
 } from "./ConnectorParametersForm";
 import { generateIntegrationKey } from "./helpers";
 
+const DEFAULT_VALUES: ConnectionConfigFormValues = {
+  description: "",
+  instance_key: "",
+  name: "",
+  dataset: [],
+};
+
 /**
  * Only handles creating saas connectors. The BE handler automatically
  * configures the connector using the saas config and creates the
@@ -64,7 +72,8 @@ const createSaasConnector = async (
   systemFidesKey: string,
   createSaasConnectorFunc: any,
 ) => {
-  const connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name"> = {
+  const connectionConfig: CreateSaasConnectionConfigRequest = {
+    name: values.name!,
     description: values.description || "",
     instance_key: generateIntegrationKey(systemFidesKey, connectionOption),
     saas_connector_type: connectionOption.identifier,
@@ -104,18 +113,18 @@ export const patchConnectionConfig = async (
     : generateIntegrationKey(systemFidesKey, connectionOption);
 
   // the enabled_actions are conditionally added if plus is enabled
-  const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
-    {
-      access: AccessLevel.WRITE,
-      connection_type: (connectionOption.type === SystemType.SAAS
-        ? connectionOption.type
-        : connectionOption.identifier) as ConnectionType,
-      description: values.description,
-      key,
-      ...(values.enabled_actions
-        ? { enabled_actions: values.enabled_actions as ActionType[] }
-        : {}),
-    };
+  const params1: Omit<ConnectionConfigurationResponse, "created_at"> = {
+    access: AccessLevel.WRITE,
+    connection_type: (connectionOption.type === SystemType.SAAS
+      ? connectionOption.type
+      : connectionOption.identifier) as ConnectionType,
+    description: values.description,
+    key,
+    name: values.name!,
+    ...(values.enabled_actions
+      ? { enabled_actions: values.enabled_actions as ActionType[] }
+      : {}),
+  };
   const payload = await patchFunc({
     systemFidesKey,
     connectionConfigs: [params1],
@@ -217,7 +226,7 @@ export const useConnectorForm = ({
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
-    () => connectionConfig?.secrets ?? {},
+    () => (connectionConfig?.secrets as Record<string, string>) ?? {},
     [connectionConfig],
   );
 
@@ -300,6 +309,16 @@ export const useConnectorForm = ({
         }!`,
       );
     } catch (error) {
+      // If the BE returned a 422 we can map to a known secrets field, surface
+      // it in the form via setFields rather than as a transient toast. Re-throw
+      // so the form can do that.
+      if (
+        parseSecretsFieldErrors(error, {
+          knownFields: Object.keys(secretsSchema?.properties ?? {}),
+        })
+      ) {
+        throw error;
+      }
       handleError(error);
     } finally {
       setIsSubmitting(false);
@@ -385,10 +404,6 @@ export const ConnectorParameters = ({
     },
   );
 
-  const handleTestDatasetsClick = () => {
-    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
-  };
-
   const {
     isSubmitting,
     isAuthorizing,
@@ -406,11 +421,18 @@ export const ConnectorParameters = ({
     setSelectedConnectionOption,
   });
 
-  const defaultValues: ConnectionConfigFormValues = {
-    description: "",
-    instance_key: "",
-    name: "",
-    dataset: [],
+  const handleTestDatasetsClick = () => {
+    if (connectionOption.type === SystemType.SAAS) {
+      if (connectionConfig?.key) {
+        router.push(`/integrations/${connectionConfig.key}/edit-dataset`);
+      }
+    } else if (initialDatasets?.length) {
+      router.push(`/dataset/${initialDatasets[0]}/graph-editor`);
+    }
+  };
+
+  const handleTestDatasetsRunClick = () => {
+    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
   };
 
   if (!secretsSchema && connectionOption.type !== SystemType.MANUAL) {
@@ -443,12 +465,13 @@ export const ConnectorParameters = ({
       </Box>
       <ConnectorParametersForm
         secretsSchema={secretsSchema}
-        defaultValues={defaultValues}
+        defaultValues={DEFAULT_VALUES}
         isSubmitting={isSubmitting}
         isAuthorizing={isAuthorizing}
         onSaveClick={handleSubmit}
         onTestConnectionClick={handleTestConnectionClick}
         onTestDatasetsClick={handleTestDatasetsClick}
+        onTestDatasetsRunClick={handleTestDatasetsRunClick}
         onAuthorizeConnectionClick={handleAuthorization}
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}

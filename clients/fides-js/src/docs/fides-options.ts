@@ -236,7 +236,7 @@ export interface FidesOptions {
    * For debugging purposes, you can decode the Notice Consent string using the
    * `window.Fides.decodeNoticeConsentString` function (see {@link Fides.decodeNoticeConsentString}).
    *
-   * Note: The Notice Consent string will take precedence over [GPC](/docs/regulations/gpc) and override any prior user consent.
+   * Note: The Notice Consent string will take precedence over [GPC](/regulations/gpc) and override any prior user consent.
    *
    * Defaults to `undefined`.
    */
@@ -346,6 +346,25 @@ export interface FidesOptions {
   fides_disabled_notices: string;
 
   /**
+   * Apple ATTrackingManager authorization status, set by the mobile SDK before loading the
+   * embedded TCF consent experience. When `"denied"` or `"restricted"`, custom privacy notices
+   * where `att_exempt` is `false` (or unset) are automatically disabled (toggle locked to
+   * opt_out); notices with `att_exempt: true` remain interactive.
+   *
+   * Mirrors Apple's `ATTrackingManager.AuthorizationStatus` enum values:
+   * - `"not_determined"` — user has not yet been asked (default)
+   * - `"restricted"` — tracking is restricted by device policy; notices locked
+   * - `"denied"` — user explicitly denied ATT; notices locked
+   * - `"authorized"` — user granted ATT; no locking applied
+   *
+   * Only applies to the TCF embedded consent experience on iOS. Android and web contexts
+   * should not set this option (they default to `"not_determined"`, which applies no locking).
+   *
+   * Defaults to `"not_determined"`.
+   */
+  fides_att_status: "not_determined" | "restricted" | "denied" | "authorized";
+
+  /**
    * A comma-separated list of systems whose related notice assets (e.g., cookies) should be excluded
    * from responses. This is used to filter out assets by system name when rendering disclosures.
    *
@@ -396,7 +415,7 @@ export interface FidesOptions {
    *   this is not a supported configuration
    * - "disabled" = prevents repeated script loading entirely
    *
-   * See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
+   * See [Troubleshooting](/privacy-center-fidesjs/fidesjs/troubleshooting) for more information.
    *
    * Defaults to `"disabled"`.
    */

@@ -341,7 +341,7 @@ export const useMessagingConfigurationsTable = () => {
           </Button>,
         ]}
       >
-        <Space direction="vertical">
+        <Space orientation="vertical">
           <Text>
             Are you sure you want to delete &quot;
             <strong>{configToDelete?.name}</strong>&quot; messaging

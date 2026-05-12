@@ -1,11 +1,12 @@
 import {
   ChakraUseDisclosureReturn as UseDisclosureReturn,
-  Modal,
+  Form,
   Spin,
   useMessage,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
@@ -16,6 +17,7 @@ import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monit
 import {
   ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
+  ConnectionType,
   EditableMonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
@@ -29,6 +31,11 @@ const WEBSITE_MONITOR_NOW_SCANNING_MESSAGE =
   "Your monitor has been created and is now scanning your website. Once the monitor is finished scanning, results can be found in the action center.";
 
 const WEBSITE_MONITOR_NOT_SCHEDULED_MESSAGE = `Your monitor has been created with no schedule.  Select "Scan" in the table below to begin scanning your website.`;
+
+const DATASTORE_CONTENT_TAXONOMY = {
+  project: ["project", "projects"],
+  database: ["database", "databases"],
+} as const;
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -51,6 +58,13 @@ const ConfigureMonitorModal = ({
 }) => {
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
+
+  // isWebsiteMonitor is stable for the lifetime of the modal, so one form
+  // instance covers both branches. Note: the dirty guard only covers step 0
+  // (ConfigureMonitorForm); step 1 (ConfigureMonitorDatabasesForm) manages
+  // its selections via useState rather than an AntD Form, so it cannot be
+  // covered by isFieldsTouched().
+  const [form] = Form.useForm();
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -100,16 +114,17 @@ const ConfigureMonitorModal = ({
 
   if (isWebsiteMonitor) {
     return (
-      <Modal
+      <ConfirmCloseModal
         title={
           monitor?.name
             ? `Configure ${monitor.name}`
             : "Configure website monitor"
         }
         open={isOpen}
-        onCancel={onClose}
+        onClose={onClose}
+        getIsDirty={() => form.isFieldsTouched()}
         centered
-        destroyOnClose
+        destroyOnHidden
         footer={null}
         data-testid="add-modal-content"
       >
@@ -119,22 +134,24 @@ const ConfigureMonitorModal = ({
           integrationSystem={integration?.system_key}
           onClose={onClose}
           onSubmit={handleSubmit}
+          form={form}
         />
-      </Modal>
+      </ConfirmCloseModal>
     );
   }
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title={
         monitor?.name
           ? `Configure ${monitor.name}`
           : "Configure discovery monitor"
       }
       open={isOpen}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={null}
       data-testid="add-modal-content"
     >
@@ -148,6 +165,7 @@ const ConfigureMonitorModal = ({
           databasesAvailable={databasesAvailable}
           integrationSystem={integration?.system_key}
           integrationOption={integrationOption}
+          form={form}
         />
       )}
       {formStep === 1 &&
@@ -159,11 +177,16 @@ const ConfigureMonitorModal = ({
             onSubmit={handleSubmit}
             onClose={onClose}
             integrationKey={integration.key}
+            contentTaxonomy={
+              integration.connection_type === ConnectionType.BIGQUERY
+                ? DATASTORE_CONTENT_TAXONOMY.project
+                : DATASTORE_CONTENT_TAXONOMY.database
+            }
           />
         ) : (
           <Spin />
         ))}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

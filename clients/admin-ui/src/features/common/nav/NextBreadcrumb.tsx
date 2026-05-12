@@ -7,14 +7,17 @@ import {
   Typography,
 } from "fidesui";
 import { Url } from "next/dist/shared/lib/router/router";
-import NextLink from "next/link";
 import { ReactNode, useMemo } from "react";
+
+import { RouterLink } from "./RouterLink";
 
 const { Text } = Typography;
 
 // Too difficult to make `path` work with Next.js links so we'll just remove it from the type
-interface NextBreadcrumbItemType
-  extends Omit<BreadcrumbItemType, "path" | "href"> {
+interface NextBreadcrumbItemType extends Omit<
+  BreadcrumbItemType,
+  "path" | "href"
+> {
   /**
    * becomes NextJS link href
    */
@@ -80,9 +83,13 @@ export const NextBreadcrumb = ({ items, ...props }: NextBreadcrumbProps) => {
         if (modifiedItem.href && modifiedItem.title) {
           // repeat the ant breadcrumb link class to match the style and margin of the ant breadcrumb item
           modifiedItem.title = (
-            <NextLink href={modifiedItem.href} className="ant-breadcrumb-link">
+            <RouterLink
+              unstyled
+              href={modifiedItem.href}
+              className="ant-breadcrumb-link"
+            >
               {modifiedItem.title}
-            </NextLink>
+            </RouterLink>
           );
           delete modifiedItem.href;
         }

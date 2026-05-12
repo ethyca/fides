@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum, StrEnum
 from re import match
-from typing import Any, Dict, Iterable, List, Optional, Set, Type
+from typing import Any, Dict, Iterable, List, Optional, Set, Type, TypeVar
 
 from loguru import logger
 from sqlalchemy import (
@@ -17,8 +17,10 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    event,
     func,
     text,
+    update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,8 +74,8 @@ class StagedResourceType(StrEnum):
     application-level use.
     """
 
-    # Note: If you add a new resource type, make sure to update either
-    # get_datastore_resource_types or get_website_monitor_resource_types
+    # Note: If you add a new resource type, make sure to update the appropriate
+    # get_*_resource_types method or add a new one for the new monitor category.
 
     # Datastore staged resources
     DATABASE = "Database"
@@ -87,6 +89,8 @@ class StagedResourceType(StrEnum):
     IMAGE_BROWSER_REQUEST = "Image"
     IFRAME_BROWSER_REQUEST = "iFrame"
     JAVASCRIPT_BROWSER_REQUEST = "Javascript tag"
+    # Cloud infrastructure staged resources
+    CLOUD_INFRA = "Cloud Infrastructure"
 
     @staticmethod
     def get_datastore_resource_types() -> List["StagedResourceType"]:
@@ -108,11 +112,20 @@ class StagedResourceType(StrEnum):
             StagedResourceType.JAVASCRIPT_BROWSER_REQUEST,
         ]
 
+    @staticmethod
+    def get_cloud_infra_resource_types() -> List["StagedResourceType"]:
+        return [
+            StagedResourceType.CLOUD_INFRA,
+        ]
+
     def is_datastore_resource(self) -> bool:
         return self in self.get_datastore_resource_types()
 
     def is_website_monitor_resource(self) -> bool:
         return self in self.get_website_monitor_resource_types()
+
+    def is_cloud_infra_resource(self) -> bool:
+        return self in self.get_cloud_infra_resource_types()
 
 
 class SharedMonitorConfig(Base, FidesBase):
@@ -525,10 +538,19 @@ class StagedResourceAncestor(Base):
             db.execute(stmt_text, current_batch)
 
 
-class StagedResource(Base):
+_StagedResourceT = TypeVar("_StagedResourceT", bound="StagedResourceBase")
+
+
+class StagedResourceBase(Base):
     """
-    Base DB model that represents a staged resource, fields common to all types of staged resources
+    Abstract base for all staged resource DB models.
+
+    Contains only the columns meaningful across every monitor type (datastore,
+    website, IDP, cloud infra, …). Monitor-specific columns live on concrete
+    subclasses.
     """
+
+    __abstract__ = True
 
     name = Column(String, nullable=True)
     urn = Column(String, index=True, unique=True, nullable=False)
@@ -539,6 +561,70 @@ class StagedResource(Base):
         index=True,  # indexed because we frequently need to slice by monitor config ID
         nullable=True,
     )  # just a "soft" pointer, for now TODO: make this a FK
+
+    # diff-related fields
+    diff_status = Column(String, nullable=True, index=True)
+
+    # placeholder for additional attributes
+    meta = Column(
+        MutableDict.as_mutable(JSONB),
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )
+
+    @classmethod
+    def get_urn(
+        cls: Type[_StagedResourceT], db: Session, urn: str
+    ) -> Optional[_StagedResourceT]:
+        """Utility to retrieve the staged resource with the given URN"""
+        return cls.get_by(db=db, field="urn", value=urn)  # type: ignore[return-value]
+
+    @classmethod
+    def get_urn_list(
+        cls: Type[_StagedResourceT], db: Session, urns: Iterable[str]
+    ) -> Iterable[_StagedResourceT]:
+        """
+        Utility to retrieve all staged resources with the given URNs
+        """
+        results = db.execute(select(cls).where(cls.urn.in_(urns)))  # type: ignore[attr-defined]
+        return results.scalars().all()
+
+    @classmethod
+    async def get_urn_async(
+        cls: Type[_StagedResourceT], db: AsyncSession, urn: str
+    ) -> Optional[_StagedResourceT]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(cls).where(cls.urn == urn)  # type: ignore[attr-defined]
+        )
+        return results.scalars().first()
+
+    @classmethod
+    async def get_urn_list_async(
+        cls: Type[_StagedResourceT], db: AsyncSession, urns: List[str]
+    ) -> List[_StagedResourceT]:
+        """
+        Utility to retrieve the staged resources with the given URNs using an async session
+        """
+        results = await db.execute(
+            select(cls).where(cls.urn.in_(urns))  # type: ignore[attr-defined]
+        )
+        return results.scalars().all()
+
+
+class StagedResource(StagedResourceBase):
+    """
+    Concrete staged resource model that currently holds datastore, website, and IDP
+    monitor resources in a single shared table.
+
+    TODO: As the monitor surface grows, this table should be split — datastore,
+    website, and IDP resources each into their own extension table (joined-table
+    inheritance from StagedResourceBase), so that type-specific columns like
+    parent/children/is_leaf live where they belong rather than all sharing one wide table.
+    """
 
     # for now, this is just used for web monitor resources.
     system_id = Column(
@@ -589,6 +675,20 @@ class StagedResource(Base):
         default=None,
     )
     user_assigned_system_id = Column(String, nullable=True, index=True)
+    # This field is intentionally nullable to distinguish system-generated descriptions
+    # (value is None) from user-edited descriptions (non-null value). This enables the
+    # frontend to show a sparkle icon only for system-generated descriptions.
+    user_assigned_description = Column(String, nullable=True)
+
+    # Nullable to distinguish "not set" (None, use monitor fallback on promotion)
+    # from "explicitly empty" ([], skip monitor fallback). Same convention as
+    # user_assigned_data_uses.
+    target_system_steward_ids = Column(
+        ARRAY(String),
+        nullable=True,
+        server_default=None,
+        default=None,
+    )
 
     # pointers to child and parent URNs
     children = Column(
@@ -602,9 +702,6 @@ class StagedResource(Base):
     is_leaf = Column(
         Boolean, nullable=True, default=None
     )  # None = not applicable (non-datastore monitors), True = leaf resource, False = non-leaf resource
-
-    # diff-related fields
-    diff_status = Column(String, nullable=True, index=True)
 
     errors: RelationshipProperty[List[StagedResourceError]] = relationship(
         "StagedResourceError",
@@ -663,14 +760,6 @@ class StagedResource(Base):
         result = db.execute(query)
         return list(result.scalars().all())
 
-    # placeholder for additional attributes
-    meta = Column(
-        MutableDict.as_mutable(JSONB),
-        nullable=False,
-        server_default="{}",
-        default=dict,
-    )
-
     data_uses = Column(
         ARRAY(String),
         nullable=True,
@@ -726,52 +815,27 @@ class StagedResource(Base):
         ),
     )
 
-    @classmethod
-    def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
-        """Utility to retrieve the staged resource with the given URN"""
-        return cls.get_by(db=db, field="urn", value=urn)
 
-    @classmethod
-    def get_urn_list(cls, db: Session, urns: Iterable[str]) -> Iterable[StagedResource]:
-        """
-        Utility to retrieve all staged resources with the given URNs
-        """
-        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))
-        return results.scalars().all()
+@event.listens_for(System, "before_delete")
+def _unlink_staged_resources_on_system_delete(
+    mapper: Any, connection: Any, target: System
+) -> None:
+    """Null out system_id and reset diff_status on StagedResources before a System is deleted.
 
-    @classmethod
-    async def get_urn_async(
-        cls, db: AsyncSession, urn: str
-    ) -> Optional[StagedResource]:
-        """
-        Utility to retrieve the staged resource with the given URN using an async session
-        """
-        results = await db.execute(
-            select(StagedResource).where(StagedResource.urn == urn)
-        )
-        return results.scalars().first()
+    StagedResources may reference a System from IDP monitor promotion (app promoted
+    to system) or website monitor vendor matching (resource linked to an existing
+    system by vendor_id).  This listener handles both paths.
 
-    @classmethod
-    async def get_urn_list_async(
-        cls, db: AsyncSession, urns: List[str]
-    ) -> Optional[List[StagedResource]]:
-        """
-        Utility to retrieve the staged resource with the given URN using an async session
-        """
-        results = await db.execute(
-            select(StagedResource).where(StagedResource.urn.in_(urns))
-        )
-        return results.scalars().all()
+    The dependency direction stays correct: the discovery module knows about
+    System (via the FK), not the other way around.
 
-    def mark_as_addition(
-        self,
-        db: Session,
-        parent_resource_urns: Iterable[str] = [],
-    ) -> None:
-        """
-        Marks the resource as an addition
-        """
-        self.diff_status = DiffStatus.ADDITION.value
+    """
+    logger.debug("Unlinking StagedResources from System {} before deletion", target.id)
+    connection.execute(
+        update(StagedResource.__table__)
+        .where(StagedResource.__table__.c.system_id == target.id)
+        .values(system_id=None, diff_status=DiffStatus.ADDITION.value)
+    )
 
 
 class MonitorExecution(Base):

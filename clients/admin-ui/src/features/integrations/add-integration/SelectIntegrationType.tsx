@@ -21,13 +21,7 @@ export const useIntegrationFilters = () => {
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: {
-      awsMonitor,
-      entraMonitor,
-      newIntegrationManagement,
-      webMonitor,
-      alphaJiraIntegration,
-    },
+    flags: { awsMonitor, entraMonitor, webMonitor, jiraIntegration },
   } = useFlags();
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -55,15 +49,7 @@ export const useIntegrationFilters = () => {
       );
     }
 
-    // Filter out SaaS integrations if the new integration management flag is disabled
-    if (!newIntegrationManagement) {
-      staticIntegrations = staticIntegrations.filter(
-        (integration) =>
-          integration.placeholder.connection_type !== ConnectionType.SAAS,
-      );
-    }
-
-    if (!alphaJiraIntegration) {
+    if (!jiraIntegration) {
       staticIntegrations = staticIntegrations.filter(
         (integration) =>
           integration.placeholder.connection_type !==
@@ -80,28 +66,20 @@ export const useIntegrationFilters = () => {
         .map((integration) => integration.placeholder.saas_config?.type),
     );
 
-    const dynamicSaasIntegrations = newIntegrationManagement
-      ? connectionTypes
-          .filter(
-            (ct) => ct.type === "saas" && !existingSaasTypes.has(ct.identifier),
-          )
-          .map((ct) =>
-            getIntegrationTypeInfo(
-              ConnectionType.SAAS,
-              ct.identifier,
-              connectionTypes,
-            ),
-          )
-      : [];
+    const dynamicSaasIntegrations = connectionTypes
+      .filter(
+        (ct) => ct.type === "saas" && !existingSaasTypes.has(ct.identifier),
+      )
+      .map((ct) =>
+        getIntegrationTypeInfo(
+          ConnectionType.SAAS,
+          ct.identifier,
+          connectionTypes,
+        ),
+      );
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [
-    connectionTypes,
-    awsMonitor,
-    entraMonitor,
-    alphaJiraIntegration,
-    newIntegrationManagement,
-  ]);
+  }, [connectionTypes, awsMonitor, entraMonitor, jiraIntegration]);
 
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
@@ -120,19 +98,8 @@ export const useIntegrationFilters = () => {
       }),
     ];
 
-    if (!newIntegrationManagement) {
-      return allCategories.filter((category) => {
-        if (category === "ALL") {
-          return allIntegrationTypes.length > 0;
-        }
-        return allIntegrationTypes.some(
-          (integration) => integration.category === category,
-        );
-      });
-    }
-
     return allCategories;
-  }, [awsMonitor, newIntegrationManagement, webMonitor, allIntegrationTypes]);
+  }, [awsMonitor, webMonitor]);
 
   const filteredTypes = useMemo(() => {
     let filtered = allIntegrationTypes;

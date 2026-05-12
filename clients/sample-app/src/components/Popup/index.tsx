@@ -8,7 +8,7 @@ interface Props {
 
 const Popup = ({ trigger }: Props) => {
   const [className, setClassName] = useState("");
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const onClickClose = useCallback(() => {
     clearTimeout(timeoutRef.current);

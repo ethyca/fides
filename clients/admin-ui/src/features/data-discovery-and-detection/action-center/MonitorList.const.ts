@@ -6,10 +6,10 @@ import {
 } from "nuqs";
 import * as v from "valibot";
 
-import { MONITOR_TYPES } from "./utils/getMonitorType";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 export const MonitorSearchFormQuerySchema = (
-  availableMonitors: Array<MONITOR_TYPES>,
+  availableMonitors: Array<APIMonitorType>,
 ) =>
   v.object({
     search: v.nullish(v.string(), null),
@@ -18,7 +18,7 @@ export const MonitorSearchFormQuerySchema = (
   });
 
 export const SearchFormQueryState = (
-  availableMonitors: Array<MONITOR_TYPES>,
+  availableMonitors: Array<APIMonitorType>,
   id?: string,
 ) =>
   ({

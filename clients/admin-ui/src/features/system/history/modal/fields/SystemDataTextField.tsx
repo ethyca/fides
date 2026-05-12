@@ -31,8 +31,10 @@ const SystemDataTextField = ({
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
   useEffect(() => {
-    const beforeValue = _.get(selectedHistory?.before, props.name) || "";
-    const afterValue = _.get(selectedHistory?.after, props.name) || "";
+    const beforeValue =
+      (_.get(selectedHistory?.before, props.name) as string) || "";
+    const afterValue =
+      (_.get(selectedHistory?.after, props.name) as string) || "";
 
     // Determine whether to highlight
     setShouldHighlight(!_.isEqual(beforeValue, afterValue));

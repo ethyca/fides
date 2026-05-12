@@ -2,9 +2,12 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: visible;
 
   :global(.ant-card-head) {
     flex-shrink: 0;
+    min-height: unset !important;
+    padding: var(--fidesui-padding-lg, 24px) var(--fidesui-padding-lg, 24px) 0 !important;
   }
 
   :global(.ant-card-body) {
@@ -13,20 +16,30 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    overflow: visible;
   }
 }
 
 .radarChartWrapper {
   margin-left: -12px;
   margin-right: -12px;
+  margin-top: 24px;
   flex: 1;
-  min-height: 0;
+  min-height: 220px;
   position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
 }
 
 .radarChartInner {
   position: absolute;
   inset: 0;
+  overflow: visible;
+
+  :global(.recharts-wrapper),
+  :global(.recharts-surface) {
+    overflow: visible !important;
+  }
 
   :global(.recharts-radar-polygon) {
     pointer-events: none;
@@ -38,26 +51,52 @@
   }
 }
 
-.scoreOverlay {
-  position: absolute;
-  top: var(--ant-padding-lg, 24px);
-  left: var(--ant-padding-lg, 24px);
-  z-index: 1;
-  pointer-events: auto;
-}
-
-.clickableScore {
+.clickableAlert {
   cursor: pointer;
   transition: opacity 0.15s ease;
 
   &:hover {
-    opacity: 0.7;
+    opacity: 0.85;
   }
+}
+
+.scoreValue {
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1;
+  font-family: var(--fidesui-font-family-code);
+}
+
+.scoreDenominator {
+  font-size: 20px;
+  font-weight: 400;
+  opacity: 0.4;
+  margin-left: 2px;
+}
+
+.summaryAlert {
+  flex-shrink: 0;
+}
+
+.summaryText {
+  font-size: var(--fidesui-font-size);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+
+.viewDetailsCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--fidesui-color-text);
+  white-space: nowrap;
+  font-weight: 500;
 }
 
 .alertSm {
   :global(.ant-alert-message) {
-    font-size: var(--ant-font-size-sm);
+    font-size: var(--fidesui-font-size-sm);
   }
 }
 
@@ -76,5 +115,5 @@
 }
 
 .radarTooltip {
-  font-size: var(--ant-font-size-sm, 12px);
+  font-size: var(--fidesui-font-size-sm, 12px);
 }

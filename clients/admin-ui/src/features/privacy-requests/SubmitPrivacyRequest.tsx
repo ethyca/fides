@@ -1,8 +1,10 @@
 import {
-  ChakraStack as Stack,
+  Button,
   Dropdown,
+  Flex,
   Icons,
   Modal,
+  Space,
   useMessage,
 } from "fidesui";
 import { useState } from "react";
@@ -38,7 +40,7 @@ const SubmitPrivacyRequestModal = ({
     const { is_verified, ...rest } = values;
     const customFields = rest.custom_privacy_request_fields
       ? Object.entries(rest.custom_privacy_request_fields)
-          .map(([fieldName, fieldInfo]) =>
+          .map(([fieldName, fieldInfo]: [string, any]) =>
             fieldInfo.value ? { [fieldName]: fieldInfo } : {},
           )
           .reduce((acc, next) => ({ ...acc, ...next }), {})
@@ -72,13 +74,13 @@ const SubmitPrivacyRequestModal = ({
       title="Create privacy request"
       footer={null}
     >
-      <Stack spacing={4}>
+      <Flex vertical gap="large">
         <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
         <SubmitPrivacyRequestForm
           onSubmit={handleSubmit}
           onCancel={() => onClose()}
         />
-      </Stack>
+      </Flex>
     </Modal>
   );
 };
@@ -101,7 +103,6 @@ const PrivacyRequestLinkModal = ({
       title="Create a Privacy Request Link"
       footer={null}
     >
-      <Stack spacing={4} />
       <CopyPrivacyRequestLinkForm
         privacyCenterUrl={privacyCenterUrl}
         onSubmit={onClose}
@@ -128,36 +129,41 @@ const SubmitPrivacyRequest = () => {
 
   return (
     <>
-      {hasPrivacyCenterUrl ? (
+      {hasPrivacyCenterUrl && (
         <PrivacyRequestLinkModal
           isOpen={createLinkOpen}
           onClose={handleClose}
           privacyCenterUrl={privacyCenterUrl}
         />
-      ) : null}
+      )}
       <SubmitPrivacyRequestModal
         isOpen={submitRequestOpen}
         onClose={handleClose}
       />
-      <Dropdown.Button
-        type="primary"
-        onClick={handleSubmitRequestOpen}
-        data-testid="submit-request-btn"
-        menu={{
-          items: [
-            {
-              label: "Create request link",
-              key: "create-request-link",
-              icon: <Icons.Link />,
-              onClick: handleCreateLinkOpen,
-              disabled: !hasPrivacyCenterUrl,
-            },
-          ],
-        }}
-        icon={<Icons.ChevronDown />}
-      >
-        Create request
-      </Dropdown.Button>
+      <Space.Compact data-testid="submit-request-btn">
+        <Button type="primary" onClick={handleSubmitRequestOpen}>
+          Create request
+        </Button>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                label: "Create request link",
+                key: "create-request-link",
+                icon: <Icons.Link />,
+                onClick: handleCreateLinkOpen,
+                disabled: !hasPrivacyCenterUrl,
+              },
+            ],
+          }}
+        >
+          <Button
+            type="primary"
+            icon={<Icons.ChevronDown />}
+            aria-label="More privacy request options"
+          />
+        </Dropdown>
+      </Space.Compact>
     </>
   );
 };

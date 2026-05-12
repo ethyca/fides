@@ -1,4 +1,4 @@
-import { ChakraBox as Box, ChakraHStack as HStack } from "fidesui";
+import { Flex } from "fidesui";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -36,16 +36,16 @@ const PasswordManagement = () => {
   }
 
   return (
-    <Box>
+    <div>
       {activeUserId ? (
-        <HStack>
+        <Flex gap={8}>
           {isOwnProfile ? <UpdatePasswordModal id={activeUserId} /> : null}
           <Restrict scopes={[ScopeRegistryEnum.USER_PASSWORD_RESET]}>
             <NewPasswordModal id={activeUserId} />
           </Restrict>
-        </HStack>
+        </Flex>
       ) : null}
-    </Box>
+    </div>
   );
 };
 

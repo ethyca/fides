@@ -1,5 +1,4 @@
 import copy
-from abc import ABC
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from pydantic import (
@@ -13,8 +12,16 @@ from pydantic import (
 
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.custom_field_display_validator import (
+    DisplayConditionValidator,
+)
+from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
 
 RequiredType = Literal["optional", "required"]
+
+CustomFieldType = Literal[
+    "text", "select", "multiselect", "checkbox", "checkbox_group", "textarea"
+]
 
 
 class PrivacyCenterLink(FidesSchema):
@@ -54,34 +61,27 @@ class IdentityInputs(FidesSchema):
         super().__init__(**data)
 
 
-class BaseCustomPrivacyRequestField(FidesSchema, ABC):
-    """Abstract base class for all custom privacy request fields"""
+class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
+    """Regular custom privacy request field supporting text, select, multiselect,
+    checkbox, checkbox_group, and textarea types"""
 
-    label: str
-    required: Optional[bool] = True
-    default_value: Optional[str] = None
-    hidden: Optional[bool] = False
-    query_param_key: Optional[str] = None
+    field_type: Optional[CustomFieldType] = None
+    options: Optional[List[str]] = None
 
     @model_validator(mode="before")
     @classmethod
-    def validate_default_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if (
-            values.get("hidden")
-            and values.get("default_value") is None
-            and values.get("query_param_key") is None
-        ):
+    def validate_field_type_constraints(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        field_type = values.get("field_type")
+        if field_type == "checkbox_group" and not values.get("options"):
+            raise ValueError("checkbox_group fields require at least one option")
+        if field_type in ("checkbox", "textarea") and values.get("options"):
+            raise ValueError(f"{field_type} fields do not support options")
+        if field_type in ("multiselect", "checkbox_group") and values.get("hidden"):
             raise ValueError(
-                "default_value or query_param_key are required when hidden is True"
+                f"{field_type} fields cannot be hidden: default_value does not "
+                "support list values"
             )
         return values
-
-
-class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
-    """Regular custom privacy request field supporting text, select, and multiselect types"""
-
-    field_type: Optional[Literal["text", "select", "multiselect"]] = None
-    options: Optional[List[str]] = None
 
 
 class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
@@ -129,7 +129,20 @@ CustomPrivacyRequestFieldUnion = Annotated[
 ]
 
 
-class PrivacyRequestOption(FidesSchema):
+class _HasDisplayConditions:
+    """Mixin giving any schema that carries ``custom_privacy_request_fields``
+    a save-time validator over attached ``display_condition`` rules.
+    """
+
+    @model_validator(mode="after")
+    def validate_display_conditions(self) -> "_HasDisplayConditions":
+        fields = getattr(self, "custom_privacy_request_fields", None)
+        if fields:
+            DisplayConditionValidator(fields).validate()
+        return self
+
+
+class PrivacyRequestOption(_HasDisplayConditions, FidesSchema):
     locations: Optional[Union[List[PrivacyNoticeRegion], Literal["fallback"]]] = None
     policy_key: Optional[str] = None
     icon_path: str
@@ -142,9 +155,16 @@ class PrivacyRequestOption(FidesSchema):
     custom_privacy_request_fields: Optional[
         Dict[str, CustomPrivacyRequestFieldUnion]
     ] = None
+    verification_title: Optional[str] = None
+    verification_description: Optional[str] = None
+    verification_submit_button_text: Optional[str] = None
+    verification_resend_button_text: Optional[str] = None
+    success_title: Optional[str] = None
+    success_description: Optional[str] = None
+    success_button_text: Optional[str] = None
 
 
-class ConsentConfigButton(FidesSchema):
+class ConsentConfigButton(_HasDisplayConditions, FidesSchema):
     description: str
     description_subtext: Optional[List[str]] = None
     confirm_button_text: Optional[str] = Field(alias="confirmButtonText", default=None)
@@ -209,6 +229,12 @@ class PolicyUnavailableMessages(FidesSchema):
     action_link: str
 
 
+class MetricsConfig(FidesSchema):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    link_text: Optional[str] = None
+
+
 class PrivacyCenterConfig(FidesSchema):
     """
     NOTE: Add to this schema with care. Any fields added to
@@ -227,7 +253,7 @@ class PrivacyCenterConfig(FidesSchema):
     logo_url: Optional[str] = None
     favicon_path: Optional[str] = None
     page_title: Optional[str] = None
-    actions: List[PrivacyRequestOption]
+    actions: List[PrivacyRequestOption] = []
     include_consent: Optional[bool] = Field(alias="includeConsent", default=None)
     consent: ConsentConfig
     # Deprecated: prefer `links`. Kept for backwards compatibility.
@@ -236,9 +262,23 @@ class PrivacyCenterConfig(FidesSchema):
     privacy_policy_url_text: Optional[str] = None
     links: List[PrivacyCenterLink] = []
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
+    metrics: Optional[MetricsConfig] = None
+    error_message: Optional[str] = None
+
+    @field_validator(
+        "server_url_development",
+        "server_url_production",
+        "logo_url",
+        "privacy_policy_url",
+    )
+    @classmethod
+    def validate_url_fields(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not v.startswith(("http://", "https://")):
+            raise ValueError("URL must use the http or https scheme")
+        return v
 
 
-class PartialPrivacyRequestOption(FidesSchema):
+class PartialPrivacyRequestOption(_HasDisplayConditions, FidesSchema):
     policy_key: str
     title: str
     identity_inputs: Optional[IdentityInputs] = None
@@ -250,7 +290,7 @@ class PartialPrivacyRequestOption(FidesSchema):
 class PartialPrivacyCenterConfig(FidesSchema):
     """Partial schema for the Admin UI privacy request submission."""
 
-    actions: List[PartialPrivacyRequestOption]
+    actions: List[PartialPrivacyRequestOption] = []
 
 
 def reorder_custom_privacy_request_fields(config: dict[str, Any]) -> dict[str, Any]:

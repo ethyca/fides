@@ -1,39 +1,50 @@
 "use client";
 
-import { Button, Flex, Image, Text } from "fidesui";
+import { Button, Flex, Image, Text, Title } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
+
+import useActionFromRoute from "~/common/hooks/useActionFromRoute";
 
 const RequestSubmittedPage = () => {
   const router = useRouter();
   const params = useParams();
   const propertyPath = params?.propertyPath as string | undefined;
   const basePath = propertyPath ? `/${propertyPath}` : "";
+  const actionKey = params?.actionKey as string | undefined;
+  const action = useActionFromRoute(actionKey);
 
   const handleContinue = () => {
     router.push(basePath || "/");
   };
 
   return (
-    <Flex gap="medium" vertical align="center">
+    <Flex className="pc-success" gap="medium" vertical align="center">
       <Image
+        className="pc-success__icon"
         src="/green-check.svg"
         alt="green-checkmark"
         width="48px"
         height="48px"
         preview={false}
       />
-      <Text style={{ textAlign: "center" }}>
-        Thanks for your request. A member of our team will review and be in
-        contact with you shortly.
+      {action?.success_title && (
+        <Title level={3} style={{ textAlign: "center", margin: 0 }}>
+          {action.success_title}
+        </Title>
+      )}
+      <Text className="pc-success__message" style={{ textAlign: "center" }}>
+        {action?.success_description ??
+          "Thanks for your request. A member of our team will review and be in contact with you shortly."}
       </Text>
       <Button
+        className="pc-button pc-button--return"
         type="primary"
         onClick={handleContinue}
         block
         style={{ marginTop: "24px" }}
       >
-        Return home
+        {action?.success_button_text ?? "Return home"}
       </Button>
     </Flex>
   );

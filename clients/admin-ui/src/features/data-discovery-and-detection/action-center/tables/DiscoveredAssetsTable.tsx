@@ -209,7 +209,7 @@ export const DiscoveredAssetsTable = ({
             >
               <Button
                 icon={<Icons.ChevronDown />}
-                iconPosition="end"
+                iconPlacement="end"
                 loading={anyBulkActionIsLoading}
                 data-testid="bulk-actions-menu"
                 disabled={
@@ -234,7 +234,7 @@ export const DiscoveredAssetsTable = ({
                 loading={isAddingAllResults}
                 type="primary"
                 icon={<Icons.Checkmark />}
-                iconPosition="end"
+                iconPlacement="end"
                 data-testid="add-all"
               >
                 Add all

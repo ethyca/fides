@@ -149,6 +149,10 @@ declare global {
        */
       getAntModalClose: () => Chainable;
       /**
+       * Get the drawer component
+       */
+      getAntDrawer: () => Chainable;
+      /**
        * Get the close button from an Ant Design Drawer component
        * @example cy.getAntDrawerClose().click();
        */
@@ -187,6 +191,13 @@ declare global {
         type: "success" | "error" | "info" | "warning",
         text?: string,
       ) => Chainable;
+
+      /**
+       * Get the validation error message for an Ant Design Form.Item by field name
+       * @param fieldName The name attribute of the Form.Item
+       * @example cy.getAntFormError("email").should("contain", "Email is required");
+       */
+      getAntFormError: (fieldName: string) => Chainable;
     }
   }
 }
@@ -416,6 +427,7 @@ Cypress.Commands.add("getAntModalConfirmButtons", () =>
 Cypress.Commands.add("getAntModalClose", () =>
   cy.get(`.ant-modal-close:visible`),
 );
+Cypress.Commands.add("getAntDrawer", () => cy.get(`.ant-drawer-open`));
 Cypress.Commands.add("getAntDrawerClose", () => cy.get(".ant-drawer-close"));
 Cypress.Commands.add("getAntDrawerHeader", () => cy.get(".ant-drawer-header"));
 Cypress.Commands.add("getAntDrawerFooter", () => cy.get(".ant-drawer-footer"));
@@ -441,6 +453,10 @@ Cypress.Commands.add(
       cy.get(selector).should("contain", text);
     }
   },
+);
+
+Cypress.Commands.add("getAntFormError", (fieldName: string) =>
+  cy.get(`#${fieldName}_help .ant-form-item-explain-error`),
 );
 
 export {};

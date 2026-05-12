@@ -58,9 +58,11 @@ export const ViolationRateCard = () => {
               precision={1}
               prefix={getTrendPrefix(trend)}
               suffix="% vs last mo"
-              valueStyle={{
-                color: getTrendColor(trend, token),
-                fontSize: token.fontSizeSM,
+              styles={{
+                content: {
+                  color: getTrendColor(trend, token),
+                  fontSize: token.fontSizeSM,
+                },
               }}
             />
           </Flex>

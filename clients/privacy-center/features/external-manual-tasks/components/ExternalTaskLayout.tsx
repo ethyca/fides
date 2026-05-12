@@ -7,7 +7,6 @@
  */
 
 import { Button, Card, Flex, Typography } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 import BrandLink from "~/components/BrandLink";
 import { useConfig } from "~/features/common/config.slice";
@@ -46,7 +45,7 @@ export const ExternalTaskLayout = () => {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: palette.FIDESUI_NEUTRAL_75,
+        backgroundColor: "var(--fidesui-neutral-75)",
         padding: "32px 16px",
         position: "relative",
       }}

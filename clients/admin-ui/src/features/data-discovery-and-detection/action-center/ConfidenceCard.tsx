@@ -1,9 +1,10 @@
 import { Avatar, Button, Card, Icons, Space, SparkleIcon, Text } from "fidesui";
-import NextLink from "next/link";
 import { ReactNode } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { nFormatter, pluralize } from "~/features/common/utils";
+import { APIMonitorType } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { useConfirmAllFields } from "./fields/useConfirmAllFields";
@@ -19,6 +20,7 @@ interface ConfidenceCardProps {
   item: ConfidenceCardItem;
   reviewHref: string;
   monitorId: string;
+  monitorType: APIMonitorType;
 }
 
 interface GetActionsParams {
@@ -33,12 +35,11 @@ const getActions = ({
   onConfirmAll,
 }: GetActionsParams): ReactNode[] => {
   const actions: ReactNode[] = [
-    <NextLink
+    <RouterLink
       href={{
         pathname: reviewHref,
-        query: { confidenceBucket: item.severity },
+        query: { confidence_bucket: item.severity },
       }}
-      passHref
       key={item.label}
     >
       <Button
@@ -49,7 +50,7 @@ const getActions = ({
       >
         Review
       </Button>
-    </NextLink>,
+    </RouterLink>,
   ];
   if (item.severity === ConfidenceBucket.HIGH && onConfirmAll) {
     actions.push(
@@ -72,10 +73,10 @@ export const ConfidenceCard = ({
   item,
   reviewHref,
   monitorId,
+  monitorType,
 }: ConfidenceCardProps) => {
   const severity = mapConfidenceBucketToSeverity(item.severity);
-  const { confirmAll } = useConfirmAllFields(monitorId);
-
+  const { confirmAll } = useConfirmAllFields(monitorId, monitorType);
   const handleConfirmAll = () => {
     confirmAll(item.severity, item.count);
   };

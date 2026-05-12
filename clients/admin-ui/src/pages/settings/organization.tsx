@@ -14,7 +14,7 @@ import { OrganizationForm } from "~/features/organization/OrganizationForm";
 import { ScopeRegistryEnum } from "~/types/api";
 
 const OrganizationPage: NextPage = () => {
-  const { data: organization } = useGetOrganizationByFidesKeyQuery(
+  const { data: organization, isLoading } = useGetOrganizationByFidesKeyQuery(
     DEFAULT_ORGANIZATION_FIDES_KEY,
   );
   const { plus: hasPlus } = useFeatures();
@@ -29,9 +29,7 @@ const OrganizationPage: NextPage = () => {
             including key information that will be recorded in the RoPA (Record
             of Processing Activities).
           </Text>
-          <Box background="gray.50" padding={2}>
-            <OrganizationForm organization={organization} />
-          </Box>
+          <OrganizationForm organization={organization} isLoading={isLoading} />
           {hasPlus && (
             <Restrict scopes={[ScopeRegistryEnum.OPENID_PROVIDER_CREATE]}>
               <OpenIDAuthenticationSection />

@@ -1,31 +1,41 @@
 """All PBAC types: input types, engine types, and service boundary types.
 
-These types are plain dataclasses with zero external dependencies — directly
-serializable to JSON or protobuf.  They are the shared contract between the
-SQL parser, platform connectors, the evaluation engine, and the service layer.
+Plain dataclasses with minimal external dependencies — the shared contract
+between the SQL parser, platform connectors, the evaluation engine, and the
+service layer.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from fides.service.pbac.consumers.entities import DataConsumerEntity
 
 # ── Input types ────────────────────────────────────────────────────────
 
 
 @dataclass
 class TableRef:
-    """A reference to a table in an external data platform."""
+    """A reference to a table in an external data platform.
 
-    project: str
-    dataset: str
+    Uses standard SQL catalog terminology:
+    - catalog: GCP project, Snowflake database, Databricks catalog
+    - schema: BQ dataset, Snowflake schema, Databricks schema
+    - table: table name
+    """
+
+    catalog: str
+    schema: str
     table: str
 
     @property
     def qualified_name(self) -> str:
         """Full dot-separated identifier."""
-        parts = [p for p in (self.project, self.dataset, self.table) if p]
+        parts = [p for p in (self.catalog, self.schema, self.table) if p]
         return ".".join(parts)
 
 
@@ -39,12 +49,11 @@ class RawQueryLogEntry:
 
     source_id: str
     external_job_id: str
-    user_email: str
     query_text: str
     statement_type: str
     referenced_tables: list[TableRef]
     timestamp: datetime
-    principal_subject: str | None = None
+    identity: str  # The user who ran the query (email, login name, IAM ARN)
     raw_payload: dict[str, Any] = field(default_factory=dict)
 
 
@@ -82,25 +91,32 @@ class DatasetPurposes:
         return base
 
 
+# ── Enums ─────────────────────────────────────────────────────────────
+
+
+class GapType(str, Enum):
+    """Types of PBAC coverage gaps."""
+
+    UNRESOLVED_IDENTITY = "unresolved_identity"
+    UNCONFIGURED_CONSUMER = "unconfigured_consumer"
+    UNCONFIGURED_DATASET = "unconfigured_dataset"
+
+
+# ── Violations and gaps ───────────────────────────────────────────────
+
+
 @dataclass(frozen=True)
-class QueryAccess:
-    """A single query event to validate."""
+class PurposeViolation:
+    """A purpose-based access violation.
 
-    query_id: str
-    consumer_id: str
-    dataset_keys: tuple[str, ...]
-    timestamp: datetime
-    collections: dict[str, tuple[str, ...]] = field(
-        default_factory=dict
-    )  # dataset_key -> (collection_names)
-    raw_query: str | None = None
+    Produced by the evaluation engine. The service layer enriches
+    ``data_use`` and ``control`` before returning to callers.
+    ``suppressed_by_policy`` / ``suppressed_by_action`` are set by the
+    pipeline's policy-filter step when an ALLOW policy matches — the
+    violation is kept in the record for audit but callers treating
+    suppressed violations as compliant should check these fields.
+    """
 
-
-@dataclass(frozen=True)
-class Violation:
-    """A single purpose-based access violation."""
-
-    query_id: str
     consumer_id: str
     consumer_name: str
     dataset_key: str
@@ -108,56 +124,58 @@ class Violation:
     consumer_purposes: frozenset[str]
     dataset_purposes: frozenset[str]
     reason: str
+    data_use: str | None = None  # resolved by service, not engine
+    control: str | None = None  # set by service, not engine
+    suppressed_by_policy: str | None = None  # set by pipeline filter
+    suppressed_by_action: str | None = None  # action.message on ALLOW
+
+
+@dataclass(frozen=True)
+class EvaluationGap:
+    """A gap in PBAC coverage — incomplete configuration, not a policy violation.
+
+    Gaps are immutable records. When the underlying configuration is
+    addressed (user mapped to consumer, dataset gets purposes), future
+    queries are evaluated correctly — but historical gaps remain as-is
+    for auditability.
+    """
+
+    gap_type: GapType
+    identifier: str  # the user email or dataset key
+    dataset_key: str | None
+    reason: str
+
+
+# ── Engine output ─────────────────────────────────────────────────────
 
 
 @dataclass
-class ValidationResult:
-    """The result of validating a query against purpose assignments."""
+class PurposeEvaluationResult:
+    """Output from evaluate_purpose() before policy filtering and enrichment."""
 
-    violations: list[Violation]
-    is_compliant: bool
+    violations: list[PurposeViolation]
+    gaps: list[EvaluationGap]
     total_accesses: int
-    checked_at: datetime
 
 
 # ── Service boundary types ─────────────────────────────────────────────
 
 
 @dataclass(frozen=True)
-class ResolvedConsumer:
-    """Consumer identity as resolved by the evaluation service."""
+class EvaluationRecord:
+    """Complete record of evaluating a RawQueryLogEntry.
 
-    id: str | None  # None if unresolved
-    name: str  # email if unresolved
-    email: str | None
-    type: str  # "group", "project", "system", "unresolved"
-    external_id: str | None  # reference to outside user groups or roles
-    system_fides_key: str | None
-    purpose_fides_keys: tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class EvaluationViolation:
-    """A single violation produced by evaluation."""
-
-    dataset_key: str
-    collection: str | None
-    consumer_purposes: tuple[str, ...]
-    dataset_purposes: tuple[str, ...]
-    data_use: str | None  # resolved from dataset purposes
-    reason: str
-    control: str  # "purpose_restriction" for PBAC
-
-
-@dataclass(frozen=True)
-class EvaluationResult:
-    """Complete result of evaluating a RawQueryLogEntry."""
+    Assembled by the service layer after identity resolution, purpose
+    evaluation, data_use enrichment, and policy filtering.
+    """
 
     query_id: str
-    consumer: ResolvedConsumer
+    identity: str  # the user who ran the query
+    consumer: DataConsumerEntity | None  # None if unresolved
     dataset_keys: tuple[str, ...]
     is_compliant: bool
-    violations: tuple[EvaluationViolation, ...]
+    violations: tuple[PurposeViolation, ...]
+    gaps: tuple[EvaluationGap, ...]
     total_accesses: int
     timestamp: datetime
     query_text: str | None

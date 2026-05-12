@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { fides__api__schemas__privacy_center_config__ConsentConfig } from "./fides__api__schemas__privacy_center_config__ConsentConfig";
+import type { MetricsConfig } from "./MetricsConfig";
 import type { PrivacyCenterLink } from "./PrivacyCenterLink";
 import type { PrivacyRequestOption } from "./PrivacyRequestOption";
 
@@ -23,7 +24,7 @@ export type PrivacyCenterConfig = {
   logo_url?: string | null;
   favicon_path?: string | null;
   page_title?: string | null;
-  actions: Array<PrivacyRequestOption>;
+  actions?: Array<PrivacyRequestOption>;
   includeConsent?: boolean | null;
   consent: fides__api__schemas__privacy_center_config__ConsentConfig;
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
@@ -31,4 +32,6 @@ export type PrivacyCenterConfig = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string | null;
   links?: Array<PrivacyCenterLink>;
+  metrics?: MetricsConfig | null;
+  error_message?: string | null;
 };

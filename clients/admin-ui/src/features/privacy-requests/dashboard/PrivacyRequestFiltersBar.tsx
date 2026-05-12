@@ -1,21 +1,21 @@
 import dayjs from "dayjs";
 import {
+  antTheme,
   DatePicker,
   DisplayValueType,
   Flex,
   LocationSelect,
   Select,
+  Switch,
 } from "fidesui";
 import { useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import {
-  SubjectRequestActionTypeOptions,
-  SubjectRequestStatusOptions,
-} from "~/features/privacy-requests/constants";
+import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
 import PrivacyRequestSortMenu, {
   SortParams,
 } from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
+import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
@@ -30,6 +30,7 @@ interface PrivacyRequestFiltersBarProps {
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
     location: string | null;
+    include_consent_webhook_requests: boolean | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   };
   setFilters: (filters: {
@@ -39,6 +40,7 @@ interface PrivacyRequestFiltersBarProps {
     status?: PrivacyRequestStatus[] | null;
     action_type?: ActionType[] | null;
     location?: string | null;
+    include_consent_webhook_requests?: boolean | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   }) => void;
   sortState: SortParams;
@@ -51,6 +53,9 @@ export const PrivacyRequestFiltersBar = ({
   sortState,
   setSortState,
 }: PrivacyRequestFiltersBarProps) => {
+  const { token } = antTheme.useToken();
+  const actionTypeOptions = useSubjectRequestActionTypeOptions();
+
   // Fetch privacy center config to get custom fields
   const { data: config } = useGetPrivacyCenterConfigQuery();
 
@@ -153,7 +158,7 @@ export const PrivacyRequestFiltersBar = ({
       <Select
         mode="multiple"
         placeholder="Request type"
-        options={SubjectRequestActionTypeOptions}
+        options={actionTypeOptions}
         value={filters.action_type || []}
         onChange={handleActionTypeChange}
         allowClear
@@ -174,6 +179,25 @@ export const PrivacyRequestFiltersBar = ({
         popupMatchSelectWidth={300}
         includeCountryOnlyOptions
       />
+      <Flex align="center" gap={4}>
+        <Switch
+          size="small"
+          checked={filters.include_consent_webhook_requests || false}
+          onChange={(checked) =>
+            setFilters({ include_consent_webhook_requests: checked || null })
+          }
+          data-testid="include-consent-webhook-requests"
+        />
+        <span
+          style={{
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            color: token.colorTextSecondary,
+          }}
+        >
+          Consent webhooks
+        </span>
+      </Flex>
       {/* Custom fields filters */}
       {Object.entries(uniqueCustomFields).map(
         ([fieldName, fieldDefinition]) => (

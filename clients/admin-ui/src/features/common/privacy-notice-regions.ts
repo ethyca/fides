@@ -323,10 +323,6 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.GLOBAL]: "Global",
   };
 
-export const PRIVACY_NOTICE_REGION_MAP = new Map(
-  Object.entries(PRIVACY_NOTICE_REGION_RECORD),
-);
-
 export const PRIVACY_NOTICE_REGION_OPTIONS = Object.entries(
   PRIVACY_NOTICE_REGION_RECORD,
 ).map((entry) => ({

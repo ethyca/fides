@@ -89,7 +89,6 @@ class TestPolicyEvaluationResult:
         assert result.unless_triggered is False
         assert result.evaluated_policies == []
         assert result.action is None
-        assert result.reason is None
 
     def test_allow_with_policy(self) -> None:
         result = PolicyEvaluationResult(
@@ -115,12 +114,10 @@ class TestPolicyEvaluationResult:
             decisive_policy_key="block_third_party_ads",
             decisive_policy_priority=200,
             action=PolicyAction(message="Third-party advertising is not permitted."),
-            reason="Policy explicitly denies this data use.",
         )
         assert result.decision == PolicyDecision.DENY
         assert result.action is not None
         assert result.action.message == "Third-party advertising is not permitted."
-        assert result.reason is not None
 
 
 class TestEvaluatedPolicyInfo:

@@ -1,5 +1,5 @@
 import type { ThemeMode } from "fidesui";
-import { Icons, Segmented, useThemeMode } from "fidesui";
+import { Button, Icons, Segmented, useThemeMode } from "fidesui";
 
 // NOTE: This button is temporary, only for testing in dev.
 
@@ -21,6 +21,20 @@ export const ThemeModeSegmented = () => {
           value: "dark",
         },
       ]}
+    />
+  );
+};
+
+export const ThemeModeToggle = () => {
+  const { resolvedMode, setMode } = useThemeMode();
+  const isDark = resolvedMode === "dark";
+  return (
+    <Button
+      type="text"
+      size="small"
+      icon={isDark ? <Icons.Light size={16} /> : <Icons.Asleep size={16} />}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={() => setMode(isDark ? "light" : "dark")}
     />
   );
 };

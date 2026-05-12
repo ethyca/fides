@@ -1,195 +1,128 @@
 # Purpose-Based Access Control (PBAC)
 
-Open-source evaluation service for purpose-based data access control. Determines whether a data consumer has the declared purposes required to access datasets, collections, and fields.
+Evaluates whether a data consumer has the declared purposes required to access datasets. Produces three outcomes per query: **compliant**, **violation** (purpose mismatch), or **gap** (incomplete configuration).
 
-## Quick Start
-
-### 1. Register consumers (who accesses data)
+## How a query is evaluated
 
 ```
-POST /api/v1/data-consumer
-{
-  "name": "Analytics Team",
-  "type": "group",
-  "external_id": "analytics-team",
-  "contact_email": "analytics-lead@company.com",
-  "members": ["analyst@company.com", "lead@company.com"]
-}
-```
-
-### 2. Define purposes (why data is accessed)
-
-```
-POST /api/v1/data-purpose
-{
-  "fides_key": "marketing_analytics",
-  "name": "Marketing Analytics",
-  "data_use": "marketing.advertising"
-}
-```
-
-### 3. Assign purposes to consumers
-
-```
-PUT /api/v1/data-consumer/{id}/purposes
-{ "purpose_fides_keys": ["marketing_analytics"] }
-```
-
-### 4. Annotate datasets with purposes
-
-Datasets declare their allowed purposes via fideslang `data_purposes` on datasets, collections, and fields.
-
-### 5. Evaluate a SQL query
-
-```
-POST /api/v1/pbac/evaluate
-{
-  "query_text": "SELECT email, purchase_history FROM customers.orders",
-  "user_identity": "analyst@company.com"
-}
-```
-
-Response:
-
-```json
-{
-  "query_id": "abc-123",
-  "is_compliant": false,
-  "consumer": {
-    "name": "Analytics Team",
-    "external_id": "analytics-team",
-    "purpose_fides_keys": ["marketing_analytics"]
-  },
-  "violations": [
-    {
-      "dataset_key": "customers",
-      "consumer_purposes": ["marketing_analytics"],
-      "dataset_purposes": ["billing_operations"],
-      "reason": "Consumer purposes do not overlap with dataset purposes",
-      "control": "purpose_restriction"
-    }
-  ]
-}
-```
-
-## How It Works
-
-```
-raw SQL
-  |
-  v
-SQL Parser (sqlglot) -- extracts table references
-  |
-  v
-RawQueryLogEntry
-  |
-  v
-PBACEvaluationService
-  |
-  +-- 1. Identity Resolution
-  |     user email --> consumer (via contact_email, external_id, or members list)
-  |
-  +-- 2. Dataset Resolution
-  |     table references --> fides dataset keys
-  |
-  +-- 3. Purpose Map
-  |     consumer --> declared purposes
-  |     dataset  --> declared purposes
-  |
-  +-- 4. PBAC Engine
-  |     Do consumer purposes overlap with dataset purposes?
-  |       yes --> COMPLIANT
-  |       no  --> VIOLATION
-  |
-  +-- 5. Policy v2 Engine (optional)
-  |     Does any access policy override the violation?
-  |       ALLOW       --> suppress violation
-  |       DENY        --> confirm violation
-  |       NO_DECISION --> confirm violation
-  |
-  v
-EvaluationResult
+RawQueryLogEntry { identity: "analyst@co.com", referenced_tables: [...], query_text: "..." }
+  │
+  ▼
+InProcessPBACEvaluationService.evaluate(entry)
+  │
+  ├─ 1. Identity Resolution
+  │    IdentityResolver.resolve("analyst@co.com") → DataConsumerEntity | None
+  │
+  ├─ 2. Dataset Resolution
+  │    DatasetResolver.resolve(TableRef) → fides_key | None
+  │
+  ├─ 3. Engine: evaluate_purpose(consumer_purposes, datasets)
+  │    │
+  │    ├─ Consumer has no purposes → GAP (unresolved_identity)
+  │    ├─ Dataset has no purposes  → GAP (unconfigured_dataset)
+  │    ├─ Purposes overlap         → COMPLIANT
+  │    └─ Purposes don't overlap   → VIOLATION
+  │
+  ├─ 4. Gap Reclassification
+  │    Consumer found but no purposes → GAP (unconfigured_consumer)
+  │
+  ├─ 5. Policy Override (optional)
+  │    AccessPolicyEvaluator.evaluate(request) → ALLOW / DENY / NO_DECISION
+  │    Only runs when step 3 found a violation. ALLOW suppresses it.
+  │
+  ▼
+EvaluationRecord
+  identity: str
+  consumer: DataConsumerEntity | None
   is_compliant: bool
-  violations: [...]
+  violations: [PurposeViolation, ...]
+  gaps: [EvaluationGap, ...]
 ```
 
-## Identity Resolution
+### Three outcomes
 
-The system resolves who is running a query by matching the user identity against registered consumers.
+| Outcome | Meaning |
+|---------|---------|
+| **Compliant** | Purposes overlap, access authorized |
+| **Violation** | Purposes don't overlap, policy breach |
+| **Gap** | Can't evaluate — config incomplete |
 
-**Resolution chain (in order):**
+Gaps are not violations. They indicate incomplete configuration — either the user isn't mapped to a consumer (`unresolved_identity`), the consumer has no purposes assigned (`unconfigured_consumer`), or the dataset doesn't have purposes configured (`unconfigured_dataset`). Gaps are immutable records. When the underlying configuration is addressed, future queries are evaluated correctly — but historical gaps remain for auditability.
 
-1. **contact_email** -- exact match on the consumer's contact email
-2. **external_id** -- match on the consumer's external identifier (group name, role ID, etc.)
+## Extension points
 
-> **Note:** Members-based resolution (matching by members list) is not yet implemented in the OSS path. The `RedisIdentityResolver` currently supports steps 1 and 2 only.
+All collaborators are injected via constructor. Defaults are provided for each.
 
-If no consumer matches, the user is marked as "unresolved" with no declared purposes, which means all dataset accesses are violations.
+| Interface | Kind | What it does | Default |
+|-----------|------|-------------|---------|
+| `IdentityResolver` | Protocol | `resolve(str) → DataConsumerEntity \| None` | `RedisIdentityResolver` |
+| `DatasetResolver` | Class | `resolve(TableRef) → fides_key \| None` | `DatasetResolver()` |
+| `AccessPolicyEvaluator` | Protocol | `evaluate(request) → PolicyEvaluationResult` | `NoOpPolicyEvaluator` |
+| `PBACEvaluationService` | Protocol | `evaluate(entry) → EvaluationRecord` | `InProcessPBACEvaluationService` |
 
-### Group membership
+## Types
 
-Consumers can represent groups or teams. Add user emails to the `members` list:
+All shared types live in `types.py` — plain dataclasses with no external dependencies.
 
-```json
-{
-  "name": "Analytics Team",
-  "type": "group",
-  "external_id": "analytics-team",
-  "members": [
-    "analyst@company.com",
-    "data-scientist@company.com",
-    "intern@company.com"
-  ]
-}
-```
+**Input types:**
+- `TableRef(catalog, schema, table)` — standard SQL catalog terminology
+- `RawQueryLogEntry(identity, query_text, referenced_tables, timestamp, ...)` — `identity` is a plain string
 
-When `analyst@company.com` runs a query, they inherit the Analytics Team's purposes.
+**Engine types** (used by `evaluate_purpose`):
+- `ConsumerPurposes(consumer_id, purpose_keys: frozenset)`
+- `DatasetPurposes(dataset_key, purpose_keys: frozenset, collection_purposes)`
+- `PurposeViolation(consumer_id, dataset_key, consumer_purposes, dataset_purposes, reason)`
+- `PurposeEvaluationResult(violations, gaps, total_accesses)`
 
-## Policy v2 (Override Engine)
+**Result types** (returned by evaluation service):
+- `EvaluationRecord(identity, consumer, is_compliant, violations, gaps)`
+- `EvaluationGap(gap_type: GapType, identifier, dataset_key, reason)`
 
-When PBAC finds a violation (purposes don't overlap), the Policy v2 engine gets a chance to override it. Policies use priority-based, first-decisive-match-wins evaluation.
+**Enums:**
+- `GapType` — `UNRESOLVED_IDENTITY`, `UNCONFIGURED_CONSUMER`, `UNCONFIGURED_DATASET`
 
-A policy can ALLOW access even when purposes don't match:
+## Identity resolution
 
-```
-POST /api/v1/policy
-{
-  "fides_key": "allow_analytics_on_orders",
-  "decision": "ALLOW",
-  "priority": 100,
-  "match": {
-    "data_use": { "any": ["marketing.advertising"] }
-  }
-}
-```
+The `IdentityResolver` Protocol maps a user identity string to a `DataConsumerEntity`.
 
-PBAC is always checked first. Policies only evaluated when purposes don't match.
+**OSS implementations:**
 
-## Package Structure
+| Class | Backing | Resolution chain |
+|-------|---------|-----------------|
+| `BasicIdentityResolver` | In-memory list | contact_email → scope email → members list |
+| `RedisIdentityResolver` | Redis | contact_email → scope email |
+
+If no consumer matches, the resolver returns `None` and the engine records an `unresolved_identity` gap.
+
+## Package structure
 
 ```
 fides/service/pbac/
-  types.py              -- RawQueryLogEntry, TableRef
-  sql_parser.py         -- Generic SQL --> RawQueryLogEntry (sqlglot)
-  engine/               -- PBAC evaluation engine (zero dependencies)
-    types.py            -- ConsumerPurposes, DatasetPurposes, QueryAccess, etc.
-    evaluate.py         -- evaluate_access()
-    reason.py           -- Human-readable violation reasons
-  evaluation/           -- Service boundary
-    types.py            -- EvaluationResult, ResolvedConsumer, EvaluationViolation
-    interface.py        -- PBACEvaluationService Protocol
-  identity/             -- Consumer identity resolution
-    interface.py        -- IdentityResolver Protocol
-    basic.py            -- BasicIdentityResolver (email + external_id + members)
-  policies/             -- Policy v2 evaluation interface
-    interface.py        -- AccessPolicyEvaluator Protocol + types
-    noop.py             -- NoOpPolicyEvaluator (default)
+  types.py              All shared types + enums
+  sql_parser.py         SQL text → RawQueryLogEntry (sqlglot)
+  evaluate.py           Pure engine: evaluate_purpose() → PurposeEvaluationResult
+  reason.py             Human-readable violation reasons
+  service.py            PBACEvaluationService Protocol + InProcessPBACEvaluationService
+  redis_repository.py   RedisRepository[T] generic ABC
+
+  identity/
+    interface.py        IdentityResolver Protocol
+    basic.py            BasicIdentityResolver (in-memory)
+    resolver.py         RedisIdentityResolver (Redis-backed)
+
+  dataset/
+    resolver.py         DatasetResolver (TableRef → fides_key)
+
+  policies/
+    interface.py        AccessPolicyEvaluator Protocol + types
+    noop.py             NoOpPolicyEvaluator (default)
+    evaluator.py        Priority-based policy evaluator
+
+  consumers/
+    entities.py         DataConsumerEntity
+    repository.py       DataConsumerRedisRepository
+
+  purposes/
+    entities.py         DataPurposeEntity
+    repository.py       DataPurposeRedisRepository
 ```
-
-## Extending (Fidesplus)
-
-Fidesplus adds platform-specific capabilities on top of the OSS evaluation:
-
-- **Platform connectors** -- BigQuery, Snowflake, Databricks audit log ingestion
-- **Platform identity resolution** -- queries BigQuery IAM / Snowflake RBAC to resolve user roles, then matches roles against consumer `external_id`
-- **Access control dashboard** -- violation logs, timeseries, per-consumer breakdowns

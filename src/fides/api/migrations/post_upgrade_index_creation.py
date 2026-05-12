@@ -255,6 +255,20 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "type": "index",
             "migration_key": "idx_privacy_preferences_current_unique_identity",
         },
+        {
+            "name": "idx_privacy_preferences_current_created_at_id",
+            "statement": "CREATE INDEX CONCURRENTLY idx_privacy_preferences_current_created_at_id ON privacy_preferences_current (created_at, id)",
+            "type": "index",
+            "migration_key": "idx_privacy_preferences_current_created_at_id",
+        },
+    ],
+    "privacy_preferences_historic": [
+        {
+            "name": "idx_privacy_preferences_historic_created_at_id",
+            "statement": "CREATE INDEX CONCURRENTLY idx_privacy_preferences_historic_created_at_id ON privacy_preferences_historic (created_at, id)",
+            "type": "index",
+            "migration_key": "idx_privacy_preferences_historic_created_at_id",
+        },
     ],
 }
 
@@ -267,10 +281,13 @@ def check_object_exists(db: Session, object_name: str) -> bool:
             SELECT 1
             FROM pg_indexes
             WHERE indexname = :object_name
+              AND schemaname = current_schema()
         ) OR EXISTS (
             SELECT 1
-            FROM pg_constraint
-            WHERE conname = :object_name
+            FROM pg_constraint c
+            JOIN pg_namespace n ON c.connamespace = n.oid
+            WHERE c.conname = :object_name
+              AND n.nspname = current_schema()
         )
         """
     )
@@ -386,10 +403,16 @@ def check_and_create_objects(
                 lock.reacquire()
                 continue
 
-            create_object(db, object_data["statement"], object_data["name"])
-            mark_index_completed(db, migration_key)
-            object_info[object_data["name"]] = "created"
-            lock.reacquire()
+            try:
+                create_object(db, object_data["statement"], object_data["name"])
+                mark_index_completed(db, migration_key)
+                object_info[object_data["name"]] = "created"
+            except Exception:
+                logger.exception(
+                    f"An error occurred when trying to create {object_data['name']}"
+                )
+            finally:
+                lock.reacquire()
 
     return object_info
 

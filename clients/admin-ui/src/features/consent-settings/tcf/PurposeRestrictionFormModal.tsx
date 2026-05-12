@@ -1,17 +1,9 @@
-import {
-  Button,
-  ChakraCollapse as Collapse,
-  ChakraText as Text,
-  Flex,
-  Modal,
-  Tooltip,
-  useMessage,
-} from "fidesui";
-import { Form, Formik } from "formik";
-import * as Yup from "yup";
+import { Button, Flex, Form, Select, Typography, useMessage } from "fidesui";
+import isEqual from "lodash/isEqual";
+import { useEffect, useMemo, useState } from "react";
 
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { isErrorResult } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
   TCFPublisherRestrictionRequest,
   TCFRestrictionType,
@@ -54,6 +46,12 @@ const defaultInitialValues: FormValues = {
   vendor_ids: [],
 };
 
+const FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP =
+  "Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List.";
+
+const NON_FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP =
+  "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings.";
+
 export const PurposeRestrictionFormModal = ({
   isOpen,
   onClose,
@@ -70,9 +68,8 @@ export const PurposeRestrictionFormModal = ({
     purposeId && FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(+purposeId)
   );
 
-  // Get the list of restriction types that are already in use for this purpose
   const usedRestrictionTypes = existingRestrictions
-    .filter((r) => r.id !== restrictionId) // Exclude current restriction when editing
+    .filter((r) => r.id !== restrictionId)
     .map((r) => r.restriction_type);
 
   const restrictionTypeOptions = [
@@ -138,41 +135,50 @@ export const PurposeRestrictionFormModal = ({
     },
   ];
 
-  // Create validation schema
-  const validationSchema = Yup.object().shape({
-    restriction_type: Yup.string().required("Restriction type is required"),
-    vendor_restriction: Yup.string().required("Vendor restriction is required"),
-    vendor_ids: Yup.array().when("vendor_restriction", {
-      is: (val: string) => val !== TCFVendorRestriction.RESTRICT_ALL_VENDORS,
-      then: (schema) =>
-        schema
-          .required("At least one vendor ID is required")
-          .min(1, "At least one vendor ID is required")
-          .test(
-            "valid-format",
-            "Vendor IDs must be numbers or ranges (e.g., 10 or 15-300)",
-            (value) => value?.every((id) => isValidVendorIdFormat(id)) ?? true,
-          )
-          .test(
-            "no-conflicts",
-            ERROR_MESSAGE,
-            (value, context) =>
-              !checkForVendorRestrictionConflicts(
-                {
-                  ...context.parent,
-                  vendor_ids: value,
-                } as FormValues,
-                existingRestrictions,
-                purposeId,
-                restrictionId,
-              ),
-          ),
+  const computedInitialValues = useMemo(
+    () => ({
+      ...initialValues,
+      restriction_type: isPurposeFlexible
+        ? initialValues.restriction_type
+        : TCFRestrictionType.PURPOSE_RESTRICTION,
     }),
-  });
+    [initialValues, isPurposeFlexible],
+  );
+
+  const [form] = Form.useForm<FormValues>();
+
+  const allValues = Form.useWatch([], form);
+  const vendorRestriction = Form.useWatch("vendor_restriction", form);
+  const restrictionType = Form.useWatch("restriction_type", form);
+  const [submittable, setSubmittable] = useState(false);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  const isDirty = useMemo(
+    () => !isEqual(allValues, computedInitialValues),
+    [allValues, computedInitialValues],
+  );
+
+  const showVendorIds =
+    !!restrictionType &&
+    !!vendorRestriction &&
+    vendorRestriction !== TCFVendorRestriction.RESTRICT_ALL_VENDORS;
+
+  // Clear vendor_ids when switching to "restrict all vendors" since the field
+  // unmounts and stale values would otherwise persist in the form store.
+  useEffect(() => {
+    if (vendorRestriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS) {
+      form.setFieldValue("vendor_ids", []);
+    }
+  }, [vendorRestriction, form]);
 
   const handleSubmit = async (values: FormValues): Promise<void> => {
     try {
-      // Convert form values to API request format
       const request: Omit<TCFPublisherRestrictionRequest, "purpose_id"> = {
         restriction_type: values.restriction_type as TCFRestrictionType,
         vendor_restriction: values.vendor_restriction as TCFVendorRestriction,
@@ -215,117 +221,144 @@ export const PurposeRestrictionFormModal = ({
     }
   };
 
+  const handleClose = () => {
+    form.resetFields();
+    onClose();
+  };
+
   return (
-    <Modal
+    <ConfirmCloseModal
       open={isOpen}
-      onCancel={onClose}
+      onClose={handleClose}
+      getIsDirty={() => isDirty}
       centered
-      destroyOnClose
+      destroyOnHidden
       title="Edit restriction"
       footer={null}
     >
-      <Formik
-        initialValues={{
-          ...initialValues,
-          restriction_type: isPurposeFlexible
-            ? initialValues.restriction_type
-            : TCFRestrictionType.PURPOSE_RESTRICTION,
-        }}
-        onSubmit={handleSubmit}
-        validationSchema={validationSchema}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={computedInitialValues}
+        key={restrictionId ?? "create"}
       >
-        {({ values, validateField, setTouched }) => (
-          <Form>
-            <Flex vertical className="gap-6">
-              <Text className="text-sm">
-                Define how specific vendors are restricted from processing data
-                for this purpose. Select a restriction type, set whether the
-                listed vendors are restricted or allowed, and specify which
-                vendor IDs the restriction applies to.
-              </Text>
-              <Tooltip
-                title={
-                  !isPurposeFlexible
-                    ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
-                    : undefined
-                }
-              >
-                <ControlledSelect
-                  name="restriction_type"
-                  label="Restriction type"
-                  options={restrictionTypeOptions}
-                  layout="stacked"
-                  tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
-                  isRequired
-                  disabled={!isPurposeFlexible}
-                  className="w-full" // tooltip wrapper makes this necessary
-                />
-              </Tooltip>
-              <ControlledSelect
-                name="vendor_restriction"
-                label="Vendor restriction"
-                options={vendorRestrictionOptions}
-                layout="stacked"
-                tooltip="Decide if the restriction applies to all vendors, specific vendors, or if only certain vendors are allowed."
-                isRequired
+        <Flex vertical>
+          <Typography.Text className="mb-4">
+            Define how specific vendors are restricted from processing data for
+            this purpose. Select a restriction type, set whether the listed
+            vendors are restricted or allowed, and specify which vendor IDs the
+            restriction applies to.
+          </Typography.Text>
+          <Form.Item
+            name="restriction_type"
+            label="Restriction type"
+            tooltip={
+              isPurposeFlexible
+                ? FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP
+                : NON_FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP
+            }
+            rules={[
+              { required: true, message: "Restriction type is required" },
+            ]}
+          >
+            <Select
+              aria-label="Restriction type"
+              options={restrictionTypeOptions}
+              disabled={!isPurposeFlexible}
+              data-testid="controlled-select-restriction_type"
+              className="w-full"
+            />
+          </Form.Item>
+          <Form.Item
+            name="vendor_restriction"
+            label="Vendor restriction"
+            tooltip="Decide if the restriction applies to all vendors, specific vendors, or if only certain vendors are allowed."
+            rules={[
+              { required: true, message: "Vendor restriction is required" },
+            ]}
+          >
+            <Select
+              aria-label="Vendor restriction"
+              options={vendorRestrictionOptions}
+              data-testid="controlled-select-vendor_restriction"
+            />
+          </Form.Item>
+          {showVendorIds && (
+            <Form.Item
+              name="vendor_ids"
+              label="Vendor IDs"
+              tooltip="List the specific vendors that are restricted or allowed from processing data for this purpose."
+              extra="Enter IDs (e.g. 123) or ranges (e.g. 1-10) and press enter"
+              dependencies={["vendor_restriction"]}
+              rules={[
+                {
+                  required: true,
+                  message: "At least one vendor ID is required",
+                },
+                {
+                  validator: (_, value) => {
+                    if (
+                      value?.length &&
+                      !value.every((id: string) => isValidVendorIdFormat(id))
+                    ) {
+                      return Promise.reject(
+                        new Error(
+                          "Vendor IDs must be numbers or ranges (e.g., 10 or 15-300)",
+                        ),
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+                {
+                  validator: (_, value) => {
+                    const currentValues = form.getFieldsValue(true);
+                    if (
+                      checkForVendorRestrictionConflicts(
+                        { ...currentValues, vendor_ids: value } as FormValues,
+                        existingRestrictions,
+                        purposeId,
+                        restrictionId,
+                      )
+                    ) {
+                      return Promise.reject(new Error(ERROR_MESSAGE));
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Select
+                aria-label="Vendor IDs"
+                mode="tags"
+                options={[]}
+                placeholder="Enter vendor IDs"
+                open={false}
+                suffixIcon={<span />}
+                tokenSeparators={[",", " "]}
+                data-testid="controlled-select-vendor_ids"
               />
-              <Collapse
-                in={
-                  !!values.restriction_type &&
-                  !!values.vendor_restriction &&
-                  values.vendor_restriction !==
-                    TCFVendorRestriction.RESTRICT_ALL_VENDORS
-                }
-                animateOpacity
-              >
-                <ControlledSelect
-                  name="vendor_ids"
-                  label="Vendor IDs"
-                  mode="tags"
-                  options={[]}
-                  layout="stacked"
-                  placeholder="Enter vendor IDs"
-                  open={false}
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  suffixIcon={<span />}
-                  tooltip="List the specific vendors that are restricted or allowed from processing data for this purpose."
-                  disabled={
-                    values.vendor_restriction ===
-                    TCFVendorRestriction.RESTRICT_ALL_VENDORS
-                  }
-                  tokenSeparators={[",", " "]}
-                  onBlur={() => {
-                    // Add small delay to allow Ant Select to create tag before validation
-                    setTimeout(() => {
-                      setTouched({
-                        vendor_ids: true,
-                      });
-                      validateField("vendor_ids");
-                    }, 100);
-                  }}
-                  helperText="Enter IDs (e.g. 123) or ranges (e.g. 1-10) and press enter"
-                  isRequired
-                />
-              </Collapse>
-              <Flex justify="flex-end" className="gap-3 pt-4">
-                <Button
-                  onClick={onClose}
-                  data-testid="cancel-restriction-button"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  data-testid="save-restriction-button"
-                >
-                  Save
-                </Button>
-              </Flex>
-            </Flex>
-          </Form>
-        )}
-      </Formik>
-    </Modal>
+            </Form.Item>
+          )}
+          <Flex justify="flex-end" className="gap-3 pt-4">
+            <Button
+              onClick={handleClose}
+              data-testid="cancel-restriction-button"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={!submittable || !isDirty}
+              data-testid="save-restriction-button"
+            >
+              Save
+            </Button>
+          </Flex>
+        </Flex>
+      </Form>
+    </ConfirmCloseModal>
   );
 };

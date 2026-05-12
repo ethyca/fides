@@ -1,4 +1,0 @@
-type: Added
-description: Added SaaS config version history tracking — stores connector template versions on seed and custom template upload, with API endpoints to list versions and retrieve config/dataset snapshots by version
-pr: 7688
-labels: ["db-migration"]

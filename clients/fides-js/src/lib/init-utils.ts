@@ -2,9 +2,11 @@ import { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import { gcm } from "../integrations/gcm";
 import { gtm } from "../integrations/gtm";
+import { matomo } from "../integrations/matomo";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
+  FidesAttStatus,
   FidesCookie,
   FidesGlobal,
   FidesOptions,
@@ -116,6 +118,7 @@ export const getCoreFides = ({
       otFidesMapping: null,
       transcendFidesMapping: null,
       fidesDisabledNotices: null,
+      fidesAttStatus: FidesAttStatus.NOT_DETERMINED,
       fidesDisabledSystems: null,
       fidesConsentNonApplicableFlagMode: null,
       fidesConsentFlagType: null,
@@ -135,6 +138,7 @@ export const getCoreFides = ({
     blueconic,
     gcm,
     gtm,
+    matomo,
     meta,
     shopify,
     showModal: defaultShowModal,

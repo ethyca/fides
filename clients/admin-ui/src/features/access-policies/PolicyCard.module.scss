@@ -1,0 +1,9 @@
+.policyName {
+  font-size: 1rem;
+}
+
+.card :global(.ant-card-body) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}

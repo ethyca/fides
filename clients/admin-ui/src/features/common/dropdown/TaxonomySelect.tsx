@@ -44,15 +44,16 @@ const TaxonomyOption = ({
   );
 };
 
-interface ITaxonomySelectProps
-  extends Omit<ICustomSelectProps<string, TaxonomySelectOption>, "options"> {
+interface ITaxonomySelectProps extends Omit<
+  ICustomSelectProps<string, TaxonomySelectOption>,
+  "options"
+> {
   options?: TaxonomySelectOptions;
 }
-interface ITaxonomyMultiSelectProps
-  extends Omit<
-    ICustomMultiSelectProps<string, TaxonomySelectOption>,
-    "options"
-  > {
+interface ITaxonomyMultiSelectProps extends Omit<
+  ICustomMultiSelectProps<string, TaxonomySelectOption>,
+  "options"
+> {
   options?: TaxonomySelectOptions;
 }
 
@@ -114,7 +115,7 @@ export const TaxonomySelect = ({ options, ...props }: TaxonomySelectProps) => {
       variant="borderless"
       optionRender={TaxonomyOption}
       styles={{ popup: { root: { minWidth: "500px" } } }}
-      className="w-full p-0"
+      className="w-full"
       data-testid="taxonomy-select"
       {...props}
     />

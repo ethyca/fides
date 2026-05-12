@@ -886,8 +886,7 @@ describe("Consent i18n", () => {
               overrideExperience: (experience: any) => {
                 /* eslint-disable no-param-reassign */
                 // Override the test data to specify Spanish as the default translation for the experience.
-                experience.experience_config!.translations[0].is_default =
-                  false;
+                experience.experience_config!.translations[0].is_default = false;
                 experience.experience_config!.translations[1].is_default = true;
                 // Modify the first notice (Advertising) and remove the French translations
                 const testNotices: PrivacyNotice[] = experience.privacy_notices;
@@ -945,58 +944,6 @@ describe("Consent i18n", () => {
               fixture: "experience_banner_modal.json",
             });
           });
-          it("applies experience language overrides", () => {
-            const experienceTranslationOverrides = {
-              fides_title: "My override title",
-              fides_description: "My override description",
-              fides_privacy_policy_url: "https://example.com/privacy",
-              fides_override_language: "en",
-            };
-            cy.fixture("consent/experience_banner_modal.json").then(
-              (experience) => {
-                const experienceItem = experience.items[0];
-                const translation: ExperienceConfigTranslation =
-                  experienceItem.experience_config.translations.filter(
-                    (i: ExperienceConfigTranslation) => i.language === "en",
-                  )[0];
-                stubConfig(
-                  {
-                    options: {
-                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
-                    },
-                    experience: experienceItem,
-                  },
-                  null,
-                  null,
-                  undefined,
-                  { ...experienceTranslationOverrides },
-                );
-                cy.get("div#fides-banner").within(() => {
-                  cy.get(".fides-banner-title")
-                    .first()
-                    .contains(translation.banner_title as string);
-                  cy.get(
-                    "div#fides-banner-description.fides-banner-description",
-                  ).contains(translation.banner_description as string);
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    experienceTranslationOverrides.fides_privacy_policy_url,
-                  );
-                });
-                // Open the modal
-                cy.contains("button", "Manage preferences").click();
-                cy.get("div#fides-modal").within(() => {
-                  cy.get(".fides-modal-title").contains(
-                    experienceTranslationOverrides.fides_title,
-                  );
-                  cy.get(".fides-modal-description").contains(
-                    experienceTranslationOverrides.fides_description,
-                  );
-                });
-              },
-            );
-          });
         });
 
         describe("when fides_override_language is only part of an experience locale string", () => {
@@ -1007,59 +954,6 @@ describe("Consent i18n", () => {
               fixture: "experience_banner_modal.json",
             });
           });
-          // TODO (PROD-1885): matchLocale needs to support partial language match
-          it.skip("applies experience language overrides", () => {
-            const experienceTranslationOverrides = {
-              fides_title: "My French override title",
-              fides_description: "My French override description",
-              fides_privacy_policy_url: "https://example.com/privacy-french",
-              fides_override_language: "fr",
-            };
-            cy.fixture("consent/experience_banner_modal.json").then(
-              (experience) => {
-                const experienceItem = experience.items[0];
-                const translation: ExperienceConfigTranslation =
-                  experienceItem.experience_config.translations.filter(
-                    (i: ExperienceConfigTranslation) => i.language === "fr-CA",
-                  )[0];
-                stubConfig(
-                  {
-                    options: {
-                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
-                    },
-                    experience: experienceItem,
-                  },
-                  null,
-                  null,
-                  undefined,
-                  { ...experienceTranslationOverrides },
-                );
-                cy.get("div#fides-banner").within(() => {
-                  cy.get(".fides-banner-title")
-                    .first()
-                    .contains(translation.banner_title as string);
-                  cy.get(
-                    "div#fides-banner-description.fides-banner-description",
-                  ).contains(translation.banner_description as string);
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    experienceTranslationOverrides.fides_privacy_policy_url,
-                  );
-                });
-                // Open the modal
-                cy.contains("button", "Manage preferences").click();
-                cy.get("div#fides-modal").within(() => {
-                  cy.get(".fides-modal-title").contains(
-                    experienceTranslationOverrides.fides_title,
-                  );
-                  cy.get(".fides-modal-description").contains(
-                    experienceTranslationOverrides.fides_description,
-                  );
-                });
-              },
-            );
-          });
         });
 
         describe("when fides_override_language is in a locale that does not exist in experience translations", () => {
@@ -1069,83 +963,6 @@ describe("Consent i18n", () => {
               globalPrivacyControl: true,
               fixture: "experience_banner_modal.json",
             });
-          });
-          it("does not apply experience translation overrides", () => {
-            const experienceTranslationOverrides = {
-              fides_title: "My override title",
-              fides_description: "My override description",
-              fides_override_language: "ja",
-            };
-            cy.fixture("consent/experience_banner_modal.json").then(
-              (experience) => {
-                const experienceItem = experience.items[0];
-                // we expect to default to english translation
-                const translation: ExperienceConfigTranslation =
-                  experienceItem.experience_config.translations.filter(
-                    (i: ExperienceConfigTranslation) => i.language === "en",
-                  )[0];
-                stubConfig(
-                  {
-                    options: {
-                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
-                    },
-                    experience: experienceItem,
-                  },
-                  null,
-                  null,
-                  undefined,
-                  { ...experienceTranslationOverrides },
-                );
-                cy.get("div#fides-banner").within(() => {
-                  cy.get(".fides-banner-title")
-                    .first()
-                    .contains(translation.banner_title as string);
-                  cy.get(
-                    "div#fides-banner-description.fides-banner-description",
-                  ).contains(translation.banner_description as string);
-                });
-                // Open the modal
-                cy.contains("button", "Manage preferences").click();
-                cy.get("div#fides-modal").within(() => {
-                  cy.get(".fides-modal-title").contains(
-                    translation.title as string,
-                  );
-                  cy.get(".fides-modal-description").contains(
-                    translation.description as string,
-                  );
-                });
-              },
-            );
-          });
-          it("does apply fides_privacy_policy_url override", () => {
-            const experienceTranslationOverrides = {
-              fides_privacy_policy_url: "https://example.com/privacy",
-              fides_override_language: "ja",
-            };
-            cy.fixture("consent/experience_banner_modal.json").then(
-              (experience) => {
-                const experienceItem = experience.items[0];
-                stubConfig(
-                  {
-                    options: {
-                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
-                    },
-                    experience: experienceItem,
-                  },
-                  null,
-                  null,
-                  undefined,
-                  { ...experienceTranslationOverrides },
-                );
-                cy.get("div#fides-banner").within(() => {
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    experienceTranslationOverrides.fides_privacy_policy_url as string,
-                  );
-                });
-              },
-            );
           });
         });
 
@@ -1198,35 +1015,6 @@ describe("Consent i18n", () => {
                   );
                   cy.get(".fides-modal-description").contains(
                     translation.description as string,
-                  );
-                });
-              },
-            );
-          });
-          it("does apply fides_privacy_policy_url override", () => {
-            const experienceTranslationOverrides = {
-              fides_privacy_policy_url: "https://example.com/privacy",
-            };
-            cy.fixture("consent/experience_banner_modal.json").then(
-              (experience) => {
-                const experienceItem = experience.items[0];
-                stubConfig(
-                  {
-                    options: {
-                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
-                    },
-                    experience: experienceItem,
-                  },
-                  null,
-                  null,
-                  undefined,
-                  { ...experienceTranslationOverrides },
-                );
-                cy.get("div#fides-banner").within(() => {
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    experienceTranslationOverrides.fides_privacy_policy_url as string,
                   );
                 });
               },

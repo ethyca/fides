@@ -1,15 +1,8 @@
 import { NOTIFICATIONS_TEMPLATES_ROUTE } from "common/nav/routes";
-import { Button, ChakraBox as Box, ChakraFlex as Flex } from "fidesui";
-import { Form, Formik, useFormikContext } from "formik";
-import { useRouter } from "next/router";
+import { Button, Card, Flex, Form, Input, Switch } from "fidesui";
+import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
-import FormSection from "~/features/common/form/FormSection";
-import {
-  CustomSwitch,
-  CustomTextArea,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
 import ScrollableList from "~/features/common/ScrollableList";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
@@ -24,8 +17,9 @@ import { MinimalProperty } from "~/types/api";
 
 interface Props {
   template: MessagingTemplateResponse;
-  handleSubmit: (values: FormValues) => Promise<void>;
+  handleSubmit: (values: FormValues) => Promise<boolean>;
   handleDelete?: () => void;
+  isSaving?: boolean;
 }
 
 export interface FormValues {
@@ -39,25 +33,30 @@ export interface FormValues {
   properties?: MinimalProperty[];
 }
 
-const PropertiesList = () => {
+interface PropertiesListProps {
+  value?: MinimalProperty[];
+  onChange?: (value: MinimalProperty[]) => void;
+}
+
+const PropertiesList = ({ value, onChange }: PropertiesListProps) => {
   const propertyPage = useAppSelector(selectPropertyPage);
   const propertyPageSize = useAppSelector(selectPropertyPageSize);
   useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
   const allProperties = useAppSelector(selectAllProperties);
-  const { values, setFieldValue } = useFormikContext<FormValues>();
 
   return (
     <ScrollableList
-      label="Associated properties"
       addButtonLabel="Add property"
       idField="id"
       nameField="name"
-      allItems={allProperties.map((property) => ({
-        id: property.id,
-        name: property.name,
-      }))}
-      values={values.properties ?? []}
-      setValues={(newValues) => setFieldValue("properties", newValues)}
+      allItems={allProperties.reduce<MinimalProperty[]>((acc, property) => {
+        if (property.id) {
+          acc.push({ id: property.id, name: property.name });
+        }
+        return acc;
+      }, [])}
+      values={value ?? []}
+      setValues={(newValues) => onChange?.(newValues)}
       draggable
       maxHeight={100}
       baseTestId="property"
@@ -69,14 +68,11 @@ const PropertySpecificMessagingTemplateForm = ({
   template,
   handleSubmit,
   handleDelete,
+  isSaving,
 }: Props) => {
-  const router = useRouter();
+  const [form] = Form.useForm<FormValues>();
 
-  const handleCancel = () => {
-    router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
-  };
-
-  const initialValues: MessagingTemplateResponse = {
+  const initialValues: FormValues = {
     type: template.type,
     content: template.content,
     properties: template.properties || [],
@@ -84,80 +80,100 @@ const PropertySpecificMessagingTemplateForm = ({
     id: template.id || "",
   };
 
+  // Re-mount the form only when the underlying template identity changes, not
+  // on every content update. Scoping the key this narrowly avoids discarding
+  // in-progress edits if a background refetch returns data that differs from
+  // what the user has typed.
+  const formKey = template.id || template.type;
+
+  const onFinish = async (values: FormValues) => {
+    const succeeded = await handleSubmit(values);
+    if (succeeded) {
+      // Re-baseline after a successful save so `isFieldsTouched()` flips back
+      // to false and Save becomes disabled again until the next edit.
+      form.resetFields();
+      form.setFieldsValue(values);
+    }
+  };
+
   return (
-    <Formik
-      enableReinitialize
+    <Form
+      key={formKey}
+      form={form}
+      layout="vertical"
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onFinish={onFinish}
+      className="py-3"
     >
-      {({ dirty, isValid, isSubmitting }) => (
-        <Form
-          style={{
-            paddingTop: "12px",
-            paddingBottom: "12px",
-          }}
+      <Card
+        title={
+          CustomizableMessagingTemplatesLabelEnum[
+            initialValues.type as CustomizableMessagingTemplatesEnum
+          ]
+        }
+        className="my-3"
+      >
+        <Form.Item
+          name={["content", "subject"]}
+          label="Email subject"
+          rules={[{ required: true, message: "Subject is required" }]}
         >
-          <Box py={3}>
-            <FormSection
-              title={`${
-                CustomizableMessagingTemplatesLabelEnum[
-                  initialValues.type as CustomizableMessagingTemplatesEnum
-                ]
-              }`}
-            >
-              <CustomTextInput
-                isRequired
-                label="Email subject"
-                name="content.subject"
-                variant="stacked"
-              />
-              <CustomTextArea
-                isRequired
-                label="Message body"
-                name="content.body"
-                value="test"
-                variant="stacked"
-                resize
-              />
-              <Box py={3}>
-                <PropertiesList />
-              </Box>
-              <CustomSwitch
-                name="is_enabled"
-                label="Enable message"
-                variant="switchFirst"
-              />
-            </FormSection>
-          </Box>
-          <Flex justifyContent="space-between" width="100%" paddingTop={2}>
-            {initialValues.id && handleDelete && (
-              <Button
-                data-testid="delete-template-button"
-                loading={false}
-                className="mr-3"
-                onClick={handleDelete}
-              >
-                Delete
-              </Button>
-            )}
-            <Flex justifyContent="right" width="100%" paddingTop={2}>
-              <Button loading={false} className="mr-3" onClick={handleCancel}>
-                Cancel
-              </Button>
+          <Input data-testid="input-content.subject" />
+        </Form.Item>
+        <Form.Item
+          name={["content", "body"]}
+          label="Message body"
+          rules={[{ required: true, message: "Body is required" }]}
+        >
+          <Input.TextArea
+            autoSize={{ minRows: 3 }}
+            data-testid="input-content.body"
+          />
+        </Form.Item>
+        <Form.Item name="properties" label="Associated properties">
+          <PropertiesList />
+        </Form.Item>
+        <Form.Item
+          name="is_enabled"
+          label="Enable message"
+          valuePropName="checked"
+        >
+          <Switch data-testid="input-is_enabled" />
+        </Form.Item>
+      </Card>
+      <Flex justify="space-between" className="w-full pt-2">
+        {initialValues.id && handleDelete && (
+          <Button
+            data-testid="delete-template-button"
+            className="mr-3"
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+        )}
+        <Flex justify="flex-end" className="w-full pt-2">
+          <NextLink href={NOTIFICATIONS_TEMPLATES_ROUTE} passHref>
+            <Button className="mr-3">Cancel</Button>
+          </NextLink>
+          <Form.Item shouldUpdate noStyle>
+            {() => (
               <Button
                 htmlType="submit"
                 type="primary"
-                disabled={isSubmitting || !dirty || !isValid}
-                loading={isSubmitting}
+                disabled={
+                  !form.isFieldsTouched() ||
+                  form.getFieldsError().some(({ errors }) => errors.length > 0)
+                }
+                loading={isSaving}
                 data-testid="submit-btn"
               >
                 Save
               </Button>
-            </Flex>
-          </Flex>
-        </Form>
-      )}
-    </Formik>
+            )}
+          </Form.Item>
+        </Flex>
+      </Flex>
+    </Form>
   );
 };
 

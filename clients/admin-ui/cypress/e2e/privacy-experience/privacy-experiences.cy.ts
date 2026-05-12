@@ -102,23 +102,14 @@ describe("Privacy experiences", () => {
 
     it("should render a row for each privacy experience", () => {
       cy.fixture("privacy-experiences/list.json").then((data) => {
-        data.items.forEach((item, index) => {
-          cy.getByTestId(`row-${index}`);
+        data.items.forEach((item) => {
+          cy.get("table").contains("tr", item.name);
         });
       });
     });
 
-    it("can click a row to go to the experience page", () => {
-      cy.get("table").contains("tr", "notice enabled test").click();
-      cy.wait("@getExperienceDetail");
-      cy.getByTestId("input-name").should(
-        "have.value",
-        "Example modal experience",
-      );
-    });
-
     it("can click the button to create a new experience", () => {
-      cy.getByTestId("add-privacy-experience-btn").click();
+      cy.getByTestId("add-privacy-experience-btn").first().click();
       cy.url().should("contain", "privacy-experience/new");
     });
 

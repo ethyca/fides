@@ -1,9 +1,9 @@
 import { Button, Dropdown, Icons, Typography } from "fidesui";
-import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth/auth.slice";
 
+import { RouterLink } from "./RouterLink";
 import { USER_DETAIL_ROUTE } from "./routes";
 
 interface AccountDropdownMenuProps {
@@ -31,11 +31,12 @@ const AccountDropdownMenu = ({
                 {username}
               </Typography.Text>
             ) : (
-              <NextLink href={USER_DETAIL_ROUTE.replace("[id]", userId!)}>
-                <Typography.Link data-testid="header-menu-username">
-                  {username}
-                </Typography.Link>
-              </NextLink>
+              <RouterLink
+                href={USER_DETAIL_ROUTE.replace("[id]", userId!)}
+                data-testid="header-menu-username"
+              >
+                {username}
+              </RouterLink>
             ),
             type: "group",
           },
@@ -48,7 +49,7 @@ const AccountDropdownMenu = ({
         ],
       }}
       styles={{ root: { width: "200px" } }}
-      trigger={["click", "hover"]}
+      trigger={["click"]}
     >
       <Button
         tabIndex={0}

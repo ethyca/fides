@@ -1,17 +1,9 @@
-/* eslint-disable react/no-array-index-key */
 import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraStack as Stack,
-  ChakraText as Text,
-  Spin,
-  useMessage,
-} from "fidesui";
-import { Form, Formik } from "formik";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { Button, Flex, Form, Input, Spin, useMessage } from "fidesui";
+import isEqual from "lodash/isEqual";
 import type { NextPage } from "next";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
@@ -99,62 +91,69 @@ const ConsentConfigPage: NextPage = () => {
   const { isLoading: isPurposesLoading } = useGetPurposesQuery();
 
   const message = useMessage();
+  const [form] = Form.useForm<FormValues>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (values: FormValues) => {
-    const handleResult = (
-      result:
-        | { data: object }
-        | { error: FetchBaseQueryError | SerializedError },
-    ) => {
-      if (isErrorResult(result)) {
-        const errorMsg = getErrorMessage(
-          result.error,
-          `An unexpected error occurred while saving. Please try again.`,
-        );
-        message.error(errorMsg);
-      } else {
-        message.success("Settings saved successfully");
-      }
-    };
-
-    const payload: TCFPurposeOverrideSchema[] = [
-      ...values.purposeOverrides.map((po) => {
-        let requiredLegalBasis;
-        if (po.is_consent) {
-          requiredLegalBasis = TCFLegalBasisEnum.CONSENT;
+    setIsSubmitting(true);
+    try {
+      const handleResult = (
+        result:
+          | { data: object }
+          | { error: FetchBaseQueryError | SerializedError },
+      ) => {
+        if (isErrorResult(result)) {
+          const errorMsg = getErrorMessage(
+            result.error,
+            `An unexpected error occurred while saving. Please try again.`,
+          );
+          message.error(errorMsg);
+        } else {
+          message.success("Settings saved successfully");
         }
+      };
 
-        if (po.is_legitimate_interest) {
-          requiredLegalBasis = TCFLegalBasisEnum.LEGITIMATE_INTERESTS;
+      const payload: TCFPurposeOverrideSchema[] = [
+        ...values.purposeOverrides.map((po) => {
+          let requiredLegalBasis;
+          if (po.is_consent) {
+            requiredLegalBasis = TCFLegalBasisEnum.CONSENT;
+          }
+
+          if (po.is_legitimate_interest) {
+            requiredLegalBasis = TCFLegalBasisEnum.LEGITIMATE_INTERESTS;
+          }
+
+          return {
+            purpose: po.purpose,
+            is_included: po.is_included,
+            required_legal_basis: requiredLegalBasis,
+          };
+        }),
+      ];
+
+      // Try to patch TCF overrides first
+      if (isTcfOverrideEnabled) {
+        const result = await patchTcfPurposeOverridesTrigger(payload);
+        if (isErrorResult(result)) {
+          handleResult(result);
+          return;
         }
-
-        return {
-          purpose: po.purpose,
-          is_included: po.is_included,
-          required_legal_basis: requiredLegalBasis,
-        };
-      }),
-    ];
-
-    // Try to patch TCF overrides first
-    if (isTcfOverrideEnabled) {
-      const result = await patchTcfPurposeOverridesTrigger(payload);
-      if (isErrorResult(result)) {
-        handleResult(result);
-        return;
       }
+      // Then we update config values
+      // For GPP, do not pass in `enabled`
+      const { enabled, ...updatedGpp } = values.gpp;
+      const configResult = await patchConfigSettingsTrigger({
+        gpp: updatedGpp,
+        plus_consent_settings: {
+          tcf_publisher_country_code:
+            values.tcfPublisherSettings.publisher_country_code ?? null,
+        },
+      });
+      handleResult(configResult);
+    } finally {
+      setIsSubmitting(false);
     }
-    // Then we update config values
-    // For GPP, do not pass in `enabled`
-    const { enabled, ...updatedGpp } = values.gpp;
-    const configResult = await patchConfigSettingsTrigger({
-      gpp: updatedGpp,
-      plus_consent_settings: {
-        tcf_publisher_country_code:
-          values.tcfPublisherSettings.publisher_country_code ?? null,
-      },
-    });
-    handleResult(configResult);
   };
 
   const initialValues = useMemo(
@@ -181,6 +180,21 @@ const ConsentConfigPage: NextPage = () => {
     [tcfPurposeOverrides, gppSettings, plusConsentSettings],
   );
 
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  const isDirty = useMemo(
+    () => (!allValues ? false : !isEqual(allValues, initialValues)),
+    [allValues, initialValues],
+  );
+
   const hasLegacyLegalBasisOverrides = useMemo(() => {
     return (
       tcfPurposeOverrides?.some(
@@ -195,6 +209,9 @@ const ConsentConfigPage: NextPage = () => {
   const isPublisherRestrictionsFlagEnabled =
     useFeatures()?.flags?.publisherRestrictions;
 
+  // Stable key for reinitialize behavior
+  const formKey = useMemo(() => JSON.stringify(initialValues), [initialValues]);
+
   return (
     <Layout title="Consent Configuration">
       {isHealthCheckLoading ||
@@ -204,9 +221,9 @@ const ConsentConfigPage: NextPage = () => {
       isConfigSetLoading ? (
         <Spin />
       ) : (
-        <Box data-testid="consent-configuration">
+        <div data-testid="consent-configuration">
           <PageHeader heading="Consent settings" />
-          <Stack spacing={3} mb={3}>
+          <Flex vertical gap="middle" className="mb-3">
             <SettingsBox title="Transparency & Consent Framework settings">
               <FrameworkStatus name="TCF" enabled={isTcfEnabled} />
             </SettingsBox>
@@ -218,58 +235,70 @@ const ConsentConfigPage: NextPage = () => {
                   isTCFOverrideEnabled={isTcfOverrideEnabled}
                 />
               )}
-          </Stack>
-          <Formik<FormValues>
+          </Flex>
+          <Form<FormValues>
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
             initialValues={initialValues}
-            enableReinitialize
-            onSubmit={handleSubmit}
+            key={formKey}
           >
-            {({ dirty, isValid, isSubmitting }) => (
-              <Form>
-                <Stack spacing={6}>
-                  {/* Legacy vendor overrides */}
-                  {isTcfEnabled &&
-                    (hasLegacyLegalBasisOverrides ||
-                      !isPublisherRestrictionsFlagEnabled) && (
-                      <SettingsBox title="Vendor overrides" fontSize="sm">
-                        <TCFOverrideToggle
-                          defaultChecked={isTcfOverrideEnabled}
-                          disabled={isPatchConfigSettingsLoading}
-                        />
-                        {isTcfOverrideEnabled && (
-                          <Stack mt={2} spacing={2}>
-                            <Text>
-                              The table below allows you to adjust which TCF
-                              purposes you allow as part of your user facing
-                              notices and business activites.
-                            </Text>
-                            <Text>
-                              To configure this section, select the purposes you
-                              allow and where available, the appropriate legal
-                              bases (either Consent or Legitimate Interest).
-                            </Text>
-                            <DeprecatedPurposeOverrides />
-                          </Stack>
-                        )}
-                      </SettingsBox>
+            {/* Hidden fields for values managed imperatively by child components */}
+            <Form.Item name="purposeOverrides" hidden noStyle>
+              <Input />
+            </Form.Item>
+            <Form.Item name={["gpp", "enabled"]} hidden noStyle>
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name={["tcfPublisherSettings", "publisher_country_code"]}
+              hidden
+              noStyle
+            >
+              <Input />
+            </Form.Item>
+            <Flex vertical gap="large">
+              {/* Legacy vendor overrides */}
+              {isTcfEnabled &&
+                (hasLegacyLegalBasisOverrides ||
+                  !isPublisherRestrictionsFlagEnabled) && (
+                  <SettingsBox title="Vendor overrides">
+                    <TCFOverrideToggle
+                      defaultChecked={isTcfOverrideEnabled}
+                      disabled={isPatchConfigSettingsLoading}
+                    />
+                    {isTcfOverrideEnabled && (
+                      <Flex vertical gap="small" className="mt-2">
+                        <p>
+                          The table below allows you to adjust which TCF
+                          purposes you allow as part of your user facing notices
+                          and business activites.
+                        </p>
+                        <p>
+                          To configure this section, select the purposes you
+                          allow and where available, the appropriate legal bases
+                          (either Consent or Legitimate Interest).
+                        </p>
+                        <DeprecatedPurposeOverrides />
+                      </Flex>
                     )}
-                  <PublisherSettings />
-                  <GppConfiguration />
-                  <Button
-                    htmlType="submit"
-                    type="primary"
-                    disabled={!dirty || !isValid}
-                    loading={isSubmitting}
-                    data-testid="save-btn"
-                    className="self-start"
-                  >
-                    Save
-                  </Button>
-                </Stack>
-              </Form>
-            )}
-          </Formik>
-        </Box>
+                  </SettingsBox>
+                )}
+              <PublisherSettings />
+              <GppConfiguration />
+              <Button
+                htmlType="submit"
+                type="primary"
+                disabled={!isDirty || !submittable}
+                loading={isSubmitting}
+                data-testid="save-btn"
+                className="self-start"
+              >
+                Save
+              </Button>
+            </Flex>
+          </Form>
+        </div>
       )}
     </Layout>
   );

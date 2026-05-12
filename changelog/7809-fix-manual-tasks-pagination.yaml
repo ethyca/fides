@@ -1,3 +1,0 @@
-type: Fixed
-description: Fixed pagination on the Manual Tasks tab in Privacy Requests, where users could not navigate past the first page
-pr: 7809

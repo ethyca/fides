@@ -5,7 +5,7 @@ import {
 import { useMemo, useState } from "react";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
+import { ConfigureIntegrationForm } from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
@@ -75,7 +75,7 @@ const ConfigureIntegrationModal = ({
       onClose={onClose}
       getIsDirty={() => formState?.dirty ?? false}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={modalFooter}
     >
       <ConfigureIntegrationForm

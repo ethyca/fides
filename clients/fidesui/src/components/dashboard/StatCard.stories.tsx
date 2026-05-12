@@ -64,7 +64,7 @@ export const Default: Story = {
           trend="up"
           value="112,893"
           prefix={<ArrowUpOutlined />}
-          valueStyle={{ fontSize: token.fontSize }}
+          styles={{ content: { fontSize: token.fontSize } }}
         />
       </Card>
     );
@@ -85,7 +85,7 @@ export const NoTitle: Story = {
           trend="up"
           value="112,893"
           prefix={<ArrowUpOutlined />}
-          valueStyle={{ fontSize: token.fontSize }}
+          styles={{ content: { fontSize: token.fontSize } }}
         />
       </Card>
     );
@@ -112,7 +112,7 @@ export const WithSparkline: Story = {
           trend="down"
           value="1,204"
           prefix={<ArrowDownOutlined />}
-          valueStyle={{ fontSize: token.fontSize }}
+          styles={{ content: { fontSize: token.fontSize } }}
         />
       </Card>
     );
@@ -133,7 +133,7 @@ export const WithRadarChart: Story = {
             trend="up"
             value="4"
             prefix={<ArrowUpOutlined />}
-            valueStyle={{ fontSize: token.fontSize }}
+            styles={{ content: { fontSize: token.fontSize } }}
           />
           <div
             className="aspect-square"
@@ -250,7 +250,7 @@ export const DashboardRow: Story = {
               trend="up"
               value="112,893"
               prefix={<ArrowUpOutlined />}
-              valueStyle={{ fontSize: token.fontSize }}
+              styles={{ content: { fontSize: token.fontSize } }}
             />
           </Card>
           <Card
@@ -269,7 +269,7 @@ export const DashboardRow: Story = {
               trend="down"
               value="1,204"
               prefix={<ArrowDownOutlined />}
-              valueStyle={{ fontSize: token.fontSize }}
+              styles={{ content: { fontSize: token.fontSize } }}
             />
           </Card>
           <Card

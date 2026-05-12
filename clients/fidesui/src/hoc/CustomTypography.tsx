@@ -15,8 +15,9 @@ interface CustomTypographyTextProps {
   unStyled?: boolean;
 }
 
-interface CustomTypographyTitleProps
-  extends React.ComponentProps<typeof Typography.Title> {
+interface CustomTypographyTitleProps extends React.ComponentProps<
+  typeof Typography.Title
+> {
   headingSize?: HeadingSize;
 }
 
@@ -82,13 +83,17 @@ const CustomLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<typeof Typography.Link> &
     CustomTypographyTextProps & { variant?: LinkVariant }
->(({ size, variant, unStyled, ...props }, ref) => (
+>(({ size, variant, unStyled, className, ...props }, ref) => (
   <Typography.Link
     ref={ref}
-    className={classNames(getTextSizeClassName(size), {
-      [styles.primaryColorLink]: variant === "primary",
-      [styles.unStyled]: unStyled,
-    })}
+    className={classNames(
+      getTextSizeClassName(size),
+      {
+        [styles.primaryColorLink]: variant === "primary",
+        [styles.unStyled]: unStyled,
+      },
+      className,
+    )}
     {...props}
   />
 ));

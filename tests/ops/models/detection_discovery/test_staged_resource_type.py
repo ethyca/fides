@@ -26,6 +26,11 @@ class TestStagedResourceType:
             StagedResourceType.JAVASCRIPT_BROWSER_REQUEST,
         ]
 
+    def test_get_cloud_infra_resource_types(self):
+        assert StagedResourceType.get_cloud_infra_resource_types() == [
+            StagedResourceType.CLOUD_INFRA,
+        ]
+
     @pytest.mark.parametrize(
         "resource_type_string,expected_resource_type",
         [
@@ -39,6 +44,7 @@ class TestStagedResourceType:
             ("Image", StagedResourceType.IMAGE_BROWSER_REQUEST),
             ("iFrame", StagedResourceType.IFRAME_BROWSER_REQUEST),
             ("Javascript tag", StagedResourceType.JAVASCRIPT_BROWSER_REQUEST),
+            ("Cloud Infrastructure", StagedResourceType.CLOUD_INFRA),
         ],
     )
     def test_can_instantiate_from_string(
@@ -47,37 +53,43 @@ class TestStagedResourceType:
         assert StagedResourceType(resource_type_string) == expected_resource_type
 
     @pytest.mark.parametrize(
-        "resource_type,is_datastore,is_website_monitor",
+        "resource_type,is_datastore,is_website_monitor,is_cloud_infra",
         [
-            (StagedResourceType.DATABASE, True, False),
-            (StagedResourceType.SCHEMA, True, False),
-            (StagedResourceType.TABLE, True, False),
-            (StagedResourceType.FIELD, True, False),
-            (StagedResourceType.ENDPOINT, True, False),
-            (StagedResourceType.COOKIE, False, True),
-            (StagedResourceType.BROWSER_REQUEST, False, True),
-            (StagedResourceType.IMAGE_BROWSER_REQUEST, False, True),
-            (StagedResourceType.IFRAME_BROWSER_REQUEST, False, True),
-            (StagedResourceType.JAVASCRIPT_BROWSER_REQUEST, False, True),
+            (StagedResourceType.DATABASE, True, False, False),
+            (StagedResourceType.SCHEMA, True, False, False),
+            (StagedResourceType.TABLE, True, False, False),
+            (StagedResourceType.FIELD, True, False, False),
+            (StagedResourceType.ENDPOINT, True, False, False),
+            (StagedResourceType.COOKIE, False, True, False),
+            (StagedResourceType.BROWSER_REQUEST, False, True, False),
+            (StagedResourceType.IMAGE_BROWSER_REQUEST, False, True, False),
+            (StagedResourceType.IFRAME_BROWSER_REQUEST, False, True, False),
+            (StagedResourceType.JAVASCRIPT_BROWSER_REQUEST, False, True, False),
+            (StagedResourceType.CLOUD_INFRA, False, False, True),
         ],
     )
-    def test_is_datastore_or_is_website_monitor(
+    def test_is_datastore_or_is_website_monitor_or_is_cloud_infra(
         self,
         resource_type: StagedResourceType,
         is_datastore: bool,
         is_website_monitor: bool,
+        is_cloud_infra: bool,
     ):
         assert resource_type.is_datastore_resource() == is_datastore
         assert resource_type.is_website_monitor_resource() == is_website_monitor
+        assert resource_type.is_cloud_infra_resource() == is_cloud_infra
 
-    def test_all_resource_types_are_either_datastore_or_website_monitor(self):
+    def test_all_resource_types_belong_to_exactly_one_category(self):
         """
-        Tests that all resource types are either datastore or website monitor.
-        If a new resource type is added to the enum but not to either of the
-        datastore or website monitor lists, the test will fail.
+        Every resource type must belong to exactly one monitor category.
+        If a new type is added to the enum but not to any category list, this test fails.
         """
         for resource_type in StagedResourceType:
-            assert (
-                resource_type.is_datastore_resource()
-                or resource_type.is_website_monitor_resource()
+            categories = [
+                resource_type.is_datastore_resource(),
+                resource_type.is_website_monitor_resource(),
+                resource_type.is_cloud_infra_resource(),
+            ]
+            assert sum(categories) == 1, (
+                f"{resource_type} belongs to {sum(categories)} categories, expected exactly 1"
             )

@@ -8,7 +8,7 @@ import {
   ACTION_CENTER_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
-import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 describe("Action center", () => {
   beforeEach(() => {
@@ -81,16 +81,20 @@ describe("Action center", () => {
       // TODO: [HJ-337] uncomment when Add button is implemented
       // cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
       // Review button
-      cy.getByTestId(`review-button-${webMonitorKey}`).should(
-        "have.attr",
-        "href",
-        `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${webMonitorKey}`,
-      );
-      cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
-        "have.attr",
-        "href",
-        `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.DATASTORE}/${integrationMonitorKey}`,
-      );
+      cy.getByTestId(`review-button-${webMonitorKey}`)
+        .closest("a")
+        .should(
+          "have.attr",
+          "href",
+          `${ACTION_CENTER_ROUTE}/${APIMonitorType.WEBSITE}/${webMonitorKey}`,
+        );
+      cy.getByTestId(`review-button-${integrationMonitorKey}`)
+        .closest("a")
+        .should(
+          "have.attr",
+          "href",
+          `${ACTION_CENTER_ROUTE}/${APIMonitorType.DATASTORE}/${integrationMonitorKey}`,
+        );
     });
     it.skip("Should paginate results", () => {
       // TODO: mock pagination and also test skeleton loading state

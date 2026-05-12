@@ -1,4 +1,0 @@
-type: Security
-description: Added nosemgrep suppressions for false positive findings from Phase 1 security scan baseline
-pr: 7816
-labels: []

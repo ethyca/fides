@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
 // Import mocked modules
 import { selectUser } from "~/features/auth";
-import { selectEnvFlags } from "~/features/common/features/features.slice";
+import { selectRbacEnabled } from "~/features/plus/plus.slice";
 import { rbacApi } from "~/features/rbac/rbac.slice";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -22,8 +22,8 @@ jest.mock("~/features/auth", () => ({
   selectUser: jest.fn(),
 }));
 
-jest.mock("~/features/common/features/features.slice", () => ({
-  selectEnvFlags: jest.fn(),
+jest.mock("~/features/plus/plus.slice", () => ({
+  selectRbacEnabled: jest.fn(),
 }));
 
 jest.mock("~/features/rbac/rbac.slice", () => ({
@@ -45,8 +45,8 @@ jest.mock("~/features/common/api.slice", () => ({
 }));
 
 const mockSelectUser = selectUser as jest.MockedFunction<typeof selectUser>;
-const mockSelectEnvFlags = selectEnvFlags as jest.MockedFunction<
-  typeof selectEnvFlags
+const mockSelectRbacEnabled = selectRbacEnabled as jest.MockedFunction<
+  typeof selectRbacEnabled
 >;
 const mockRbacSelect = rbacApi.endpoints.getMyRBACPermissions
   .select as jest.MockedFunction<
@@ -55,11 +55,11 @@ const mockRbacSelect = rbacApi.endpoints.getMyRBACPermissions
 
 // Helper to set up mocks for a test scenario
 const setupMocks = ({
-  alphaRbac = false,
+  rbacEnabled = false,
   rbacPermissions,
   userId = "test-user-id",
 }: {
-  alphaRbac?: boolean;
+  rbacEnabled?: boolean;
   rbacPermissions?: string[] | null;
   userId?: string | null;
 }) => {
@@ -68,8 +68,8 @@ const setupMocks = ({
     userId ? ({ id: userId, username: "testuser" } as any) : null,
   );
 
-  // Mock selectEnvFlags
-  mockSelectEnvFlags.mockReturnValue({ alphaRbac } as any);
+  // Mock selectRbacEnabled
+  mockSelectRbacEnabled.mockReturnValue(rbacEnabled);
 
   // Mock RBAC permissions selector - return a function that returns the query result
   mockRbacSelect.mockReturnValue(
@@ -98,7 +98,7 @@ describe("selectThisUsersScopes", () => {
    * Legacy mode behavior is tested via Cypress E2E tests in rbac-e2e.cy.ts
    * which verifies the complete flow including permission source selection.
    */
-  describe.skip("when RBAC is disabled (alphaRbac = false)", () => {
+  describe.skip("when RBAC is disabled (rbacEnabled = false)", () => {
     it("returns legacy permissions when user has legacy scopes", () => {
       // Would need to mock userApi.endpoints.getUserPermissions
       expect(true).toBe(true);
@@ -115,10 +115,10 @@ describe("selectThisUsersScopes", () => {
     });
   });
 
-  describe("when RBAC is enabled (alphaRbac = true)", () => {
+  describe("when RBAC is enabled (rbacEnabled = true)", () => {
     it("returns RBAC permissions when they are available", () => {
       setupMocks({
-        alphaRbac: true,
+        rbacEnabled: true,
         rbacPermissions: [
           ScopeRegistryEnum.USER_READ,
           ScopeRegistryEnum.USER_CREATE,
@@ -148,7 +148,7 @@ describe("selectThisUsersScopes", () => {
 
     it("returns empty array when no user is logged in", () => {
       setupMocks({
-        alphaRbac: true,
+        rbacEnabled: true,
         userId: null,
       });
 
@@ -162,7 +162,7 @@ describe("selectThisUsersScopes", () => {
     it("returns RBAC permissions when available, ignoring legacy permissions", () => {
       // When RBAC has permissions, we should ONLY see RBAC permissions
       setupMocks({
-        alphaRbac: true,
+        rbacEnabled: true,
         rbacPermissions: [ScopeRegistryEnum.USER_READ],
       });
 
@@ -185,7 +185,7 @@ describe("selectThisUsersScopes", () => {
       ];
 
       setupMocks({
-        alphaRbac: true,
+        rbacEnabled: true,
         rbacPermissions: ownerScopes,
       });
 

@@ -1,0 +1,13 @@
+{
+  "consumer": {
+    "consumer_id": "c1",
+    "consumer_name": "Billing Team",
+    "purpose_keys": ["billing"]
+  },
+  "datasets": {
+    "sales_db": {
+      "dataset_key": "sales_db",
+      "purpose_keys": ["billing"]
+    }
+  }
+}

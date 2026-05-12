@@ -1,4 +1,5 @@
 from .classification_benchmark import ClassificationBenchmark
+from .cloud_infra import CloudInfraStagedResource
 from .core import (
     DiffStatus,
     MonitorConfig,
@@ -22,6 +23,7 @@ from .staged_resource_error import StagedResourceError
 
 __all__ = [
     "ClassificationBenchmark",
+    "CloudInfraStagedResource",
     "DiffStatus",
     "MonitorConfig",
     "MonitorExecution",

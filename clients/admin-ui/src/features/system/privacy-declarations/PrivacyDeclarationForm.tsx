@@ -15,7 +15,6 @@ import {
   ChakraText as Text,
   Icons,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
@@ -260,7 +259,7 @@ export const usePrivacyDeclarationForm = ({
       ) : null}
       {!hideSaved && showSaved && !dirty && initialValues.data_use ? (
         <Text fontSize="sm" data-testid="saved-indicator">
-          <Icons.CheckmarkFilled color={palette.FIDESUI_SUCCESS} /> Saved
+          <Icons.CheckmarkFilled color="var(--fidesui-color-success)" /> Saved
         </Text>
       ) : null}
     </Box>

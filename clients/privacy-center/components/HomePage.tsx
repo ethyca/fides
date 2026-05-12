@@ -84,7 +84,11 @@ const HomePage: NextPage = () => {
   let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
-  const { SHOW_BRAND_LINK, ALLOW_HTML_DESCRIPTION } = useSettings();
+  const {
+    SHOW_BRAND_LINK,
+    ALLOW_HTML_DESCRIPTION,
+    PRIVACY_REQUEST_DISCLOSURE_ENABLED,
+  } = useSettings();
 
   const policyLinks = getEffectivePrivacyCenterLinks(config);
 
@@ -143,9 +147,10 @@ const HomePage: NextPage = () => {
     router.push(url);
   };
 
+  const actions = config.actions ?? [];
   const content: ReactNode[] = [];
 
-  config.actions.forEach((action, index) => {
+  actions.forEach((action, index) => {
     content.push(
       <PrivacyCard
         // eslint-disable-next-line react/no-array-index-key
@@ -179,10 +184,11 @@ const HomePage: NextPage = () => {
   }
 
   return (
-    <main data-testid="home">
+    <main data-testid="home" className="pc-page pc-page--home">
       <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
         <Stack align="center" spacing={3}>
           <Heading
+            className="pc-page__heading"
             fontSize={["3xl", "4xl"]}
             color="gray.800"
             fontWeight="semibold"
@@ -193,6 +199,7 @@ const HomePage: NextPage = () => {
           </Heading>
 
           <TextOrHtml
+            className="pc-page__description"
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}
@@ -239,11 +246,19 @@ const HomePage: NextPage = () => {
           </TextOrHtml>
         ))}
 
-        {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
+        {(SHOW_BRAND_LINK ||
+          policyLinks.length > 0 ||
+          PRIVACY_REQUEST_DISCLOSURE_ENABLED) && (
           <Box position="relative" width="100%">
-            <Stack flexDirection="column" alignItems="center">
+            <Flex
+              className="pc-policy-links"
+              justifyContent="center"
+              gap={6}
+              flexWrap="wrap"
+            >
               {policyLinks.map(({ url, label }) => (
                 <Link
+                  className="pc-policy-links__link"
                   key={`${url}-${label}`}
                   fontSize={["small", "medium"]}
                   fontWeight="medium"
@@ -256,7 +271,19 @@ const HomePage: NextPage = () => {
                   {label}
                 </Link>
               ))}
-            </Stack>
+              {PRIVACY_REQUEST_DISCLOSURE_ENABLED && (
+                <Link
+                  fontSize={["small", "medium"]}
+                  fontWeight="medium"
+                  textAlign="center"
+                  textDecoration="underline"
+                  color="gray.800"
+                  href={`${basePath}/privacy-request-metrics`}
+                >
+                  {config.metrics?.link_text ?? "Privacy request disclosures"}
+                </Link>
+              )}
+            </Flex>
             <BrandLink isHomePage position="absolute" right={6} bottom={0} />
           </Box>
         )}

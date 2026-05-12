@@ -74,7 +74,7 @@ export const MessagingConfigurations = () => {
       <Flex flex={1} direction="column" overflow="auto">
         {userCanUpdate && (
           <Space
-            direction="horizontal"
+            orientation="horizontal"
             style={{
               width: "100%",
               justifyContent: "flex-end",
@@ -88,7 +88,7 @@ export const MessagingConfigurations = () => {
               role="link"
               type="primary"
               icon={<Icons.Add />}
-              iconPosition="end"
+              iconPlacement="end"
               data-testid="add-messaging-provider-btn"
             >
               Add a messaging provider

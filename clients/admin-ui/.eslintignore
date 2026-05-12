@@ -9,3 +9,5 @@ cypress/screenshots
 .eslintrc*
 postcss.config.js
 tailwind.config.js
+src/types/api
+next-env.d.ts

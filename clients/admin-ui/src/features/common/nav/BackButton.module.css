@@ -1,0 +1,5 @@
+.avatar {
+  background-color: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  color: var(--fidesui-color-text);
+}

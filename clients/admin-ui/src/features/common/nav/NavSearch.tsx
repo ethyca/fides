@@ -1,5 +1,4 @@
 import { AutoComplete, Icons, Input, InputRef } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -7,7 +6,10 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
 import NavSearchModal from "./NavSearchModal";
-import useNavSearchItems, { FlatNavItem } from "./useNavSearchItems";
+import useNavSearchItems, {
+  filterAndRankNavItems,
+  FlatNavItem,
+} from "./useNavSearchItems";
 
 const isMac =
   typeof navigator !== "undefined" &&
@@ -16,7 +18,7 @@ const isMac =
 const SHORTCUT_LABEL = isMac ? "⌘K" : "Ctrl+K";
 
 const SEARCH_ICON_STYLE = {
-  color: palette.FIDESUI_NEUTRAL_400,
+  color: "var(--fidesui-neutral-400)",
   fontSize: 14,
 };
 const DEBOUNCE_MS = 200;
@@ -42,11 +44,11 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
   const flatItems: FlatNavItem[] = useNavSearchItems(groups, debouncedQuery);
 
   const filteredOptions = useMemo(() => {
-    const query = searchValue.trim().toLowerCase();
+    const query = searchValue.trim();
     // When no query, only show top-level pages (not tabs/dynamic items).
     // Sub-items only appear when the search text matches them.
     const items = query
-      ? flatItems.filter((item) => item.title.toLowerCase().includes(query))
+      ? filterAndRankNavItems(flatItems, query)
       : flatItems.filter((item) => !item.parentTitle);
 
     // Group by nav group
@@ -129,8 +131,11 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
         onSelect={handleSelect}
         onOpenChange={handleOpenChange}
         defaultActiveFirstOption
+        // Disable Ant Design's built-in filter — it only checks title substrings,
+        // which would silently drop keyword/group matches. We filter manually.
+        filterOption={false}
         className={styles.expandedAutoComplete}
-        popupClassName={styles.searchDropdown}
+        classNames={{ popup: { root: styles.searchDropdown } }}
         value={searchValue}
         onSearch={setSearchValue}
       >

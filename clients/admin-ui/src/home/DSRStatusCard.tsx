@@ -1,16 +1,18 @@
 import {
   antTheme,
+  Badge,
   Card,
   Flex,
   Icons,
   StackedBarChart,
   Statistic,
   Text,
+  Tooltip,
 } from "fidesui";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import { useGetPrivacyRequestsQuery } from "~/features/dashboard/dashboard.slice";
 
@@ -28,6 +30,24 @@ const SLA_SEGMENTS = [
   { key: "overdue", color: "colorError", label: "Overdue" },
 ] as const;
 
+const ALL_DSR_TYPES = ["Access", "Erasure", "Portability", "Rectification"];
+const EMPTY_SLA = { on_track: 0, approaching: 0, overdue: 0 };
+
+function normalizeSlaHealth(
+  slaHealth: Record<
+    string,
+    { on_track: number; approaching: number; overdue: number }
+  >,
+) {
+  const result = { ...slaHealth };
+  ALL_DSR_TYPES.forEach((type) => {
+    if (!(type in result)) {
+      result[type] = EMPTY_SLA;
+    }
+  });
+  return result;
+}
+
 export const DSRStatusCard = () => {
   const { token } = antTheme.useToken();
   const router = useRouter();
@@ -44,15 +64,33 @@ export const DSRStatusCard = () => {
 
   return (
     <Card
-      title="DSR Status"
+      title={
+        <Tooltip
+          placement="bottom"
+          title="A snapshot of active data subject requests — where they stand and whether any are at risk of missing regulatory deadlines."
+        >
+          <Flex
+            style={{ cursor: "pointer", display: "inline-flex" }}
+            align="center"
+            gap={4}
+          >
+            <Text>DSR Status</Text>
+            <Icons.Help size={14} className="opacity-30" />
+          </Flex>
+        </Tooltip>
+      }
       loading={isLoading}
       extra={
-        <NextLink href={PRIVACY_REQUESTS_ROUTE} className={styles.viewAllLink}>
+        <RouterLink
+          unstyled
+          href={PRIVACY_REQUESTS_ROUTE}
+          className={styles.viewAllLink}
+        >
           <Flex align="center" gap={4}>
             View all requests
             <Icons.ArrowRight size={14} />
           </Flex>
-        </NextLink>
+        </RouterLink>
       }
       variant="borderless"
       className={styles.cardContainer}
@@ -62,7 +100,7 @@ export const DSRStatusCard = () => {
           <Flex
             vertical
             justify="space-between"
-            className="w-[180px] shrink-0 border-r border-solid border-r-[var(--ant-color-border)] pr-5"
+            className="w-[180px] shrink-0 border-r border-solid border-r-[var(--fidesui-color-border)] pr-5"
           >
             <div>
               <Flex align="baseline" gap="middle">
@@ -71,45 +109,52 @@ export const DSRStatusCard = () => {
                   Active Requests
                 </Text>
               </Flex>
+
               <Flex vertical gap={4} className="mt-3">
                 {SUB_STATS.map(({ key, title }) => (
                   <Flex key={key} className={styles.subStat}>
                     <Statistic
                       value={data?.statuses?.[key] ?? 0}
                       title={title}
-                      valueStyle={{
-                        fontSize: token.fontSize,
-                        fontWeight: 600,
+                      styles={{
+                        content: {
+                          fontSize: token.fontSize,
+                          fontWeight: 600,
+                        },
                       }}
                     />
                   </Flex>
                 ))}
               </Flex>
-            </div>
-            {(data?.overdue_count ?? 0) > 0 && (
-              <NextLink
-                href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
-                className={styles.overdueLink}
-              >
-                <Flex align="center" gap={4}>
-                  <Text strong type="danger">
-                    {data?.overdue_count} overdue
+              {(data?.overdue_count ?? 0) > 0 && (
+                <RouterLink
+                  unstyled
+                  href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
+                  className={styles.overdueBadge}
+                >
+                  <Badge
+                    count={data?.overdue_count}
+                    color={token.colorError}
+                    size="small"
+                  />
+                  <Text strong type="danger" className="text-xs">
+                    overdue
                   </Text>
-                  <Icons.ArrowRight size={14} color={token.colorError} />
-                </Flex>
-              </NextLink>
-            )}
+                  <Icons.ArrowRight size={12} color={token.colorError} />
+                </RouterLink>
+              )}
+            </div>
           </Flex>
 
           <Flex vertical className="min-w-0 flex-1 pl-5">
             <Text strong className="mb-3 text-xs">
-              SLA Health
+              Regulatory Deadline Compliance
             </Text>
             {data?.sla_health && (
               <>
                 <Flex className="flex-1">
                   <StackedBarChart
-                    data={data?.sla_health}
+                    data={normalizeSlaHealth(data.sla_health)}
                     segments={SLA_SEGMENTS}
                     onCategoryClick={handleTypeClick}
                   />

@@ -113,7 +113,7 @@ export const DiscoveredSystemAggregateTable = ({
             <Button
               type="primary"
               icon={<Icons.ChevronDown />}
-              iconPosition="end"
+              iconPlacement="end"
               loading={anyBulkActionIsLoading}
               disabled={!hasSelectedRows}
               data-testid="bulk-actions-menu"

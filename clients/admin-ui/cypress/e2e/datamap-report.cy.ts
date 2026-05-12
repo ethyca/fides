@@ -171,23 +171,11 @@ describe("Data map report table", () => {
     it("should reorder columns", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
-      cy.getAntDropdownOverlay("more-menu-list").should("not.be.visible");
-      // react-dnd's HTML5 backend requires a DataTransfer on every event and
-      // reorders on hover (not drop), so we simulate the full drag lifecycle.
-      const dataTransfer = new DataTransfer();
-      cy.getByTestId("column-dragger-legal_name").trigger("dragstart", {
-        dataTransfer,
-      });
-      cy.getByTestId("column-dragger-data_categories").trigger("dragover", {
-        dataTransfer,
-      });
-      cy.getByTestId("column-dragger-data_categories").trigger("drop", {
-        dataTransfer,
-      });
-      cy.getByTestId("column-dragger-legal_name").trigger("dragend", {
-        dataTransfer,
-      });
-      cy.getByTestId("save-button").click();
+      cy.getAntModal().should("be.visible");
+      cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
+      cy.getByTestId("column-list-item-data_categories").trigger("drop");
+      cy.getByTestId("column-dragger-legal_name").trigger("dragend");
+      cy.getByTestId("save-button").click({ force: true });
 
       // Verify the new order
       cy.getByTestId("fidesTable").within(() => {
@@ -309,11 +297,16 @@ describe("Data map report table", () => {
       it("should cancel renaming columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
+        // data_uses is a pinned (fixed: "left") column, so its rename input
+        // sits in a sticky cell that the page-level sticky toolbar covers from
+        // Cypress's visibility check perspective. force: true bypasses that.
         cy.getByTestId("column-data_uses-input")
           .eq(0)
-          .clear()
+          .clear({ force: true })
           .then(() => {
-            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
+            cy.getByTestId("column-data_uses-input")
+              .eq(0)
+              .type("Custom Title", { force: true });
           });
         cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
@@ -324,11 +317,15 @@ describe("Data map report table", () => {
       it("should reset columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
+        // See note in "should cancel renaming columns": data_uses is a pinned
+        // column, so we bypass Cypress's visibility check on its rename input.
         cy.getByTestId("column-data_uses-input")
           .eq(0)
-          .clear()
+          .clear({ force: true })
           .then(() => {
-            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
+            cy.getByTestId("column-data_uses-input")
+              .eq(0)
+              .type("Custom Title", { force: true });
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("more-menu").click();
@@ -573,13 +570,13 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My Custom Report").blur();
-        cy.getByTestId("error-reportName").should("exist");
+        cy.getAntFormError("reportName").should("exist");
         cy.get("#reportName").clear();
       });
       cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My new report");
-        cy.getByTestId("error-reportName").should("not.exist");
+        cy.getAntFormError("reportName").should("not.exist");
         cy.getByTestId("custom-report-form-submit").click();
       });
       cy.wait("@createCustomReport").then((interception) => {
@@ -596,10 +593,8 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("delete-report-button").first().click();
       });
-      cy.getByTestId("confirmation-modal").should("be.visible");
-      cy.getByTestId("confirmation-modal").within(() => {
-        cy.getByTestId("continue-btn").click();
-      });
+      cy.getAntModalConfirmButtons().should("be.visible");
+      cy.getAntModalConfirmButtons().find(".ant-btn-dangerous").click();
       cy.wait("@deleteCustomReport")
         .its("request.url")
         .should("include", "1234");

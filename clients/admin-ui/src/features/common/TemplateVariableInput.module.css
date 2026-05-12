@@ -1,0 +1,26 @@
+.dropdown {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 1000;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
+  box-shadow: var(--fidesui-box-shadow-secondary);
+}
+
+.option {
+  cursor: pointer;
+  padding: 7px 12px;
+  background: var(--fidesui-color-bg-container);
+}
+
+.option:not(:last-child) {
+  border-bottom: 1px solid var(--fidesui-color-border-secondary);
+}
+
+.optionActive {
+  background: var(--fidesui-color-fill-alter);
+}

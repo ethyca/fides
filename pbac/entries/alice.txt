@@ -1,0 +1,19 @@
+-- alice@demo.example is registered as the Analytics Team (purpose: analytics).
+--
+-- Compliant: analytics ∩ events.data_purposes = {analytics}
+SELECT user_id, page_path FROM page_views WHERE event_date = '2026-04-14';
+
+-- Purpose mismatch at dataset level (analytics vs billing) — SUPPRESSED
+-- by the allow-analytics-on-billing-data policy (matches data_use
+-- essential.service.payment_processing).
+SELECT customer_id, total FROM orders WHERE order_date = '2026-04-14';
+
+-- Compliant via COLLECTION-level purpose: the sales dataset is billing
+-- at the dataset level, but the invoices collection adds analytics. Any
+-- analytics-team query against invoices passes the purpose check directly
+-- without needing a policy override.
+SELECT invoice_id, amount FROM invoices WHERE amount > 100;
+
+-- Purpose mismatch (analytics vs marketing) — NO matching policy, so
+-- this violation stands.
+SELECT campaign_id, name FROM campaigns LIMIT 10;
