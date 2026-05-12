@@ -10,12 +10,12 @@ from fides.api.db.base_class import Base
 class IdentityVerificationCode(Base):
     """Hashed verification code and attempt metadata per logical owner."""
 
-    __tablename__ = "identity_verification_code"
+    __tablename__ = "lethe_identity_verification_code"
     __table_args__ = (
         UniqueConstraint(
             "owner_type",
             "owner_id",
-            name="uq_identity_verification_code_owner",
+            name="uq_lethe_identity_verification_code_owner",
         ),
     )
 

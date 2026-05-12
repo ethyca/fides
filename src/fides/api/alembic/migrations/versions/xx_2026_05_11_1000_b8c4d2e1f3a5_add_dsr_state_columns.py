@@ -94,7 +94,7 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        "manual_webhook_input",
+        "lethe_manual_webhook_input",
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("privacy_request_id", sa.String(), nullable=False),
         sa.Column("manual_webhook_id", sa.String(), nullable=False),
@@ -131,12 +131,12 @@ def upgrade() -> None:
             "privacy_request_id",
             "manual_webhook_id",
             "action_type",
-            name="uq_manual_webhook_input_pr_webhook_action",
+            name="uq_lethe_manual_webhook_input_pr_webhook_action",
         ),
     )
 
     op.create_table(
-        "identity_verification_code",
+        "lethe_identity_verification_code",
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("owner_id", sa.String(), nullable=False),
         sa.Column("owner_type", sa.String(), nullable=False),
@@ -158,12 +158,12 @@ def upgrade() -> None:
         sa.UniqueConstraint(
             "owner_type",
             "owner_id",
-            name="uq_identity_verification_code_owner",
+            name="uq_lethe_identity_verification_code_owner",
         ),
     )
     op.create_index(
-        "ix_identity_verification_code_expires_at",
-        "identity_verification_code",
+        "ix_lethe_identity_verification_code_expires_at",
+        "lethe_identity_verification_code",
         ["expires_at"],
         unique=False,
     )
@@ -171,11 +171,11 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_index(
-        "ix_identity_verification_code_expires_at",
-        table_name="identity_verification_code",
+        "ix_lethe_identity_verification_code_expires_at",
+        table_name="lethe_identity_verification_code",
     )
-    op.drop_table("identity_verification_code")
-    op.drop_table("manual_webhook_input")
+    op.drop_table("lethe_identity_verification_code")
+    op.drop_table("lethe_manual_webhook_input")
 
     op.drop_column("requesttask", "email_checkpoints")
     op.drop_index("ix_requesttask_celery_task_id", table_name="requesttask")

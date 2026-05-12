@@ -10,13 +10,13 @@ from fides.api.db.encryption_utils import encrypted_type
 class ManualWebhookInput(Base):
     """Stores validated manual webhook payload per (privacy request, webhook, action)."""
 
-    __tablename__ = "manual_webhook_input"
+    __tablename__ = "lethe_manual_webhook_input"
     __table_args__ = (
         UniqueConstraint(
             "privacy_request_id",
             "manual_webhook_id",
             "action_type",
-            name="uq_manual_webhook_input_pr_webhook_action",
+            name="uq_lethe_manual_webhook_input_pr_webhook_action",
         ),
     )
 
