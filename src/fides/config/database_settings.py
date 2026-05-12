@@ -4,7 +4,7 @@
 
 from copy import deepcopy
 from typing import Dict, Optional, cast
-from urllib.parse import quote, quote_plus, urlencode
+from urllib.parse import quote, quote_plus, unquote_plus, urlencode
 
 from pydantic import (
     Field,
@@ -274,6 +274,18 @@ class DatabaseSettings(FidesSettings):
         if value and isinstance(value, str):
             return quote_plus(value)
         return value
+
+    @property
+    def raw_password(self) -> str:
+        """Return password unescaped for direct driver use (psycopg2/asyncpg)."""
+        return unquote_plus(self.password)
+
+    @property
+    def raw_readonly_password(self) -> Optional[str]:
+        """Return readonly password unescaped for direct driver use."""
+        if self.readonly_password:
+            return unquote_plus(self.readonly_password)
+        return None
 
     @field_validator("sync_database_uri", mode="before")
     @classmethod

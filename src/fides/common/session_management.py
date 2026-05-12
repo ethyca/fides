@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.db.ctl_session import async_session
 from fides.api.db.session import get_db_engine, get_db_session
+from fides.common.engine_creators import make_sync_creator
 from fides.config import CONFIG
 
 T = TypeVar("T")
@@ -28,12 +29,16 @@ def get_api_session() -> Session:
     global _engine  # pylint: disable=W0603
     if not _engine:
         _engine = get_db_engine(
-            config=CONFIG,
+            creator=make_sync_creator(
+                connect_args={
+                    "keepalives": 1,
+                    "keepalives_idle": CONFIG.database.api_engine_keepalives_idle,
+                    "keepalives_interval": CONFIG.database.api_engine_keepalives_interval,
+                    "keepalives_count": CONFIG.database.api_engine_keepalives_count,
+                },
+            ),
             pool_size=CONFIG.database.api_engine_pool_size,
             max_overflow=CONFIG.database.api_engine_max_overflow,
-            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
-            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
-            keepalives_count=CONFIG.database.api_engine_keepalives_count,
             pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
         )
     SessionLocal = get_db_session(CONFIG, engine=_engine)
@@ -140,12 +145,17 @@ def get_readonly_api_session() -> Session:
     global _readonly_engine  # pylint: disable=W0603
     if not _readonly_engine:
         _readonly_engine = get_db_engine(
-            database_uri=CONFIG.database.sqlalchemy_readonly_database_uri,
+            creator=make_sync_creator(
+                connect_args={
+                    "keepalives": 1,
+                    "keepalives_idle": CONFIG.database.api_engine_keepalives_idle,
+                    "keepalives_interval": CONFIG.database.api_engine_keepalives_interval,
+                    "keepalives_count": CONFIG.database.api_engine_keepalives_count,
+                },
+                readonly=True,
+            ),
             pool_size=CONFIG.database.api_engine_pool_size,
             max_overflow=CONFIG.database.api_engine_max_overflow,
-            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
-            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
-            keepalives_count=CONFIG.database.api_engine_keepalives_count,
             pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
         )
     SessionLocal = get_db_session(CONFIG, engine=_readonly_engine)

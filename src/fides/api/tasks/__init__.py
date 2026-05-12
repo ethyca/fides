@@ -19,6 +19,7 @@ from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
+from fides.common.engine_creators import make_sync_creator
 from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
@@ -77,12 +78,16 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         # once per celery process.
         if self._task_engine is None:
             self._task_engine = get_db_engine(
-                config=CONFIG,
+                creator=make_sync_creator(
+                    connect_args={
+                        "keepalives": 1,
+                        "keepalives_idle": CONFIG.database.task_engine_keepalives_idle,
+                        "keepalives_interval": CONFIG.database.task_engine_keepalives_interval,
+                        "keepalives_count": CONFIG.database.task_engine_keepalives_count,
+                    },
+                ),
                 pool_size=CONFIG.database.task_engine_pool_size,
                 max_overflow=CONFIG.database.task_engine_max_overflow,
-                keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
-                keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
-                keepalives_count=CONFIG.database.task_engine_keepalives_count,
                 pool_pre_ping=CONFIG.database.task_engine_pool_pre_ping,
             )
 

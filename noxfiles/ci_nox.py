@@ -549,6 +549,7 @@ TEST_MATRIX: Dict[str, Callable] = {
 TEST_DIRECTORY_COVERAGE = {
     "tests/api/": ["api"],
     "tests/common/": ["misc-unit"],
+    "tests/config/": ["misc-unit"],
     "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
     "tests/lib/": ["lib"],
     "tests/ops/": [
