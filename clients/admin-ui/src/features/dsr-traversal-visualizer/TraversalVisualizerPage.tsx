@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { ReactNode, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { DSR_TRAVERSAL_PROPERTY_ACTION_ROUTE } from "~/features/common/nav/routes";
 
 import { CanvasHeader } from "./header/CanvasHeader";
 import {
@@ -46,7 +47,14 @@ export const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
     : undefined;
 
   const goTo = (key: string, action: ActionType = actionType) => {
-    router.replace(`/dsr-traversal/${key}/${action}`);
+    // Use Next.js's pathname+query form so the dynamic segments are
+    // substituted and URL-encoded by the router instead of hand-built
+    // string interpolation (which would let a malformed property key
+    // smuggle path separators or query fragments into the URL).
+    router.replace({
+      pathname: DSR_TRAVERSAL_PROPERTY_ACTION_ROUTE,
+      query: { propertyKey: key, actionType: action },
+    });
   };
 
   let canvasContent: ReactNode;
