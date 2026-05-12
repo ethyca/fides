@@ -1,7 +1,7 @@
 """seed_notification_update_scope
 
 Revision ID: 5f9821b4baf1
-Revises: 55cf25a3e2ca
+Revises: e3f4a5b6c7d8
 Create Date: 2026-05-12 18:00:00.000000
 
 Seeds the notification:update RBAC permission and assigns it to the owner role.
@@ -14,7 +14,7 @@ from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision = "5f9821b4baf1"
-down_revision = "55cf25a3e2ca"
+down_revision = "e3f4a5b6c7d8"
 branch_labels = None
 depends_on = None
 
