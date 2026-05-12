@@ -1,7 +1,7 @@
 """seed_notification_update_scope
 
 Revision ID: 5f9821b4baf1
-Revises: 3a91e5d4f7b2
+Revises: 55cf25a3e2ca
 Create Date: 2026-05-12 18:00:00.000000
 
 Seeds the notification:update RBAC permission and assigns it to the owner role.
