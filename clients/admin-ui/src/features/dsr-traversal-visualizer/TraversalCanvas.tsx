@@ -7,6 +7,7 @@ import {
   ReactFlow,
   useReactFlow,
 } from "@xyflow/react";
+import { Flex, Spin } from "fidesui";
 import { useEffect } from "react";
 
 import { DependencyEdge } from "./edges/DependencyEdge";
@@ -56,7 +57,7 @@ interface Props {
 }
 
 export const TraversalCanvas = ({ payload }: Props) => {
-  const { collapse, toggle, expand } = useLaneCollapseState();
+  const { collapse, toggle, expand, hydrated } = useLaneCollapseState();
   const { selected, onNodeClick, clear } = useNodeSelection();
   const { nodes, edges, lanes } = useTraversalGraph(
     payload,
@@ -110,6 +111,18 @@ export const TraversalCanvas = ({ payload }: Props) => {
   const integrationData =
     selected?.type === "integration" ? selected.data : null;
   const manualData = selected?.type === "manualTask" ? selected.data : null;
+
+  // Wait for the lane-collapse hook to read localStorage before rendering
+  // ReactFlow. Mounting the canvas with default state and then re-laying
+  // out once the persisted state arrives causes a visible "snap" as the
+  // FitViewOnLayoutChange animation fires on first paint.
+  if (!hydrated) {
+    return (
+      <Flex align="center" justify="center" flex={1}>
+        <Spin />
+      </Flex>
+    );
+  }
 
   return (
     <div

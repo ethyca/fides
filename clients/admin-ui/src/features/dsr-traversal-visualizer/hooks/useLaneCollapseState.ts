@@ -42,10 +42,16 @@ const writeToStorage = (state: LaneCollapseMap) => {
 
 export const useLaneCollapseState = () => {
   const [collapse, setCollapse] = useState<LaneCollapseMap>(DEFAULTS);
+  // `hydrated` flips true once the localStorage read in the mount effect
+  // settles. Consumers can use this to gate first paint and avoid the
+  // visible lane-snap that would otherwise happen when stored prefs
+  // differ from `DEFAULTS`.
+  const [hydrated, setHydrated] = useState(false);
 
   // Hydrate after mount to avoid SSR/CSR mismatches in Next.js.
   useEffect(() => {
     setCollapse(readFromStorage());
+    setHydrated(true);
   }, []);
 
   const toggle = useCallback((lane: LaneId) => {
@@ -67,5 +73,5 @@ export const useLaneCollapseState = () => {
     });
   }, []);
 
-  return { collapse, toggle, expand };
+  return { collapse, toggle, expand, hydrated };
 };

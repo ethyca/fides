@@ -21,6 +21,13 @@ describe("useLaneCollapseState", () => {
     });
   });
 
+  it("exposes a `hydrated` flag that flips true after the mount effect", async () => {
+    const { result } = renderHook(() => useLaneCollapseState());
+    await waitFor(() => {
+      expect(result.current.hydrated).toBe(true);
+    });
+  });
+
   it("persists toggles to localStorage", async () => {
     const { result } = renderHook(() => useLaneCollapseState());
     // Wait for hydration to settle
