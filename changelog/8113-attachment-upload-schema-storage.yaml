@@ -1,4 +1,4 @@
 type: Added
-description: ENG-3517 foundation - `FileUploadCustomPrivacyRequestField` Privacy Center custom-field variant, magic-byte sniff catalog (`FilesMagicBytes`, `AllowedFileType` helpers, `FileUploadConstraints`), URL constant + config knobs, and `PrivacyRequestService` extension hooks for downstream attachment-promotion. Data-layer half (model + repo) ships in #8110; upload service + endpoint live in fidesplus.
+description: Added `FileUploadCustomPrivacyRequestField` schema variant, magic-byte sniff helpers, file-upload config knobs, and `PrivacyRequestService` extension hooks.
 pr: 8113
 labels: []

@@ -124,7 +124,6 @@ class FileUploadCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     drive client hints and per-field upload enforcement."""
 
     field_type: Literal["file"] = "file"
-    required: Optional[bool] = False
     max_size_bytes: int = Field(default_factory=_default_file_max_size_bytes, gt=0)
     allowed_file_types: list[str] = Field(default_factory=_default_allowed_file_types)
 
@@ -140,15 +139,7 @@ class FileUploadCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     def validate_allowed_file_types(cls, v: list[str]) -> list[str]:
         from fides.api.service.storage.util import AllowedFileType
 
-        supported = AllowedFileType.supported_file_types()
-        if not v:
-            raise ValueError("allowed_file_types must not be empty")
-        unsupported = [ext for ext in v if ext not in supported]
-        if unsupported:
-            raise ValueError(
-                f"Unsupported file types: {sorted(unsupported)}. "
-                f"Supported: {sorted(supported)}"
-            )
+        AllowedFileType.validate_allowed_extensions(v)
         return v
 
 

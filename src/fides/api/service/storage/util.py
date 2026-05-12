@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum as EnumType
 from typing import Any, Callable, Optional
@@ -82,10 +83,22 @@ class AllowedFileType(EnumType):
         """File extensions that have a known ``AllowedFileType`` enum entry."""
         return set(cls.__members__.keys())
 
-
-MIME_TO_EXTENSION: dict[str, str] = {
-    member.value: member.name for member in AllowedFileType
-}
+    @classmethod
+    def validate_allowed_extensions(cls, extensions: Iterable[str]) -> None:
+        """Raise ``ValueError`` if ``extensions`` is empty or contains any
+        entry not in :class:`AllowedFileType`. Shared by
+        :class:`FileUploadConstraints` and the privacy-center file-field
+        schema validator so error messages stay in sync."""
+        ext_set = set(extensions)
+        if not ext_set:
+            raise ValueError("allowed_file_types must not be empty")
+        supported = cls.supported_file_types()
+        unsupported = ext_set - supported
+        if unsupported:
+            raise ValueError(
+                f"Unsupported file types: {sorted(unsupported)}. "
+                f"Supported: {sorted(supported)}"
+            )
 
 
 @dataclass(frozen=True)
@@ -99,15 +112,7 @@ class FileUploadConstraints:
     def __post_init__(self) -> None:
         if self.max_size_bytes <= 0:
             raise ValueError("max_size_bytes must be greater than 0")
-        if not self.allowed_file_types:
-            raise ValueError("allowed_file_types must not be empty")
-        supported = AllowedFileType.supported_file_types()
-        unsupported = self.allowed_file_types - supported
-        if unsupported:
-            raise ValueError(
-                f"Unsupported file types: {sorted(unsupported)}. "
-                f"Supported: {sorted(supported)}"
-            )
+        AllowedFileType.validate_allowed_extensions(self.allowed_file_types)
 
     @classmethod
     def defaults(cls) -> "FileUploadConstraints":
@@ -117,14 +122,6 @@ class FileUploadConstraints:
                 AllowedFileType.default_public_upload_allowed_file_types()
             ),
         )
-
-
-def extension_for_mime(mime: str) -> str:
-    """Return the file extension matching an allowed MIME (without leading dot)."""
-    try:
-        return MIME_TO_EXTENSION[mime]
-    except KeyError as exc:
-        raise ValueError(f"No extension registered for MIME {mime!r}") from exc
 
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"

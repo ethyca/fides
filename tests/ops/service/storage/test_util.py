@@ -9,7 +9,6 @@ from fides.api.service.storage.util import (
     AllowedFileType,
     FilesMagicBytes,
     FileUploadConstraints,
-    extension_for_mime,
     get_allowed_file_type_or_raise,
     get_local_filename,
     get_unique_filename,
@@ -479,24 +478,6 @@ class TestFilesMagicBytes:
         assert AllowedFileType.supported_file_types() == set(
             AllowedFileType.__members__.keys()
         )
-
-
-class TestExtensionForMime:
-    @pytest.mark.parametrize(
-        "mime",
-        [
-            param("application/pdf", id="pdf"),
-            param("image/jpeg", id="jpeg"),
-            param("image/png", id="png"),
-        ],
-    )
-    def test_returns_extension(self, mime):
-        # jpg/jpeg share image/jpeg in AllowedFileType — either name is valid.
-        assert extension_for_mime(mime) in {"pdf", "jpg", "jpeg", "png"}
-
-    def test_raises_for_unknown_mime(self):
-        with pytest.raises(ValueError, match="No extension registered"):
-            extension_for_mime("application/x-unknown")
 
 
 def test_files_magic_bytes_extensions_without_magic():

@@ -18,7 +18,7 @@ class BaseCustomPrivacyRequestField(FidesSchema, ABC):
     """Abstract base class for all custom privacy request fields"""
 
     label: str
-    required: Optional[bool] = True
+    required: Optional[bool] = None
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
     query_param_key: Optional[str] = None
