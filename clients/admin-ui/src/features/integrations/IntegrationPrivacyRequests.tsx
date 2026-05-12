@@ -368,7 +368,7 @@ const IntegrationPrivacyRequests = ({
             width={720}
             wrapProps={{ "data-testid": "link-dataset-modal" }}
           >
-            <Flex vertical gap="middle">
+            <Flex vertical gap="medium">
               <Input.Search
                 placeholder="Search datasets..."
                 allowClear
