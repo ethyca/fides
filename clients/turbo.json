@@ -30,26 +30,9 @@
       "dependsOn": ["build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
-    "check": {
-      "dependsOn": ["^build"],
-      "cache": false
-    },
-    "check:ci": {
-      "dependsOn": ["^build"]
-    },
-    "lint": {
+    "lint:antd": {
       "dependsOn": [],
       "cache": false
-    },
-    "lint:ci": {
-      "dependsOn": []
-    },
-    "format": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "format:ci": {
-      "dependsOn": []
     },
     "typecheck": {
       "dependsOn": ["^build"]
