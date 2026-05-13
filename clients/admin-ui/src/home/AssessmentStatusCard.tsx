@@ -40,13 +40,6 @@ const SEGMENTS: readonly StackedBarSegment[] = [
   { key: "risk", color: "colorError", label: "Risk" },
 ];
 
-const SEGMENT_HREFS: Record<SegmentKey, string> = {
-  completed: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.COMPLETED}`,
-  pending: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.GENERATING}`,
-  open: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}`,
-  risk: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}&risk_level=${RiskLevel.HIGH}`,
-};
-
 interface BlockedGroup {
   name: string;
   staleCount: number;
@@ -241,7 +234,7 @@ export const AssessmentStatusCard = () => {
               <RouterLink
                 key={key}
                 unstyled
-                href={SEGMENT_HREFS[key as SegmentKey]}
+                href={PRIVACY_ASSESSMENTS_ROUTE}
                 className={styles.segmentLegend}
               >
                 <span
