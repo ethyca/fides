@@ -1,4 +1,4 @@
-"""Tests for engine creator factories and credential helpers."""
+"""Tests for engine creator factories and helpers."""
 
 import ssl
 from unittest.mock import MagicMock, patch
@@ -10,43 +10,11 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from fides.common.engine_creators import (
     _build_ssl_context,
     _convert_asyncpg_params,
-    get_db_credentials,
-    get_readonly_db_credentials,
     make_async_creator,
     make_sync_creator,
 )
 from fides.config import CONFIG
 from fides.config.database_settings import DatabaseSettings
-
-
-class TestGetDbCredentials:
-    def test_returns_expected_fields(self) -> None:
-        creds = get_db_credentials()
-        assert set(creds.keys()) == {"host", "port", "user", "password", "dbname"}
-
-    def test_port_is_int(self) -> None:
-        creds = get_db_credentials()
-        assert isinstance(creds["port"], int)
-
-    def test_password_is_unescaped(self) -> None:
-        """raw_password should reverse the quote_plus escaping."""
-        creds = get_db_credentials()
-        # The raw password should not contain URL-encoded characters
-        # unless the original password literally contains them
-        assert creds["password"] == CONFIG.database.raw_password
-
-    def test_uses_test_db_in_test_mode(self) -> None:
-        creds = get_db_credentials()
-        if CONFIG.test_mode:
-            assert creds["dbname"] == CONFIG.database.test_db
-        else:
-            assert creds["dbname"] == CONFIG.database.db
-
-
-class TestGetReadonlyDbCredentials:
-    def test_returns_none_when_not_configured(self) -> None:
-        if not CONFIG.database.readonly_server:
-            assert get_readonly_db_credentials() is None
 
 
 class TestRawPassword:
@@ -227,36 +195,51 @@ class TestMakeAsyncCreator:
         finally:
             await engine.dispose()
 
-    @patch("fides.common.engine_creators.asyncpg")
     @patch("fides.common.engine_creators.AsyncAdapt_asyncpg_connection")
+    @patch("fides.common.engine_creators.await_only", side_effect=lambda coro: coro)
+    @patch("fides.common.engine_creators.asyncpg")
     def test_ssl_context_not_overwritten_by_async_params(
-        self, mock_adapt_conn, mock_asyncpg
+        self, mock_asyncpg, mock_await, mock_adapt_conn, tmp_path
     ) -> None:
         """When both sslrootcert and sslmode are configured, the SSLContext
         must not be overwritten by the raw ssl string from async_params."""
-        mock_ssl_context = MagicMock(spec=ssl.SSLContext)
+        import datetime
 
-        with (
-            patch(
-                "fides.common.engine_creators._build_ssl_context",
-                return_value=mock_ssl_context,
-            ),
-            patch(
-                "fides.common.engine_creators._convert_asyncpg_params",
-                return_value={"ssl": "require", "other": "value"},
-            ),
-            patch(
-                "fides.common.engine_creators.await_only",
-                side_effect=lambda coro: coro,
-            ),
+        from cryptography import x509
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.x509.oid import NameOID
+
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        subject = issuer = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "test-ca")]
+        )
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(issuer)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+            .not_valid_after(
+                datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(days=1)
+            )
+            .sign(key, hashes.SHA256())
+        )
+        cert_file = tmp_path / "ca.pem"
+        cert_file.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+
+        with patch.object(
+            CONFIG.database,
+            "params",
+            {"sslmode": "verify-full", "sslrootcert": str(cert_file)},
         ):
             creator = make_async_creator()
             creator()
 
-        # asyncpg.connect was called — check the ssl kwarg
         connect_kwargs = mock_asyncpg.connect.call_args[1]
-        assert connect_kwargs["ssl"] is mock_ssl_context, (
+        assert isinstance(connect_kwargs["ssl"], ssl.SSLContext), (
             f"Expected SSLContext but got {connect_kwargs['ssl']!r} — "
             "async_params overwrote the ssl_context"
         )
-        assert connect_kwargs["other"] == "value"

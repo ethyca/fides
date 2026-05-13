@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import time
 from typing import Any, Callable, Dict, Optional, TypeVar
+from urllib.parse import quote_plus
 
 from loguru import logger as log
 
@@ -100,6 +101,15 @@ class DBCredentialProvider:
         creds["password"] = secret["password"]
 
         return creds
+
+    def get_database_url(
+        self, driver: str = "postgresql+psycopg2", readonly: bool = False
+    ) -> str:
+        """Build a SQLAlchemy database URL with credentials from the provider."""
+        creds = self.get_credentials(readonly=readonly)
+        user = quote_plus(creds["user"])
+        password = quote_plus(creds["password"])
+        return f"{driver}://{user}:{password}@{creds['host']}:{creds['port']}/{creds['dbname']}"
 
     # ------------------------------------------------------------------
     # Connection with retry

@@ -11,6 +11,7 @@ from sqlalchemy.pool import NullPool
 
 from fides.api.common_exceptions import MissingConfig
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
+from fides.common.engine_creators import make_sync_creator
 from fides.config import FidesConfig
 
 
@@ -100,13 +101,13 @@ def get_db_session(
     engine: Engine | None = None,
 ) -> sessionmaker:
     """Return a database SessionLocal."""
-    if not config.database.sqlalchemy_database_uri:
-        raise MissingConfig("No database uri available in the config")
+    if engine is None:
+        engine = get_db_engine(creator=make_sync_creator())
 
     return sessionmaker(
         autocommit=autocommit,
         autoflush=autoflush,
-        bind=engine or get_db_engine(config=config),
+        bind=engine,
         class_=ExtendedSession,
     )
 
