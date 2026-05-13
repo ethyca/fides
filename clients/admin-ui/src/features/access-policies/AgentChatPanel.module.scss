@@ -8,12 +8,16 @@
     --padding-ul-ol: 0 !important;
     --margin-ul-ol: 0 !important;
 
-    // Keep cells single-line so the table grows to its natural width and the
-    // package's `overflow: auto` can show a horizontal scrollbar. Otherwise
-    // Tailwind's `:where(*) { word-wrap: break-word }` shrinks cells to fit.
+    // Let cells wrap at spaces but never break mid-word. The package inherits
+    // `word-break: break-word` onto cell descendants via `.x-markdown div/span`,
+    // and Tailwind's `:where(*)` reapplies `word-wrap: break-word`, so both
+    // need overriding on cells and their children.
     th,
-    td {
-      white-space: nowrap;
+    td,
+    :is(th, td) * {
+      word-break: normal;
+      overflow-wrap: normal;
+      word-wrap: normal;
     }
   }
 }
