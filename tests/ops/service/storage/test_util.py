@@ -485,6 +485,13 @@ def test_files_magic_bytes_extensions_without_magic():
     assert FilesMagicBytes.extensions_without_magic() == {"csv", "txt"}
 
 
+def test_files_magic_bytes_max_prefix_length():
+    # Header peek must cover the longest signature; auto-tracks
+    # SIGNATURES so adding a longer one doesn't silently truncate reads.
+    expected = max(len(m) for m in FilesMagicBytes.SIGNATURES.values())
+    assert FilesMagicBytes.max_prefix_length() == expected
+
+
 class TestFileUploadConstraints:
     def test_defaults_and_subset(self):
         defaults = FileUploadConstraints.defaults()

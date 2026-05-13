@@ -108,6 +108,13 @@ class TestAttachmentNotFoundError:
         exc = AttachmentNotFoundError("invoice")
         assert "invoice" in str(exc)
         assert exc.field_name == "invoice"
+        assert exc.reason is None
+
+    def test_reason_is_appended_to_message(self):
+        exc = AttachmentNotFoundError("invoice", reason="missing")
+        assert "invoice" in str(exc)
+        assert "Reason: missing" in str(exc)
+        assert exc.reason == "missing"
 
     def test_is_attachments_service_error(self):
         assert isinstance(AttachmentNotFoundError("f"), AttachmentsServiceError)
