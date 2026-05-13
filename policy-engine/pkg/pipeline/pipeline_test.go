@@ -400,3 +400,60 @@ func TestTableResolution_CaseInsensitive(t *testing.T) {
 		t.Errorf("expected case-insensitive table resolution, got %v", rec.DatasetKeys)
 	}
 }
+
+func TestTableResolution_SchemaQualifiedDisambiguation(t *testing.T) {
+	// Two datasets with same collection name but different fides_keys.
+	// Schema-qualified lookup should resolve to the correct dataset.
+	f := Fixtures{
+		Consumers: map[string]fixtures.Consumer{
+			"alice@test": {Name: "Alice", Purposes: []string{"analytics"}},
+		},
+		Purposes: map[string]fixtures.Purpose{
+			"analytics": {FidesKey: "analytics", DataUse: "analytics"},
+			"marketing": {FidesKey: "marketing", DataUse: "marketing.advertising"},
+		},
+		Datasets: fixtures.Datasets{
+			Purposes: map[string]pbac.DatasetPurposes{
+				"dataset_a": {DatasetKey: "dataset_a", PurposeKeys: []string{"analytics"}},
+				"dataset_b": {DatasetKey: "dataset_b", PurposeKeys: []string{"marketing"}},
+			},
+			Tables: map[string]string{
+				"transactions":             "dataset_b", // bare name = last loaded
+				"dataset_a.transactions":   "dataset_a",
+				"dataset_b.transactions":   "dataset_b",
+			},
+			FieldCategories: map[string]map[string][]string{},
+		},
+		Policies: nil,
+	}
+
+	// Without schema: resolves to dataset_b (bare index) — marketing only, violation
+	rec := Evaluate(f, Input{
+		Identity: "alice@test",
+		Tables:   []TableRef{{Collection: "transactions"}},
+	})
+	if rec.IsCompliant {
+		t.Error("expected violation without schema qualifier")
+	}
+
+	// With schema=dataset_a: resolves to dataset_a — analytics matches, compliant
+	rec = Evaluate(f, Input{
+		Identity: "alice@test",
+		Tables:   []TableRef{{Collection: "transactions", Schema: "dataset_a"}},
+	})
+	if !rec.IsCompliant {
+		t.Errorf("expected compliant with schema=dataset_a, got violations: %v", rec.Violations)
+	}
+	if len(rec.DatasetKeys) != 1 || rec.DatasetKeys[0] != "dataset_a" {
+		t.Errorf("expected dataset_a, got %v", rec.DatasetKeys)
+	}
+
+	// With schema=dataset_b: resolves to dataset_b — marketing only, violation
+	rec = Evaluate(f, Input{
+		Identity: "alice@test",
+		Tables:   []TableRef{{Collection: "transactions", Schema: "dataset_b"}},
+	})
+	if rec.IsCompliant {
+		t.Error("expected violation with schema=dataset_b")
+	}
+}

@@ -46,6 +46,7 @@ export interface PolicyViolationLog {
   consumer: string;
   consumer_email?: string;
   policy?: string;
+  policy_id?: string;
   policy_description?: string;
   control?: string;
   dataset: string;
