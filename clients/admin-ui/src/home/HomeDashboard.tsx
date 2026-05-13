@@ -23,6 +23,7 @@ export const HomeDashboard = () => {
       alphaDarkMode,
       alphaDashboardActivityFeed,
       alphaDashboardAgentBriefing,
+      alphaDashboardAssessmentStatusCard,
     },
   } = useFlags();
   const { data: trends, isLoading: isTrendsLoading } =
@@ -76,23 +77,31 @@ export const HomeDashboard = () => {
           <DSRStatusCard />
         </Col>
       </Row>
-      <Row
-        gutter={ROW_GUTTER}
-        className={`items-stretch ${alphaDashboardActivityFeed ? "h-[400px]" : ""}`}
-      >
-        {alphaDashboardActivityFeed && (
-          <Col xs={24} md={12} className="h-full">
-            <ActivityFeedCard />
-          </Col>
-        )}
-        <Col
-          xs={24}
-          md={alphaDashboardActivityFeed ? 12 : 24}
-          className="h-full"
+      {(alphaDashboardActivityFeed || alphaDashboardAssessmentStatusCard) && (
+        <Row
+          gutter={ROW_GUTTER}
+          className={`items-stretch ${alphaDashboardActivityFeed ? "h-[400px]" : ""}`}
         >
-          <AssessmentStatusCard />
-        </Col>
-      </Row>
+          {alphaDashboardActivityFeed && (
+            <Col
+              xs={24}
+              md={alphaDashboardAssessmentStatusCard ? 12 : 24}
+              className="h-full"
+            >
+              <ActivityFeedCard />
+            </Col>
+          )}
+          {alphaDashboardAssessmentStatusCard && (
+            <Col
+              xs={24}
+              md={alphaDashboardActivityFeed ? 12 : 24}
+              className="h-full"
+            >
+              <AssessmentStatusCard />
+            </Col>
+          )}
+        </Row>
+      )}
       <DashboardDrawer />
     </Flex>
   );

@@ -146,5 +146,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaDashboardAssessmentStatusCard": {
+    "label": "Alpha dashboard assessment status card",
+    "description": "Show the assessment status card on the dashboard",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
