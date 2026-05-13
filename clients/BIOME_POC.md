@@ -101,8 +101,23 @@ The 461 inline disables remain as dead text under Biome (they're inert). They ca
 | Biome rule (now) | Prior ESLint config | Why it was silent |
 |---|---|---|
 | `noImgElement` (3) | `@next/next/no-img-element: "off"` in admin-ui | Explicitly turned off |
-| `noLabelWithoutControl` (2) | `jsx-a11y/label-has-associated-control` with `depth: 25, assert: "either"` | Very permissive depth; Biome has no equivalent option |
-| Various a11y on Ant Design components | `jsx-a11y` custom component map (`AutoComplete` → input, `Button` → button, etc.) | Biome doesn't support custom component mappings either way |
+| `noLabelWithoutControl` (2) | `jsx-a11y/label-has-associated-control` with `depth: 25, assert: "either"` | No `depth` option in Biome, but `inputComponents`/`labelComponents` ARE supported — see correction below |
+| Various a11y on Ant Design components | `jsx-a11y` custom component map (`AutoComplete` → input, `Button` → button, etc.) | Some Biome a11y rules (e.g. `noLabelWithoutControl`) DO accept custom component options. See correction below. |
+
+> **Correction:** an earlier draft said Biome's a11y rules don't support custom component mappings at all. That was wrong. [`noLabelWithoutControl`](https://biomejs.dev/linter/rules/no-label-without-control/) takes `inputComponents`, `labelComponents`, and `labelAttributes` per-rule options. Example:
+>
+> ```jsonc
+> "a11y": {
+>   "noLabelWithoutControl": {
+>     "options": {
+>       "inputComponents": ["Input", "Select", "Checkbox", "DatePicker", "AutoComplete"],
+>       "labelComponents": ["Form.Item"]
+>     }
+>   }
+> }
+> ```
+>
+> Limitation: no support for namespace components (e.g. `Form.Item` works only as a single token; `Control.Input` does not). Other a11y rules vary in what custom-component options they expose — needs a per-rule check during the a11y remediation pass.
 
 **Genuinely net-new** (no equivalent in the prior config, so ESLint never had a chance):
 
@@ -180,7 +195,7 @@ Documented losses (Biome has no equivalent, no plugin available, and we declined
 
 - **`eslint-plugin-jsdoc` `@swagger` JSDoc enforcement** on `privacy-center/pages/api/*`. The JSDoc blocks and `next-swagger-doc` stay (they feed `pages/api/openapi.json.ts`). Convention-only until the follow-up ticket restores the rendered Swagger UI docs page (`clients/privacy-center/app/docs/page.tsx`, commented out during the React 19 upgrade), at which point missing blocks become visibly broken and self-enforcing.
 - **`eslint-plugin-storybook`**. Storybook-specific lint rules removed from fidesui. Storybook itself unaffected.
-- **`jsx-a11y` custom component mappings.** The prior ESLint config mapped Ant Design components (`Button`, `Select`, `AutoComplete`, `DatePicker`, etc.) to their native equivalents so a11y rules would fire on them. Biome's a11y rules don't support custom component mappings, so a11y checks on Ant components will be skipped silently. This is a real regression for new code; for existing code, the warnings table above suggests we weren't catching much anyway.
+- **`jsx-a11y` custom component mappings — PARTIAL, not lost.** Earlier draft of this report said Biome doesn't support custom component mappings. That was wrong. At minimum [`noLabelWithoutControl`](https://biomejs.dev/linter/rules/no-label-without-control/) accepts `inputComponents`, `labelComponents`, and `labelAttributes` options that play the same role as `jsx-a11y/label-has-associated-control`'s `controlComponents`. Other Biome a11y rules vary — needs a per-rule check. So the right framing is: the previous all-in-one component map is gone, but most of the same mappings can be re-declared per-rule in `biome.json` `overrides[]`. Tracked as a remediation follow-up rather than a regression.
 - **`eslint-plugin-tailwindcss` unknown class detection.** Biome's `useSortedClasses` handles sorting but doesn't validate that class names exist in the Tailwind config. Typos in classnames will compile and ship. (Sorting is also gated on the nursery `useSortedClasses` rule, currently not enabled.)
 - **`airbnb` stylistic strictness.** Many small stylistic rules (function expression style, naming conventions, max-classes-per-file, etc.) simply go away. Biome's `style` group is leaner. We considered this a feature, not a bug.
 
