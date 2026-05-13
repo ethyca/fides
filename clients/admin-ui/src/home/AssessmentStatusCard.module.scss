@@ -101,8 +101,11 @@
 .attentionList {
   flex: 1;
   min-height: 0;
+  max-height: 280px;
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding-right: 8px;
 }
 
 @container (max-width: 519px) {
