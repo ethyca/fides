@@ -379,12 +379,12 @@ export const FidesTableV2 = <T,>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().columnSizingInfo]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (onSort) {
       const columnSort = tableInstance.getState().sorting;
       onSort(columnSort[0]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().sorting]);
 
   return (

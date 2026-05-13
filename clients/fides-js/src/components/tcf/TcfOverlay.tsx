@@ -169,6 +169,7 @@ export const TcfOverlay = () => {
    * locale changes!
    */
   const privacyNoticesWithBestTranslation: PrivacyNoticeWithBestTranslation[] =
+    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
     useMemo(
       () =>
         (experienceMinimal.privacy_notices || []).map((notice) => {
@@ -187,7 +188,6 @@ export const TcfOverlay = () => {
           );
           return { ...notice, bestTranslation, disabled };
         }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [experienceMinimal.privacy_notices, currentLocale],
     );
 
@@ -233,6 +233,7 @@ export const TcfOverlay = () => {
     },
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (userlocale && bestLocale !== minExperienceLocale) {
       // The minimal experience translation is different from the user's language.
@@ -255,13 +256,13 @@ export const TcfOverlay = () => {
       });
     }
     fidesDebugger("Fetching full TCF experience...");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { setVendorCount } = useVendorButton();
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(EMPTY_ENABLED_IDS);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     const isFullExperience = !!experienceFull;
     if (isFullExperience) {
@@ -285,7 +286,6 @@ export const TcfOverlay = () => {
         setIsI18nLoading(false);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experienceFull]);
 
   useEffect(() => {
@@ -643,6 +643,7 @@ export const TcfOverlay = () => {
     ],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
       fidesDebugger(
@@ -655,7 +656,6 @@ export const TcfOverlay = () => {
       );
       handleRejectAll(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.fidesConsentOverride]);
 
   const initialTab = parseModalDefaultView(options.fidesModalDefaultView);

@@ -62,6 +62,7 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
   const [searchValues, setSearchValues] = useState<string[]>([]);
 
   // Read URL facets after hydration (router.query is empty on first render)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (!router.isReady) {
       return;
@@ -72,10 +73,11 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     } else if (Array.isArray(facets)) {
       setSearchValues(facets.filter(Boolean) as string[]);
     }
-  }, [router.isReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [router.isReady]);
 
   const skipUrlSyncRef = useRef(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (skipUrlSyncRef.current) {
       skipUrlSyncRef.current = false;
@@ -95,7 +97,6 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     router.replace({ pathname: router.pathname, query }, undefined, {
       shallow: true,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValues]);
 
   const [intervalHours, setIntervalHours] = useState<number | undefined>();

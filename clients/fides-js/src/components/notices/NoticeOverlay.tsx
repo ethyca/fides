@@ -93,6 +93,7 @@ const NoticeOverlay = () => {
    * Determine which ExperienceConfig translation is being used based on the
    * current locale and memo-ize it's history ID to use for all API calls
    */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
@@ -103,7 +104,6 @@ const NoticeOverlay = () => {
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experience, currentLocale]);
 
   /**
@@ -169,6 +169,7 @@ const NoticeOverlay = () => {
    * as early as possible, before the browser paints. This prevents a race condition
    * where the FidesUpdating event (triggered by GPC) fires before the listener is ready.
    */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useLayoutEffect(() => {
     const handleFidesUpdating = (event: Event) => {
       const fidesEvent = event as FidesEvent;
@@ -188,7 +189,6 @@ const NoticeOverlay = () => {
       window.removeEventListener("FidesUpdating", handleFidesUpdating);
     };
     // only need to run once on mount, no dependency watch needed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isAllNoticeOnly = privacyNoticeItems.every(
@@ -336,6 +336,7 @@ const NoticeOverlay = () => {
     [draftEnabledNoticeKeys, handleUpdatePreferences, privacyNoticeItems],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (isConsentOverride(options) && experience.privacy_notices) {
       if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
@@ -350,7 +351,6 @@ const NoticeOverlay = () => {
         handleRejectAll(true);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experience.privacy_notices, options.fidesConsentOverride]);
 
   const dispatchOpenBannerEvent = useCallback(() => {

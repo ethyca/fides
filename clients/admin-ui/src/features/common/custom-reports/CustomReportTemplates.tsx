@@ -181,15 +181,16 @@ export const CustomReportTemplates = ({
     }
   }, [customReportsList]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     // If the user clicks the apply button before the report is fetched, the spinner will show. Once the selected report is fetched, stop the spinner and apply the template.
     if (showSpinner) {
       setShowSpinner(false);
       handleApplyTemplate();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchedReport]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     // When we first load the component, we want to get and apply the saved report id from local storage.
     if (savedReportId) {
@@ -197,7 +198,6 @@ export const CustomReportTemplates = ({
     } else {
       handleReset();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savedReportId]);
 
   const applyDisabled =

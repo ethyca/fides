@@ -240,9 +240,9 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     syncKey,
   } = props;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   const initialResult = useMemo(
     () => (initialYaml ? yamlToNodesAndEdges(initialYaml) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -281,13 +281,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   }, []);
 
   // Sync counters on initial mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     syncCounters(initialResult?.nodes ?? []);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // When syncKey increments (Code → Builder switch), re-parse initialYaml
   const prevSyncKeyRef = useRef<number | undefined>(undefined);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (syncKey === undefined || syncKey === prevSyncKeyRef.current) {
       return;
@@ -303,7 +304,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       setEdges([]);
       nextIdRef.current = { action: 1, condition: 1, constraint: 1 };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncKey]);
 
   const updateNodeData = useCallback(

@@ -264,6 +264,7 @@ export const useDatamapReportTable = () => {
   }, [columns, columnVisibility, columnOrder, groupBy]);
 
   // Update column order when groupBy or data changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (groupBy && datamapReport) {
       const allColumnKeys = columns.map(getColKey);
@@ -273,7 +274,6 @@ export const useDatamapReportTable = () => {
         setColumnOrder(getColumnOrder(groupBy, columnOrder));
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupBy, datamapReport]);
 
   // Column renaming handler

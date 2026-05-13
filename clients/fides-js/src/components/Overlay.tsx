@@ -104,6 +104,7 @@ const Overlay: FunctionComponent<Props> = ({
     description: defaultDescription,
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (disableBanner === null) {
       // We check for disableBanner being `null` so that this only ever gets set
@@ -113,7 +114,6 @@ const Overlay: FunctionComponent<Props> = ({
         !shouldResurfaceBanner(experience, cookie, savedConsent, options),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disableBanner]);
 
   // When fidesEmbed is enabled, this should be set immediately (don't wait for css animation support)
