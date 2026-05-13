@@ -108,6 +108,33 @@ class TestIsAuthError:
     def test_rejects_non_auth_errors(self, exc):
         assert not DBCredentialProvider._is_auth_error(exc)
 
+    @pytest.mark.parametrize(
+        "message",
+        [
+            'FATAL:  password authentication failed for user "postgres"',
+            'connection to server failed: FATAL:  Password authentication failed for user "app"',
+        ],
+        ids=["standard-pg", "mixed-case"],
+    )
+    def test_string_fallback_detects_auth_message(self, message):
+        """psycopg2 doesn't set pgcode on connection-time errors,
+        so _is_auth_error falls back to message matching."""
+        exc = Exception(message)
+        assert DBCredentialProvider._is_auth_error(exc)
+
+    @pytest.mark.parametrize(
+        "message",
+        [
+            "connection refused",
+            "could not connect to server: Connection timed out",
+            'FATAL:  database "nope" does not exist',
+        ],
+        ids=["refused", "timeout", "db-not-found"],
+    )
+    def test_string_fallback_rejects_non_auth_messages(self, message):
+        exc = Exception(message)
+        assert not DBCredentialProvider._is_auth_error(exc)
+
 
 # --- Exception sanitization ---
 

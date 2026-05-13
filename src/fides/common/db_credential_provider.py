@@ -22,6 +22,8 @@ from fides.config.secrets.static_provider import (
     DATABASE_READONLY_CREDENTIALS_KEY,
 )
 
+__all__ = ["DBCredentialProvider", "SanitizedConnectionError"]
+
 T = TypeVar("T")
 
 _AUTH_SQLSTATES = frozenset({"28P01", "28000"})
@@ -155,6 +157,9 @@ class DBCredentialProvider:
         )
         self._provider.invalidate(secret_id)
 
+        # Safe in both sync and async paths: async engine creators run inside
+        # SQLAlchemy's greenlet bridge, so time.sleep blocks the greenlet, not
+        # the event loop (same mechanism as await_only(asyncpg.connect(...))).
         time.sleep(_AUTH_RETRY_DELAY)
 
         fresh_creds = self.get_credentials(readonly=readonly)

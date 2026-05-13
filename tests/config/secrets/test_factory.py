@@ -5,8 +5,7 @@ import pytest
 from moto import mock_aws
 from pydantic import ValidationError
 
-import fides.config.secrets as secrets_module
-from fides.config.secrets import get_secret_provider
+from fides.config.secrets import get_secret_provider, reset_secret_provider
 from fides.config.secrets.aws_secrets_manager_provider import (
     AWSSecretsManagerProvider,
 )
@@ -98,23 +97,23 @@ class TestCreateSecretProvider:
 
 
 class TestGetSecretProvider:
+    def setup_method(self):
+        reset_secret_provider()
+
+    def teardown_method(self):
+        reset_secret_provider()
+
     def test_returns_provider(self):
-        """Reset the singleton, then verify it creates and returns a provider."""
-        original = secrets_module._provider
-        try:
-            secrets_module._provider = None
-            provider = get_secret_provider()
-            assert isinstance(provider, StaticSecretProvider)
-        finally:
-            secrets_module._provider = original
+        provider = get_secret_provider()
+        assert isinstance(provider, StaticSecretProvider)
 
     def test_returns_same_instance(self):
-        """Singleton: second call returns the same object."""
-        original = secrets_module._provider
-        try:
-            secrets_module._provider = None
-            first = get_secret_provider()
-            second = get_secret_provider()
-            assert first is second
-        finally:
-            secrets_module._provider = original
+        first = get_secret_provider()
+        second = get_secret_provider()
+        assert first is second
+
+    def test_reset_forces_new_instance(self):
+        first = get_secret_provider()
+        reset_secret_provider()
+        second = get_secret_provider()
+        assert first is not second
