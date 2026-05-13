@@ -1,22 +1,26 @@
 from enum import StrEnum
 
-from sqlalchemy import Column, ForeignKey, String, UniqueConstraint
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+    text,
+)
 
 from fides.api.db.base_class import Base
 
 
 class StewardSource(StrEnum):
-    """How a monitor steward row was assigned.
+    """Persisted values for ``MonitorSteward.source``.
 
-    ``explicit`` and ``inherited`` are the values actually persisted to
-    ``MonitorSteward.source``. ``both`` is API-only — it's never stored;
-    callers building response payloads return it when a user has both an
-    explicit and an inherited row for the same monitor.
+    DB-side enum only — response-layer attribution values are defined
+    separately in the API schema.
     """
 
     explicit = "explicit"
     inherited = "inherited"
-    both = "both"
 
 
 class MonitorSteward(Base):
@@ -45,7 +49,7 @@ class MonitorSteward(Base):
         String,
         nullable=False,
         default=StewardSource.explicit.value,
-        server_default=StewardSource.explicit.value,
+        server_default=text("'explicit'"),
     )
     source_system_id = Column(
         String,
@@ -60,5 +64,13 @@ class MonitorSteward(Base):
             "monitor_config_id",
             "source",
             name="uq_monitorsteward_user_monitor_source",
+        ),
+        CheckConstraint(
+            "source IN ('explicit', 'inherited')",
+            name="ck_monitorsteward_source_values",
+        ),
+        CheckConstraint(
+            "source != 'inherited' OR source_system_id IS NOT NULL",
+            name="ck_monitorsteward_inherited_has_system",
         ),
     )

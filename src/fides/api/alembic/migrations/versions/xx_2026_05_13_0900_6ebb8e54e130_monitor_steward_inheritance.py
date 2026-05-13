@@ -8,8 +8,8 @@ Existing monitors are backfilled with inherit_system_stewards=false so
 current behavior is preserved.  New monitors default to true.
 
 Revision ID: 6ebb8e54e130
-Revises: 6a42f48c23dd
-Create Date: 2026-04-09 10:00:00.000000
+Revises: e3f4a5b6c7d8
+Create Date: 2026-05-13 09:00:00.000000
 """
 
 import sqlalchemy as sa
@@ -42,7 +42,7 @@ def upgrade():
             "source",
             sa.String(),
             nullable=False,
-            server_default="explicit",
+            server_default=sa.text("'explicit'"),
         ),
     )
 
@@ -81,8 +81,35 @@ def upgrade():
         ["user_id", "monitor_config_id", "source"],
     )
 
+    # --- monitorsteward: DB-level guards on source ---
+    # Whitelist the only persistable values (matches StewardSource db-side members).
+    op.create_check_constraint(
+        "ck_monitorsteward_source_values",
+        "monitorsteward",
+        "source IN ('explicit', 'inherited')",
+    )
+    # Inherited rows MUST point at the system that contributed them; explicit
+    # rows have no source system.
+    op.create_check_constraint(
+        "ck_monitorsteward_inherited_has_system",
+        "monitorsteward",
+        "source != 'inherited' OR source_system_id IS NOT NULL",
+    )
+
 
 def downgrade():
+    # --- monitorsteward: drop DB-level source guards ---
+    op.drop_constraint(
+        "ck_monitorsteward_inherited_has_system",
+        "monitorsteward",
+        type_="check",
+    )
+    op.drop_constraint(
+        "ck_monitorsteward_source_values",
+        "monitorsteward",
+        type_="check",
+    )
+
     # --- monitorsteward: restore original unique constraint ---
     op.drop_constraint(
         "uq_monitorsteward_user_monitor_source",
