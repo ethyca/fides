@@ -283,7 +283,7 @@ const EditorSection = ({
             <Typography.Text strong>{label}</Typography.Text>
             <ul className="mb-0 mt-1 list-disc pl-5">
               {group.map((w, idx) => (
-                // eslint-disable-next-line react/no-array-index-key
+                // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
                 <li key={idx}>{w.message}</li>
               ))}
             </ul>

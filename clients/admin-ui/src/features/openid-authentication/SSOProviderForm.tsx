@@ -204,7 +204,7 @@ const CustomProviderExtraFields = () => {
           <Flex flexDir="column">
             <Label size="small">Scopes</Label>
             {scopes?.map((_: string, index: number) => (
-              // eslint-disable-next-line react/no-array-index-key
+              // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
               <Flex flexDir="row" key={index} my="3">
                 <CustomTextInput
                   name={`scopes[${index}]`}

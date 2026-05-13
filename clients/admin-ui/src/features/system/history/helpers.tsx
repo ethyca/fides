@@ -131,17 +131,17 @@ export const describeSystemChange = (history: SystemHistoryResponse) => {
   const changeDescriptions: Array<[string, JSX.Element]> = [];
 
   if (addedFields.length > 0) {
-    // eslint-disable-next-line react/jsx-key
+    // biome-ignore lint/correctness/useJsxKeyInIterable: migrated from eslint-disable
     changeDescriptions.push(["added ", <b>{addedFields.join(", ")}</b>]);
   }
 
   if (removedFields.length > 0) {
-    // eslint-disable-next-line react/jsx-key
+    // biome-ignore lint/correctness/useJsxKeyInIterable: migrated from eslint-disable
     changeDescriptions.push(["removed ", <b>{removedFields.join(", ")}</b>]);
   }
 
   if (changedFields.length > 0) {
-    // eslint-disable-next-line react/jsx-key
+    // biome-ignore lint/correctness/useJsxKeyInIterable: migrated from eslint-disable
     changeDescriptions.push(["changed ", <b>{changedFields.join(", ")}</b>]);
   }
 
@@ -155,7 +155,7 @@ export const describeSystemChange = (history: SystemHistoryResponse) => {
     changeDescriptions.length > 0 ? (
       <>
         {changeDescriptions.map((desc, i) => (
-          // eslint-disable-next-line react/no-array-index-key
+          // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
           <React.Fragment key={i}>
             {desc}
             {i < changeDescriptions.length - 1 ? ", " : ""}

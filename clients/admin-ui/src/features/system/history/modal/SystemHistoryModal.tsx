@@ -58,7 +58,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
           getBadges(selectedHistory.before, selectedHistory.after).map(
             (badge, index) => (
               <Tag
-                // eslint-disable-next-line react/no-array-index-key
+                // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
                 key={index}
                 color="minos"
                 className="ml-2"

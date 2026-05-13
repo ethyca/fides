@@ -96,7 +96,7 @@ const SystemDataTags = ({
         >
           {(height ? field.value : longestValue).map(
             (value: any, index: number) => (
-              // eslint-disable-next-line react/no-array-index-key
+              // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
               <Tag key={index} color="marble" className="m-1">
                 {typeof value === "object" ? value.fides_key : value}
               </Tag>

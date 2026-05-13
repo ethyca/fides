@@ -168,7 +168,7 @@ const SystemDataForm = ({ initialValues }: SystemDataFormProps) => {
             {initialValues.privacy_declarations &&
               initialValues.privacy_declarations.map(
                 (_: PrivacyDeclaration, index: number) => (
-                  // eslint-disable-next-line react/no-array-index-key
+                  // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
                   <Fragment key={index}>
                     <SystemDataGroup heading="Data use">
                       <SystemDataTextField

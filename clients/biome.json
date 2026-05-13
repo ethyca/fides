@@ -57,7 +57,6 @@
       "correctness": {
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "warn",
-        "useJsxKeyInIterable": "warn",
         "noEmptyCharacterClassInRegex": "warn",
         "noUnknownPseudoElement": "warn"
       },

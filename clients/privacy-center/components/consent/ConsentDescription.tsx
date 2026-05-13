@@ -31,7 +31,7 @@ const ConsentDescription = () => {
         {config.consent?.page.description_subtext?.map((paragraph, index) => (
           <Text
             {...TEXT_PROPS}
-            // eslint-disable-next-line react/no-array-index-key
+            // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
             key={`description-subtext${index}`}
           >
             {paragraph}

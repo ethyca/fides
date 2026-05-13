@@ -33,7 +33,7 @@ export const TCFBannerSupplemental = ({
         )}
       {/* adding tabindex because the content is scrollable so a11y requires it to be focusable
           see https://accessibilityinsights.io/info-examples/web/scrollable-region-focusable/ */}
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: migrated from eslint-disable */}
       <div className="fides-banner__content" tabIndex={0}>
         <ul className="fides-banner__purpose-list">
           {customPurposes?.map((purpose) => (

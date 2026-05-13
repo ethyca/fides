@@ -38,7 +38,7 @@ MyDocument.getInitialProps = async (ctx: DocumentContext) => {
     styles: (
       <>
         {initialProps.styles}
-        {/* eslint-disable-next-line react/no-danger */}
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: migrated from eslint-disable */}
         <style dangerouslySetInnerHTML={{ __html: style }} />
       </>
     ),

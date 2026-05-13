@@ -14,7 +14,7 @@ const renderString = (string: string, allowHTMLDescription: boolean | null) => {
   // PrivacyExperience, so it's safe to trust these
   return allowHTMLDescription ? (
     <div
-      // eslint-disable-next-line react/no-danger
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: migrated from eslint-disable
       dangerouslySetInnerHTML={{ __html: string.trim() }}
       className="fides-experience-description-part"
     />

@@ -46,7 +46,7 @@ const Home = ({ privacyCenterUrl, products }: Props) => {
         <div className={css.products}>
           {products.map((product) => (
             <div key={product.id} className={css.product}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {/* biome-ignore lint/performance/noImgElement: migrated from eslint-disable */}
               <img src={product.url} alt={product.name ?? "Cookie"} />
               <div className={css.name}>{product.name}</div>
               <div className={css.description}>{product.description}</div>

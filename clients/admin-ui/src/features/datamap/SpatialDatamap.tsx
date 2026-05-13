@@ -96,7 +96,7 @@ const SpatialDatamap = ({
 
   const {
     data,
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // biome-ignore lint/correctness/useHookAtTopLevel: migrated from eslint-disable
   } = useSpatialDatamap(rows);
 
   return (

@@ -70,7 +70,7 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
               </Typography.Paragraph>
             )}
             {executionRecord.messages?.map((message, idx) => (
-              // eslint-disable-next-line react/no-array-index-key
+              // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
               <Fragment key={idx}>
                 <Typography.Paragraph data-testid="error-log-message">
                   {message}

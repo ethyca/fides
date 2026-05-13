@@ -111,7 +111,7 @@ const SystemHistoryTable = ({ system }: Props) => {
             if (description) {
               return (
                 <Tr
-                  // eslint-disable-next-line react/no-array-index-key
+                  // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
                   key={index}
                   onClick={() => openModal(history)}
                   style={{ cursor: "pointer" }}

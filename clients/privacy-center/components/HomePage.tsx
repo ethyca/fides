@@ -153,7 +153,7 @@ const HomePage: NextPage = () => {
   actions.forEach((action, index) => {
     content.push(
       <PrivacyCard
-        // eslint-disable-next-line react/no-array-index-key
+        // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
         key={index}
         title={action.title}
         iconPath={action.icon_path}
@@ -220,7 +220,7 @@ const HomePage: NextPage = () => {
               color="gray.800"
               data-testid={`description-${index}`}
               allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
-              // eslint-disable-next-line react/no-array-index-key
+              // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
               key={`description-${index}`}
             >
               {paragraph}
@@ -239,7 +239,7 @@ const HomePage: NextPage = () => {
             color="gray.800"
             data-testid={`addendum-${index}`}
             allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
-            // eslint-disable-next-line react/no-array-index-key
+            // biome-ignore lint/suspicious/noArrayIndexKey: migrated from eslint-disable
             key={`addendum-${index}`}
           >
             {paragraph}
