@@ -1,5 +1,14 @@
-import type { AntColorTokenKey } from "fidesui";
-import { antTheme, Card, Flex, Icons, Text, Tooltip } from "fidesui";
+import { subDays } from "date-fns";
+import {
+  antTheme,
+  Card,
+  Flex,
+  Icons,
+  StackedBarChart,
+  type StackedBarSegment,
+  Text,
+  Tooltip,
+} from "fidesui";
 import { useMemo } from "react";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
@@ -16,51 +25,27 @@ import type {
 
 import styles from "./AssessmentStatusCard.module.scss";
 
-// Threshold for flagging an open assessment as "stalled" in the per-group and
-// per-owner attention rows. Frontend-only heuristic; revisit if the privacy
-// team defines a formal SLA.
-// TODO: replace `useGetPrivacyAssessmentsQuery()` here with a dedicated
-// /privacy-assessments/summary endpoint once available — fetching the full
-// dataset just to produce 4 counters and two top-3 lists is wasteful at scale.
+// TODO: replace with a `/privacy-assessments/summary` endpoint — fetching the
+// full list to render counters and top-3 lists is wasteful at scale.
 const STALE_DAYS = 14;
 const TOP_OWNERS_LIMIT = 3;
 const UNCATEGORIZED_KEY = "__uncategorized__";
 
 type SegmentKey = "completed" | "pending" | "open" | "risk";
 
-interface SegmentDefinition {
-  key: SegmentKey;
-  label: string;
-  colorToken: AntColorTokenKey;
-  href: string;
-}
-
-const SEGMENTS: SegmentDefinition[] = [
-  {
-    key: "completed",
-    label: "Completed",
-    colorToken: "colorSuccess",
-    href: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.COMPLETED}`,
-  },
-  {
-    key: "pending",
-    label: "Pending",
-    colorToken: "colorInfo",
-    href: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.GENERATING}`,
-  },
-  {
-    key: "open",
-    label: "Open",
-    colorToken: "colorWarning",
-    href: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}`,
-  },
-  {
-    key: "risk",
-    label: "Risk",
-    colorToken: "colorError",
-    href: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}&risk_level=${RiskLevel.HIGH}`,
-  },
+const SEGMENTS: readonly StackedBarSegment[] = [
+  { key: "completed", color: "colorSuccess", label: "Completed" },
+  { key: "pending", color: "colorInfo", label: "Pending" },
+  { key: "open", color: "colorWarning", label: "Open" },
+  { key: "risk", color: "colorError", label: "Risk" },
 ];
+
+const SEGMENT_HREFS: Record<SegmentKey, string> = {
+  completed: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.COMPLETED}`,
+  pending: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.GENERATING}`,
+  open: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}`,
+  risk: `${PRIVACY_ASSESSMENTS_ROUTE}?status=${AssessmentStatus.IN_PROGRESS}&risk_level=${RiskLevel.HIGH}`,
+};
 
 interface BlockedGroup {
   name: string;
@@ -98,38 +83,29 @@ function segmentForAssessment(
       return "completed";
     case AssessmentStatus.GENERATING:
       return "pending";
-    default:
+    case AssessmentStatus.IN_PROGRESS:
+    case AssessmentStatus.OUTDATED:
       return assessment.risk_level === RiskLevel.HIGH ? "risk" : "open";
+    default: {
+      const exhaustive: never = assessment.status;
+      return exhaustive;
+    }
   }
 }
 
+// Only IN_PROGRESS / OUTDATED can be stale; COMPLETED and GENERATING never are.
 function isStale(
   assessment: PrivacyAssessmentResponse,
   staleBefore: number,
 ): boolean {
-  // GENERATING rows are still being produced by the backend; treat them as
-  // fresh regardless of timestamps. COMPLETED rows are never stale.
   if (
     assessment.status === AssessmentStatus.COMPLETED ||
-    assessment.status === AssessmentStatus.GENERATING
+    assessment.status === AssessmentStatus.GENERATING ||
+    !assessment.updated_at
   ) {
     return false;
   }
-  if (!assessment.updated_at) {
-    return false;
-  }
-  const updatedAt = new Date(assessment.updated_at).getTime();
-  return Number.isFinite(updatedAt) && updatedAt < staleBefore;
-}
-
-function getOrInsert<K, V>(map: Map<K, V>, key: K, factory: () => V): V {
-  const existing = map.get(key);
-  if (existing) {
-    return existing;
-  }
-  const created = factory();
-  map.set(key, created);
-  return created;
+  return new Date(assessment.updated_at).getTime() < staleBefore;
 }
 
 export function computeMetrics(
@@ -141,39 +117,46 @@ export function computeMetrics(
   const ownerAgg = new Map<string, OwnerStat>();
   let total = 0;
 
-  const staleBefore = now - STALE_DAYS * 24 * 60 * 60 * 1000;
+  const staleBefore = subDays(now, STALE_DAYS).getTime();
 
   groups?.forEach((group) => {
     const groupKey = group.data_use ?? UNCATEGORIZED_KEY;
-    const groupName = group.data_use_name ?? "Uncategorized";
-    const aggregate = getOrInsert(groupAgg, groupKey, () => ({
-      name: groupName,
-      staleCount: 0,
-      highRiskCount: 0,
-      totalCount: 0,
-    }));
+    let aggregate = groupAgg.get(groupKey);
+    if (!aggregate) {
+      aggregate = {
+        name: group.data_use_name ?? "Uncategorized",
+        staleCount: 0,
+        highRiskCount: 0,
+        totalCount: 0,
+      };
+      groupAgg.set(groupKey, aggregate);
+    }
 
     group.assessments?.forEach((assessment) => {
       total += 1;
-      aggregate.totalCount += 1;
+      aggregate!.totalCount += 1;
       bySegment[segmentForAssessment(assessment)] += 1;
       if (assessment.risk_level === RiskLevel.HIGH) {
-        aggregate.highRiskCount += 1;
+        aggregate!.highRiskCount += 1;
       }
       const stale = isStale(assessment, staleBefore);
       if (stale) {
-        aggregate.staleCount += 1;
+        aggregate!.staleCount += 1;
       }
 
       const isOpen =
         assessment.status === AssessmentStatus.IN_PROGRESS ||
         assessment.status === AssessmentStatus.OUTDATED;
       if (isOpen && assessment.created_by) {
-        const owner = getOrInsert(ownerAgg, assessment.created_by, () => ({
-          owner: assessment.created_by!,
-          openCount: 0,
-          staleCount: 0,
-        }));
+        let owner = ownerAgg.get(assessment.created_by);
+        if (!owner) {
+          owner = {
+            owner: assessment.created_by,
+            openCount: 0,
+            staleCount: 0,
+          };
+          ownerAgg.set(assessment.created_by, owner);
+        }
         owner.openCount += 1;
         if (stale) {
           owner.staleCount += 1;
@@ -245,47 +228,28 @@ export const AssessmentStatusCard = () => {
     >
       <Flex vertical gap="large" className="min-h-0 flex-1">
         <Flex vertical gap={12}>
-          <div className={styles.segmentBar}>
-            {metrics.total === 0 ? (
-              <div className={styles.segmentBarEmpty} />
-            ) : (
-              SEGMENTS.map(({ key, label, colorToken }) => {
-                const value = metrics.bySegment[key];
-                if (value === 0) {
-                  return null;
-                }
-                return (
-                  <Tooltip
-                    key={key}
-                    title={`${value} ${label}`}
-                    placement="top"
-                  >
-                    <div
-                      className={styles.segmentBarFill}
-                      style={{
-                        flex: value,
-                        backgroundColor: token[colorToken],
-                      }}
-                    />
-                  </Tooltip>
-                );
-              })
-            )}
-          </div>
+          {metrics.total === 0 ? (
+            <div className={styles.segmentBarEmpty} />
+          ) : (
+            <StackedBarChart
+              data={{ "": metrics.bySegment }}
+              segments={SEGMENTS}
+            />
+          )}
           <Flex gap="large" wrap="wrap">
-            {SEGMENTS.map(({ key, label, colorToken, href }) => (
+            {SEGMENTS.map(({ key, color, label }) => (
               <RouterLink
                 key={key}
                 unstyled
-                href={href}
+                href={SEGMENT_HREFS[key as SegmentKey]}
                 className={styles.segmentLegend}
               >
                 <span
                   className={styles.segmentDot}
-                  style={{ backgroundColor: token[colorToken] }}
+                  style={{ backgroundColor: token[color] }}
                 />
                 <Text strong className="text-sm">
-                  {metrics.bySegment[key]}
+                  {metrics.bySegment[key as SegmentKey]}
                 </Text>
                 <Text type="secondary" className="text-sm">
                   {label}
