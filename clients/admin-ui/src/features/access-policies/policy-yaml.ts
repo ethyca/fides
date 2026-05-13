@@ -10,7 +10,6 @@ import {
   ActionBlock,
   ActionType,
   ConditionOperator,
-  ConditionProperty,
   ConsentRequirement,
   ConstraintType,
   DataFlowDirection,
@@ -83,13 +82,14 @@ export const updateYamlField = (
   }
 };
 
-const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
-  ConditionProperty.DATA_CATEGORIES,
-  ConditionProperty.DATA_USE,
-  ConditionProperty.DATA_SUBJECTS,
-];
-
 export const POLICY_NODE_ID = "policy";
+
+/** Extract taxonomy keys from a match block, preserving YAML insertion order. */
+const extractMatchKeys = (matchBlock: MatchBlock): string[] =>
+  Object.keys(matchBlock).filter((k) => {
+    const dim = matchBlock[k];
+    return !!dim && (Array.isArray(dim.all) || Array.isArray(dim.any));
+  });
 
 /**
  * Build display edges using a chain topology:
@@ -166,10 +166,10 @@ export const yamlToNodesAndEdges = (
     type: "labeledEdge",
   });
 
-  // Condition nodes — chain: first from action ("when"), rest vertical ("and")
-  const presentProperties = CONDITION_PROPERTY_KEYS.filter(
-    (p) => !!matchBlock[p],
-  );
+  // Condition nodes — chain: first from action ("when"), rest vertical ("and").
+  // Iterate the match block in YAML insertion order so any taxonomy key
+  // (built-in or custom) is supported.
+  const presentProperties = extractMatchKeys(matchBlock);
 
   presentProperties.forEach((property, idx) => {
     const dimension = matchBlock[property] as MatchDimension;
