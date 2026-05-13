@@ -3,8 +3,7 @@
   overflow: hidden;
   border-left: 1px solid var(--fidesui-color-border);
 
-
-  & :global(.x-markdown){
+  & :global(.x-markdown) {
     --padding-ul-ol: 0 !important;
     --margin-ul-ol: 0 !important;
 
