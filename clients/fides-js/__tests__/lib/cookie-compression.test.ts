@@ -1,6 +1,4 @@
-import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
-import * as uuid from "uuid";
 
 import { FidesCookie } from "../../src/lib/consent-types";
 import {
@@ -13,11 +11,8 @@ import {
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
 jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 
-// Setup mock uuid
+// crypto.randomUUID is mocked globally in __tests__/setup.ts
 const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
-jest.mock("uuid");
-const mockUuid = jest.mocked(uuid);
-mockUuid.v4.mockReturnValue(MOCK_UUID);
 
 // Constant to make it clear we're using the default cookie name (no suffix)
 const NO_COOKIE_SUFFIX = undefined;
@@ -120,7 +115,7 @@ describe("Cookie compression", () => {
     it("sets a base64 cookie when base64Cookie option is true", async () => {
       const cookie = await getOrMakeFidesCookie();
       await saveFidesCookie(cookie, { base64Cookie: true });
-      const expectedCookieString = base64_encode(JSON.stringify(cookie));
+      const expectedCookieString = btoa(JSON.stringify(cookie));
       expect(mockSetCookie).toHaveBeenCalledTimes(1);
       const [name, value, attributes] = mockSetCookie.mock.calls[0];
       expect(name).toEqual("fides_consent");
@@ -152,7 +147,7 @@ describe("Cookie compression", () => {
 
     it("automatically decodes base-64 encoded cookies", async () => {
       const originalCookie = await getOrMakeFidesCookie();
-      const base64Encoded = base64_encode(JSON.stringify(originalCookie));
+      const base64Encoded = btoa(JSON.stringify(originalCookie));
       mockGetCookie.mockReturnValue(base64Encoded);
 
       const cookie = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
