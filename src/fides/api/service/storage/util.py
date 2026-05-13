@@ -42,6 +42,13 @@ class FilesMagicBytes:
         }
 
     @classmethod
+    def max_prefix_length(cls) -> int:
+        """Longest signature in :attr:`SIGNATURES`. Callers that peek a
+        header for :meth:`candidates` should read at least this many
+        bytes — auto-stays-correct if a longer signature is added."""
+        return max(len(m) for m in cls.SIGNATURES.values())
+
+    @classmethod
     def extensions_without_magic(cls) -> set[str]:
         """Supported extensions that have no magic-byte signature (CSV,
         TXT). Callers fall back to the client-claimed filename for these

@@ -69,11 +69,19 @@ class AttachmentNotFoundError(AttachmentsServiceError):
 
     Distinct from :class:`fidesplus.errors.attachment_errors.AttachmentNotFoundError`,
     which models the not-found case for already-promoted ``Attachment`` records.
+
+    ``reason`` is a free-form short tag (e.g. ``"missing"``, the row's
+    current ``status`` value) that callers attach for diagnostic detail
+    without leaking row identifiers into the message.
     """
 
-    def __init__(self, field_name: str):
+    def __init__(self, field_name: str, reason: str | None = None):
         self.field_name = field_name
-        super().__init__(f"No pending attachment found for field '{field_name}'.")
+        self.reason = reason
+        message = f"No pending attachment found for field '{field_name}'."
+        if reason:
+            message = f"{message} Reason: {reason}."
+        super().__init__(message)
 
 
 class AttachmentContextMismatchError(AttachmentsServiceError):
