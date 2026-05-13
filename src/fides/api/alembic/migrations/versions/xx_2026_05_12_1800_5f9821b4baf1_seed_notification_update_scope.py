@@ -57,7 +57,7 @@ def upgrade():
                         text(
                             "INSERT INTO rbac_role_permission (role_id, permission_id, created_at) "
                             "VALUES (:role_id, :permission_id, now()) "
-                            "ON CONFLICT DO NOTHING"
+                            "ON CONFLICT (role_id, permission_id) DO NOTHING"
                         ),
                         {
                             "role_id": role.id,

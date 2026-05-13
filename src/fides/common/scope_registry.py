@@ -336,7 +336,7 @@ SCOPE_DOCS = {
     MESSAGING_DELETE: "",
     MESSAGING_READ: "",
     NOTIFICATION_READ: "View notifications",
-    NOTIFICATION_UPDATE: "Update notification status",
+    NOTIFICATION_UPDATE: "Mark notifications as read",
     ORGANIZATION_CREATE: "Create organization",
     ORGANIZATION_READ: "Read organization details",
     ORGANIZATION_DELETE: "Delete organization",
