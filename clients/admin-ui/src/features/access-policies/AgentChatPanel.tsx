@@ -19,10 +19,12 @@ import {
   useSendAccessPolicyChatMessageMutation,
 } from "./agent-chat.slice";
 import styles from "./AgentChatPanel.module.scss";
+import PolicyAgentWorking from "./PolicyAgentWorking";
 
 interface AgentChatPanelProps {
   currentYaml: string;
   onPolicyUpdate: (update: PolicyUpdate) => void;
+  isAgentWorking: boolean;
 }
 
 interface ChatMessage {
@@ -53,6 +55,7 @@ const AgentAvatar = () => (
 const AgentChatPanel = ({
   currentYaml,
   onPolicyUpdate,
+  isAgentWorking,
 }: AgentChatPanelProps) => {
   const messageApi = useMessage();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -127,24 +130,39 @@ const AgentChatPanel = ({
     ],
   );
 
+  const latestYamlAppliedKey = useMemo(
+    () => messages.findLast((m) => m.yamlApplied)?.key,
+    [messages],
+  );
+
   const bubbleItems: BubbleItemType[] = useMemo(
     () =>
-      messages.map((msg) => ({
-        key: msg.key,
-        role: msg.role === "user" ? "user" : "ai",
-        content: msg.content,
-        footer: msg.yamlApplied ? (
-          <Flex align="center" gap="small">
-            <Icons.CheckmarkFilled
-              style={{ color: "var(--fidesui-color-success)" }}
-            />
-            <Typography.Text type="secondary">
-              The policy was updated
-            </Typography.Text>
-          </Flex>
-        ) : undefined,
-      })),
-    [messages],
+      messages.map((msg) => {
+        let footer;
+        if (msg.yamlApplied) {
+          const isLatest = msg.key === latestYamlAppliedKey;
+          footer =
+            isLatest && isAgentWorking ? (
+              <PolicyAgentWorking size="small" />
+            ) : (
+              <Flex align="center" gap="small">
+                <Icons.CheckmarkFilled
+                  style={{ color: "var(--fidesui-color-success)" }}
+                />
+                <Typography.Text type="secondary">
+                  The policy was updated
+                </Typography.Text>
+              </Flex>
+            );
+        }
+        return {
+          key: msg.key,
+          role: msg.role === "user" ? "user" : "ai",
+          content: msg.content,
+          footer,
+        };
+      }),
+    [messages, latestYamlAppliedKey, isAgentWorking],
   );
 
   const roles = useMemo(

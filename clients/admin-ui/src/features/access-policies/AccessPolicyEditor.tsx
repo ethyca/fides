@@ -8,6 +8,7 @@ import {
   EdgeTypes,
   Node,
   NodeTypes,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
@@ -45,6 +46,7 @@ import {
   tagNodesWithDiff,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
+import PolicyAgentWorking from "./PolicyAgentWorking";
 import PolicyEditorPanel from "./PolicyEditorPanel";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
@@ -861,6 +863,11 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           pendingTransition={pendingTransition}
           layoutedNodes={layoutedNodes}
         />
+        {pendingTransition && (
+          <Panel position="top-center">
+            <PolicyAgentWorking />
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );
@@ -1128,6 +1135,7 @@ const AccessPolicyEditor = ({
             <AgentChatPanel
               currentYaml={yamlValue}
               onPolicyUpdate={handlePolicyUpdate}
+              isAgentWorking={!!pendingTransition}
             />
           </div>
         )}
