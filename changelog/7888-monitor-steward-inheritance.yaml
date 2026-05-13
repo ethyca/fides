@@ -1,9 +1,4 @@
 type: Added
-description: |
-  Monitor steward inheritance data model: new `inherit_system_stewards` flag
-  on `MonitorConfig`, plus `source` (`explicit`/`inherited`) and
-  `source_system_id` columns on `MonitorSteward`. The unique constraint on
-  `MonitorSteward` is updated to include `source`, allowing a user to be both
-  an explicit and an inherited steward on the same monitor.
+description: Data model support for monitor steward inheritance.
 pr: 7888
 labels: [db-migration]
