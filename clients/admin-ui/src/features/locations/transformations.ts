@@ -1,4 +1,4 @@
-import {
+import type {
   Continent,
   Location,
   LocationGroup,
@@ -48,12 +48,7 @@ export const groupByBelongsTo = (
   locations: Location[],
 ): Record<string, Location[]> => {
   const byGroup: Record<string, Location[]> = {};
-  const allGroups = new Set(
-    locations
-      .map((l) => l.belongs_to)
-      .flat()
-      .sort(),
-  );
+  const allGroups = new Set(locations.flatMap((l) => l.belongs_to).sort());
   allGroups.forEach((group) => {
     if (group) {
       byGroup[group] = locations

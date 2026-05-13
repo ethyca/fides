@@ -1,7 +1,7 @@
 import {
   ConsentMechanism,
   FidesAttStatus,
-  PrivacyNoticeWithPreference,
+  type PrivacyNoticeWithPreference,
 } from "~/lib/consent-types";
 import { filterAttDeniedFromDraft } from "~/lib/tcf/att-utils";
 

@@ -1,6 +1,6 @@
 import classNames from "classnames";
-import { AnimatePresence, Easing, motion } from "motion/react";
-import { HTMLAttributes, ReactNode } from "react";
+import { AnimatePresence, type Easing, motion } from "motion/react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
   /**

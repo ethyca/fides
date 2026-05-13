@@ -1,4 +1,4 @@
-import { ThemeConfig } from "antd/es";
+import type { ThemeConfig } from "antd/es";
 
 import { palette } from "../palette/palette";
 

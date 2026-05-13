@@ -1,5 +1,4 @@
 import { baseApi } from "~/features/common/api.slice";
-
 import type {
   ActivityFeedParams,
   ActivityFeedResponse,
@@ -12,9 +11,9 @@ import type {
   PrivacyRequestsResponse,
   ResetResponse,
   SystemCoverageResponse,
+  TrendPeriod,
   TrendsResponse,
 } from "./types";
-import { TrendPeriod } from "./types";
 
 const dashboardApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

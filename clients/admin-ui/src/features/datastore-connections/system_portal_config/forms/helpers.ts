@@ -1,5 +1,5 @@
-import { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
-import { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
+import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
+import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 import { SystemType } from "~/types/api/models/SystemType";
 
 /**

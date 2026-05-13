@@ -1,4 +1,4 @@
-import { DigestConfigRequest, DigestConfigResponse } from "~/types/api";
+import type { DigestConfigRequest, DigestConfigResponse } from "~/types/api";
 
 export interface DigestConfigFormValues
   extends Omit<DigestConfigRequest, "config_metadata"> {

@@ -1,4 +1,4 @@
-import { UserConsentPreference } from "~/types/api";
+import type { UserConsentPreference } from "~/types/api";
 
 export type FidesKeyToConsent = {
   [fidesKey: string]: boolean | undefined;

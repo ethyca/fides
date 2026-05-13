@@ -8,7 +8,7 @@ import {
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useDeleteSystemAssetsMutation } from "~/features/system/system-assets.slice";
-import { Asset } from "~/types/api";
+import type { Asset } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const SystemAssetActionsCell = ({

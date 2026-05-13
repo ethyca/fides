@@ -1,7 +1,7 @@
-import { Select, SelectProps } from "fidesui";
+import { Select, type SelectProps } from "fidesui";
 import {
-  MouseEventHandler,
-  ReactNode,
+  type MouseEventHandler,
+  type ReactNode,
   useCallback,
   useMemo,
   useState,

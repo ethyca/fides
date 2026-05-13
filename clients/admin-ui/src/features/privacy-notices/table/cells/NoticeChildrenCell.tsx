@@ -1,5 +1,5 @@
 import { ListExpandableCell } from "~/features/common/table/cells";
-import { LimitedPrivacyNoticeResponseSchema } from "~/types/api";
+import type { LimitedPrivacyNoticeResponseSchema } from "~/types/api";
 
 export const getNoticeChildrenNames = (
   children: LimitedPrivacyNoticeResponseSchema[] | undefined | null,

@@ -1,5 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react";
-import React from "react";
+import type React from "react";
 
 import { render } from "~/../__tests__/utils/test-utils";
 import { useGetConnectorTemplateVersionsQuery } from "~/features/connector-templates/connector-template.slice";

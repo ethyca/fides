@@ -7,7 +7,7 @@ import {
 } from "~/features/common/nav/routes";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import { ModuleCardConfig } from "./types";
+import type { ModuleCardConfig } from "./types";
 
 /**
  * Enums

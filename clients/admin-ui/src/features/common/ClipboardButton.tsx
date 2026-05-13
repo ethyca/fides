@@ -1,4 +1,4 @@
-import { Button, ButtonProps, Icons, Tooltip } from "fidesui";
+import { Button, type ButtonProps, Icons, Tooltip } from "fidesui";
 import React, { useState } from "react";
 
 enum TooltipText {

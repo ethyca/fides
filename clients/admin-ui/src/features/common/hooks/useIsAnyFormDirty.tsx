@@ -1,6 +1,11 @@
 import { useModal } from "fidesui";
 import { useFormikContext } from "formik";
-import { createRef, MutableRefObject, useCallback, useEffect } from "react";
+import {
+  createRef,
+  type MutableRefObject,
+  useCallback,
+  useEffect,
+} from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {

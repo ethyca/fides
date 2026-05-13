@@ -1,4 +1,4 @@
-import { ProgressProps } from "fidesui";
+import type { ProgressProps } from "fidesui";
 
 import type { Severity } from "./types";
 

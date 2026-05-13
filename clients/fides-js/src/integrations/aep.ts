@@ -6,16 +6,14 @@
  * - Adobe ECID Opt-In Service (AppMeasurement) - legacy
  */
 
-import { NoticeConsent } from "../lib/consent-types";
+import type { NoticeConsent } from "../lib/consent-types";
 import { subscribeToConsent } from "./integration-utils";
 
 // Adobe SDK type definitions
 // Note: Adobe does not provide official TypeScript types, so we define minimal interfaces
 // based on the API surface we actually use in this integration.
 
-interface AlloySDK {
-  (command: string, options?: unknown): Promise<unknown>;
-}
+type AlloySDK = (command: string, options?: unknown) => Promise<unknown>;
 
 interface AdobeOptIn {
   Categories: Record<string, string>;

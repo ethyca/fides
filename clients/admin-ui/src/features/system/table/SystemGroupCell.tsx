@@ -1,7 +1,7 @@
 import {
   Button,
   Flex,
-  FlexProps,
+  type FlexProps,
   Icons,
   Select,
   Tag,
@@ -12,10 +12,10 @@ import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { TagExpandableCell } from "~/features/common/table/cells";
-import { ColumnState } from "~/features/common/table/cells/types";
+import type { ColumnState } from "~/features/common/table/cells/types";
 import { useUpdateSystemMutation } from "~/features/system";
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
-import { BasicSystemResponseExtended, SystemGroup } from "~/types/api";
+import type { BasicSystemResponseExtended, SystemGroup } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const UPDATE_SYSTEM_GROUPS_MSG_KEY = "update-system-groups-msg";

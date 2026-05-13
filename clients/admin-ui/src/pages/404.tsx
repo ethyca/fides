@@ -1,8 +1,8 @@
 import Head from "common/Head";
 import Image from "common/Image";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHeading as Heading,
   ChakraStack as Stack,
   ChakraText as Text,

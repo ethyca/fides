@@ -11,11 +11,11 @@ import type { AttributionOptions } from "fides-js";
 import { URL } from "url";
 
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
-import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
+import type { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
 import { transformConfig, validateConfig } from "~/common/validation";
-import { Property } from "~/types/api";
-import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
-import { Config } from "~/types/config";
+import type { Property } from "~/types/api";
+import type { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
+import type { Config } from "~/types/config";
 
 /**
  * Subset of PrivacyCenterSettings that are for use only on server-side and

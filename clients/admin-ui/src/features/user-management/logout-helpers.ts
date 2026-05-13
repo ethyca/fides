@@ -1,6 +1,6 @@
-import { NextRouter } from "next/router";
+import type { NextRouter } from "next/router";
 
-import { AppDispatch } from "~/app/store";
+import type { AppDispatch } from "~/app/store";
 import { LOGIN_ROUTE, STORAGE_ROOT_KEY } from "~/constants";
 import { logout } from "~/features/auth/auth.slice";
 

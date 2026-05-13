@@ -8,7 +8,7 @@ import {
 import { useEffect, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
-import { useAntPagination } from "~/features/common/pagination/useAntPagination";
+import type { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
 import { SubjectRequestStatusMap } from "../../constants";

@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -35,7 +35,7 @@ const MonitorResultAssets: NextPage = () => {
 
   // if there are no results, redirect to the monitor page
   useEffect(() => {
-    if (!!systemResults && systemResults.items.length === 0) {
+    if (systemResults && systemResults.items.length === 0) {
       router.push({
         pathname: ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
         query: {

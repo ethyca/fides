@@ -1,15 +1,18 @@
-import { Table as TableInstance } from "@tanstack/react-table";
+import type { Table as TableInstance } from "@tanstack/react-table";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraCheckbox as Checkbox,
   ChakraDivider as Divider,
-  ChakraText as Text,
   Modal,
+  ChakraText as Text,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
-import { vendorSourceLabels, VendorSources } from "~/features/common/helpers";
+import {
+  type VendorSources,
+  vendorSourceLabels,
+} from "~/features/common/helpers";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
 type FilterCheckboxProps = {

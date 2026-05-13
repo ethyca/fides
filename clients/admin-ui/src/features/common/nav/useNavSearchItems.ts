@@ -8,7 +8,7 @@ import {
 } from "~/features/taxonomy/constants";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 
-import { NavGroup } from "./nav-config";
+import type { NavGroup } from "./nav-config";
 
 /** Core taxonomy types that are always present regardless of Plus. */
 const CORE_TAXONOMY_ITEMS = [

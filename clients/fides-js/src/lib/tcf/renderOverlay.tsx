@@ -1,7 +1,7 @@
 import { render } from "preact";
 
 import { TcfOverlay } from "../../components/tcf/TcfOverlay";
-import { RenderOverlayType } from "../../components/types";
+import type { RenderOverlayType } from "../../components/types";
 import { I18nProvider } from "../i18n/i18n-context";
 import { EventProvider } from "../providers/event-context";
 import { FidesGlobalProvider } from "../providers/fides-global-context";

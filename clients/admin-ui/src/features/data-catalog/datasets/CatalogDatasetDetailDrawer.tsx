@@ -1,7 +1,7 @@
 import { Drawer } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 const CatalogDatasetDetailDrawer = ({
   dataset,

@@ -1,5 +1,5 @@
 import {
-  StagedResourceAPIResponse,
+  type StagedResourceAPIResponse,
   StagedResourceTypeValue,
 } from "~/types/api";
 

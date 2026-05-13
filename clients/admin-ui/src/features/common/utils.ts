@@ -1,6 +1,6 @@
 import { format } from "date-fns-tz";
 
-import { User } from "../user-management/types";
+import type { User } from "../user-management/types";
 
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());

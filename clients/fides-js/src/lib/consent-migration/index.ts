@@ -1,4 +1,4 @@
-import {
+import type {
   ConsentMethod,
   FidesInitOptionsOverrides,
   NoticeConsent,
@@ -6,7 +6,7 @@ import {
 import { OneTrustProvider } from "./onetrust";
 import { TranscendProvider } from "./transcend";
 import {
-  ConsentMigrationProvider,
+  type ConsentMigrationProvider,
   ConsentMigrationProviderName,
 } from "./types";
 

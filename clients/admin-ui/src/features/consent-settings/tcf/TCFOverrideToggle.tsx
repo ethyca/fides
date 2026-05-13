@@ -1,10 +1,10 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   ConfirmationModal,
   Space,
   Switch,
-  SwitchProps,
+  type SwitchProps,
   useMessage,
 } from "fidesui";
 import { useState } from "react";

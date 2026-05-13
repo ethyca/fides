@@ -12,15 +12,15 @@
 
 import {
   Button,
+  Checkbox,
+  Divider,
+  Input,
   ChakraModal as Modal,
   ChakraModalBody as ModalBody,
   ChakraModalContent as ModalContent,
   ChakraModalFooter as ModalFooter,
   ChakraModalHeader as ModalHeader,
   ChakraModalOverlay as ModalOverlay,
-  Checkbox,
-  Divider,
-  Input,
   Space,
   Typography,
   Upload,
@@ -28,7 +28,7 @@ import {
 import { useState } from "react";
 
 import {
-  ManualFieldListItem,
+  type ManualFieldListItem,
   ManualTaskFieldType,
   useCompleteExternalTaskMutation,
 } from "../external-manual-tasks.slice";

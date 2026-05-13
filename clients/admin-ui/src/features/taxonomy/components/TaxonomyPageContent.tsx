@@ -3,7 +3,7 @@ import {
   Flex,
   FloatingMenu,
   Input,
-  MenuProps,
+  type MenuProps,
   Modal,
   Space,
   Typography,
@@ -31,8 +31,8 @@ import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyItemE
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
-  taxonomyKeyToScopeRegistryEnum,
   TaxonomyTypeEnum,
+  taxonomyKeyToScopeRegistryEnum,
   taxonomyTypeToLabel,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
@@ -40,8 +40,8 @@ import {
   useDeleteCustomTaxonomyMutation,
   useGetCustomTaxonomiesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
-import { TaxonomyEntity } from "~/features/taxonomy/types";
-import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
+import type { TaxonomyEntity } from "~/features/taxonomy/types";
+import type { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 
 // include spaces to avoid collision with taxonomy fides_keys
 const ADD_NEW_ITEM_KEY = "add new item";

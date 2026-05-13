@@ -1,12 +1,12 @@
 import {
-  Button,
   ChakraAccordion as Accordion,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
   ChakraAccordionItem as AccordionItem,
-  ChakraAccordionItemProps as AccordionItemProps,
+  type ChakraAccordionItemProps as AccordionItemProps,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   Modal,
@@ -15,7 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import CheckboxTree from "~/features/common/CheckboxTree";
-import { TreeNode } from "~/features/common/types";
+import type { TreeNode } from "~/features/common/types";
 import {
   selectDataSubjects,
   useGetAllDataSubjectsQuery,
@@ -30,7 +30,7 @@ import {
 } from "~/features/taxonomy/data-category.slice";
 import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 
-import { DatamapReportFilterSelections } from "../types";
+import type { DatamapReportFilterSelections } from "../types";
 
 interface DatamapReportFilterModalProps {
   isOpen: boolean;

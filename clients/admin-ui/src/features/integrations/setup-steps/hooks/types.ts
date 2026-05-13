@@ -1,4 +1,4 @@
-import {
+import type {
   ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
 } from "~/types/api";

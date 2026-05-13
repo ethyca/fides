@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { GenerateRequestPayload, GenerateResponse } from "~/types/api";
+import type { GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
 const scannerApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

@@ -1,4 +1,4 @@
-import { Config } from "../../../types/config";
+import type { Config } from "../../../types/config";
 import { API_URL } from "../../support/constants";
 
 describe("Home", () => {

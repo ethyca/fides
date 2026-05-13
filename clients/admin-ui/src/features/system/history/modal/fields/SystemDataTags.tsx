@@ -1,8 +1,8 @@
 import {
   ChakraFlex as Flex,
   ChakraFormControl as FormControl,
-  ChakraVStack as VStack,
   Tag,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";

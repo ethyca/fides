@@ -12,7 +12,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useGetAllDataSubjectsQuery } from "~/features/data-subjects/data-subject.slice";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import {
-  DatamapRow,
+  type DatamapRow,
   loadColumns,
   selectColumns,
   setIsGettingStarted,

@@ -1,5 +1,5 @@
 import { Button, Divider, Flex, Typography, useMessage } from "fidesui";
-import yaml, { YAMLException } from "js-yaml";
+import yaml, { type YAMLException } from "js-yaml";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -8,7 +8,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
-import { Dataset } from "~/types/api";
+import type { Dataset } from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,

@@ -1,8 +1,8 @@
 import { Flex, formatIsoLocation, isoStringToEntry, List } from "fidesui";
 import { isArray, toString } from "lodash";
-import React from "react";
+import type React from "react";
 
-import { PrivacyRequestResponseExtended } from "~/types/api";
+import type { PrivacyRequestResponseExtended } from "~/types/api";
 
 import { RequestTableActions } from "../../RequestTableActions";
 import {

@@ -1,11 +1,11 @@
 import { Button, Col, Icons, Row, Spin, Tabs, useMessage } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import { useFlags } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
+import { useFlags } from "~/features/common/features";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
@@ -21,7 +21,7 @@ import { useJiraAuthorization } from "~/features/integrations/hooks/useJiraAutho
 import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
@@ -125,14 +125,14 @@ const IntegrationDetailView: NextPage = () => {
     integrationTypeInfo;
 
   if (
-    !!connection &&
+    connection &&
     !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
 
   if (
-    !!connection &&
+    connection &&
     connection.connection_type === ConnectionType.JIRA_TICKET &&
     !jiraIntegration
   ) {

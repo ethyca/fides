@@ -1,4 +1,4 @@
-import { DatasetField } from "~/types/api";
+import type { DatasetField } from "~/types/api";
 
 /** Walk nested fields to find and update the one at fieldPath */
 export const updateFieldAtPath = (

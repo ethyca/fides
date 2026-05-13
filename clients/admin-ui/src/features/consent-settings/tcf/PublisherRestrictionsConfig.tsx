@@ -9,8 +9,8 @@ import {
 import DocsLink from "../../common/DocsLink";
 import { useLocalStorage } from "../../common/hooks/useLocalStorage";
 import SettingsBox from "../SettingsBox";
-import { PUBLISHER_RESTRICTIONS_DOCS_URL } from "./constants";
 import { CreateTCFConfigModal } from "./CreateTCFConfigModal";
+import { PUBLISHER_RESTRICTIONS_DOCS_URL } from "./constants";
 import { PublisherRestrictionsTable } from "./PublisherRestrictionsTable";
 import { TCFConfigurationDropdown } from "./TCFConfigurationDropdown";
 import { TCFOverrideToggle } from "./TCFOverrideToggle";

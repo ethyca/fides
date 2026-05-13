@@ -1,6 +1,6 @@
 import { Table } from "fidesui";
 
-import { PreferencesSaved } from "~/types/api";
+import type { PreferencesSaved } from "~/types/api";
 
 import useTcfConsentTable from "./hooks/useTcfConsentTable";
 

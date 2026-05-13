@@ -1,4 +1,4 @@
-import { PrivacyRequestOption } from "~/types/api";
+import type { PrivacyRequestOption } from "~/types/api";
 
 import {
   findActionFromPolicyKey,

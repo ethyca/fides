@@ -7,14 +7,14 @@ import {
   Radio,
   Select,
 } from "fidesui";
-import { ChangeEvent } from "react";
+import type { ChangeEvent } from "react";
 
 import { useGetLocationsRegulationsQuery } from "~/features/locations/locations.slice";
 import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 import { Operator } from "~/types/api";
 
-import { CustomFieldMetadata, FieldValue } from "../types";
-import { FieldType, getFieldTypeWithMetadata } from "../utils";
+import type { CustomFieldMetadata, FieldValue } from "../types";
+import { type FieldType, getFieldTypeWithMetadata } from "../utils";
 
 interface ConditionValueSelectorProps {
   fieldType: FieldType;

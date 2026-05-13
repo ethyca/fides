@@ -3,7 +3,7 @@ import { useMessage } from "fidesui";
 import { getErrorMessage } from "~/features/common/helpers";
 
 import {
-  SearchFilterParams,
+  type SearchFilterParams,
   useLazyDownloadPrivacyRequestCsvV2Query,
 } from "../../privacy-requests.slice";
 

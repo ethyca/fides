@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Breakpoint } from "antd/lib";
+import type { Breakpoint } from "antd/lib";
 
 import type { AvatarProps } from "../index";
 import { Avatar } from "../index";

@@ -1,5 +1,5 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   ChakraBox as Box,
   ChakraStack as Stack,
@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
-import {
+import type {
   PrivacyDeclarationResponse,
   System,
   SystemResponse,
@@ -18,7 +18,10 @@ import {
 import { isErrorResult } from "~/types/errors";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
-import { DataProps, PrivacyDeclarationForm } from "./PrivacyDeclarationForm";
+import {
+  type DataProps,
+  PrivacyDeclarationForm,
+} from "./PrivacyDeclarationForm";
 
 interface Props {
   system: SystemResponse;

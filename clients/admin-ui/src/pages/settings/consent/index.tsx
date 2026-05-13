@@ -1,5 +1,5 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Button, Flex, Form, Input, Spin, useMessage } from "fidesui";
 import isEqual from "lodash/isEqual";
 import type { NextPage } from "next";
@@ -21,7 +21,7 @@ import DeprecatedPurposeOverrides from "~/features/consent-settings/DeprecatedPu
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
 import PublisherSettings, {
-  TCFPublisherSettings,
+  type TCFPublisherSettings,
 } from "~/features/consent-settings/PublisherSettings";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
 import { PublisherRestrictionsConfig } from "~/features/consent-settings/tcf/PublisherRestrictionsConfig";
@@ -32,9 +32,9 @@ import {
   usePatchTcfPurposeOverridesMutation,
 } from "~/features/plus/plus.slice";
 import {
-  PrivacyExperienceGPPSettings,
+  type PrivacyExperienceGPPSettings,
   TCFLegalBasisEnum,
-  TCFPurposeOverrideSchema,
+  type TCFPurposeOverrideSchema,
 } from "~/types/api";
 
 type FormPurposeOverride = {

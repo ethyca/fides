@@ -1,5 +1,6 @@
 import { Button, Flex, Table } from "fidesui";
-import React, { useEffect } from "react";
+import type React from "react";
+import { useEffect } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";

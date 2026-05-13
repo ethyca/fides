@@ -1,4 +1,4 @@
-import { Handle, HandleType, Position } from "@xyflow/react";
+import { Handle, type HandleType, Position } from "@xyflow/react";
 import classNames from "classnames";
 
 import styles from "./DatasetNode.module.scss";

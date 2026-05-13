@@ -3,7 +3,7 @@ import {
   defineStyleConfig,
   extendTheme as extendChakraTheme,
 } from "@chakra-ui/react";
-import { Dict } from "@chakra-ui/utils";
+import type { Dict } from "@chakra-ui/utils";
 
 import { palette } from "./palette/palette";
 

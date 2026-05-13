@@ -15,7 +15,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
-import { User } from "./types";
+import type { User } from "./types";
 import {
   setActiveUserId,
   useDeleteUserMutation,

@@ -1,7 +1,7 @@
-import { Avatar, AvatarProps, Icons } from "fidesui";
+import { Avatar, type AvatarProps, Icons } from "fidesui";
 import React, { useMemo } from "react";
 
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import type { ConnectionConfigurationResponse } from "~/types/api";
 import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 import { ConnectionType as ConnectionTypeModel } from "~/types/api/models/ConnectionType";

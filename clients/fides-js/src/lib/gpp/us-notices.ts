@@ -2,19 +2,19 @@
  * Helper functions to set the GPP CMP API based on Fides values
  */
 
-import { CmpApi } from "@iabgpp/cmpapi";
+import type { CmpApi } from "@iabgpp/cmpapi";
 
 import type { ConsentContext } from "../consent-context";
-import { FidesCookie, PrivacyExperience } from "../consent-types";
+import type { FidesCookie, PrivacyExperience } from "../consent-types";
 import {
-  CmpApiUpdaterProps,
+  type CmpApiUpdaterProps,
   getGppSectionAndRegion,
   setGpcSubsection,
   setMspaSections,
   setNoticesProvided,
   setOptOuts,
 } from "./gpp-utils";
-import { GPPSection } from "./types";
+import type { GPPSection } from "./types";
 
 interface UpdateGppProps {
   cmpApi: CmpApi;

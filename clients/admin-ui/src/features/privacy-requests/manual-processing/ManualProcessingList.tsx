@@ -1,8 +1,9 @@
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraCenter as Center,
+  Spin,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -12,9 +13,8 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
-  ChakraVStack as VStack,
-  Spin,
   useMessage,
+  ChakraVStack as VStack,
 } from "fidesui";
 import {
   privacyRequestApi,
@@ -22,7 +22,7 @@ import {
   useUploadManualAccessWebhookDataMutation,
   useUploadManualErasureWebhookDataMutation,
 } from "privacy-requests/privacy-requests.slice";
-import {
+import type {
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
 } from "privacy-requests/types";
@@ -35,7 +35,7 @@ import { ActionType } from "~/types/api";
 
 import ManualAccessProcessingDetail from "./ManualAccessProcessingDetail";
 import ManualErasureProcessingDetail from "./ManualErasureProcessingDetail";
-import {
+import type {
   ManualInputData,
   ManualInputDataFieldMap,
   ManualProcessingDetailProps,

@@ -1,14 +1,14 @@
 import { debounce } from "common/utils";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
+  Icons,
   ChakraInput as Input,
   ChakraInputGroup as InputGroup,
   ChakraInputLeftElement as InputLeftElement,
-  ChakraText as Text,
-  Icons,
   Popover,
+  ChakraText as Text,
   Tooltip,
 } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -21,7 +21,7 @@ import {
 import ConnectionTypeLogo, {
   connectionLogoFromSystemType,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
-import {
+import type {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,

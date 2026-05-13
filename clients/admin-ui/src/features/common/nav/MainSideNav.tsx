@@ -1,8 +1,8 @@
 import {
-  Button,
   ChakraBox as Box,
-  ChakraVStack as VStack,
+  Button,
   Icons,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
@@ -17,10 +17,10 @@ import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import AccountDropdownMenu from "./AccountDropdownMenu";
 import { useNav } from "./hooks";
-import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
 import styles from "./NavMenu.module.scss";
 import NavSearch from "./NavSearch";
+import type { ActiveNav, NavGroup } from "./nav-config";
 import { RouterLink } from "./RouterLink";
 
 const NAV_BACKGROUND_COLOR = "var(--fidesui-brand-minos)";

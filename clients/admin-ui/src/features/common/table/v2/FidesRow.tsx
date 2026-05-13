@@ -1,9 +1,9 @@
-import { Row } from "@tanstack/react-table";
-import { ChakraTr as Tr, Tooltip } from "fidesui";
+import type { Row } from "@tanstack/react-table";
+import { Tooltip, ChakraTr as Tr } from "fidesui";
 
 import {
   FidesCell,
-  FidesCellState,
+  type FidesCellState,
 } from "~/features/common/table/v2/FidesCell";
 
 import { columnExpandedVersion } from "./util";

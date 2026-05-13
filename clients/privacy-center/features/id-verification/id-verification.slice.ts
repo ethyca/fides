@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { IdentityVerificationConfigResponse } from "~/types/api";
+import type { IdentityVerificationConfigResponse } from "~/types/api";
 
 export const idVerificationApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

@@ -2,10 +2,10 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { TaxonomyEntity } from "~/features/taxonomy/types";
-import { SystemGroup } from "~/types/api/models/SystemGroup";
-import { SystemGroupCreate } from "~/types/api/models/SystemGroupCreate";
-import { SystemGroupUpdate } from "~/types/api/models/SystemGroupUpdate";
+import type { TaxonomyEntity } from "~/features/taxonomy/types";
+import type { SystemGroup } from "~/types/api/models/SystemGroup";
+import type { SystemGroupCreate } from "~/types/api/models/SystemGroupCreate";
+import type { SystemGroupUpdate } from "~/types/api/models/SystemGroupUpdate";
 
 const systemGroupsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -52,7 +52,7 @@ export const {
   useDeleteSystemGroupMutation,
 } = systemGroupsApi;
 
-export interface State {}
+export type State = {};
 const initialState: State = {};
 
 export const systemGroupSlice = createSlice({

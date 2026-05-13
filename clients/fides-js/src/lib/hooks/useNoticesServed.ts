@@ -2,13 +2,13 @@ import { useCallback, useEffect } from "preact/hooks";
 
 import { patchNoticesServed } from "../../services/api";
 import {
-  FidesInitOptions,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  RecordConsentServedRequest,
+  type FidesInitOptions,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
+  type RecordConsentServedRequest,
   ServingComponent,
 } from "../consent-types";
-import { FidesEvent } from "../events";
+import type { FidesEvent } from "../events";
 import { fidesLifecycleManager } from "../fides-lifecycle-manager";
 
 interface UseNoticesServedProps {

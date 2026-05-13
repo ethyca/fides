@@ -1,14 +1,17 @@
 import {
+  ChakraBox as Box,
   Button,
   Card,
-  ChakraBox as Box,
-  ChakraSpacer as Spacer,
   Flex,
-  TabsProps,
+  ChakraSpacer as Spacer,
+  type TabsProps,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo } from "react";
-
+import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
+import ConnectionStatusNotice, {
+  type ConnectionStatusData,
+} from "~/features/integrations/ConnectionStatusNotice";
 import IdentityResolutionTab from "~/features/integrations/configure-identity-resolution/IdentityResolutionTab";
 import {
   JiraConfigTab,
@@ -19,16 +22,12 @@ import QueryLogConfigTab from "~/features/integrations/configure-query-log/Query
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import TaskConditionsTab from "~/features/integrations/configure-tasks/TaskConditionsTab";
 import TaskConfigTab from "~/features/integrations/configure-tasks/TaskConfigTab";
-import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
-import ConnectionStatusNotice, {
-  ConnectionStatusData,
-} from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
 import IntegrationPrivacyRequests from "~/features/integrations/IntegrationPrivacyRequests";
 import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
   ConnectionType,
   IntegrationFeature,
 } from "~/types/api";

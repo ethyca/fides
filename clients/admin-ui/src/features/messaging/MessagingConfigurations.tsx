@@ -2,11 +2,11 @@
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraText as Text,
-  ChakraVStack as VStack,
   Icons,
   Space,
   Table,
+  ChakraText as Text,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { useRouter } from "next/router";
 

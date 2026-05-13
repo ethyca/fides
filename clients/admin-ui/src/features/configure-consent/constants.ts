@@ -1,4 +1,4 @@
-import { PrivacyDeclaration } from "~/types/api";
+import type { PrivacyDeclaration } from "~/types/api";
 
 export interface MinimalCookie {
   name: string;

@@ -2,11 +2,11 @@
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import {
   ComponentType,
-  ExperienceConfigCreate,
-  ExperienceTranslation,
+  type ExperienceConfigCreate,
+  type ExperienceTranslation,
   Layer1ButtonOption,
-  LimitedPrivacyNoticeResponseSchema,
-  PrivacyNoticeResponse,
+  type LimitedPrivacyNoticeResponseSchema,
+  type PrivacyNoticeResponse,
   SupportedLanguage,
 } from "~/types/api";
 

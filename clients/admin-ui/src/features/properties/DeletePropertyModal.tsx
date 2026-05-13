@@ -6,7 +6,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { useDeletePropertyMutation } from "~/features/properties/property.slice";
-import { Property, ScopeRegistryEnum } from "~/types/api";
+import { type Property, ScopeRegistryEnum } from "~/types/api";
 
 interface Props {
   property: Property;

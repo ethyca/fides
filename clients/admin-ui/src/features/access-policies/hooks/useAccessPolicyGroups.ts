@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-import { Control } from "../access-policies.slice";
-import { AccessPolicyListItem } from "../types";
+import type { Control } from "../access-policies.slice";
+import type { AccessPolicyListItem } from "../types";
 
 export interface PolicyGroup {
   controlGroup: Control;

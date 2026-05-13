@@ -16,8 +16,8 @@ import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { CreateAssessmentTaskRequest } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { CreateAssessmentTaskRequest } from "~/types/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import {
   useCreatePrivacyAssessmentMutation,

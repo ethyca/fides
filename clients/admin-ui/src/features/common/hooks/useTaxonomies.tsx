@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { find } from "lodash";
-import { Fragment, ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {

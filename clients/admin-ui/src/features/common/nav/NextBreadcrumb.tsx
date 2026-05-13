@@ -1,13 +1,13 @@
 /* eslint-disable tailwindcss/no-custom-classname */
 import {
   Breadcrumb,
-  BreadcrumbItemType,
-  BreadcrumbProps,
+  type BreadcrumbItemType,
+  type BreadcrumbProps,
   Button,
   Typography,
 } from "fidesui";
-import { Url } from "next/dist/shared/lib/router/router";
-import { ReactNode, useMemo } from "react";
+import type { Url } from "next/dist/shared/lib/router/router";
+import { type ReactNode, useMemo } from "react";
 
 import { RouterLink } from "./RouterLink";
 

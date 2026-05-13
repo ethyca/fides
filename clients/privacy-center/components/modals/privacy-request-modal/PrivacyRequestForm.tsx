@@ -2,11 +2,11 @@ import { Button, Flex, Form, Input, Text } from "fidesui";
 import React from "react";
 
 import CustomFieldRenderer, {
-  CustomFieldRendererProps,
+  type CustomFieldRendererProps,
 } from "~/components/common/CustomFieldRenderer";
-import { ModalViews } from "~/components/modals/types";
+import type { ModalViews } from "~/components/modals/types";
 import { PhoneInput } from "~/components/phone-input";
-import { CustomConfigField, PrivacyRequestOption } from "~/types/config";
+import type { CustomConfigField, PrivacyRequestOption } from "~/types/config";
 
 import usePrivacyRequestForm from "./usePrivacyRequestForm";
 
@@ -74,9 +74,7 @@ const PrivacyRequestForm = ({
         {!!nameInput && (
           <Form.Item
             className="pc-field pc-field--name"
-            validateStatus={
-              touched.name && Boolean(errors.name) ? "error" : undefined
-            }
+            validateStatus={touched.name && errors.name ? "error" : undefined}
             help={touched.name && errors.name}
             required={nameInput === "required"}
             label="Name"
@@ -95,9 +93,7 @@ const PrivacyRequestForm = ({
         {!!emailInput && (
           <Form.Item
             className="pc-field pc-field--email"
-            validateStatus={
-              touched.email && Boolean(errors.email) ? "error" : undefined
-            }
+            validateStatus={touched.email && errors.email ? "error" : undefined}
             help={touched.email && errors.email}
             required={emailInput === "required"}
             label="Email"
@@ -117,9 +113,7 @@ const PrivacyRequestForm = ({
         {!!phoneInput && (
           <Form.Item
             className="pc-field pc-field--phone"
-            validateStatus={
-              touched.phone && Boolean(errors.phone) ? "error" : undefined
-            }
+            validateStatus={touched.phone && errors.phone ? "error" : undefined}
             help={touched.phone && errors.phone}
             required={phoneInput === "required"}
             label="Phone"
@@ -180,7 +174,7 @@ const PrivacyRequestForm = ({
                 key={key}
                 id={key}
                 validateStatus={
-                  touched[key] && !!errors[key] ? "error" : undefined
+                  touched[key] && errors[key] ? "error" : undefined
                 }
                 help={touched[key] && errors[key]}
                 required={item.required !== false}

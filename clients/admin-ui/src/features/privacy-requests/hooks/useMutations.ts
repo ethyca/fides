@@ -4,9 +4,9 @@ import {
   usePostPrivacyRequestFinalizeMutation,
   useSoftDeleteRequestMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { PrivacyRequestResponse } from "~/types/api";
+import type { PrivacyRequestResponse } from "~/types/api";
 
-import { PrivacyRequestEntity } from "../types";
+import type { PrivacyRequestEntity } from "../types";
 
 export const useMutations = ({
   subjectRequest,

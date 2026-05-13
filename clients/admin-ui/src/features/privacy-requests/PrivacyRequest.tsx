@@ -1,4 +1,4 @@
-import { Tabs, TabsProps } from "fidesui";
+import { Tabs, type TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
@@ -7,7 +7,7 @@ import { PrivacyRequestStatus } from "~/types/api";
 import ActivityTab from "./events-and-logs/ActivityTab";
 import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
 import RequestDetails from "./RequestDetails";
-import { PrivacyRequestEntity } from "./types";
+import type { PrivacyRequestEntity } from "./types";
 
 type PrivacyRequestProps = {
   data: PrivacyRequestEntity;

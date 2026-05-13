@@ -1,5 +1,5 @@
 import { Button } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import styles from "~/features/ToastLink.module.scss";
 

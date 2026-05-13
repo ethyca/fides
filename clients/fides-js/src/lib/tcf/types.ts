@@ -1,6 +1,6 @@
 import type { GVL } from "@iabtechlabtcf/core";
 
-import {
+import type {
   ConsentMechanism,
   PrivacyExperience,
   PrivacyNoticeTranslation,

@@ -1,4 +1,4 @@
-import { DataCategory } from "~/types/api";
+import type { DataCategory } from "~/types/api";
 
 export interface DataCategoryWithConfidence extends DataCategory {
   confidence?: number | null;

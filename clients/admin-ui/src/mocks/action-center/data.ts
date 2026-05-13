@@ -1,4 +1,4 @@
-import { ConnectionType, StagedResourceAPIResponse } from "~/types/api";
+import { ConnectionType, type StagedResourceAPIResponse } from "~/types/api";
 import { ApplicationStatus } from "~/types/api/models/ApplicationStatus";
 import { AuthenticationProtocol } from "~/types/api/models/AuthenticationProtocol";
 import { DiffStatus } from "~/types/api/models/DiffStatus";

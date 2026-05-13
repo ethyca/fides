@@ -1,7 +1,7 @@
 import { Button, Flex, Icons, Select } from "fidesui";
 import React from "react";
 
-import { usePagination } from "./usePagination";
+import type { usePagination } from "./usePagination";
 
 export const InfinitePaginator = ({
   disableNext,

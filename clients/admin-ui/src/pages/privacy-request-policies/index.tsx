@@ -21,14 +21,14 @@ import SearchInput from "~/features/common/SearchInput";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { confirmDeletePolicy } from "~/features/policies/confirmDeletePolicy";
 import { DEFAULT_POLICY_TOOLTIP } from "~/features/policies/constants";
+import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
 import {
   useDeletePolicyMutation,
   useGetDefaultPoliciesQuery,
   useGetPoliciesQuery,
 } from "~/features/policies/policy.slice";
-import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
 import { summarizeConditions } from "~/features/policies/utils/summarizeConditions";
-import { PolicyResponse } from "~/types/api";
+import type { PolicyResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
 

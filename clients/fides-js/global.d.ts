@@ -1,4 +1,4 @@
-declare module globalThis {
+declare namespace globalThis {
   /**
    * Wrapper for console.log that only logs if debug mode is enabled
    * while also preserving the stack trace.

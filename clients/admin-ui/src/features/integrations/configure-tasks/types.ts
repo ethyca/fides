@@ -1,6 +1,6 @@
-import { Dayjs } from "dayjs";
+import type { Dayjs } from "dayjs";
 
-import { ManualFieldResponse } from "~/types/api";
+import type { ManualFieldResponse } from "~/types/api";
 
 export type FieldValue = string | number | boolean | Dayjs | string[] | null;
 

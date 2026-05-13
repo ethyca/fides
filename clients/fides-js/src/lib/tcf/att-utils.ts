@@ -1,7 +1,7 @@
 import {
   ConsentMechanism,
   FidesAttStatus,
-  PrivacyNoticeWithPreference,
+  type PrivacyNoticeWithPreference,
 } from "../consent-types";
 
 /**

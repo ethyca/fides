@@ -4,7 +4,7 @@ import React, { Fragment } from "react";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
-import { PrivacyDeclaration } from "~/types/api";
+import type { PrivacyDeclaration } from "~/types/api";
 
 import SystemCustomFieldGroup from "./fields/SystemCustomFieldGroup";
 import SystemDataSwitch from "./fields/SystemDataSwitch";

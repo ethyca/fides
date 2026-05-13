@@ -2,10 +2,10 @@ import { useMessage } from "fidesui";
 import { useCallback } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import { useReorderAccessPolicyMutation } from "../access-policies.slice";
-import { AccessPolicyListItem } from "../types";
+import type { AccessPolicyListItem } from "../types";
 
 export const useReorderPolicies = () => {
   const [reorderPolicy] = useReorderAccessPolicyMutation();

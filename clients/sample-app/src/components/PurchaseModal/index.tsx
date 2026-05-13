@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { UserData } from "../../types";
+import type { UserData } from "../../types";
 import Button from "../Button";
 import css from "./style.module.scss";
 

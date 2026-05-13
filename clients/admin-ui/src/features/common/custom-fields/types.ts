@@ -1,5 +1,5 @@
-import { Option } from "~/features/common/form/inputs";
-import {
+import type { Option } from "~/features/common/form/inputs";
+import type {
   AllowList,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,

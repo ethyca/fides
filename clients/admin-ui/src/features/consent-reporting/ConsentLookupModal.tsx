@@ -12,7 +12,7 @@ import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { PreferencesSavedExtended } from "~/types/api";
+import type { PreferencesSavedExtended } from "~/types/api";
 
 import { getErrorMessage } from "../common/helpers";
 import SearchInput from "../common/SearchInput";

@@ -6,10 +6,10 @@ import {
   ChakraModalFooter as ModalFooter,
   ChakraModalHeader as ModalHeader,
   ChakraModalOverlay as ModalOverlay,
-  ChakraModalProps as ModalProps,
+  type ChakraModalProps as ModalProps,
   ChakraSimpleGrid as SimpleGrid,
 } from "fidesui";
-import React, { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 interface Props extends Omit<ModalProps, "children"> {
   isOpen: boolean;

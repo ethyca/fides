@@ -1,7 +1,7 @@
-import { UserGeolocation } from "fides-js";
-import { NextApiRequest } from "next";
+import type { UserGeolocation } from "fides-js";
+import type { NextApiRequest } from "next";
 
-import { PrivacyCenterEnvironment } from "~/app/server-environment";
+import type { PrivacyCenterEnvironment } from "~/app/server-environment";
 
 /**
  * Verifies that certain conditions are met to be able to fetch experiences by property ID

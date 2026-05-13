@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
-import { useUpdateDependencyConditionsMutation } from "~/features/datastore-connections/connection-manual-tasks.slice";
-import { ConditionLeaf, GroupOperator } from "~/types/api";
+import type { useUpdateDependencyConditionsMutation } from "~/features/datastore-connections/connection-manual-tasks.slice";
+import { type ConditionLeaf, GroupOperator } from "~/types/api";
 
 /**
  * Custom hook for saving task creation conditions

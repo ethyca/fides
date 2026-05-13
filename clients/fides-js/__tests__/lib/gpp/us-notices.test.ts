@@ -8,9 +8,9 @@ import {
 } from "@iabgpp/cmpapi";
 
 import {
-  FidesCookie,
-  PrivacyExperience,
-  PrivacyNotice,
+  type FidesCookie,
+  type PrivacyExperience,
+  type PrivacyNotice,
   PrivacyNoticeFramework,
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
@@ -20,7 +20,7 @@ import {
 } from "../../../src/lib/gpp/constants";
 import { isGpcSubsectionSupported } from "../../../src/lib/gpp/gpp-utils";
 import { makeStub } from "../../../src/lib/gpp/stub";
-import {
+import type {
   GPPFieldMapping,
   GPPMechanismMapping,
   GPPSection,

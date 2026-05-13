@@ -1,15 +1,22 @@
 /**
  * A component for choosing a role, meant to be embedded in an antd Form
  */
-import { Button, Card, Flex, FormInstance, Icons, Typography } from "fidesui";
+import {
+  Button,
+  Card,
+  Flex,
+  type FormInstance,
+  Icons,
+  Typography,
+} from "fidesui";
 import React, { useState } from "react";
 
-import { RoleRegistryEnum, System } from "~/types/api";
+import { RoleRegistryEnum, type System } from "~/types/api";
 
 import { InfoTooltip } from "../common/InfoTooltip";
 import AssignSystemsModal from "./AssignSystemsModal";
 import { AssignSystemsDeleteTable } from "./AssignSystemsTable";
-import { type FormValues } from "./PermissionsForm";
+import type { FormValues } from "./PermissionsForm";
 
 const { Text } = Typography;
 

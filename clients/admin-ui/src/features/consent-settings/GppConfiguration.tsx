@@ -7,12 +7,12 @@ import {
   Switch,
   Typography,
 } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { selectGppSettings } from "~/features/config-settings/config-settings.slice";
-import { GPPUSApproach, PrivacyExperienceGPPSettings } from "~/types/api";
+import { GPPUSApproach, type PrivacyExperienceGPPSettings } from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
 import SettingsBox from "./SettingsBox";

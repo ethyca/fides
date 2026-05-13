@@ -3,7 +3,7 @@ import React from "react";
 
 import {
   ActionType,
-  PrivacyRequestResponse,
+  type PrivacyRequestResponse,
   PrivacyRequestStatus,
 } from "~/types/api";
 

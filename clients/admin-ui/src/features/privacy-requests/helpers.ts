@@ -1,4 +1,4 @@
-import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
+import { type PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
 /**
  * Enum for bulk actions that can be performed on privacy requests

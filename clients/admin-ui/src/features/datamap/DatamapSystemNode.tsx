@@ -1,4 +1,4 @@
-import { Handle, NodeProps, Position } from "@xyflow/react";
+import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { Button, Typography } from "fidesui";
 import React from "react";
 

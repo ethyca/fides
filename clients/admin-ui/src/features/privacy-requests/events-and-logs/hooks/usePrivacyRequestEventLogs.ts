@@ -5,10 +5,10 @@ import {
   hasUnresolvedError,
 } from "~/features/privacy-requests/events-and-logs/helpers";
 import {
-  ActivityTimelineItem,
+  type ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
   ExecutionLogStatus,
-  PrivacyRequestResults,
+  type PrivacyRequestResults,
 } from "~/features/privacy-requests/types";
 
 /**

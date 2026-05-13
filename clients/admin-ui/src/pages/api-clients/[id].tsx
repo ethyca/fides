@@ -21,12 +21,12 @@ import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
+import OAuthClientForm from "~/features/oauth/OAuthClientForm";
 import {
   useDeleteOAuthClientMutation,
   useGetOAuthClientQuery,
   useRotateOAuthClientSecretMutation,
 } from "~/features/oauth/oauth-clients.slice";
-import OAuthClientForm from "~/features/oauth/OAuthClientForm";
 import { ScopeRegistryEnum } from "~/types/api";
 
 const SecretManagementTab = ({ clientId }: { clientId: string }) => {

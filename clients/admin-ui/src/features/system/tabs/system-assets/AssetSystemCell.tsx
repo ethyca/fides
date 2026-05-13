@@ -6,13 +6,13 @@ import {
   useMessage,
 } from "fidesui";
 import { truncate } from "lodash";
-import { MouseEventHandler, useCallback, useState } from "react";
+import { type MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 import { useUpdateSystemAssetsMutation } from "~/features/system/system-assets.slice";
-import { Asset } from "~/types/api";
+import type { Asset } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface SystemUpdateParams {

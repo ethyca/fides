@@ -1,10 +1,10 @@
 import {
   Button,
   ChakraCollapse as Collapse,
-  ChakraStack as Stack,
-  ChakraText as Text,
   Flex,
   Icons,
+  ChakraStack as Stack,
+  ChakraText as Text,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { Form, FormikProvider, useFormik } from "formik";
@@ -16,7 +16,7 @@ import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
 import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
-import { PrivacyDeclarationResponse } from "~/types/api";
+import type { PrivacyDeclarationResponse } from "~/types/api";
 
 import styles from "./EditMinimalDataUseModal.module.scss";
 

@@ -1,6 +1,6 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Empty,
   Flex,
   formatIsoLocation,
@@ -27,7 +27,7 @@ import NoticeChildrenCell from "~/features/privacy-notices/table/cells/NoticeChi
 import NoticeEnableCell from "~/features/privacy-notices/table/cells/NoticeEnableCell";
 import StatusCell from "~/features/privacy-notices/table/cells/StatusCell";
 import { getNoticeStatus } from "~/features/privacy-notices/table/getNoticeStatus";
-import { PrivacyNoticeRegion, ScopeRegistryEnum } from "~/types/api";
+import { type PrivacyNoticeRegion, ScopeRegistryEnum } from "~/types/api";
 
 const EmptyTableNotice = () => {
   const router = useRouter();

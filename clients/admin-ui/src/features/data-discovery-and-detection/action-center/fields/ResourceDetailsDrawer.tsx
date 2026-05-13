@@ -8,7 +8,7 @@ import {
   Paragraph,
   SparkleIcon,
   Tabs,
-  TabsProps,
+  type TabsProps,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -16,10 +16,10 @@ import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 
 import { DetailsDrawer } from "./DetailsDrawer";
-import { DetailsDrawerProps } from "./DetailsDrawer/types";
+import type { DetailsDrawerProps } from "./DetailsDrawer/types";
 import { ACTION_ALLOWED_STATUSES } from "./FieldActions.const";
-import { MonitorResource } from "./types";
-import { useFieldActions } from "./useFieldActions";
+import type { MonitorResource } from "./types";
+import type { useFieldActions } from "./useFieldActions";
 import { mapConfidenceBucketToSeverity } from "./utils";
 
 interface ResourceDetailsDrawerProps extends DetailsDrawerProps {

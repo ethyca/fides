@@ -1,8 +1,15 @@
-import { Collapse, CollapseProps, Empty, Flex, Tag, Typography } from "fidesui";
+import {
+  Collapse,
+  type CollapseProps,
+  Empty,
+  Flex,
+  Tag,
+  Typography,
+} from "fidesui";
 import { useMemo } from "react";
 
 import { RulePanel } from "~/features/policies/rules/RulePanel";
-import { RuleResponse } from "~/types/api";
+import type { RuleResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
 

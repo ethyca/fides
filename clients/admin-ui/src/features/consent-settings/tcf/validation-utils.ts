@@ -1,6 +1,6 @@
-import { RangeEntry, TCFVendorRestriction } from "~/types/api";
+import { type RangeEntry, TCFVendorRestriction } from "~/types/api";
 
-import { FormValues, PurposeRestriction } from "./types";
+import type { FormValues, PurposeRestriction } from "./types";
 
 interface VendorRange {
   start: number;

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Button, theme, Typography } from "antd/lib";
+import { Button, Typography, theme } from "antd/lib";
 
 import { Typography as FidesTypography } from "../../index";
 

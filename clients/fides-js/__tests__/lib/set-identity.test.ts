@@ -1,4 +1,4 @@
-import { SetIdentityOptions } from "../../src/lib/consent-types";
+import type { SetIdentityOptions } from "../../src/lib/consent-types";
 import { setIdentity } from "../../src/lib/set-identity";
 import { createMockFides } from "../__utils__/test-utils";
 

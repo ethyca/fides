@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";

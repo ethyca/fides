@@ -1,4 +1,4 @@
-import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
+import type { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 
 const parseUrnToBreadcrumbs = (
   urn: string,

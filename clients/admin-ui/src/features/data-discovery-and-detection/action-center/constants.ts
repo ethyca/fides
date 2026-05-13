@@ -1,14 +1,14 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import {
-  CloudInfraMonitorUpdates,
+  type CloudInfraMonitorUpdates,
   ConsentStatus,
-  DatastoreMonitorUpdates,
+  type DatastoreMonitorUpdates,
   DiffStatus,
-  WebMonitorUpdates,
+  type WebMonitorUpdates,
 } from "~/types/api";
-import { InfrastructureMonitorUpdates } from "~/types/api/models/InfrastructureMonitorUpdates";
-import { StatusCounts } from "~/types/api/models/StatusCounts";
+import type { InfrastructureMonitorUpdates } from "~/types/api/models/InfrastructureMonitorUpdates";
+import type { StatusCounts } from "~/types/api/models/StatusCounts";
 
 import { ActionCenterTabHash } from "./hooks/useActionCenterTabs";
 

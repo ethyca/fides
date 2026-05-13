@@ -3,8 +3,8 @@ import {
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraHStack as HStack,
-  ChakraText as Text,
   Icons,
+  ChakraText as Text,
 } from "fidesui";
 
 const InfoBox = ({

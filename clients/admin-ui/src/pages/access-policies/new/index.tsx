@@ -1,14 +1,13 @@
 import { useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-
-import { useCreateAccessPolicyMutation } from "~/features/access-policies/access-policies.slice";
 import AccessPolicyEditor, {
-  SidebarFormValues,
+  type SidebarFormValues,
 } from "~/features/access-policies/AccessPolicyEditor";
+import { useCreateAccessPolicyMutation } from "~/features/access-policies/access-policies.slice";
 import { getErrorMessage } from "~/features/common/helpers";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
-import { RTKErrorResult } from "~/types/errors";
+import type { RTKErrorResult } from "~/types/errors";
 
 const NewAccessPolicyPage: NextPage = () => {
   const router = useRouter();

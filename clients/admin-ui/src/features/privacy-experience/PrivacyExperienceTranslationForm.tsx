@@ -2,14 +2,14 @@ import { Alert, Form, Input, Typography, useModal } from "fidesui";
 import React, { useImperativeHandle, useMemo } from "react";
 
 import TemplateVariableInput, {
-  TemplateVariable,
+  type TemplateVariable,
 } from "~/features/common/TemplateVariableInput";
 import {
   getTranslationFormFields,
-  TranslationWithLanguageName,
+  type TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
-import { ExperienceFormInstance } from "~/features/privacy-experience/form/useExperienceForm";
-import { ComponentType, ExperienceTranslation } from "~/types/api";
+import type { ExperienceFormInstance } from "~/features/privacy-experience/form/useExperienceForm";
+import { ComponentType, type ExperienceTranslation } from "~/types/api";
 
 import { SwitchField } from "./form/SwitchField";
 

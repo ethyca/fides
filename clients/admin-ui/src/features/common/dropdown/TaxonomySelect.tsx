@@ -1,10 +1,10 @@
 import {
   Flex,
-  ICustomMultiSelectProps,
-  ICustomSelectProps,
+  type ICustomMultiSelectProps,
+  type ICustomSelectProps,
   Select,
 } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import styles from "./TaxonomySelect.module.scss";
 

@@ -2,15 +2,15 @@ import { isEqual } from "lodash";
 
 import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import { isErrorResult } from "~/features/common/helpers";
+import type { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
 import { FieldTypes } from "~/features/custom-fields/constants";
-import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
 import {
   useAddCustomFieldDefinitionMutation,
   useUpdateCustomFieldDefinitionMutation,
   useUpsertAllowListMutation,
 } from "~/features/plus/plus.slice";
-import { AllowList, CustomFieldDefinitionWithId } from "~/types/api";
-import { RTKResult } from "~/types/errors";
+import type { AllowList, CustomFieldDefinitionWithId } from "~/types/api";
+import type { RTKResult } from "~/types/errors";
 
 const generateNewAllowListName = () =>
   Date.now().toString() + Math.random().toString();

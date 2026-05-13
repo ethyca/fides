@@ -1,6 +1,6 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHStack as HStack,
   ChakraStack as Stack,
   ChakraText as Text,
@@ -11,14 +11,14 @@ import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ColumnDropdown, {
-  ColumnMetadata,
+  type ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import { useUpsertSystemsMutation } from "~/features/system";
-import { System } from "~/types/api";
+import type { System } from "~/types/api";
 
 import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {

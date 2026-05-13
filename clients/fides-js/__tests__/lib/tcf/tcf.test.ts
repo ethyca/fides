@@ -1,9 +1,12 @@
 import { TCString } from "@iabtechlabtcf/core";
 
-import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
+import {
+  type PrivacyExperience,
+  UserConsentPreference,
+} from "~/lib/consent-types";
 import { generateFidesString } from "~/lib/tcf";
 import { FIDES_SEPARATOR } from "~/lib/tcf/constants";
-import {
+import type {
   GVLJson,
   TCFFeatureRecord,
   TCFPurposeConsentRecord,

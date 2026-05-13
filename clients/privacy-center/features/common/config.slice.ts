@@ -1,9 +1,13 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import { Consent, ConsentPreferences, PrivacyCenterConfig } from "~/types/api";
-import { Config } from "~/types/config";
+import type {
+  Consent,
+  ConsentPreferences,
+  PrivacyCenterConfig,
+} from "~/types/api";
+import type { Config } from "~/types/config";
 
 interface ConfigState {
   config?: Config | PrivacyCenterConfig;

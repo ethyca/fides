@@ -1,12 +1,12 @@
 import { Button, Flex, Icons, Result } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
+import { useFeatures } from "~/features/common/features";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useCalcAggregateStatisticsMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";

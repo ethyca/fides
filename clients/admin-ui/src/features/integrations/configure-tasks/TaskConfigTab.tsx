@@ -1,10 +1,9 @@
 import { Button, Divider, Flex, Typography } from "fidesui";
 
-import { ConnectionConfigurationResponse } from "~/types/api";
-
+import type { ConnectionConfigurationResponse } from "~/types/api";
+import CreateExternalUserModal from "./CreateExternalUserModal";
 import ManualTaskAssignmentSection from "./components/ManualTaskAssignmentSection";
 import ManualTaskConfigList from "./components/ManualTaskConfigList";
-import CreateExternalUserModal from "./CreateExternalUserModal";
 import { useUserAssignment } from "./hooks/useUserAssignment";
 
 interface TaskConfigTabProps {

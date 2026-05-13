@@ -1,6 +1,6 @@
-import { HTMLAttributes, ReactNode, useState } from "react";
+import { type HTMLAttributes, type ReactNode, useState } from "react";
 
-import { CustomTag, CustomTagProps } from "../../hoc/CustomTag";
+import { CustomTag, type CustomTagProps } from "../../hoc/CustomTag";
 
 export interface TagListProps extends HTMLAttributes<HTMLSpanElement> {
   /**

@@ -1,9 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
 import {
-  Button,
   ChakraBox as Box,
-  ChakraText as Text,
+  Button,
   Modal,
+  ChakraText as Text,
   useMessage,
 } from "fidesui";
 import React, { useState } from "react";
@@ -13,7 +13,7 @@ import DocsLink from "~/features/common/DocsLink";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { useUpdateCustomAssetMutation } from "~/features/plus/plus.slice";
-import { CustomAssetType } from "~/types/api/models/CustomAssetType";
+import type { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
 type RequestModalProps = {
   isOpen: boolean;

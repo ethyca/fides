@@ -1,7 +1,7 @@
 import {
   createContext,
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
   useContext,
   useMemo,
 } from "react";
@@ -9,7 +9,7 @@ import {
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DATAMAP_GROUPING } from "~/types/api";
 
-import { DatamapReportFilterSelections } from "../types";
+import type { DatamapReportFilterSelections } from "../types";
 import { COLUMN_IDS, DATAMAP_LOCAL_STORAGE_KEYS } from "./constants";
 
 export const DEFAULT_COLUMN_VISIBILITY = {

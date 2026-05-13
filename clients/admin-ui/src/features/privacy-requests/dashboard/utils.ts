@@ -1,13 +1,13 @@
 import { isEmpty, isNil, pickBy } from "lodash";
 import { createParser } from "nuqs";
 
-import {
+import type {
   fides__api__schemas__privacy_request__IdentityValue as IdentityValue,
   PrivacyRequestOption,
   PrivacyRequestResponse,
 } from "~/types/api";
 
-import { CustomFieldDefinition } from "./CustomFieldFilter";
+import type { CustomFieldDefinition } from "./CustomFieldFilter";
 
 /**
  * Custom nuqs parser for custom_privacy_request_fields

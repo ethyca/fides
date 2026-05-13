@@ -9,7 +9,7 @@ import EditDrawer, {
 } from "~/features/common/EditDrawer";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import YamlEditorModal from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/YamlEditorModal";
-import { Dataset } from "~/types/api";
+import type { Dataset } from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,

@@ -1,7 +1,7 @@
 import { Button, useChakraDisclosure as useDisclosure } from "fidesui";
 import React from "react";
 
-import { CustomAssetType } from "~/types/api/models/CustomAssetType";
+import type { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
 import CustomAssetUploadModal from "./CustomAssetUploadModal";
 

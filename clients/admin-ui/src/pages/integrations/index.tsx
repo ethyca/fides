@@ -1,10 +1,10 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   CUSTOM_TAG_COLOR,
   Icons,
   Table,
-  TableProps,
+  type TableProps,
   Tag,
   Tooltip,
   Typography,
@@ -43,8 +43,8 @@ import getIntegrationTypeInfo, {
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
   ConnectionType,
 } from "~/types/api";
 

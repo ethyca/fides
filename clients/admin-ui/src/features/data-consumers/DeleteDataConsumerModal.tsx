@@ -3,10 +3,10 @@ import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import {
-  DataConsumer,
+  type DataConsumer,
   useDeleteDataConsumerMutation,
 } from "./data-consumer.slice";
 

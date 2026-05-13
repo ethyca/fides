@@ -1,7 +1,7 @@
 import { Icons } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { FlagNames } from "~/features/common/features";
+import type { FlagNames } from "~/features/common/features";
 import { NOTIFICATION_TAB_ITEMS } from "~/features/common/NotificationTabs";
 import { ACTION_CENTER_TAB_ITEMS } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 import { PRIVACY_REQUEST_TAB_ITEMS } from "~/features/privacy-requests/hooks/usePrivacyRequestTabs";

@@ -1,12 +1,12 @@
 import {
-  ExperienceConfig,
-  PrivacyNotice,
+  type ExperienceConfig,
+  type PrivacyNotice,
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "fides-js";
 import { useCallback, useContext } from "react";
 
-import { ExperienceConfigResponseNoNotices } from "~/types/api";
+import type { ExperienceConfigResponseNoNotices } from "~/types/api";
 
 import { I18nContext } from "../i18nContext";
 

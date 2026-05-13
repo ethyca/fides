@@ -15,7 +15,7 @@ import { useState } from "react";
 import { useForgotPasswordMutation } from "~/features/auth";
 import { getErrorMessage } from "~/features/common/helpers";
 import { RouterLink } from "~/features/common/nav/RouterLink";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 interface ForgotPasswordFormValues {
   email: string;

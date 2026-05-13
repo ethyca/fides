@@ -1,4 +1,4 @@
-import { GetProps, Typography } from "fidesui";
+import { type GetProps, Typography } from "fidesui";
 
 const { Text } = Typography;
 

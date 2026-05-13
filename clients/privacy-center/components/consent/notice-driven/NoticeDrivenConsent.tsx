@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
-  ConsentContext,
-  Cookies as FidesJSCookies,
-  ExperienceConfig,
-  FidesCookie,
+  type ConsentContext,
+  type ExperienceConfig,
+  type FidesCookie,
+  type Cookies as FidesJSCookies,
   getGpcContext,
   getGpcStatusFromNotice,
   getOrMakeFidesCookie,
-  NoticeConsent,
+  type NoticeConsent,
   noticeHasConsentInCookie,
-  PrivacyNotice,
-  PrivacyNoticeWithPreference,
+  type PrivacyNotice,
+  type PrivacyNoticeWithPreference,
   removeCookiesFromBrowser,
   saveFidesCookie,
   transformConsentToFidesUserPreference,
@@ -40,13 +40,13 @@ import {
   useUpdateNoticesServedMutation,
   useUpdatePrivacyPreferencesMutation,
 } from "~/features/consent/consent.slice";
-import { NoticeHistoryIdToPreference } from "~/features/consent/types";
+import type { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import {
   ConsentMechanism,
   ConsentMethod,
-  ConsentOptionCreate,
-  PrivacyNoticeResponse,
-  PrivacyPreferencesRequest,
+  type ConsentOptionCreate,
+  type PrivacyNoticeResponse,
+  type PrivacyPreferencesRequest,
   ServingComponent,
   UserConsentPreference,
 } from "~/types/api";

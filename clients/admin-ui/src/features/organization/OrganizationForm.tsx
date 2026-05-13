@@ -1,5 +1,5 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Button, Form, Input, Spin, useMessage } from "fidesui";
 import { useMemo, useState } from "react";
 
@@ -8,7 +8,7 @@ import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useUpdateOrganizationMutation,
 } from "~/features/organization";
-import { Organization } from "~/types/api";
+import type { Organization } from "~/types/api";
 
 interface OrganizationFormProps {
   organization?: Organization;

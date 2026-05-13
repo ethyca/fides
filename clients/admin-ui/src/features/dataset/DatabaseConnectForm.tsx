@@ -18,7 +18,12 @@ import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
-import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
+import {
+  type Dataset,
+  GenerateTypes,
+  type System,
+  ValidTargets,
+} from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,

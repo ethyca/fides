@@ -1,6 +1,6 @@
-import {
-  AssessmentResponse as GeneratedAssessmentResponse,
+import type {
   CreateAssessmentTaskRequest,
+  AssessmentResponse as GeneratedAssessmentResponse,
   Page_AssessmentTaskResponse_,
   TemplateResponse,
 } from "~/types/api";

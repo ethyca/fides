@@ -1,4 +1,4 @@
-import { PrivacyRequestFieldDefinition } from "../types";
+import type { PrivacyRequestFieldDefinition } from "../types";
 import {
   extractCustomIdentityFields,
   formatFieldDisplay,

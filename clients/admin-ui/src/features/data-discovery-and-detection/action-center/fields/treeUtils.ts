@@ -1,7 +1,7 @@
 import { DiffStatus } from "~/types/api";
-import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
+import type { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 
-import { CustomTreeDataNode } from "./types";
+import type { CustomTreeDataNode } from "./types";
 
 /**
  * Updates a node's status and optionally diffStatus if it exists in the tree

@@ -14,7 +14,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import ToastLink from "~/features/common/ToastLink";
 import { DiffStatus } from "~/types/api";
-import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
+import type { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
 import {
   useAddMonitorResultAssetsMutation,

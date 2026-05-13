@@ -1,24 +1,24 @@
-import { RenderOverlayType } from "../components/types";
+import type { RenderOverlayType } from "../components/types";
 import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import {
   calculateAutomatedConsent,
   saveAutomatedPreferencesToApi,
 } from "./automated-consent";
-import { ConsentContext, getGpcContext } from "./consent-context";
+import { type ConsentContext, getGpcContext } from "./consent-context";
 import {
   ComponentType,
-  FidesConfig,
-  FidesCookie,
-  FidesGlobal,
-  FidesInitOptions,
-  FidesOverrides,
-  FidesWindowOverrides,
-  NoticeValues,
-  OverrideType,
-  PrivacyExperience,
+  type FidesConfig,
+  type FidesCookie,
+  type FidesGlobal,
+  type FidesInitOptions,
+  type FidesOverrides,
+  type FidesWindowOverrides,
+  type NoticeValues,
+  type OverrideType,
+  type PrivacyExperience,
   UserConsentPreference,
-  UserGeolocation,
+  type UserGeolocation,
 } from "./consent-types";
 import {
   applyOverridesToConsent,
@@ -45,9 +45,9 @@ import {
   localizeModalLinkText,
   setupI18n,
 } from "./i18n";
-import { UpdateExperienceProps } from "./init-utils";
-import { InitOverlayProps } from "./initOverlay";
-import { InitializedFidesGlobal } from "./providers/fides-global-context";
+import type { UpdateExperienceProps } from "./init-utils";
+import type { InitOverlayProps } from "./initOverlay";
+import type { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { searchForElement } from "./ui-utils";
 
 const retrieveEffectiveRegionString = async (
@@ -438,7 +438,7 @@ export const initialize = async ({
         shouldContinueInitOverlay = false;
       }
 
-      if (!!initOverlay && shouldContinueInitOverlay) {
+      if (initOverlay && shouldContinueInitOverlay) {
         const initializedFides: InitializedFidesGlobal = {
           ...fides,
           cookie: fides.cookie,

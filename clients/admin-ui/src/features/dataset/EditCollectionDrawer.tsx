@@ -5,7 +5,7 @@ import EditDrawer, {
   EditDrawerFooter,
   EditDrawerHeader,
 } from "~/features/common/EditDrawer";
-import { Dataset, DatasetCollection } from "~/types/api";
+import type { Dataset, DatasetCollection } from "~/types/api";
 
 import { useUpdateDatasetMutation } from "./dataset.slice";
 import {

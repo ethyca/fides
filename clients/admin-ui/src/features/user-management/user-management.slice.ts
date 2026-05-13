@@ -1,4 +1,8 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import { utf8ToB64 } from "common/utils";
 
 import type { RootState } from "~/app/store";
@@ -7,14 +11,14 @@ import { baseApi } from "~/features/common/api.slice";
 import { selectRbacEnabled } from "~/features/plus/plus.slice";
 import { rbacApi } from "~/features/rbac/rbac.slice";
 import {
-  EditableMonitorConfig,
+  type EditableMonitorConfig,
   RoleRegistryEnum,
-  ScopeRegistryEnum,
-  System,
-  UserForcePasswordReset,
+  type ScopeRegistryEnum,
+  type System,
+  type UserForcePasswordReset,
 } from "~/types/api";
 
-import {
+import type {
   User,
   UserCreateExtended,
   UserCreateResponse,

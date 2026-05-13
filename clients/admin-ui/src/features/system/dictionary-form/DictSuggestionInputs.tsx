@@ -8,11 +8,11 @@ import {
   ChakraNumberInput as NumberInput,
   ChakraNumberInputField as NumberInputField,
   ChakraNumberInputStepper as NumberInputStepper,
+  Switch,
   ChakraTextarea as Textarea,
   ChakraVStack as VStack,
-  Switch,
 } from "fidesui";
-import { Field, FieldProps, useField, useFormikContext } from "formik";
+import { Field, type FieldProps, useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -20,14 +20,14 @@ import {
   type CustomInputProps,
   ErrorMessage,
   Label,
-  StringField,
+  type StringField,
   TextInput,
 } from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import type { FormValues } from "~/features/system/form";
-import { Vendor } from "~/types/dictionary-api";
+import type { Vendor } from "~/types/dictionary-api";
 
 const useDictSuggestion = (
   fieldName: string,

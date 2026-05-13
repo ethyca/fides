@@ -1,17 +1,17 @@
 import {
   ChakraFlex as Flex,
   ChakraFormControl as FormControl,
-  ChakraVStack as VStack,
   Tag,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 
 import {
-  CustomInputProps,
+  type CustomInputProps,
   Label,
-  StringField,
+  type StringField,
 } from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 

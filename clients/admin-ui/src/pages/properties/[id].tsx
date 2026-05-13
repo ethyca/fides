@@ -8,10 +8,13 @@ import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  type FormValues,
+  PropertyForm,
+} from "~/features/properties/PropertyForm";
+import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
 } from "~/features/properties/property.slice";
-import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {

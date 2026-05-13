@@ -1,4 +1,4 @@
-import { PrivacyCenterLink } from "~/types/config";
+import type { PrivacyCenterLink } from "~/types/config";
 
 type ConfigWithLinks = {
   links?: PrivacyCenterLink[];

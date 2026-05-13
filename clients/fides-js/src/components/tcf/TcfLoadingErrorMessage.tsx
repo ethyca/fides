@@ -22,7 +22,7 @@ export const TcfLoadingErrorMessage = ({
       data-testid="tcf-loading-error-message"
     >
       There was an error loading the {generalLabel}.{" "}
-      {!excludeAcceptReject && !!specificLabel ? (
+      {!excludeAcceptReject && specificLabel ? (
         <Fragment>
           You may{" "}
           <strong>

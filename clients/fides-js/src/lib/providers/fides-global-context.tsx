@@ -1,8 +1,8 @@
 import { createContext } from "preact";
-import { ReactNode } from "preact/compat";
+import type { ReactNode } from "preact/compat";
 import { useContext, useMemo, useState } from "preact/hooks";
 
-import {
+import type {
   FidesConfig,
   FidesCookie,
   FidesGlobal,

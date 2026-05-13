@@ -2,7 +2,7 @@ import { DEFAULT_MODAL_LINK_ID } from "fides-js";
 
 import {
   LOG_LEVEL_LABELS,
-  PrivacyCenterSettings,
+  type PrivacyCenterSettings,
 } from "~/app/server-utils/PrivacyCenterSettings";
 import type { ConsentMethod } from "~/types/api";
 import type {

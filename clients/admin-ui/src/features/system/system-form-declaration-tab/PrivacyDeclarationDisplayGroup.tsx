@@ -1,21 +1,21 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraDivider as Divider,
   ChakraHeading as Heading,
   ChakraHStack as HStack,
+  Icons,
   ChakraLinkBox as LinkBox,
   ChakraLinkOverlay as LinkOverlay,
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
   ChakraText as Text,
-  Icons,
   useModal,
 } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
-import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
+import type { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
 const PrivacyDeclarationRow = ({
   declaration,

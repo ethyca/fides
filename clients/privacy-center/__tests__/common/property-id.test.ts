@@ -1,7 +1,7 @@
-import { UserGeolocation } from "fides-js";
+import type { UserGeolocation } from "fides-js";
 import { createRequest } from "node-mocks-http";
 
-import { PrivacyCenterEnvironment } from "~/app/server-environment";
+import type { PrivacyCenterEnvironment } from "~/app/server-environment";
 import { safeLookupPropertyId } from "~/common/property-id";
 
 describe("safeLookupPropertyId", () => {

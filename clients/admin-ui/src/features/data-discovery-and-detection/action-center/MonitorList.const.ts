@@ -1,12 +1,12 @@
 import {
   parseAsString,
   parseAsStringEnum,
-  UseQueryStatesKeysMap,
-  Values,
+  type UseQueryStatesKeysMap,
+  type Values,
 } from "nuqs";
 import * as v from "valibot";
 
-import { APIMonitorType } from "~/types/api/models/APIMonitorType";
+import type { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 export const MonitorSearchFormQuerySchema = (
   availableMonitors: Array<APIMonitorType>,

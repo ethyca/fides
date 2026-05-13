@@ -1,11 +1,43 @@
 import { CustomTypography } from "./hoc/CustomTypography";
 
 /**
+ * @deprecated Chakra UI types are deprecated and will be removed in a future release.
+ * Please use Ant Design types instead.
+ */
+export type {
+  AccordionItemProps as ChakraAccordionItemProps,
+  BoxProps as ChakraBoxProps,
+  ButtonProps as ChakraButtonProps,
+  ChakraProps as ChakraChakraProps,
+  CheckboxProps as ChakraCheckboxProps,
+  FlexProps as ChakraFlexProps,
+  FormErrorMessageProps as ChakraFormErrorMessageProps,
+  FormLabelProps as ChakraFormLabelProps,
+  HeadingProps as ChakraHeadingProps,
+  HTMLChakraProps as ChakraHTMLChakraProps,
+  InputProps as ChakraInputProps,
+  LinkProps as ChakraLinkProps,
+  MenuButtonProps as ChakraMenuButtonProps,
+  ModalContentProps as ChakraModalContentProps,
+  ModalProps as ChakraModalProps,
+  SpinnerProps as ChakraSpinnerProps,
+  StackProps as ChakraStackProps,
+  TableCellProps as ChakraTableCellProps,
+  TableHeadProps as ChakraTableHeadProps,
+  TextareaProps as ChakraTextareaProps,
+  TextProps as ChakraTextProps,
+  UseDisclosureReturn as ChakraUseDisclosureReturn,
+  UseToastOptions as ChakraUseToastOptions,
+} from "@chakra-ui/react";
+/**
  * @deprecated Chakra UI components are deprecated and will be removed in a future release.
  * Please use Ant Design components instead.
  */
+/**
+ * @deprecated Chakra UI hooks are deprecated and will be removed in a future release.
+ * Please use Ant Design hooks instead.
+ */
 export {
-  chakra,
   // Disclosure
   Accordion as ChakraAccordion,
   AccordionButton as ChakraAccordionButton,
@@ -36,6 +68,8 @@ export {
   Code as ChakraCode,
   Collapse as ChakraCollapse,
   Container as ChakraContainer,
+  chakra,
+  createStandaloneToast as createChakraStandaloneToast,
   Divider as ChakraDivider,
   Drawer as ChakraDrawer,
   DrawerBody as ChakraDrawerBody,
@@ -52,6 +86,7 @@ export {
   // Utilities
   forwardRef as chakraForwardRef,
   Grid as ChakraGrid,
+  getCSSVar as getChakraCSSVar,
   Heading as ChakraHeading,
   HStack as ChakraHStack,
   IconButton as ChakraIconButton,
@@ -111,52 +146,13 @@ export {
   Thead as ChakraThead,
   Tr as ChakraTr,
   UnorderedList as ChakraUnorderedList,
-  VStack as ChakraVStack,
-  Wrap as ChakraWrap,
-  createStandaloneToast as createChakraStandaloneToast,
-  getCSSVar as getChakraCSSVar,
-} from "@chakra-ui/react";
-
-/**
- * @deprecated Chakra UI hooks are deprecated and will be removed in a future release.
- * Please use Ant Design hooks instead.
- */
-export {
   useClipboard as useChakraClipboard,
   useDisclosure as useChakraDisclosure,
   useFormControlContext as useChakraFormControlContext,
   usePrefersReducedMotion as useChakraPrefersReducedMotion,
   useToast as useChakraToast,
-} from "@chakra-ui/react";
-
-/**
- * @deprecated Chakra UI types are deprecated and will be removed in a future release.
- * Please use Ant Design types instead.
- */
-export type {
-  AccordionItemProps as ChakraAccordionItemProps,
-  BoxProps as ChakraBoxProps,
-  ButtonProps as ChakraButtonProps,
-  ChakraProps as ChakraChakraProps,
-  CheckboxProps as ChakraCheckboxProps,
-  FlexProps as ChakraFlexProps,
-  FormErrorMessageProps as ChakraFormErrorMessageProps,
-  FormLabelProps as ChakraFormLabelProps,
-  HeadingProps as ChakraHeadingProps,
-  HTMLChakraProps as ChakraHTMLChakraProps,
-  InputProps as ChakraInputProps,
-  LinkProps as ChakraLinkProps,
-  MenuButtonProps as ChakraMenuButtonProps,
-  ModalContentProps as ChakraModalContentProps,
-  ModalProps as ChakraModalProps,
-  SpinnerProps as ChakraSpinnerProps,
-  StackProps as ChakraStackProps,
-  TableCellProps as ChakraTableCellProps,
-  TableHeadProps as ChakraTableHeadProps,
-  TextareaProps as ChakraTextareaProps,
-  TextProps as ChakraTextProps,
-  UseDisclosureReturn as ChakraUseDisclosureReturn,
-  UseToastOptions as ChakraUseToastOptions,
+  VStack as ChakraVStack,
+  Wrap as ChakraWrap,
 } from "@chakra-ui/react";
 
 /**
@@ -235,13 +231,13 @@ export {
   Segmented,
   Skeleton,
   Space,
-  Splitter,
-  Steps,
-  Switch,
   // the HOC CustomSpin is incompatible with a handful of usages for loading
   // states on Chakra tables, so we re-export the base Spin.
   // TODO: remove when all FidesTableV2s are migrated to Ant
   Spin as TableSpinner,
+  Splitter,
+  Steps,
+  Switch,
   Tabs,
   TimePicker,
   Transfer,
@@ -256,18 +252,102 @@ export type {
 export type { ListItemProps } from "antd/lib/list";
 export type { BaseOptionType, DefaultOptionType } from "antd/lib/select";
 export type { UploadChangeParam } from "antd/lib/upload";
-
+// Export ISO 3166 data for location selection
+export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
+export { iso31661, iso31662 } from "iso-3166";
+// Export animation components
+export type {
+  EnterExitListProps,
+  ExitGridProps,
+  ExpandCollapseProps,
+  OpenCloseArrowProps,
+} from "./components/animation";
+export {
+  EnterExitList,
+  ExitGrid,
+  ExpandCollapse,
+  OpenCloseArrow,
+} from "./components/animation";
+// Export data-display components
+export type {
+  AreaChartDataPoint,
+  AreaChartProps,
+  AreaChartSeries,
+} from "./components/charts/AreaChart";
+export { AreaChart } from "./components/charts/AreaChart";
+export type {
+  BarChartDataPoint,
+  BarChartProps,
+} from "./components/charts/BarChart";
+export { BarChart } from "./components/charts/BarChart";
+export type { ChartGradientProps } from "./components/charts/ChartGradient";
+export { ChartGradient } from "./components/charts/ChartGradient";
+export type { ChartTextProps } from "./components/charts/ChartText";
+export { ChartText } from "./components/charts/ChartText";
+export type {
+  AntColorTokenKey,
+  BarSize,
+} from "./components/charts/chart-constants";
+export {
+  CHART_ANIMATION,
+  CHART_GRADIENT,
+  CHART_STROKE,
+  CHART_TYPOGRAPHY,
+} from "./components/charts/chart-constants";
+export {
+  DAY_MS,
+  formatTimestamp,
+  HOUR_MS,
+} from "./components/charts/chart-utils";
+export type {
+  DonutChartProps,
+  DonutChartSegment,
+  DonutChartVariant,
+} from "./components/charts/DonutChart";
+export { DonutChart } from "./components/charts/DonutChart";
+export type {
+  RadarChartDataPoint,
+  RadarChartProps,
+  RadarPointStatus,
+} from "./components/charts/RadarChart";
+export { RadarChart } from "./components/charts/RadarChart";
+export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
+export type { SparklineProps } from "./components/charts/Sparkline";
+export { Sparkline } from "./components/charts/Sparkline";
+export type {
+  StackedBarChartProps,
+  StackedBarSegment,
+} from "./components/charts/StackedBarChart";
+export { StackedBarChart } from "./components/charts/StackedBarChart";
+export { XAxisTick } from "./components/charts/XAxisTick";
+export { CopyTooltip } from "./components/data-display/CopyTooltip";
+export type { FilterProps } from "./components/data-display/Filter";
+export { Filter } from "./components/data-display/Filter";
+// Export utils
+export * from "./components/data-display/filter.utils";
+export * from "./components/data-display/location.utils";
+export type { TagListProps } from "./components/data-display/TagList";
+export { TagList } from "./components/data-display/TagList";
+// Export data-entry components
+export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
+export {
+  isoCodesToOptions,
+  LocationSelect,
+} from "./components/data-entry/LocationSelect";
+export { SelectInline } from "./components/data-entry/SelectInline";
+// Export navigation components
+export { FloatingMenu } from "./components/navigation/FloatingMenu";
 // Higher-order components
 export type {
   CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
   CustomCardProps as CardProps,
-  DrawerProps,
-  ICustomMultiSelectProps,
-  ICustomSelectProps,
   CustomInputProps as InputProps,
   CustomSpinProps as SpinProps,
   CustomStatisticProps as StatisticProps,
+  DrawerProps,
+  ICustomMultiSelectProps,
+  ICustomSelectProps,
   StatisticTrend,
 } from "./hoc";
 export {
@@ -297,106 +377,9 @@ export type { CustomTagProps as TagProps } from "./hoc/CustomTag";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
 export { LIST_HOTKEYS } from "./hooks/useListHotkeys";
 
-// Export utils
-export * from "./components/data-display/filter.utils";
-export * from "./components/data-display/location.utils";
-export { isoCodesToOptions } from "./components/data-entry/LocationSelect";
-
-// Export ISO 3166 data for location selection
-export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
-export { iso31661, iso31662 } from "iso-3166";
-
-// Export data-display components
-export type {
-  AreaChartDataPoint,
-  AreaChartProps,
-  AreaChartSeries,
-} from "./components/charts/AreaChart";
-export { AreaChart } from "./components/charts/AreaChart";
-export type {
-  BarChartDataPoint,
-  BarChartProps,
-} from "./components/charts/BarChart";
-export { BarChart } from "./components/charts/BarChart";
-export type {
-  AntColorTokenKey,
-  BarSize,
-} from "./components/charts/chart-constants";
-export {
-  CHART_ANIMATION,
-  CHART_GRADIENT,
-  CHART_STROKE,
-  CHART_TYPOGRAPHY,
-} from "./components/charts/chart-constants";
-export {
-  DAY_MS,
-  formatTimestamp,
-  HOUR_MS,
-} from "./components/charts/chart-utils";
-export type { ChartGradientProps } from "./components/charts/ChartGradient";
-export { ChartGradient } from "./components/charts/ChartGradient";
-export type { ChartTextProps } from "./components/charts/ChartText";
-export { ChartText } from "./components/charts/ChartText";
-export type {
-  DonutChartProps,
-  DonutChartSegment,
-  DonutChartVariant,
-} from "./components/charts/DonutChart";
-export { DonutChart } from "./components/charts/DonutChart";
-export type {
-  RadarChartDataPoint,
-  RadarChartProps,
-  RadarPointStatus,
-} from "./components/charts/RadarChart";
-export { RadarChart } from "./components/charts/RadarChart";
-export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
-export type { SparklineProps } from "./components/charts/Sparkline";
-export { Sparkline } from "./components/charts/Sparkline";
-export type {
-  StackedBarChartProps,
-  StackedBarSegment,
-} from "./components/charts/StackedBarChart";
-export { StackedBarChart } from "./components/charts/StackedBarChart";
-export { XAxisTick } from "./components/charts/XAxisTick";
-export { CopyTooltip } from "./components/data-display/CopyTooltip";
-export type { FilterProps } from "./components/data-display/Filter";
-export { Filter } from "./components/data-display/Filter";
-export type { TagListProps } from "./components/data-display/TagList";
-export { TagList } from "./components/data-display/TagList";
-
-// Export animation components
-export type {
-  EnterExitListProps,
-  ExitGridProps,
-  ExpandCollapseProps,
-  OpenCloseArrowProps,
-} from "./components/animation";
-export {
-  EnterExitList,
-  ExitGrid,
-  ExpandCollapse,
-  OpenCloseArrow,
-} from "./components/animation";
-
-// Export data-entry components
-export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
-export { LocationSelect } from "./components/data-entry/LocationSelect";
-export { SelectInline } from "./components/data-entry/SelectInline";
-
-// Export navigation components
-export { FloatingMenu } from "./components/navigation/FloatingMenu";
-
 // Export the destructured Typography components individually
 export const { Text, Title, Paragraph, Link } = CustomTypography;
 
-/**
- * Custom Re-exports
- *
- * Icons whose names conflict with Chakra's included icons must be explicitly listed. This makes
- * typescript happy, but eslint doesn't understand.
- */
-/* eslint-disable import/export */
-export * from "./icons";
 export {
   CarryOutOutlined,
   CheckOutlined,
@@ -405,6 +388,14 @@ export {
   PlusOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
+/**
+ * Custom Re-exports
+ *
+ * Icons whose names conflict with Chakra's included icons must be explicitly listed. This makes
+ * typescript happy, but eslint doesn't understand.
+ */
+/* eslint-disable import/export */
+export * from "./icons";
 /* eslint-enable import/export */
 
 /**
@@ -412,28 +403,8 @@ export {
  * @example <Icons.download size={14} />
  */
 export * as Icons from "./icons/carbon";
+
 /* end prefixed icons */
-
-export {
-  FidesUIProvider,
-  useMessage,
-  useModal,
-  useNotification,
-} from "./FidesUIProvider";
-export { extendTheme, theme } from "./FidesUITheme";
-export { getGlobalMessageApi } from "./lib/globalMessageApi";
-
-/**
- * Ant Design Theme System
- */
-export {
-  createDefaultAntTheme,
-  darkAntTheme,
-  defaultAntTheme,
-} from "./ant-theme";
-// Use antd/lib (CJS) rather than antd (ESM) to prevent dual module instances
-// that break ConfigProvider context and cause useToken() to return default tokens.
-export { theme as antTheme } from "antd/lib";
 
 /**
  * Ant Design X components (@ant-design/x)
@@ -449,7 +420,17 @@ export { theme as antTheme } from "antd/lib";
 export type { BubbleItemType } from "@ant-design/x/lib/bubble";
 export { default as Bubble } from "@ant-design/x/lib/bubble";
 export { default as Sender } from "@ant-design/x/lib/sender";
-
+// Use antd/lib (CJS) rather than antd (ESM) to prevent dual module instances
+// that break ConfigProvider context and cause useToken() to return default tokens.
+export { theme as antTheme } from "antd/lib";
+/**
+ * Ant Design Theme System
+ */
+export {
+  createDefaultAntTheme,
+  darkAntTheme,
+  defaultAntTheme,
+} from "./ant-theme";
 /**
  * Custom ChakraUI Components (deprecated)
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
@@ -459,7 +440,13 @@ export { ConfirmationModal } from "./components/chakra-base/confirmation-modal";
 export { ExampleComponent } from "./components/chakra-base/example-component";
 export { PrimaryLink, SecondaryLink } from "./components/chakra-base/links";
 export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-table";
-
+export {
+  FidesUIProvider,
+  useMessage,
+  useModal,
+  useNotification,
+} from "./FidesUIProvider";
+export { extendTheme, theme } from "./FidesUITheme";
 /**
  * Custom Hooks
  */
@@ -474,3 +461,4 @@ export {
   usePrefersReducedMotion,
   useThemeMode,
 } from "./hooks";
+export { getGlobalMessageApi } from "./lib/globalMessageApi";

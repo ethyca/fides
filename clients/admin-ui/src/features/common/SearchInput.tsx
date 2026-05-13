@@ -1,6 +1,6 @@
 import classNames from "classnames";
-import { Icons, Input, InputRef } from "fidesui";
-import { CustomInputProps } from "fidesui/src/hoc";
+import { Icons, Input, type InputRef } from "fidesui";
+import type { CustomInputProps } from "fidesui/src/hoc";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 

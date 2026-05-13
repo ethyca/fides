@@ -17,10 +17,10 @@ import { getBrandIconUrl, getDomain } from "~/features/common/utils";
 import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "~/features/data-discovery-and-detection/action-center/constants";
 import { tagRender } from "~/features/data-discovery-and-detection/action-center/fields/MonitorFieldListItem";
 import { useUpdateInfrastructureSystemDataUsesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
+import { DiffStatus, type StagedResourceAPIResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
+import type { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
 import { InfrastructureSystemActionsCell } from "./InfrastructureSystemActionsCell";
 

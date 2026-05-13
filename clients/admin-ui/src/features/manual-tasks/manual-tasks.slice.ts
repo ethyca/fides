@@ -3,15 +3,15 @@ import { createSlice } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import {
   AttachmentType,
-  Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__skip_post,
-  Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__complete_post,
+  type Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__skip_post,
+  type Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__complete_post,
   CommentType,
-  ManualFieldListItem,
-  ManualFieldRequestType,
-  ManualFieldSearchResponse,
-  ManualFieldStatus,
+  type ManualFieldListItem,
+  type ManualFieldRequestType,
+  type ManualFieldSearchResponse,
+  type ManualFieldStatus,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/query-params";
+import type { PaginationQueryParams } from "~/types/query-params";
 
 import { PAGE_SIZES } from "../common/table/v2";
 

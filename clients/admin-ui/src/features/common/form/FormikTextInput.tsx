@@ -1,4 +1,4 @@
-import { Form, FormItemProps, Input, InputProps } from "fidesui";
+import { Form, type FormItemProps, Input, type InputProps } from "fidesui";
 import React from "react";
 
 export const FormikTextInput = ({
@@ -21,7 +21,7 @@ export const FormikTextInput = ({
   }) => {
   return (
     <Form.Item
-      validateStatus={touched && !!error ? "error" : undefined}
+      validateStatus={touched && error ? "error" : undefined}
       help={touched && error}
       hasFeedback={touched && !!error}
       required={required}

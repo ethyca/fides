@@ -7,13 +7,13 @@ import {
   ChakraLink as Link,
   ChakraStack as Stack,
   ChakraText as Text,
-  ChakraTextProps as TextProps,
+  type ChakraTextProps as TextProps,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { type ReactNode, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getEffectivePrivacyCenterLinks } from "~/common/config-links";

@@ -1,6 +1,6 @@
 import {
   CONTENT_SECURITY_POLICY_HEADER,
-  HeaderRule,
+  type HeaderRule,
   X_NONCE_HEADER,
 } from "./headers";
 

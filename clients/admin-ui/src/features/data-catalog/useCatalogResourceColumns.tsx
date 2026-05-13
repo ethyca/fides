@@ -1,4 +1,4 @@
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
@@ -9,7 +9,7 @@ import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import EditCategoryCell from "~/features/data-discovery-and-detection/tables/cells/EditCategoryCell";
 import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/cells/FieldDataTypeCell";
 import {
-  StagedResourceAPIResponse,
+  type StagedResourceAPIResponse,
   StagedResourceTypeValue,
 } from "~/types/api";
 

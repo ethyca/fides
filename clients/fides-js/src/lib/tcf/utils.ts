@@ -2,13 +2,13 @@ import { TCString } from "@iabtechlabtcf/core";
 
 import {
   ConsentMechanism,
-  FidesCookie,
-  FidesInitOptions,
-  NoticeConsent,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  PrivacyNoticeWithPreference,
-  RecordConsentServedRequest,
+  type FidesCookie,
+  type FidesInitOptions,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
+  type PrivacyNoticeWithPreference,
+  type RecordConsentServedRequest,
   SaveConsentPreference,
 } from "../consent-types";
 import { resolveConsentValue } from "../consent-value";
@@ -18,7 +18,7 @@ import {
 } from "../cookie";
 import {
   consentIdsFromAcString,
-  DecodedFidesString,
+  type DecodedFidesString,
   decodeFidesString,
 } from "../fides-string";
 import {
@@ -27,22 +27,22 @@ import {
 } from "../shared-consent-utils";
 import { generateFidesString } from "../tcf";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
-import {
+import type {
   EnabledIds,
   GVLTranslationJson,
   PrivacyNoticeWithBestTranslation,
   TCFFeatureRecord,
   TCFFeatureSave,
-  TcfModels,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
-  TcfSavePreferences,
   TCFSpecialFeatureSave,
   TCFSpecialPurposeSave,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
+  TcfModels,
+  TcfSavePreferences,
 } from "./types";
 
 type TcfSave =

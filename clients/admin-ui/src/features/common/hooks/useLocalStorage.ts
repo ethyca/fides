@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 /*
 Design taken from: https://usehooks.com/useLocalStorage/
@@ -37,7 +37,7 @@ export function useLocalStorage<T = string>(
       // Save state
       setStoredValue(valueToStore);
       // Save to local storage
-      if (typeof window !== "undefined" && !!key) {
+      if (typeof window !== "undefined" && key) {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
       }
     } catch (error) {

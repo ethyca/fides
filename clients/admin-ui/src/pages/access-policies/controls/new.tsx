@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import { useCreateControlMutation } from "~/features/access-policies/access-policies.slice";
 import ControlForm, {
-  ControlFormValues,
+  type ControlFormValues,
 } from "~/features/access-policies/ControlForm";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
@@ -13,7 +13,7 @@ import {
   CONTROLS_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 const NewControlPage: NextPage = () => {
   const message = useMessage();

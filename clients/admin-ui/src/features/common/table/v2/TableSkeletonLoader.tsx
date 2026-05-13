@@ -1,5 +1,5 @@
 import { ChakraSkeleton as Skeleton, ChakraStack as Stack } from "fidesui";
-import { FC } from "react";
+import type { FC } from "react";
 
 type Props = {
   rowHeight: number;

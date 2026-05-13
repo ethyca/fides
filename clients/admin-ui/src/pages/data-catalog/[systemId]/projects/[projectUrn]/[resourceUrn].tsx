@@ -1,5 +1,5 @@
 import { Spin } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";

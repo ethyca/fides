@@ -1,4 +1,4 @@
-import { Field, StagedResourceAPIResponse } from "~/types/api";
+import type { Field, StagedResourceAPIResponse } from "~/types/api";
 
 /**
  * Utility class for a staged resource of unknown type

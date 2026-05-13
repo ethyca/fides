@@ -1,8 +1,8 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
-import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
-import { ExecutionAndAuditLogResponse } from "~/types/api/models/ExecutionAndAuditLogResponse";
-import { PrivacyRequestUser } from "~/types/api/models/PrivacyRequestUser";
+import type { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
+import type { ExecutionAndAuditLogResponse } from "~/types/api/models/ExecutionAndAuditLogResponse";
+import type { PrivacyRequestUser } from "~/types/api/models/PrivacyRequestUser";
 
 export interface DenyPrivacyRequest {
   id: string;

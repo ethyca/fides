@@ -13,7 +13,7 @@
 
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   CUSTOM_TAG_COLOR,
   Flex,
   Icons,
@@ -24,10 +24,10 @@ import {
 import { useMemo, useState } from "react";
 
 import {
-  ManualFieldListItem,
+  type ManualFieldListItem,
   ManualFieldRequestType,
   ManualFieldStatus,
-  ManualFieldSystem,
+  type ManualFieldSystem,
   useGetExternalTasksQuery,
 } from "../external-manual-tasks.slice";
 import { ExternalTaskActionButtons } from "./ExternalTaskActionButtons";

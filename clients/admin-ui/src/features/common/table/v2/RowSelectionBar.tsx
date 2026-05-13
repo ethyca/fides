@@ -1,4 +1,4 @@
-import { Table as TableInstance } from "@tanstack/react-table";
+import type { Table as TableInstance } from "@tanstack/react-table";
 import {
   Button,
   ChakraHStack as HStack,

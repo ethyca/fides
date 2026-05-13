@@ -1,8 +1,8 @@
 import {
-  FidesCookie,
+  type FidesCookie,
+  GpcStatus,
   getGpcContext,
   getOrMakeFidesCookie,
-  GpcStatus,
   resolveLegacyConsentValue,
   saveFidesCookie,
 } from "fides-js";
@@ -26,7 +26,7 @@ import {
   useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
 import { getGpcStatus, makeNoticeConsent } from "~/features/consent/helpers";
-import { ConsentMethod, ConsentPreferences } from "~/types/api";
+import { ConsentMethod, type ConsentPreferences } from "~/types/api";
 
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";

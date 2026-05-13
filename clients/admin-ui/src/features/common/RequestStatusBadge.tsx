@@ -1,6 +1,6 @@
-import { CUSTOM_TAG_COLOR, Tag, TagProps } from "fidesui";
+import { CUSTOM_TAG_COLOR, Tag, type TagProps } from "fidesui";
 
-import { PrivacyRequestStatus } from "~/types/api";
+import type { PrivacyRequestStatus } from "~/types/api";
 
 export const statusPropMap: Record<
   PrivacyRequestStatus,

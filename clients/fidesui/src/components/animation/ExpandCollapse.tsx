@@ -1,5 +1,5 @@
-import { AnimatePresence, Easing, motion } from "motion/react";
-import { ReactNode } from "react";
+import { AnimatePresence, type Easing, motion } from "motion/react";
+import type { ReactNode } from "react";
 
 export interface ExpandCollapseProps {
   /**

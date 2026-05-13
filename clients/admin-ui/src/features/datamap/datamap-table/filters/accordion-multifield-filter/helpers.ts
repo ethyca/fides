@@ -1,7 +1,7 @@
-import { Column, Row } from "@tanstack/react-table";
+import type { Column, Row } from "@tanstack/react-table";
 import React, { useContext } from "react";
 
-import { DatamapRow } from "~/features/datamap";
+import type { DatamapRow } from "~/features/datamap";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import type { FieldValueToIsSelected } from "~/features/datamap/datamap-table/filters/accordion-multifield-filter/AccordionMultifieldFilter";
 

@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import Image from "~/features/common/Image";
-import { RTKErrorResult } from "~/types/errors";
+import type { RTKErrorResult } from "~/types/errors";
 
 import {
   useGetQuestionnaireChatMessagesQuery,
@@ -20,7 +20,7 @@ import {
   useStartQuestionnaireChatMutation,
 } from "./privacy-assessments.slice";
 import styles from "./QuestionnaireChat.module.scss";
-import { QuestionnaireChatMessage } from "./types";
+import type { QuestionnaireChatMessage } from "./types";
 
 interface QuestionnaireChatProps {
   assessmentId: string;

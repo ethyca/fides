@@ -1,8 +1,8 @@
 import { createContext } from "preact";
-import { ReactNode } from "preact/compat";
+import type { ReactNode } from "preact/compat";
 import {
-  Dispatch,
-  StateUpdater,
+  type Dispatch,
+  type StateUpdater,
   useCallback,
   useContext,
   useEffect,

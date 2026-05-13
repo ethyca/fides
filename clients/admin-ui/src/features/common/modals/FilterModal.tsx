@@ -1,18 +1,18 @@
 import {
-  Button,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
+  Button,
   ChakraCheckbox as Checkbox,
+  Flex,
   ChakraHeading as Heading,
+  Modal,
   ChakraSimpleGrid as SimpleGrid,
   ChakraText as Text,
-  Flex,
-  Modal,
 } from "fidesui";
-import React, { ReactNode, useState } from "react";
+import React, { type ReactNode, useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 

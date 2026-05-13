@@ -3,18 +3,18 @@ import "./fides-tcf.css";
 
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
-import { FidesEvent } from "../../docs/fides-event";
+import type { FidesEvent } from "../../docs/fides-event";
 import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
-  EmptyExperience,
+  type EmptyExperience,
   FidesAttStatus,
   FidesModalDefaultView,
-  NoticeConsent,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  PrivacyNoticeWithPreference,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
+  type PrivacyNoticeWithPreference,
   RejectAllMechanism,
   ServingComponent,
 } from "../../lib/consent-types";
@@ -25,8 +25,8 @@ import {
 import { tcfCookieIsProperlySet } from "../../lib/cookie";
 import {
   dispatchFidesEvent,
-  FidesEventDetailsPreference,
-  FidesEventDetailsServingComponent,
+  type FidesEventDetailsPreference,
+  type FidesEventDetailsServingComponent,
   FidesEventTargetType,
 } from "../../lib/events";
 import {
@@ -50,13 +50,13 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
 import {
-  InitializedFidesGlobal,
+  type InitializedFidesGlobal,
   useFidesGlobal,
 } from "../../lib/providers/fides-global-context";
 import { filterAttDeniedFromDraft } from "../../lib/tcf/att-utils";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
-import {
+import type {
   EnabledIds,
   PrivacyNoticeWithBestTranslation,
   TcfModels,
@@ -234,7 +234,7 @@ export const TcfOverlay = () => {
   });
 
   useEffect(() => {
-    if (!!userlocale && bestLocale !== minExperienceLocale) {
+    if (userlocale && bestLocale !== minExperienceLocale) {
       // The minimal experience translation is different from the user's language.
       // This occurs when the customer has set their overrides on the window object
       // which isn't available to us until the experience is fetched or when the
@@ -245,7 +245,7 @@ export const TcfOverlay = () => {
       );
       setIsI18nLoading(true);
     }
-    if (!!userlocale && bestLocale !== DEFAULT_LOCALE) {
+    if (userlocale && bestLocale !== DEFAULT_LOCALE) {
       // We can only get English GVL translations from the experience.
       // If the user's locale is not English, we need to load them from the api.
       // This only affects the modal.

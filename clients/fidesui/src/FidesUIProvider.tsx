@@ -1,13 +1,13 @@
 import {
   ChakraProvider as BaseChakraProvider,
-  ChakraProviderProps,
+  type ChakraProviderProps,
 } from "@chakra-ui/react";
 import {
   ConfigProvider as BaseAntDesignProvider,
-  message,
   Modal,
+  message,
   notification,
-  ThemeConfig,
+  type ThemeConfig,
 } from "antd/lib";
 import type {
   ArgsProps as MessageArgsProps,
@@ -15,7 +15,7 @@ import type {
 } from "antd/lib/message/interface";
 import {
   createContext,
-  ReactNode,
+  type ReactNode,
   useContext,
   useEffect,
   useMemo,

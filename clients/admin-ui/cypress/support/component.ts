@@ -21,16 +21,16 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "fidesui/src/ant-theme/global.scss";
 
-import { EnhancedStore } from "@reduxjs/toolkit";
+import type { EnhancedStore } from "@reduxjs/toolkit";
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { mount, MountOptions, MountReturn } from "cypress/react";
+import { type MountOptions, type MountReturn, mount } from "cypress/react";
 import { FidesUIProvider } from "fidesui";
 import * as React from "react";
 import { Provider } from "react-redux";
 
-import { makeStore, RootState } from "~/app/store";
+import { makeStore, type RootState } from "~/app/store";
 import theme from "~/theme";
 
 // Augment the Cypress namespace to include type definitions for

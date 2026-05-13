@@ -1,8 +1,8 @@
 import {
   Form,
-  FormItemProps,
+  type FormItemProps,
   LocationSelect,
-  LocationSelectProps,
+  type LocationSelectProps,
 } from "fidesui";
 
 export type FormikLocationSelectProps = LocationSelectProps &
@@ -27,7 +27,7 @@ export const FormikLocationSelect = ({
 }: FormikLocationSelectProps) => {
   return (
     <Form.Item
-      validateStatus={touched && !!error ? "error" : undefined}
+      validateStatus={touched && error ? "error" : undefined}
       help={touched && error}
       hasFeedback={touched && !!error}
       required={required}

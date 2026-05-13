@@ -4,7 +4,7 @@ import { Button, DatePicker, Form, Select } from "fidesui";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
 import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import type { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 interface PrivacyRequestFiltersModalProps {
   open: boolean;

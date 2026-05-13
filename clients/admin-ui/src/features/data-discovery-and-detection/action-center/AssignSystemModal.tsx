@@ -1,5 +1,11 @@
-import { Button, DefaultOptionType, Flex, Modal, Typography } from "fidesui";
-import { MouseEventHandler, useCallback, useState } from "react";
+import {
+  Button,
+  type DefaultOptionType,
+  Flex,
+  Modal,
+  Typography,
+} from "fidesui";
+import { type MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";

@@ -1,8 +1,8 @@
 import {
   ChakraHeading as Heading,
-  ChakraHeadingProps as HeadingProps,
+  type ChakraHeadingProps as HeadingProps,
   ChakraStack as Stack,
-  ChakraStackProps as StackProps,
+  type ChakraStackProps as StackProps,
   ChakraText as Text,
 } from "fidesui";
 import React from "react";

@@ -1,4 +1,4 @@
-import { DATAMAP_GROUPING, DatamapReport } from "~/types/api";
+import { DATAMAP_GROUPING, type DatamapReport } from "~/types/api";
 
 import { COLUMN_IDS } from "./constants";
 

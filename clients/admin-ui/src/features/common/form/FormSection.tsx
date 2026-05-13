@@ -1,6 +1,6 @@
 import {
   ChakraBox as Box,
-  ChakraBoxProps as BoxProps,
+  type ChakraBoxProps as BoxProps,
   ChakraHeading as Heading,
   ChakraStack as Stack,
   ChakraText as Text,

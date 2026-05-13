@@ -1,5 +1,5 @@
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import { FilterTab } from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
+import type { FilterTab } from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import { DiffStatus } from "~/types/api";
 
 export enum DiscoveryResultFilterTabs {

@@ -3,7 +3,7 @@ import { useCallback } from "react";
 
 import {
   useLazyGetWildcardPromotionImpactQuery,
-  WildcardPromotionMatch,
+  type WildcardPromotionMatch,
 } from "../action-center.slice";
 import { getActionModalProps } from "../fields/utils";
 

@@ -4,17 +4,17 @@ import {
   Background,
   BackgroundVariant,
   Controls,
-  Edge,
-  EdgeTypes,
-  Node,
-  NodeTypes,
+  type Edge,
+  type EdgeTypes,
+  type Node,
+  type NodeTypes,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import { Flex, SelectProps, Switch, Tabs, useMessage } from "fidesui";
+import { Flex, type SelectProps, Switch, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
@@ -22,24 +22,26 @@ import Layout from "~/features/common/Layout";
 import { Editor } from "~/features/common/yaml/helpers";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
-
-import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
 import styles from "./AccessPolicyEditor.module.scss";
 import AgentChatPanel from "./AgentChatPanel";
-import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
-import ActionNode, { ActionNodeType } from "./DecisionNode";
+import {
+  type AccessPolicy,
+  useGetControlsQuery,
+} from "./access-policies.slice";
+import ConstraintNode, { type ConstraintNodeType } from "./ConstraintNode";
+import ActionNode, { type ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
-import ConditionNode, { ConditionNodeType } from "./MatchNode";
+import ConditionNode, { type ConditionNodeType } from "./MatchNode";
+import PolicyEditorPanel from "./PolicyEditorPanel";
+import PolicyNode, { type PolicyNodeType } from "./PolicyNode";
 import {
   deriveLayoutEdges,
   nodesToYaml,
-  parseYaml,
   POLICY_NODE_ID,
+  parseYaml,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
-import PolicyEditorPanel from "./PolicyEditorPanel";
-import PolicyNode, { PolicyNodeType } from "./PolicyNode";
-import {
+import type {
   ActionType,
   ConditionOperator,
   ConditionProperty,

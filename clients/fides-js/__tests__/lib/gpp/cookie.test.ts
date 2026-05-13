@@ -1,6 +1,6 @@
-import { CmpApi } from "@iabgpp/cmpapi";
+import type { CmpApi } from "@iabgpp/cmpapi";
 
-import { FidesCookie } from "../../../src/lib/consent-types";
+import type { FidesCookie } from "../../../src/lib/consent-types";
 import { saveFidesCookie } from "../../../src/lib/cookie";
 import { dispatchFidesEvent } from "../../../src/lib/events";
 

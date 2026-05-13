@@ -8,15 +8,16 @@
 
 "use client";
 
-import React, { ReactNode, useEffect, useState } from "react";
+import type React from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
-import { PrivacyCenterClientSettings } from "~/app/server-environment";
+import type { PrivacyCenterClientSettings } from "~/app/server-environment";
 import { loadConfig } from "~/features/common/config.slice";
 import { loadSettings } from "~/features/common/settings.slice";
-import { PrivacyCenterConfig } from "~/types/api";
-import { Config } from "~/types/config";
+import type { PrivacyCenterConfig } from "~/types/api";
+import type { Config } from "~/types/config";
 
 import externalStore, { externalPersistor } from "./store";
 

@@ -4,10 +4,10 @@ import { useEffect } from "react";
 import { useFeatures } from "~/features/common/features";
 import { useGetCommentsQuery } from "~/features/privacy-requests/comments/privacy-request-comments.slice";
 import {
-  ActivityTimelineItem,
+  type ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
 } from "~/features/privacy-requests/types";
-import { CommentResponse } from "~/types/api/models/CommentResponse";
+import type { CommentResponse } from "~/types/api/models/CommentResponse";
 
 /**
  * Hook for fetching and processing privacy request comments

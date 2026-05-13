@@ -1,4 +1,4 @@
-import { Icons, Tooltip, TooltipProps } from "fidesui";
+import { Icons, Tooltip, type TooltipProps } from "fidesui";
 
 interface InfoTooltipProps extends Omit<TooltipProps, "children" | "title"> {
   label: string | null | undefined;

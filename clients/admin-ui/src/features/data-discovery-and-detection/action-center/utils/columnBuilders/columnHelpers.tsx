@@ -1,7 +1,7 @@
-import { ColumnsType } from "fidesui";
+import type { ColumnsType } from "fidesui";
 
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
+import type { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 export type ExpandableMenu = NonNullable<
   ColumnsType<SystemStagedResourcesAggregateRecord>[number]["menu"]

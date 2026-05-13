@@ -1,10 +1,10 @@
 import { useChakraDisclosure as useDisclosure } from "fidesui";
 
 import PickerCard, {
-  CheckboxListProps,
+  type CheckboxListProps,
   NUM_TO_SHOW,
 } from "~/features/common/PickerCard";
-import { LocationRegulationBase } from "~/types/api";
+import type { LocationRegulationBase } from "~/types/api";
 
 import RegulationModal from "./RegulationModal";
 

@@ -1,13 +1,13 @@
 import {
   ChakraBox as Box,
   ChakraHeading as Heading,
-  ChakraText as Text,
   Spin,
+  ChakraText as Text,
 } from "fidesui";
 
 import { messagingProviders } from "./constants";
-import { useGetMessagingConfigurationByKeyQuery } from "./messaging.slice";
 import MessagingConfiguration from "./MessagingConfiguration";
+import { useGetMessagingConfigurationByKeyQuery } from "./messaging.slice";
 
 interface EditMessagingConfigurationProps {
   configKey: string;

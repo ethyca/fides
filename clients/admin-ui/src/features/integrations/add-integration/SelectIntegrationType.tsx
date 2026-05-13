@@ -1,11 +1,11 @@
 import { Col, Flex, Input, Row, Select, Spin } from "fidesui";
-import { ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import getIntegrationTypeInfo, {
   INTEGRATION_TYPE_LIST,
-  IntegrationTypeInfo,
+  type IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";

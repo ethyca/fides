@@ -1,5 +1,5 @@
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { Property } from "~/types/api";
+import type { Property } from "~/types/api";
 
 import { createLogger } from "./logger";
 

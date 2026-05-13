@@ -5,12 +5,12 @@ import {
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
-  ChakraBoxProps as BoxProps,
+  type ChakraBoxProps as BoxProps,
   ChakraText as Text,
 } from "fidesui";
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, type ReactNode, useState } from "react";
 
-import { TreeNode } from "./types";
+import type { TreeNode } from "./types";
 
 interface Props {
   nodes: TreeNode[];

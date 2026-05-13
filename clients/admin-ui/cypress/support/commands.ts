@@ -2,9 +2,9 @@
 
 import "@testing-library/cypress/add-commands";
 
-import { RootState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
+import type { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 Cypress.Commands.add("getByTestId", (selector, options) =>
   cy.get(`[data-testid='${selector}']`, options),
@@ -239,6 +239,3 @@ declare global {
     }
   }
 }
-
-// Convert this to a module instead of script (allows import/export)
-export {};

@@ -1,10 +1,10 @@
 import { formatDistance } from "date-fns";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
+  Form,
   ChakraHeading as Heading,
   ChakraHStack as HStack,
-  Form,
   Icons,
   Input,
   Select,

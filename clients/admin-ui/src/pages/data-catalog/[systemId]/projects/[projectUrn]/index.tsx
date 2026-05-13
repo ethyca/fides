@@ -23,7 +23,7 @@ import useCatalogDatasetColumns from "~/features/data-catalog/datasets/useCatalo
 import { getProjectName } from "~/features/data-catalog/utils/urnParsing";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],

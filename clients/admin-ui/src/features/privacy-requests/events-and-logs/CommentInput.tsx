@@ -1,4 +1,4 @@
-import { Button, Flex, Input, Tabs, TabsProps, useMessage } from "fidesui";
+import { Button, Flex, Input, Tabs, type TabsProps, useMessage } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import { CommentType } from "~/types/api/models/CommentType";

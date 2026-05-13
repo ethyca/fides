@@ -8,10 +8,10 @@ import {
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
 } from "~/features/plus/plus.slice";
-import { CustomFieldWithId } from "~/types/api";
+import type { CustomFieldWithId } from "~/types/api";
 
 import { filterWithId } from "./helpers";
-import {
+import type {
   CustomFieldsFormValues,
   CustomFieldValues,
   LegacyResourceTypes,
@@ -110,7 +110,7 @@ export const useCustomFields = ({
       activeCustomFieldDefinition.forEach((value) => {
         const customField = definitionIdToCustomField.get(value.id || "");
         if (customField) {
-          if (!!value.allow_list_id && value.field_type === "string[]") {
+          if (value.allow_list_id && value.field_type === "string[]") {
             values[customField.custom_field_definition_id] = customField.value;
           } else {
             values[customField.custom_field_definition_id] =

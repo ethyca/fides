@@ -1,11 +1,11 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  ColumnDef,
+  type ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
-  RowSelectionState,
+  type RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import { ChakraText as Text, ChakraVStack as VStack } from "fidesui";
@@ -27,7 +27,7 @@ import { useGetCatalogProjectsQuery } from "~/features/data-catalog/data-catalog
 import CatalogResourceDetailDrawer from "~/features/data-catalog/staged-resources/CatalogResourceDetailDrawer";
 import CatalogResourceOverflowMenu from "~/features/data-catalog/staged-resources/CatalogResourceOverflowMenu";
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],

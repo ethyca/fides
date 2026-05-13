@@ -1,9 +1,9 @@
-import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
+import type { PrivacyRequestResponse } from "~/features/privacy-requests/types";
 import {
-  HealthCheck,
+  type HealthCheck,
   PolicyResponse,
-  PrivacyRequestStatus,
-  Schema,
+  type PrivacyRequestStatus,
+  type Schema,
 } from "~/types/api";
 
 export const stubTaxonomyEntities = () => {

@@ -1,13 +1,13 @@
-import { Table as TableInstance, Updater } from "@tanstack/react-table";
+import type { Table as TableInstance, Updater } from "@tanstack/react-table";
 import {
   Button,
   ChakraHStack as HStack,
+  Icons,
   ChakraMenu as Menu,
   ChakraMenuButton as MenuButton,
   ChakraMenuItem as MenuItem,
   ChakraMenuList as MenuList,
   ChakraText as Text,
-  Icons,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 

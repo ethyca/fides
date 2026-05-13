@@ -1,7 +1,7 @@
 import { ExitGrid } from "fidesui";
-import { HTMLAttributes, useMemo } from "react";
+import { type HTMLAttributes, useMemo } from "react";
 
-import { APIMonitorType } from "~/types/api";
+import type { APIMonitorType } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { ConfidenceCard } from "./ConfidenceCard";

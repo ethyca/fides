@@ -2,36 +2,36 @@ import {
   FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-constants";
-import { ConsentContext } from "./consent-context";
+import type { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentFlagType,
   ConsentMechanism,
   ConsentMethod,
   ConsentNonApplicableFlagMode,
-  EmptyExperience,
-  FidesCookie,
-  FidesInitOptions,
-  FidesOverrideValidatorMap,
-  FidesWindowOverrides,
+  type EmptyExperience,
+  type FidesCookie,
+  type FidesInitOptions,
+  type FidesOverrideValidatorMap,
+  type FidesWindowOverrides,
   GpcStatus,
-  NoticeConsent,
+  type NoticeConsent,
   OverrideType,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  PrivacyNotice,
-  PrivacyNoticeItem,
-  PrivacyNoticeWithPreference,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
+  type PrivacyNotice,
+  type PrivacyNoticeItem,
+  type PrivacyNoticeWithPreference,
   SaveConsentPreference,
   UserConsentPreference,
-  UserGeolocation,
+  type UserGeolocation,
 } from "./consent-types";
 import {
   noticeHasConsentInCookie,
   processExternalConsentValue,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
-import { TcfModelsRecord } from "./tcf/types";
+import type { TcfModelsRecord } from "./tcf/types";
 
 export const DEFAULT_MODAL_LINK_ID = "fides-modal-link";
 
@@ -280,9 +280,9 @@ export const shouldResurfaceBanner = (
   // or if the banner is configured to resurface
   if (
     experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
-    !!cookie
+    cookie
   ) {
-    if (!!options && isConsentOverride(options)) {
+    if (options && isConsentOverride(options)) {
       return false;
     }
     if (experience.meta?.version_hash) {
@@ -309,7 +309,7 @@ export const shouldResurfaceBanner = (
     return true;
   }
   // Never surface banner if consent was set by override
-  if (!!options && isConsentOverride(options)) {
+  if (options && isConsentOverride(options)) {
     return false;
   }
   // resurface in the special case where the saved consent is "gpc"

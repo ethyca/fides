@@ -1,4 +1,4 @@
-import { Select, SelectProps } from "fidesui";
+import { Select, type SelectProps } from "fidesui";
 
 export const FilterSelect = ({ ...props }: SelectProps) => (
   <Select

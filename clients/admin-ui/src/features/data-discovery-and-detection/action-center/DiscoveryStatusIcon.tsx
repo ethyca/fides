@@ -1,7 +1,7 @@
 import { Icons, Tooltip } from "fidesui";
 
 import { useFeatures } from "~/features/common/features/features.slice";
-import { AlertLevel, ConsentAlertInfo } from "~/types/api";
+import { AlertLevel, type ConsentAlertInfo } from "~/types/api";
 
 interface DiscoveryStatusIconProps {
   consentStatus: ConsentAlertInfo | null | undefined;

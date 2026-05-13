@@ -3,7 +3,7 @@ import {
   selectThisUsersRoles,
   selectThisUsersScopes,
 } from "~/features/user-management";
-import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
+import type { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 export const useHasPermission = (scopes: ScopeRegistryEnum[]) => {
   const userScopes = useAppSelector(selectThisUsersScopes);

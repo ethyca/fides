@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Key, useState } from "react";
+import { type Key, useState } from "react";
 
 /** Note: should be adding __type and optional relational types in future iterations */
 export type Node<T> = T & {

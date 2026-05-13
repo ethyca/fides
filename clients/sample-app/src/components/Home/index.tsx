@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-import { Product, UserData } from "../../types";
+import type { Product, UserData } from "../../types";
 import Button from "../Button";
 import GeolocationSelect from "../GeolocationSelect";
 import Header from "../Header";

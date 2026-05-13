@@ -1,7 +1,7 @@
-import { ColumnsType } from "fidesui";
+import type { ColumnsType } from "fidesui";
 import { useMemo, useState } from "react";
 
-import {
+import type {
   ConsentAlertInfo,
   StagedResourceTypeValue,
   SystemStagedResourcesAggregateRecord,
@@ -10,11 +10,11 @@ import {
 import {
   buildEditableColumns,
   buildReadOnlyColumns,
-  ColumnBuilderParams,
+  type ColumnBuilderParams,
   isIdentityProvider,
   isIdentityProviderColumns,
 } from "../utils/columnBuilders";
-import { ActionCenterTabHash } from "./useActionCenterTabs";
+import type { ActionCenterTabHash } from "./useActionCenterTabs";
 
 interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;

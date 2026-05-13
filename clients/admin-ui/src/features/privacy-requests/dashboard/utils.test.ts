@@ -1,4 +1,4 @@
-import { PrivacyRequestOption, PrivacyRequestResponse } from "~/types/api";
+import type { PrivacyRequestOption, PrivacyRequestResponse } from "~/types/api";
 
 import {
   extractUniqueCustomFields,

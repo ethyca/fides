@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 
 import {
-  AccessPolicy,
+  type AccessPolicy,
   useGetAccessPoliciesQuery,
 } from "../access-policies.slice";
 import { extractPolicyFields } from "../policy-yaml";
-import { AccessPolicyListItem } from "../types";
+import type { AccessPolicyListItem } from "../types";
 
 const toListItem = (policy: AccessPolicy): AccessPolicyListItem => {
   const { enabled, priority, decision } = extractPolicyFields(policy.yaml);

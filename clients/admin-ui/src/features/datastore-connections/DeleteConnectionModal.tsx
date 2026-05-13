@@ -1,8 +1,8 @@
 import {
   Button,
+  Modal,
   ChakraStack as Stack,
   ChakraText as Text,
-  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useRouter } from "next/router";

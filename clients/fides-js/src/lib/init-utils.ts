@@ -7,16 +7,16 @@ import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
   FidesAttStatus,
-  FidesCookie,
-  FidesGlobal,
-  FidesOptions,
-  NoticeConsent,
-  PrivacyExperience,
-  UpdateConsentValidation,
+  type FidesCookie,
+  type FidesGlobal,
+  type FidesOptions,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type UpdateConsentValidation,
 } from "./consent-types";
 import {
-  decodeNoticeConsentString,
   DEFAULT_MODAL_LINK_ID,
+  decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
   shouldResurfaceBanner,

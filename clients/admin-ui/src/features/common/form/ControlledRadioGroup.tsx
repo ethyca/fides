@@ -1,16 +1,20 @@
 import type { RadioGroupProps } from "fidesui";
 import {
+  Flex,
   ChakraFormControl as FormControl,
   ChakraGrid as Grid,
-  ChakraText as Text,
-  Flex,
   Radio,
-  RadioChangeEvent,
+  type RadioChangeEvent,
+  ChakraText as Text,
 } from "fidesui";
 import { useField } from "formik";
 
 import type { StringField } from "~/features/common/form/inputs";
-import { ErrorMessage, Label, Option } from "~/features/common/form/inputs";
+import {
+  ErrorMessage,
+  Label,
+  type Option,
+} from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 interface ControlledRadioGroupProps extends RadioGroupProps {

@@ -1,16 +1,16 @@
 /* eslint-disable react/no-array-index-key */
 import {
-  Button,
   ChakraAccordion as Accordion,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
-  ChakraSpacer as Spacer,
+  Button,
   Flex,
   Modal,
   Space,
+  ChakraSpacer as Spacer,
   Spin,
   Tag,
   Typography,

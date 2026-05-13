@@ -2,16 +2,16 @@ import {
   calculateAutomatedConsent,
   saveAutomatedPreferencesToApi,
 } from "../../src/lib/automated-consent";
-import { ConsentContext } from "../../src/lib/consent-context";
+import type { ConsentContext } from "../../src/lib/consent-context";
 import {
   ComponentType,
   ConsentMechanism,
   ConsentMethod,
-  ExperienceConfig,
-  FidesCookie,
-  FidesInitOptions,
-  PrivacyExperience,
-  PrivacyNotice,
+  type ExperienceConfig,
+  type FidesCookie,
+  type FidesInitOptions,
+  type PrivacyExperience,
+  type PrivacyNotice,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
 import { decodeNoticeConsentString } from "../../src/lib/consent-utils";

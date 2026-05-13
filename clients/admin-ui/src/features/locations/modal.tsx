@@ -2,10 +2,10 @@ import {
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraFlex as Flex,
-  ChakraText as Text,
   Tag,
+  ChakraText as Text,
 } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export const HeaderCheckboxRow = ({
   title,

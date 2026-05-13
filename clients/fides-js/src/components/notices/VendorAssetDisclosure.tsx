@@ -1,6 +1,6 @@
-import { ComponentChildren } from "preact";
+import type { ComponentChildren } from "preact";
 
-import { Cookies } from "../../lib/consent-types";
+import type { Cookies } from "../../lib/consent-types";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
 

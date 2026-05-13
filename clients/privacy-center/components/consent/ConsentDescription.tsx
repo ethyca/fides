@@ -1,7 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraText as Text,
-  ChakraTextProps as TextProps,
+  type ChakraTextProps as TextProps,
 } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";

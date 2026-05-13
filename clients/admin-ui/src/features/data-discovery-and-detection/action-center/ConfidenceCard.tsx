@@ -1,10 +1,10 @@
 import { Avatar, Button, Card, Icons, Space, SparkleIcon, Text } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { nFormatter, pluralize } from "~/features/common/utils";
-import { APIMonitorType } from "~/types/api";
+import type { APIMonitorType } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { useConfirmAllFields } from "./fields/useConfirmAllFields";

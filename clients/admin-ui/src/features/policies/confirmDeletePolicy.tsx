@@ -1,4 +1,4 @@
-import { Typography, useModal } from "fidesui";
+import { Typography, type useModal } from "fidesui";
 
 const { Text } = Typography;
 

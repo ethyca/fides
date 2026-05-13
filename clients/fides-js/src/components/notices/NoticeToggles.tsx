@@ -1,5 +1,5 @@
-import { Cookies, GpcStatus } from "../../lib/consent-types";
-import { FidesEventDetailsPreference } from "../../lib/events";
+import type { Cookies, GpcStatus } from "../../lib/consent-types";
+import type { FidesEventDetailsPreference } from "../../lib/events";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";

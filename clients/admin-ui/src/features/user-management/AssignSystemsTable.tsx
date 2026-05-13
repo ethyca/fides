@@ -1,8 +1,8 @@
-import { Button, ColumnsType, Icons, Switch, Table } from "fidesui";
-import React from "react";
+import { Button, type ColumnsType, Icons, Switch, Table } from "fidesui";
+import type React from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { System } from "~/types/api";
+import type { System } from "~/types/api";
 
 import {
   selectActiveUserId,

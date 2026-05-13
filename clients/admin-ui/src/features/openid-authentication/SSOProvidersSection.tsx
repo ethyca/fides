@@ -1,6 +1,6 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHeading as Heading,
   ChakraText as Text,
   useChakraDisclosure as useDisclosure,
@@ -9,7 +9,7 @@ import {
 import AddSSOProviderModal from "~/features/openid-authentication/AddSSOProviderModal";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
 import SSOProvider from "~/features/openid-authentication/SSOProvider";
-import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
+import type { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
 const SSOProvidersSection = () => {
   const { onOpen, isOpen, onClose } = useDisclosure();

@@ -1,4 +1,4 @@
-import { YAMLException } from "js-yaml";
+import type { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
 

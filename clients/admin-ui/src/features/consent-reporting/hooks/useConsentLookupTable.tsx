@@ -1,8 +1,8 @@
-import { ColumnsType, Tag } from "fidesui";
+import { type ColumnsType, Tag } from "fidesui";
 import { useMemo } from "react";
 
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import {
+import type {
   PreferenceWithNoticeInformation,
   UserConsentPreference,
 } from "~/types/api";

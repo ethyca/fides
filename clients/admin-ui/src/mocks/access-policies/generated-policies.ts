@@ -1,4 +1,4 @@
-import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
+import type { AccessPolicy } from "~/features/access-policies/access-policies.slice";
 
 /**
  * Returns a set of policies that the "generate" endpoint would produce.

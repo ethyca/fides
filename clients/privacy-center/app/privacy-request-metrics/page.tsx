@@ -12,7 +12,7 @@ import { AttributionLink } from "~/components/AttributionLink";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
 import { PrivacyRequestMetrics } from "~/components/privacy-request-metrics/PrivacyRequestMetrics";
-import { NextSearchParams } from "~/types/next";
+import type { NextSearchParams } from "~/types/next";
 
 export const generateMetadata = getPageMetadata;
 

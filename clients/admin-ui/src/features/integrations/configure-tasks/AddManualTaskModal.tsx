@@ -1,8 +1,8 @@
 import {
   ChakraBox as Box,
-  ChakraVStack as VStack,
   Form,
   useMessage,
+  ChakraVStack as VStack,
 } from "fidesui";
 import React, { useState } from "react";
 
@@ -13,14 +13,14 @@ import {
   useCreateManualFieldMutation,
   useUpdateManualFieldMutation,
 } from "~/features/datastore-connections/connection-manual-fields.slice";
-import {
+import type {
   ConnectionConfigurationResponse,
   ManualFieldCreate,
   ManualFieldUpdate,
 } from "~/types/api";
 
 import AddManualTaskForm from "./AddManualTaskForm";
-import { Task } from "./types";
+import type { Task } from "./types";
 
 type Props = {
   isOpen: boolean;

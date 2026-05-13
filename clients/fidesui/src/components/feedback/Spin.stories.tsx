@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { GetProps, Spin } from "../../index";
+import { type GetProps, Spin } from "../../index";
 
 type SpinProps = GetProps<typeof Spin>;
 

@@ -1,4 +1,4 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Image } from "fidesui";
 
 const ERROR_IMAGE_PATH = "/images/errors";

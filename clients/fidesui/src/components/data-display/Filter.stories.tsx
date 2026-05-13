@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 
-import { Filter, Flex, notification, TreeProps, Typography } from "../../index";
+import {
+  Filter,
+  Flex,
+  notification,
+  type TreeProps,
+  Typography,
+} from "../../index";
 
 const meta = {
   title: "Data Display/Filter",

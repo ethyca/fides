@@ -40,7 +40,7 @@ const Landing = () => (
               Password: <strong>Testpassword1!</strong>
             </p>
             <p>
-              <a href="http://localhost:8080" target="_blank">
+              <a href="http://localhost:8080" target="_blank" rel="noopener">
                 http://localhost:8080
               </a>
             </p>
@@ -56,7 +56,7 @@ const Landing = () => (
               Buy a cookie and provide some sample personal data to try it out.
             </p>
             <p>
-              <a href="http://localhost:3000" target="_blank">
+              <a href="http://localhost:3000" target="_blank" rel="noopener">
                 http://localhost:3000
               </a>
             </p>
@@ -73,7 +73,7 @@ const Landing = () => (
               <strong>"jane@example.com"</strong>.
             </p>
             <p>
-              <a href="http://localhost:3001" target="_blank">
+              <a href="http://localhost:3001" target="_blank" rel="noopener">
                 http://localhost:3001
               </a>
             </p>

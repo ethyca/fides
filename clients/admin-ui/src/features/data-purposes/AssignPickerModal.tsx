@@ -1,6 +1,6 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Flex,
   Input,
   Modal,

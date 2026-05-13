@@ -1,14 +1,14 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
-  ChakraStack as Stack,
   Icons,
+  ChakraStack as Stack,
   useMessage,
 } from "fidesui";
-import { FieldArray, Form, FormikHelpers, useFormikContext } from "formik";
+import { FieldArray, Form, type FormikHelpers, useFormikContext } from "formik";
 import * as Yup from "yup";
 
 import {
@@ -22,8 +22,8 @@ import {
   useUpdateOpenIDProviderMutation,
 } from "~/features/openid-authentication/openprovider.slice";
 import {
-  OpenIDProvider,
-  OpenIDProviderCreate,
+  type OpenIDProvider,
+  type OpenIDProviderCreate,
   ProviderEnum,
 } from "~/types/api";
 

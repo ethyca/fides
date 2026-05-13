@@ -1,5 +1,5 @@
 import { Modal } from "fidesui";
-import React from "react";
+import type React from "react";
 
 import useConfirmDirtyClose from "~/features/common/hooks/useConfirmDirtyClose";
 

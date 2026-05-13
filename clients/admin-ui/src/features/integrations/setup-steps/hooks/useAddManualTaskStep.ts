@@ -1,7 +1,7 @@
 import { useGetManualFieldsQuery } from "~/features/datastore-connections/connection-manual-fields.slice";
 import { ConnectionType } from "~/types/api";
 
-import { BaseStepHookParams, Step } from "./types";
+import type { BaseStepHookParams, Step } from "./types";
 
 export const useAddManualTaskStep = ({
   connection,

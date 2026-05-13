@@ -1,5 +1,6 @@
-import { Button, Tooltip, TooltipProps } from "antd/lib";
-import React, { ReactNode, useState } from "react";
+import { Button, Tooltip, type TooltipProps } from "antd/lib";
+import type React from "react";
+import { type ReactNode, useState } from "react";
 
 import styles from "./CopyTooltip.module.scss";
 

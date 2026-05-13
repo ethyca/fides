@@ -1,13 +1,13 @@
 import { baseApi } from "common/api.slice";
 import { sortBy } from "lodash";
 
-import {
+import type {
   MessagingTemplateCreate,
   MessagingTemplatePatch,
   MessagingTemplateResponse,
   MessagingTemplateUpdate,
 } from "~/features/messaging-templates/messaging-templates.slice";
-import { Page_MessagingTemplateWithPropertiesSummary_ } from "~/types/api";
+import type { Page_MessagingTemplateWithPropertiesSummary_ } from "~/types/api";
 
 const messagingTemplatesPlusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

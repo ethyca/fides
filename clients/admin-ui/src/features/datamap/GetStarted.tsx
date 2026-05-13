@@ -1,6 +1,6 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraCenter as Center,
   ChakraStack as Stack,
   ChakraText as Text,

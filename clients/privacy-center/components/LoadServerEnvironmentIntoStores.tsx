@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { PrivacyCenterEnvironment } from "~/app/server-environment";
+import type { PrivacyCenterEnvironment } from "~/app/server-environment";
 import store from "~/app/store";
 import { loadConfig } from "~/features/common/config.slice";
 import { loadProperty } from "~/features/common/property.slice";

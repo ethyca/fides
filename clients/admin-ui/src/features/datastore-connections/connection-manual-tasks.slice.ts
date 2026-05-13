@@ -1,8 +1,8 @@
 import { baseApi } from "~/features/common/api.slice";
-import { ConditionGroup, ManualTaskResponse } from "~/types/api";
+import type { ConditionGroup, ManualTaskResponse } from "~/types/api";
 
 import { PLUS_CONNECTION_API_ROUTE } from "../../constants";
-import { PrivacyRequestFieldsResponse } from "../integrations/configure-tasks/types";
+import type { PrivacyRequestFieldsResponse } from "../integrations/configure-tasks/types";
 
 export const connectionManualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

@@ -1,4 +1,4 @@
-import { Button, ColumnsType, Empty, Flex, Typography } from "fidesui";
+import { Button, type ColumnsType, Empty, Flex, Typography } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
@@ -7,9 +7,9 @@ import { TagExpandableCell } from "~/features/common/table/cells";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { buildExpandCollapseMenu } from "~/features/data-discovery-and-detection/action-center/utils/columnBuilders";
-import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
 import PropertyActionsCell from "~/features/properties/PropertyActionsCell";
-import { Property } from "~/types/api";
+import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
+import type { Property } from "~/types/api";
 
 const usePropertiesTable = () => {
   const router = useRouter();

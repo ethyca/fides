@@ -1,4 +1,4 @@
-import { ConsentStatus } from "~/types/api";
+import type { ConsentStatus } from "~/types/api";
 
 import { DiscoveryErrorStatuses } from "../constants";
 

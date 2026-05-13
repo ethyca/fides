@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
-import { Organization } from "~/types/api";
+import type { Organization } from "~/types/api";
 
 // Organization API
 const organizationApi = baseApi.injectEndpoints({

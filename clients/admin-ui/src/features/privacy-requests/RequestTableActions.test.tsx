@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import React from "react";
+import type React from "react";
 
-import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
+import { type PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
 import { RequestTableActions } from "./RequestTableActions";
 

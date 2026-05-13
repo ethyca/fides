@@ -1,9 +1,10 @@
 "use client";
 
 import { Alert, Button, Input, Space, Typography } from "fidesui";
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 
-import { OtpVerificationFormProps } from "../types";
+import type { OtpVerificationFormProps } from "../types";
 
 /**
  * OTP Verification Form Component - Step 2 of Authentication

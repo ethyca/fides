@@ -1,6 +1,6 @@
 import type { FormRule } from "fidesui";
 
-import { PrivacyRequestOption } from "~/types/api";
+import type { PrivacyRequestOption } from "~/types/api";
 
 export const findActionFromPolicyKey = (
   key: string,

@@ -1,13 +1,13 @@
 import { createContext } from "preact";
-import { MutableRefObject, ReactNode } from "preact/compat";
+import type { MutableRefObject, ReactNode } from "preact/compat";
 import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
 
-import { FidesCookie, ServingComponent } from "../consent-types";
+import type { FidesCookie, ServingComponent } from "../consent-types";
 import {
   dispatchFidesEvent,
-  FidesEventDetailsTrigger,
-  FidesEventExtraDetails,
-  FidesEventType,
+  type FidesEventDetailsTrigger,
+  type FidesEventExtraDetails,
+  type FidesEventType,
 } from "../events";
 
 interface UseEventProps {

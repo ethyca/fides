@@ -1,13 +1,13 @@
 import {
-  ColumnsType,
+  type ColumnsType,
   CUSTOM_TAG_COLOR,
   Form,
-  FormInstance,
+  type FormInstance,
   Input,
-  MenuProps,
+  type MenuProps,
 } from "fidesui";
 import { isArray, snakeCase } from "lodash";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import {
   ListExpandableCell,
@@ -18,14 +18,14 @@ import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { InteractiveTextCell } from "~/features/common/table/cells/InteractiveTextCell";
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
 import {
-  CustomFieldDefinitionWithId,
+  type CustomFieldDefinitionWithId,
   DATAMAP_GROUPING,
-  Page_DatamapReport_,
-  SystemGroup,
+  type Page_DatamapReport_,
+  type SystemGroup,
 } from "~/types/api";
 
 import { COLUMN_IDS, DEFAULT_COLUMN_NAMES } from "./constants";
-import { DatamapReportRow, getGroupKey } from "./groupDatamapRows";
+import { type DatamapReportRow, getGroupKey } from "./groupDatamapRows";
 import { getColKey } from "./utils";
 
 type MenuClickInfo = Parameters<NonNullable<MenuProps["onClick"]>>[0];

@@ -1,14 +1,13 @@
-import { AutoComplete, Icons, Input, InputRef } from "fidesui";
+import { AutoComplete, Icons, Input, type InputRef } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-
-import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
 import NavSearchModal from "./NavSearchModal";
+import type { NavGroup } from "./nav-config";
 import useNavSearchItems, {
+  type FlatNavItem,
   filterAndRankNavItems,
-  FlatNavItem,
 } from "./useNavSearchItems";
 
 const isMac =

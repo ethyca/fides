@@ -24,7 +24,7 @@ import {
   useDownloadAssessmentReportMutation,
   useGetPrivacyAssessmentQuery,
 } from "~/features/privacy-assessments";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 const PrivacyAssessmentDetailPage: NextPage = () => {
   const { flags } = useFeatures();

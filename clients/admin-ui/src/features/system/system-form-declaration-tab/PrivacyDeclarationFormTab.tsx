@@ -8,11 +8,11 @@ import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
 import EmptyTableState from "~/features/system/system-form-declaration-tab/EmptyTableState";
 import { PrivacyDeclarationDisplayGroup } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationDisplayGroup";
 import {
-  DataProps,
+  type DataProps,
   PrivacyDeclarationForm,
 } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationForm";
 import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
-import { PrivacyDeclarationResponse, SystemResponse } from "~/types/api";
+import type { PrivacyDeclarationResponse, SystemResponse } from "~/types/api";
 
 interface Props {
   system: SystemResponse;

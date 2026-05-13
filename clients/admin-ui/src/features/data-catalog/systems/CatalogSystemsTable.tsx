@@ -1,12 +1,12 @@
 /* eslint-disable react/no-unstable-nested-components */
 
 import {
-  ColumnDef,
+  type ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
-  RowSelectionState,
+  type RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/router";
@@ -31,7 +31,7 @@ import CatalogSystemDetailDrawer from "~/features/data-catalog/systems/CatalogSy
 import EditDataUseCell from "~/features/data-catalog/systems/EditDataUseCell";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import { useLazyGetAvailableDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { SystemWithMonitorKeys } from "~/types/api";
+import type { SystemWithMonitorKeys } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],

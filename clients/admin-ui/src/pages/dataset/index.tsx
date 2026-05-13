@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  ColumnDef,
+  type ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
@@ -9,12 +9,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHStack as HStack,
+  Icons,
   ChakraText as Text,
   ChakraVStack as VStack,
-  Icons,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -43,7 +43,7 @@ import {
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
 import { EditDatasetDrawer } from "~/features/dataset/EditDatasetDrawer";
-import { Dataset, GenerateTypes } from "~/types/api";
+import { type Dataset, GenerateTypes } from "~/types/api";
 
 const columnHelper = createColumnHelper<Dataset>();
 

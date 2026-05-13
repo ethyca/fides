@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
   Form,
-  FormInstance,
+  type FormInstance,
   Icons,
   Input,
   Select,
@@ -14,8 +14,8 @@ import { useMemo } from "react";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
 import AntColorSelect from "~/features/system/system-groups/components/AntColorSelect";
-import { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
-import { DataUse, SystemResponse } from "~/types/api";
+import type { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
+import type { DataUse, SystemResponse } from "~/types/api";
 
 interface SystemGroupEditFormProps {
   initialValues: TaxonomyEntity;

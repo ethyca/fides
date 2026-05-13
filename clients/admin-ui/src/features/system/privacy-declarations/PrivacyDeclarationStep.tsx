@@ -1,14 +1,14 @@
 import {
   ChakraHeading as Heading,
+  Spin,
   ChakraStack as Stack,
   ChakraText as Text,
-  Spin,
 } from "fidesui";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
 import PrivacyDeclarationFormTab from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormTab";
-import { SystemResponse } from "~/types/api";
+import type { SystemResponse } from "~/types/api";
 
 interface Props {
   system: SystemResponse;

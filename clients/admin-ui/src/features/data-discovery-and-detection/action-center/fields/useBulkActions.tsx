@@ -10,7 +10,7 @@ import {
   FIELD_ACTION_LABEL,
 } from "./FieldActions.const";
 import { useFieldActionsMutation } from "./monitor-fields.slice";
-import { MonitorFieldParameters } from "./types";
+import type { MonitorFieldParameters } from "./types";
 import {
   getActionErrorMessage,
   getActionModalProps,

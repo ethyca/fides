@@ -1,5 +1,8 @@
 import { baseApi } from "~/features/common/api.slice";
-import { ExternalUserCreateRequest, UserCreateResponse } from "~/types/api";
+import type {
+  ExternalUserCreateRequest,
+  UserCreateResponse,
+} from "~/types/api";
 
 export const externalUserApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

@@ -10,6 +10,7 @@ import { ExternalTaskLayout } from "~/features/external-manual-tasks/components/
 import NoAccessTokenMessage from "~/features/external-manual-tasks/components/NoAccessTokenMessage";
 import OtpRequestForm from "~/features/external-manual-tasks/components/OtpRequestForm";
 import OtpVerificationForm from "~/features/external-manual-tasks/components/OtpVerificationForm";
+import ExternalStoreProvider from "~/features/external-manual-tasks/ExternalStoreProvider";
 import {
   loginSuccess,
   selectEmailToken,
@@ -23,12 +24,11 @@ import {
   useRequestOtpMutation,
   useVerifyOtpMutation,
 } from "~/features/external-manual-tasks/external-auth-api.slice";
-import ExternalStoreProvider from "~/features/external-manual-tasks/ExternalStoreProvider";
 import {
   useExternalAppDispatch,
   useExternalAppSelector,
 } from "~/features/external-manual-tasks/hooks";
-import { NextSearchParams } from "~/types/next";
+import type { NextSearchParams } from "~/types/next";
 
 interface ExternalTasksClientProps {
   searchParams: NextSearchParams;

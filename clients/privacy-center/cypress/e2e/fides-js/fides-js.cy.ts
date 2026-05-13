@@ -217,6 +217,3 @@ describe("fides.js API route", () => {
     });
   });
 });
-
-// Convert this to a module instead of script (allows import/export)
-export {};

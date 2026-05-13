@@ -1,5 +1,5 @@
 import { Flex } from "antd/lib";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import type { CarbonIconType } from "../icons/carbon";
 import {

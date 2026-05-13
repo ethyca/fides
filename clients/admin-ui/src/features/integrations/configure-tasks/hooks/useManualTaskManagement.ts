@@ -5,12 +5,12 @@ import {
   useDeleteManualFieldMutation,
   useGetManualFieldsQuery,
 } from "~/features/datastore-connections/connection-manual-fields.slice";
-import {
+import type {
   ConnectionConfigurationResponse,
   ManualFieldResponse,
 } from "~/types/api";
 
-import { Task } from "../types";
+import type { Task } from "../types";
 
 interface UseManualTaskManagementProps {
   integration: ConnectionConfigurationResponse;

@@ -1,8 +1,8 @@
-import { Button, Flex, Icons, TableProps, useMessage } from "fidesui";
+import { Button, Flex, Icons, type TableProps, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useDeleteSharedMonitorConfigMutation } from "~/features/monitors/shared-monitor-config.slice";
-import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
+import type { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
 import { isErrorResult } from "~/types/errors";
 
 const useSharedMonitorConfigColumns = ({

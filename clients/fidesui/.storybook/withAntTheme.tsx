@@ -9,14 +9,15 @@
  *   // Force a specific story to always use the dark theme
  *   export const MyStory = { parameters: { theme: "dark" } };
  */
-import { useGlobals } from "storybook/preview-api";
-import type { DecoratorFunction, Renderer } from "storybook/internal/types";
-import { theme as antTheme } from "antd";
-import React, { useEffect } from "react";
 
+import { theme as antTheme } from "antd";
+import type React from "react";
+import { useEffect } from "react";
+import type { DecoratorFunction, Renderer } from "storybook/internal/types";
+import { useGlobals } from "storybook/preview-api";
+import type { ThemeConfig } from "../src/ant-theme";
 import { darkAntTheme, defaultAntTheme } from "../src/ant-theme";
 import { FidesUIProvider } from "../src/FidesUIProvider";
-import type { ThemeConfig } from "../src/ant-theme";
 
 const THEME_MAP: Record<string, ThemeConfig> = {
   light: defaultAntTheme,

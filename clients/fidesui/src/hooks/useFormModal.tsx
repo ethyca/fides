@@ -1,5 +1,5 @@
-import { ModalFuncProps } from "antd/es/modal";
-import { Form, FormInstance } from "antd/lib";
+import type { ModalFuncProps } from "antd/es/modal";
+import { Form, type FormInstance } from "antd/lib";
 import { useModal } from "fidesui";
 import React from "react";
 

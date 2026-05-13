@@ -1,7 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
 import _ from "lodash";
 
-import useNodeMap, { mapNodes, mergeNodes, Node, NodeMap } from "./useNodeMap";
+import useNodeMap, {
+  mapNodes,
+  mergeNodes,
+  type Node,
+  type NodeMap,
+} from "./useNodeMap";
 
 describe("Normalized Data Hook", () => {
   it("returns empty array when no data provided", () => {

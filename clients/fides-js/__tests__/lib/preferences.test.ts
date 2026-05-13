@@ -9,7 +9,7 @@ import { decodeNoticeConsentString } from "../../src/lib/consent-utils";
 import { decodeFidesString } from "../../src/lib/fides-string";
 import {
   updateConsent,
-  updateConsentPreferences,
+  type updateConsentPreferences,
 } from "../../src/lib/preferences";
 import { createMockFides } from "../__utils__/test-utils";
 

@@ -1,4 +1,4 @@
-import { DatasetField } from "~/types/api";
+import type { DatasetField } from "~/types/api";
 
 import {
   buildFieldReference,

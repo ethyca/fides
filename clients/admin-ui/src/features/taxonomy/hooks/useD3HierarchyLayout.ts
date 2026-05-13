@@ -1,4 +1,4 @@
-import { Edge, Node } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 import { stratify, tree } from "d3-hierarchy";
 import { useMemo } from "react";
 

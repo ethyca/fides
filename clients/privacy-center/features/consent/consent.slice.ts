@@ -1,8 +1,12 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import {
   constructFidesRegionString,
-  RecordsServedResponse,
-  UserGeolocation,
+  type RecordsServedResponse,
+  type UserGeolocation,
 } from "fides-js";
 import { iso31662 } from "fidesui";
 
@@ -11,20 +15,20 @@ import { VerificationType } from "~/components/modals/types";
 import { baseApi } from "~/features/common/api.slice";
 import {
   ComponentType,
-  Consent,
-  ConsentPreferences,
-  ConsentPreferencesWithVerificationCode,
-  PreferencesSaved,
-  PrivacyExperienceResponse,
-  PrivacyNoticeRegion,
-  PrivacyPreferencesRequest,
-  Property,
-  RecordConsentServedRequest,
+  type Consent,
+  type ConsentPreferences,
+  type ConsentPreferencesWithVerificationCode,
+  type PreferencesSaved,
+  type PrivacyExperienceResponse,
+  type PrivacyNoticeRegion,
+  type PrivacyPreferencesRequest,
+  type Property,
+  type RecordConsentServedRequest,
 } from "~/types/api";
 
 import { selectPropertyId } from "../common/property.slice";
 import { selectSettings } from "../common/settings.slice";
-import { FidesKeyToConsent } from "./types";
+import type { FidesKeyToConsent } from "./types";
 
 export interface PagePrivacyExperienceResponse {
   items: Array<PrivacyExperienceResponse>;

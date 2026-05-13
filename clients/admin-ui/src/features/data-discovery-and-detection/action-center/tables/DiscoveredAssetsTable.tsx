@@ -1,6 +1,6 @@
 import {
   Button,
-  DefaultOptionType,
+  type DefaultOptionType,
   Dropdown,
   Empty,
   Flex,
@@ -14,16 +14,16 @@ import { useState } from "react";
 
 import { SelectedText } from "~/features/common/table/SelectedText";
 import {
-  ConsentAlertInfo,
+  type ConsentAlertInfo,
   DiffStatus,
-  StagedResourceAPIResponse,
+  type StagedResourceAPIResponse,
 } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
 import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
-import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
+import type { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredAssetsTable } from "../hooks/useDiscoveredAssetsTable";
 
 interface DiscoveredAssetsTableProps {

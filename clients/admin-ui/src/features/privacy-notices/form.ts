@@ -6,9 +6,9 @@ import {
 import {
   ConsentMechanism,
   EnforcementLevel,
-  NoticeTranslationCreate,
-  PrivacyNoticeCreation,
-  PrivacyNoticeResponse,
+  type NoticeTranslationCreate,
+  type PrivacyNoticeCreation,
+  type PrivacyNoticeResponse,
   SupportedLanguage,
 } from "~/types/api";
 

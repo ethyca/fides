@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { ColumnsType, Flex, Table, Typography } from "fidesui";
+import { type ColumnsType, Flex, Table, Typography } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 

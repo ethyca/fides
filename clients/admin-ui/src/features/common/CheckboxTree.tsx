@@ -8,15 +8,15 @@
  */
 
 import {
-  Button,
   ChakraBox as Box,
-  ChakraBoxProps as BoxProps,
+  type ChakraBoxProps as BoxProps,
+  Button,
   ChakraCheckbox as Checkbox,
   Icons,
 } from "fidesui";
-import { Fragment, ReactNode, useEffect, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useState } from "react";
 
-import { TreeNode } from "./types";
+import type { TreeNode } from "./types";
 
 export const getAncestorsAndCurrent = (nodeName: string) => {
   const splitNames = nodeName.split(".");

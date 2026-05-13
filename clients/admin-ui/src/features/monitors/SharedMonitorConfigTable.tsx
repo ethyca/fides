@@ -7,7 +7,7 @@ import {
 } from "~/features/common/table/v2";
 import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
 import useSharedMonitorConfigColumns from "~/features/monitors/useSharedMonitorConfigColumns";
-import { SharedMonitorConfig } from "~/types/api";
+import type { SharedMonitorConfig } from "~/types/api";
 
 const SharedMonitorConfigTable = ({
   onNewClick,

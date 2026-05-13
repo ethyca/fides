@@ -2,15 +2,15 @@ import { createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 // Import the types needed for the patchConfigurationSettings mutation
-import { StorageConfigResponse } from "~/features/privacy-requests/types";
-import {
-  MessagingConfigResponse,
+import type { StorageConfigResponse } from "~/features/privacy-requests/types";
+import type {
   PlusApplicationConfig as ApplicationConfig,
+  MessagingConfigResponse,
   PrivacyExperienceGPPSettings,
   SecurityApplicationConfig,
 } from "~/types/api";
-import { DuplicateDetectionApplicationConfig } from "~/types/api/models/DuplicateDetectionApplicationConfig";
-import { PlusConsentSettingsApplicationConfig } from "~/types/api/models/PlusConsentSettingsApplicationConfig";
+import type { DuplicateDetectionApplicationConfig } from "~/types/api/models/DuplicateDetectionApplicationConfig";
+import type { PlusConsentSettingsApplicationConfig } from "~/types/api/models/PlusConsentSettingsApplicationConfig";
 
 import type { RootState } from "../../app/store";
 

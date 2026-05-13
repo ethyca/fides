@@ -1,13 +1,13 @@
 import { Button, Typography } from "fidesui";
-import NextLink, { LinkProps as NextLinkProps } from "next/link";
+import NextLink, { type LinkProps as NextLinkProps } from "next/link";
 import { useRouter } from "next/router";
 import {
-  AnchorHTMLAttributes,
+  type AnchorHTMLAttributes,
   Children,
-  ComponentProps,
+  type ComponentProps,
   isValidElement,
-  MouseEvent,
-  ReactNode,
+  type MouseEvent,
+  type ReactNode,
   useCallback,
   useEffect,
 } from "react";

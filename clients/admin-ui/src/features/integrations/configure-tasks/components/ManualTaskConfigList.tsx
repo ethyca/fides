@@ -1,12 +1,12 @@
 import { Button, Flex, List, Typography, useModal } from "fidesui";
 import { useState } from "react";
 
-import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 
 import AddManualTaskModal from "../AddManualTaskModal";
 import { REQUEST_TYPE_LABELS } from "../constants";
 import { useManualTaskManagement } from "../hooks/useManualTaskManagement";
-import { Task } from "../types";
+import type { Task } from "../types";
 
 interface ManualTaskConfigListProps {
   integration: ConnectionConfigurationResponse;

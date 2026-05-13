@@ -1,4 +1,7 @@
-import { FidesConfig, GetPreferencesFnResp } from "../../lib/consent-types";
+import type {
+  FidesConfig,
+  GetPreferencesFnResp,
+} from "../../lib/consent-types";
 
 /**
  * Helper function to get preferences from an external API

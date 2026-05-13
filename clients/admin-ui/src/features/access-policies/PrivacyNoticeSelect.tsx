@@ -1,4 +1,4 @@
-import { Select, SelectProps } from "fidesui";
+import { Select, type SelectProps } from "fidesui";
 import { useMemo } from "react";
 
 import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy-notices.slice";

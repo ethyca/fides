@@ -3,8 +3,8 @@ import { useState } from "react";
 
 import {
   TaxonomySelect,
-  TaxonomySelectOption,
-  TaxonomySelectProps,
+  type TaxonomySelectOption,
+  type TaxonomySelectProps,
 } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 

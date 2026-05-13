@@ -5,12 +5,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import React from "react";
+import type React from "react";
 import { Provider } from "react-redux";
 
 import ErrorFallback, { DEFAULT_ERROR_MESSAGE } from "~/components/Error";
 import { configSlice, loadConfig } from "~/features/common/config.slice";
-import { Config } from "~/types/config";
+import type { Config } from "~/types/config";
 
 // Stub fidesui to avoid pulling its ESM-only transitive deps (e.g.
 // react-hotkeys-hook) through Jest's next/jest preset, which ignores

@@ -11,7 +11,7 @@ import {
 } from "fidesui";
 
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
-import { QuestionGroup } from "./types";
+import type { QuestionGroup } from "./types";
 
 interface QuestionGroupPanelProps {
   group: QuestionGroup;

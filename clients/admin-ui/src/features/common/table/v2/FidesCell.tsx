@@ -1,4 +1,4 @@
-import { Cell, flexRender } from "@tanstack/react-table";
+import { type Cell, flexRender } from "@tanstack/react-table";
 import { ChakraTd as Td } from "fidesui";
 
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";

@@ -19,7 +19,7 @@ import {
 } from "cypress/support/stubs";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { HealthCheck } from "~/types/api";
+import type { HealthCheck } from "~/types/api";
 
 // Check if we should use real API (local development with backend)
 const USE_REAL_API = Cypress.env("REAL_API") === true;

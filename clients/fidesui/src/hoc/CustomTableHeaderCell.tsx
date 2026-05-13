@@ -1,4 +1,4 @@
-import { Button, Dropdown, MenuProps } from "antd/lib";
+import { Button, Dropdown, type MenuProps } from "antd/lib";
 
 import { OverflowMenuVertical } from "../icons/carbon";
 import styles from "./CustomTableHeaderCell.module.scss";

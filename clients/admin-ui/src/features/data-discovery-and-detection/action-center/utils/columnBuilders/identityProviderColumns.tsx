@@ -1,15 +1,15 @@
-import { ColumnsType } from "fidesui";
+import type { ColumnsType } from "fidesui";
 
 import { NO_VALUE } from "~/constants";
 import { VendorMatchBadge } from "~/features/data-discovery-and-detection/components/VendorMatchBadge";
 import {
   StagedResourceTypeValue,
-  SystemStagedResourcesAggregateRecord,
+  type SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
-import { IdentityProviderApplicationMetadata } from "~/types/api/models/IdentityProviderApplicationMetadata";
+import type { IdentityProviderApplicationMetadata } from "~/types/api/models/IdentityProviderApplicationMetadata";
 
 import { DiscoveredSystemStatusCell } from "../../tables/cells/DiscoveredSystemAggregateStatusCell";
-import { ColumnBuilderParams } from "./columnTypes";
+import type { ColumnBuilderParams } from "./columnTypes";
 
 export const isIdentityProvider = (
   resourceType?: StagedResourceTypeValue,

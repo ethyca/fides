@@ -10,7 +10,7 @@ import useDownloadPrivacyRequestDiagnostics from "./hooks/useDownloadPrivacyRequ
 import useDownloadPrivacyRequestResults from "./hooks/useDownloadPrivacyRequestResults";
 import { useMutations } from "./hooks/useMutations";
 import useReprocessPrivacyRequest from "./hooks/useReprocessPrivacyRequest";
-import { PrivacyRequestEntity } from "./types";
+import type { PrivacyRequestEntity } from "./types";
 
 interface PrivacyRequestActionsDropdownProps {
   privacyRequest: PrivacyRequestEntity;

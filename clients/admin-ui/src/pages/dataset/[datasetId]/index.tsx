@@ -8,12 +8,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHStack as HStack,
+  Icons,
   ChakraText as Text,
   ChakraVStack as VStack,
-  Icons,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -38,7 +38,7 @@ import {
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
 import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import { EditCollectionDrawer } from "~/features/dataset/EditCollectionDrawer";
-import { DatasetCollection } from "~/types/api";
+import type { DatasetCollection } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetCollection>();
 

@@ -20,7 +20,7 @@ import { selectUser } from "~/features/auth";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import { useGetChatConfigsQuery } from "../chat-provider/chatProvider.slice";
 import { SlackLogo } from "../common/logos/SlackLogo";
@@ -39,9 +39,9 @@ import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import {
   AnswerSource,
   AnswerStatus,
-  EvidenceItem,
-  PrivacyAssessmentDetailResponse,
-  QuestionGroup,
+  type EvidenceItem,
+  type PrivacyAssessmentDetailResponse,
+  type QuestionGroup,
   QuestionnaireSessionStatus,
 } from "./types";
 import { deduplicateEvidence, filterEvidence } from "./utils";

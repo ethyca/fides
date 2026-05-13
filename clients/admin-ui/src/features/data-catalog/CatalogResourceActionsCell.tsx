@@ -15,7 +15,7 @@ import {
   useMuteResourceMutation,
   usePromoteResourceMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 const CatalogResourceActionsCell = ({
   resource,

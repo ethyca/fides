@@ -1,4 +1,4 @@
-import { UserGeolocation } from "../../lib/consent-types";
+import type { UserGeolocation } from "../../lib/consent-types";
 
 /**
  * Fetch the user's geolocation from an external API

@@ -4,10 +4,11 @@ import {
   Icons,
   Text,
   Tooltip,
-  UploadFile,
+  type UploadFile,
   useMessage,
 } from "fidesui";
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 
 import { AttachmentType } from "~/types/api";
 

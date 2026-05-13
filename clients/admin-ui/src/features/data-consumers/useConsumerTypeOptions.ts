@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 
 import {
-  ConsumerTypeDefinition,
+  type ConsumerTypeDefinition,
   useGetConsumerTypesQuery,
 } from "./data-consumer.slice";
 

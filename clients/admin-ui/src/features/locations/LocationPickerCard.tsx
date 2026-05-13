@@ -2,7 +2,7 @@ import { useChakraDisclosure as useDisclosure } from "fidesui";
 import { useState } from "react";
 
 import PickerCard from "~/features/common/PickerCard";
-import { Location, LocationGroup, Selection } from "~/types/api";
+import type { Location, LocationGroup, Selection } from "~/types/api";
 
 import RegulatedToggle from "./RegulatedToggle";
 import SubgroupModal from "./SubgroupModal";

@@ -4,7 +4,7 @@ import { BadgeCell, GroupCountBadgeCell } from "~/features/common/table/v2";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
-import { Rule } from "./types";
+import type { Rule } from "./types";
 
 export const statusPropMap: Record<
   PrivacyRequestStatus,

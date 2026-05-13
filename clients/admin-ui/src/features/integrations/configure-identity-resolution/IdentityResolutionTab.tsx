@@ -10,7 +10,7 @@ import {
 import { useCallback, useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import {
   useCreateIdentityGroupProviderMutation,

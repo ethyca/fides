@@ -1,4 +1,4 @@
-import { BezierEdge, BezierEdgeProps } from "@xyflow/react";
+import { BezierEdge, type BezierEdgeProps } from "@xyflow/react";
 import { palette } from "fidesui/src/palette/palette";
 import { useContext } from "react";
 

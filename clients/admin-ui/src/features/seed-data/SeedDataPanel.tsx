@@ -15,8 +15,8 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
-  SeedStepStatus,
-  SeedTasksConfig,
+  type SeedStepStatus,
+  type SeedTasksConfig,
   useGetSeedProfileQuery,
   useGetSeedStatusQuery,
   useListSeedProfilesQuery,

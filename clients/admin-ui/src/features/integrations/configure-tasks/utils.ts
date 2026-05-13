@@ -1,13 +1,13 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 
 import { formatDate } from "~/features/common/utils";
-import { ConditionLeaf, Operator } from "~/types/api";
+import { type ConditionLeaf, Operator } from "~/types/api";
 
 import {
-  CustomFieldMetadata,
+  type CustomFieldMetadata,
   FieldSource,
-  FieldValue,
-  PrivacyRequestFieldDefinition,
+  type FieldValue,
+  type PrivacyRequestFieldDefinition,
 } from "./types";
 
 /**

@@ -1,9 +1,9 @@
 import { Button } from "fidesui";
 
-import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
+import type { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 
 const IntegrationTypeDetail = ({

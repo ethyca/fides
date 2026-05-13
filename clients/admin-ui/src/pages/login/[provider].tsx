@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { login, useLoginWithOIDCMutation } from "~/features/auth";
-import { LoginWithOIDCRequest } from "~/features/auth/types";
+import type { LoginWithOIDCRequest } from "~/features/auth/types";
 
 const LoginWithOIDC: NextPage = () => {
   const router = useRouter();

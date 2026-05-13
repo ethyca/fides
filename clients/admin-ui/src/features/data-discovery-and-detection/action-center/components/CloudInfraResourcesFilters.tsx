@@ -1,10 +1,10 @@
-import { DisplayValueType, Flex, Select, Tooltip } from "fidesui";
+import { type DisplayValueType, Flex, Select, Tooltip } from "fidesui";
 import { useMemo } from "react";
 
 import { DiffStatus } from "~/types/api";
 
 import { useGetCloudInfraMonitorFiltersQuery } from "../../discovery-detection.slice";
-import { useCloudInfraFilters } from "../fields/useCloudInfraFilters";
+import type { useCloudInfraFilters } from "../fields/useCloudInfraFilters";
 import { getServiceLabel } from "../utils/cloudInfraServiceInfo";
 
 interface CloudInfraResourcesFiltersProps

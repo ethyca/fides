@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import {
+import type {
   ConsentMethod,
   ConsentReportingSchema,
   PrivacyNoticeRegion,

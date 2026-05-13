@@ -15,13 +15,15 @@
       "!**/build",
       "!**/coverage",
       "!**/storybook-static",
-      "!admin-ui/src/types/api/**",
-      "!fidesui/src/components/chakra-base/types/**",
-      "!admin-ui/public/lib/**",
-      "!privacy-center/public/lib/**",
-      "!privacy-center/public/scripts/**",
-      "!fides-js/src/lib/gpp/modules/**",
-      "!fides-js/docs/**",
+      "!admin-ui/src/types/api",
+      "!fidesui/src/components/chakra-base/types",
+      "!admin-ui/public/lib",
+      "!privacy-center/public/lib",
+      "!privacy-center/public/scripts",
+      "!privacy-center/public/*.html",
+      "!admin-ui/public/*.html",
+      "!fides-js/src/lib/gpp/modules",
+      "!fides-js/docs",
       "!**/.idea",
       "!**/cypress/downloads",
       "!**/cypress/screenshots",
@@ -37,7 +39,46 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noImplicitAnyLet": "warn",
+        "noArrayIndexKey": "warn",
+        "noShadowRestrictedNames": "warn",
+        "useIterableCallbackReturn": "warn",
+        "noNonNullAssertedOptionalChain": "warn",
+        "noExportsInTest": "warn",
+        "noThenProperty": "warn",
+        "noDuplicateProperties": "warn"
+      },
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "warn",
+        "useJsxKeyInIterable": "warn",
+        "noEmptyCharacterClassInRegex": "warn",
+        "noUnknownPseudoElement": "warn"
+      },
+      "a11y": {
+        "noSvgWithoutTitle": "warn",
+        "noStaticElementInteractions": "warn",
+        "useSemanticElements": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "useAriaPropsForRole": "warn",
+        "useKeyWithClickEvents": "warn",
+        "noLabelWithoutControl": "warn",
+        "useHtmlLang": "warn",
+        "noNoninteractiveTabindex": "warn",
+        "noNoninteractiveElementToInteractiveRole": "warn"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "warn"
+      },
+      "complexity": {
+        "noBannedTypes": "warn"
+      }
     },
     "domains": {
       "react": "recommended",
@@ -59,5 +100,17 @@
       "trailingCommas": "all",
       "semicolons": "always"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
+    }
+  ]
 }

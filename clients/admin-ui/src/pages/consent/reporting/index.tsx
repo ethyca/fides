@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 import {
   Button,
   DateRangePicker,
@@ -14,10 +14,10 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { usePagination } from "~/features/common/hooks";
 import PageHeader from "~/features/common/PageHeader";
 import { InfinitePaginator } from "~/features/common/pagination/InfinitePaginator";
-import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
 import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetailModal";
+import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import useConsentReportingColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 
 const ConsentReportingPage = () => {

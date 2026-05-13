@@ -1,11 +1,11 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraCheckbox as Checkbox,
   ChakraCheckboxGroup as CheckboxGroup,
-  ChakraStack as Stack,
   Icons,
   Popover,
+  ChakraStack as Stack,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 

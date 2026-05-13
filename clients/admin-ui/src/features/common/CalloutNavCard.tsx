@@ -1,4 +1,4 @@
-import { Card, ChakraBox as Box, Typography } from "fidesui";
+import { ChakraBox as Box, Card, Typography } from "fidesui";
 
 import styles from "./CalloutNavCard.module.scss";
 

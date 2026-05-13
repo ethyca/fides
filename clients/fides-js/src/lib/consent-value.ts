@@ -1,10 +1,10 @@
-import { ConsentContext } from "./consent-context";
+import type { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
-  ConsentValue,
-  NoticeConsent,
-  PrivacyNoticeWithPreference,
-  UserConsentPreference,
+  type ConsentValue,
+  type NoticeConsent,
+  type PrivacyNoticeWithPreference,
+  type UserConsentPreference,
 } from "./consent-types";
 import {
   noticeHasConsentInCookie,

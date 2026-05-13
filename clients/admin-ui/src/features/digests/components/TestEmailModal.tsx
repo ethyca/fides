@@ -1,7 +1,7 @@
 import { Button, Form, Input, Modal, Space, useMessage } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { DigestType } from "~/types/api";
+import type { DigestType } from "~/types/api";
 
 import { useTestDigestConfigMutation } from "../digest-config.slice";
 

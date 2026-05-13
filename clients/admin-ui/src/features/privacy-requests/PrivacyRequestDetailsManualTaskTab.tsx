@@ -3,8 +3,8 @@ import {
   useGetAllEnabledAccessManualHooksQuery as useGetManualIntegrationsQuery,
 } from "datastore-connections/datastore-connection.slice";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
   ChakraStack as Stack,
   Typography,
@@ -15,7 +15,7 @@ import { useMemo } from "react";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { useGetTasksQuery } from "~/features/manual-tasks/manual-tasks.slice";
 import {
-  ConnectionConfigurationResponse,
+  type ConnectionConfigurationResponse,
   ConnectionType,
   ManualFieldStatus,
 } from "~/types/api";
@@ -24,7 +24,7 @@ import { PRIVACY_REQUESTS_ROUTE } from "../common/nav/routes";
 import { pluralize } from "../common/utils";
 import { PRIVACY_REQUEST_TABS } from "./hooks/usePrivacyRequestTabs";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";
-import { PrivacyRequestEntity } from "./types";
+import type { PrivacyRequestEntity } from "./types";
 
 type PrivacyRequestDetailsManualTaskTabProps = {
   subjectRequest: PrivacyRequestEntity;

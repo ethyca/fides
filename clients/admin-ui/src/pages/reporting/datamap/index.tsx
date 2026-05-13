@@ -1,12 +1,12 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import React, { useCallback, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { DatamapReportProvider } from "~/features/datamap/reporting/datamap-report-context";
 import { DatamapReportTable } from "~/features/datamap/reporting/DatamapReportTable";
+import { DatamapReportProvider } from "~/features/datamap/reporting/datamap-report-context";
 
 const DatamapReportingPage = () => {
   const [error, setError] = useState<

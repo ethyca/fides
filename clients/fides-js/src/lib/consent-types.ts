@@ -5,7 +5,7 @@ import type {
   FidesOptions,
 } from "../docs";
 import type { aep } from "../integrations/aep";
-import { blueconic } from "../integrations/blueconic";
+import type { blueconic } from "../integrations/blueconic";
 import type { gcm } from "../integrations/gcm";
 import type { gtm } from "../integrations/gtm";
 import type { matomo } from "../integrations/matomo";
@@ -17,8 +17,6 @@ import type {
   GVLJson,
   TCFFeatureRecord,
   TCFFeatureSave,
-  TcfOtherConsent,
-  TcfPublisherRestriction,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
@@ -30,6 +28,8 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
   TCFVendorSave,
+  TcfOtherConsent,
+  TcfPublisherRestriction,
 } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
@@ -898,7 +898,7 @@ export enum FidesModalDefaultView {
  * Re-export the FidesOptions interface from src/docs; mostly for convenience as
  * a lot of code wants to import from this consent-types.ts file!
  */
-export { FidesOptions };
+export type { FidesOptions };
 
 /**
  * Select the subset of FidesInitOptions that can be overridden at runtime using

@@ -5,7 +5,7 @@ import {
   ExpandCollapse,
   Flex,
   List,
-  ListItemProps,
+  type ListItemProps,
   OpenCloseArrow,
   Space,
   SparkleIcon,
@@ -26,13 +26,13 @@ import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
-import { DatastoreMonitorUpdates } from "~/types/api/models/DatastoreMonitorUpdates";
+import type { DatastoreMonitorUpdates } from "~/types/api/models/DatastoreMonitorUpdates";
 
 import { ConfidenceRow } from "./ConfidenceRow";
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import styles from "./MonitorResult.module.scss";
 import { MonitorResultDescription } from "./MonitorResultDescription";
-import { MonitorAggregatedResults } from "./types";
+import type { MonitorAggregatedResults } from "./types";
 
 const { Text } = Typography;
 

@@ -2,7 +2,7 @@ import {
   Button,
   Dropdown,
   Icons,
-  MenuProps,
+  type MenuProps,
   Space,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import {
-  ManualFieldListItem,
+  type ManualFieldListItem,
   ManualFieldStatus,
   ScopeRegistryEnum,
 } from "~/types/api";

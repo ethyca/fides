@@ -7,7 +7,7 @@
  * @see https://developers.google.com/tag-platform/security/guides/consent
  */
 
-import { NoticeConsent } from "../lib/consent-types";
+import type { NoticeConsent } from "../lib/consent-types";
 import { subscribeToConsent } from "./integration-utils";
 
 /**

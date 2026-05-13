@@ -27,7 +27,7 @@ import {
   RISK_LEVEL_LABELS,
   RISK_TAG_COLORS,
 } from "./constants";
-import { AssessmentStatus, PrivacyAssessmentResponse } from "./types";
+import { AssessmentStatus, type PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;
 

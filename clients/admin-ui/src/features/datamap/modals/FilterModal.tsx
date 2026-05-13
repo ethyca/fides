@@ -1,14 +1,14 @@
-import { Header } from "@tanstack/react-table";
+import type { Header } from "@tanstack/react-table";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHeading as Heading,
   Modal,
 } from "fidesui";
-import React, { ReactNode, useContext, useMemo } from "react";
+import React, { type ReactNode, useContext, useMemo } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { DatamapRow } from "~/features/datamap";
+import type { DatamapRow } from "~/features/datamap";
 import {
   DATA_CATEGORY_COLUMN_ID,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,

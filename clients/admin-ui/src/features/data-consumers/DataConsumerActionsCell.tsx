@@ -4,9 +4,8 @@ import { useRouter } from "next/router";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
-
-import { DataConsumer } from "./data-consumer.slice";
 import DeleteDataConsumerModal from "./DeleteDataConsumerModal";
+import type { DataConsumer } from "./data-consumer.slice";
 
 interface Props {
   consumer: DataConsumer;

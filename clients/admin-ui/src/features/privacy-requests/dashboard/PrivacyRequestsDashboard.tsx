@@ -15,7 +15,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import { PrivacyRequestResponse } from "~/types/api";
+import type { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import { DuplicateRequestsButton } from "./DuplicateRequestsButton";

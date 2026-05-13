@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
-import { IdentityProviderMonitorResultFilters } from "../../discovery-detection.slice";
+import type { IdentityProviderMonitorResultFilters } from "../../discovery-detection.slice";
 
 type SelectionMode = "explicit" | "all";
 

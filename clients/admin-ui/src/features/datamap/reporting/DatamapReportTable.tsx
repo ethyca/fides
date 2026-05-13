@@ -1,5 +1,5 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Button,
   CheckOutlined,
@@ -15,13 +15,13 @@ import { useCallback, useEffect } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { ColumnSettingsModal } from "~/features/common/table/column-settings/ColumnSettingsModal";
-import { ExportFormat } from "~/features/datamap/constants";
+import type { ExportFormat } from "~/features/datamap/constants";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import { DatamapReportFilterModal } from "~/features/datamap/reporting/DatamapReportFilterModal";
-import { DatamapReportFilterSelections } from "~/features/datamap/types";
+import type { DatamapReportFilterSelections } from "~/features/datamap/types";
 import {
-  CustomReportResponse,
+  type CustomReportResponse,
   DATAMAP_GROUPING,
   ReportType,
 } from "~/types/api";

@@ -1,7 +1,7 @@
 import { createContext } from "preact";
-import { ReactNode, useContext, useMemo, useState } from "preact/compat";
+import { type ReactNode, useContext, useMemo, useState } from "preact/compat";
 
-import { GVLTranslationJson } from "./types";
+import type { GVLTranslationJson } from "./types";
 
 interface GVLContextProps {
   gvlTranslations: GVLTranslationJson | undefined;

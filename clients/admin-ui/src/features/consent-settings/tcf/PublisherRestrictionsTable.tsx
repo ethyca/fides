@@ -1,11 +1,19 @@
-import { Button, ColumnsType, Skeleton, Table, Tag, Typography } from "fidesui";
-import React, { useMemo } from "react";
+import {
+  Button,
+  type ColumnsType,
+  Skeleton,
+  Table,
+  Tag,
+  Typography,
+} from "fidesui";
+import type React from "react";
+import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { selectPurposes } from "~/features/common/purpose.slice";
 import { InfoCell } from "~/features/common/table/cells";
-import { MappedPurpose, TCFConfigurationDetail } from "~/types/api";
+import type { MappedPurpose, TCFConfigurationDetail } from "~/types/api";
 
 import {
   FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS,

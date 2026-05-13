@@ -1,14 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   DigestConfigRequest,
   DigestConfigResponse,
   DigestType,
   Page_DigestConfigResponse_,
 } from "~/types/api";
 
-export interface State {}
+export type State = {};
 
 const initialState: State = {};
 

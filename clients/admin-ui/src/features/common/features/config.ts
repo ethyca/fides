@@ -1,4 +1,4 @@
-import { Env, FlagConfig, FlagConfigDefaults, FlagEnvs } from "./types";
+import type { Env, FlagConfig, FlagConfigDefaults, FlagEnvs } from "./types";
 
 /**
  * Configure flags and their environments. Each key of the defaults is the name of the flag. The

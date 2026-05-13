@@ -19,7 +19,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { ROLES } from "~/features/user-management/constants";
-import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum, type System } from "~/types/api";
 
 import RoleOption from "./RoleOption";
 import {

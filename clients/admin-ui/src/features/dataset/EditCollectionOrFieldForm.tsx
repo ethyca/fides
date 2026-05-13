@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
-import { DatasetCollection, DatasetField } from "~/types/api";
+import type { DatasetCollection, DatasetField } from "~/types/api";
 
 import { COLLECTION, FIELD } from "./constants";
 import { DataCategoryInput } from "./DataCategoryInput";

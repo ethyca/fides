@@ -1,4 +1,4 @@
-import { TreeNode, TreeNodes } from "./types";
+import type { TreeNode, TreeNodes } from "./types";
 
 export const getAncestorsAndCurrent = (nodeName: string) => {
   const splitNames = nodeName.split(".");

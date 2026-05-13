@@ -1,4 +1,4 @@
-import { ColumnsType } from "fidesui";
+import type { ColumnsType } from "fidesui";
 
 import { DATAMAP_GROUPING } from "~/types/api";
 

@@ -1,7 +1,7 @@
-import { FunctionComponent } from "preact";
+import type { FunctionComponent } from "preact";
 import { useEffect } from "preact/hooks";
 
-import { ButtonType } from "../lib/consent-types";
+import type { ButtonType } from "../lib/consent-types";
 import { useAutoResetFlag } from "../lib/hooks";
 import { CheckmarkFilledIcon } from "./CheckmarkFilledIcon";
 import { Spinner } from "./Spinner";

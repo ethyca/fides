@@ -35,7 +35,7 @@ import {
   useGetHealthQuery,
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
-import { Page_SystemSummary_, SystemSummary } from "~/types/api";
+import type { Page_SystemSummary_, SystemSummary } from "~/types/api";
 
 const columnHelper = createColumnHelper<SystemSummary>();
 

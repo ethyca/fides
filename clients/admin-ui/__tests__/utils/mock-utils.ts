@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 
-import { TableStateWithHelpers } from "~/features/common/table/hooks";
+import type { TableStateWithHelpers } from "~/features/common/table/hooks";
 
 /**
  * Creates a mock table state for testing table-related hooks

@@ -1,6 +1,6 @@
 import type { FormInstance, FormProps } from "antd/lib";
 import { Form } from "antd/lib";
-import React from "react";
+import type React from "react";
 
 import { InformationFilled } from "../icons/carbon";
 

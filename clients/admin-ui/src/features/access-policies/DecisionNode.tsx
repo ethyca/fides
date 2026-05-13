@@ -1,4 +1,4 @@
-import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { Avatar, Flex, Form, Icons, Input, Radio, Text } from "fidesui";
 
 import { ACTION_TYPE_OPTIONS } from "./constants";

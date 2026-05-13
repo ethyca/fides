@@ -2,8 +2,8 @@
  * Shared utilities for building Fides integrations
  */
 
-import { FidesEventType } from "../docs";
-import { FidesGlobal, NoticeConsent } from "../lib/consent-types";
+import type { FidesEventType } from "../docs";
+import type { FidesGlobal, NoticeConsent } from "../lib/consent-types";
 
 declare global {
   interface Window {

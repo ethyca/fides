@@ -7,10 +7,10 @@ import {
   Form,
   Typography,
 } from "fidesui";
-import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
+import type { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useState } from "react";
 
-import { ManualProcessingDetailProps } from "./types";
+import type { ManualProcessingDetailProps } from "./types";
 
 const ManualErasureProcessingDetail = ({
   connectorName,

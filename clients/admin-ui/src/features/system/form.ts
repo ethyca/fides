@@ -1,9 +1,9 @@
-import {
+import type {
   CustomFieldsFormValues,
   CustomFieldValues,
 } from "~/features/common/custom-fields";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { SystemSchemaExtended } from "~/types/api";
+import type { SystemSchemaExtended } from "~/types/api";
 import type { UserResponse } from "~/types/api/models/UserResponse";
 
 type SystemWithDataStewards = SystemSchemaExtended & {

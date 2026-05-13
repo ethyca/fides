@@ -2,7 +2,7 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { DataUse } from "~/types/api";
+import type { DataUse } from "~/types/api";
 
 const dataUseApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -55,7 +55,7 @@ export const {
   useDeleteDataUseMutation,
 } = dataUseApi;
 
-export interface State {}
+export type State = {};
 const initialState: State = {};
 
 export const dataUseSlice = createSlice({

@@ -6,10 +6,10 @@ import { useFeatures } from "~/features/common/features";
 import { formatUser } from "~/features/common/utils";
 import { useGetTasksQuery } from "~/features/manual-tasks/manual-tasks.slice";
 import {
-  ActivityTimelineItem,
+  type ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
 } from "~/features/privacy-requests/types";
-import { ManualFieldListItem, ManualFieldStatus } from "~/types/api";
+import { type ManualFieldListItem, ManualFieldStatus } from "~/types/api";
 
 export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
   const { plus: isPlusEnabled } = useFeatures();

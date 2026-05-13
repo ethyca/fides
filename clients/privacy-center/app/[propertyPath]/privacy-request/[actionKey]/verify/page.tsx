@@ -7,7 +7,7 @@ import {
 import { AuthFormLayout } from "~/components/common/AuthFormLayout";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import VerificationPage from "~/components/privacy-request/VerificationPage";
-import { NextSearchParams } from "~/types/next";
+import type { NextSearchParams } from "~/types/next";
 
 export const generateMetadata = getPageMetadata;
 

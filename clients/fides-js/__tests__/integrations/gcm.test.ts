@@ -1,9 +1,9 @@
-import { FidesGlobal } from "../../src/fides";
+import type { FidesGlobal } from "../../src/fides";
 import { gcm } from "../../src/integrations/gcm";
 
 // Mock fidesDebugger global
 /* eslint-disable */
-// @ts-ignore
+// @ts-expect-error
 globalThis.fidesDebugger = jest.fn();
 /* eslint-enable */
 

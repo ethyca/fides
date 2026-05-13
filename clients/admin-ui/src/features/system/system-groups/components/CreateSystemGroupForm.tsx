@@ -12,9 +12,9 @@ import ColorSelect from "~/features/system/system-groups/components/ColorSelect"
 import DataUseSelectWithSuggestions from "~/features/system/system-groups/components/DataUseSelectWithSuggestions";
 import {
   CustomTaxonomyColor,
-  DataUse,
-  SystemGroupCreate,
-  SystemResponse,
+  type DataUse,
+  type SystemGroupCreate,
+  type SystemResponse,
 } from "~/types/api";
 
 interface CreateSystemGroupFormProps {

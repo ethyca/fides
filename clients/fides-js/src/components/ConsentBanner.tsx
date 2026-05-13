@@ -1,14 +1,14 @@
-import { ComponentChildren, FunctionComponent, VNode } from "preact";
-import { HTMLAttributes } from "preact/compat";
+import type { ComponentChildren, FunctionComponent, VNode } from "preact";
+import type { HTMLAttributes } from "preact/compat";
 import { useEffect } from "preact/hooks";
 
-import { A11yDialogAttributes } from "~/lib/a11y-dialog";
+import type { A11yDialogAttributes } from "~/lib/a11y-dialog";
 
 import { getGpcContext } from "../lib/consent-context";
 import {
   GpcStatus,
-  PrivacyExperience,
-  PrivacyNoticeWithPreference,
+  type PrivacyExperience,
+  type PrivacyNoticeWithPreference,
 } from "../lib/consent-types";
 import { FidesEventTargetType } from "../lib/events";
 import { processGpcConditionals } from "../lib/gpc-utils";
@@ -87,9 +87,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   let privacyNotices: PrivacyNoticeWithPreference[] | undefined = [];
 
   if (
-    !!(window.Fides?.experience as PrivacyExperience)?.experience_config
+    (window.Fides?.experience as PrivacyExperience)?.experience_config
       ?.show_layer1_notices &&
-    !!(window.Fides?.experience as PrivacyExperience)?.privacy_notices
+    (window.Fides?.experience as PrivacyExperience)?.privacy_notices
   ) {
     privacyNotices = (window.Fides?.experience as PrivacyExperience)
       ?.privacy_notices;

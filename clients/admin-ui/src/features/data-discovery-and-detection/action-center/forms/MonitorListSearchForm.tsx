@@ -5,11 +5,11 @@ import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import SearchInput from "~/features/common/SearchInput";
 import { formatUser } from "~/features/common/utils";
-import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
+import type useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
-import { MonitorSearchForm } from "../MonitorList.const";
+import type { MonitorSearchForm } from "../MonitorList.const";
 
 const MONITOR_FILTER_LABEL: Record<APIMonitorType, string> = {
   [APIMonitorType.DATASTORE]: "Data store monitors",

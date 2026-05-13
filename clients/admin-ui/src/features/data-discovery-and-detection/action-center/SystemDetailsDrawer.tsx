@@ -94,7 +94,7 @@ export const SystemDetailsDrawer = ({
               label: "Data uses",
               span: "filled",
               children:
-                !!resourceDetails &&
+                resourceDetails &&
                 resourceDetails?.urn === stagedResourceUrn &&
                 !isLoading ? (
                   <SystemDataUsesForm

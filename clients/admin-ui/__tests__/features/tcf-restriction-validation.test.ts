@@ -1,10 +1,10 @@
 import {
-  RangeEntry,
+  type RangeEntry,
   TCFRestrictionType,
   TCFVendorRestriction,
 } from "~/types/api";
 
-import {
+import type {
   FormValues,
   PurposeRestriction,
 } from "../../src/features/consent-settings/tcf/types";

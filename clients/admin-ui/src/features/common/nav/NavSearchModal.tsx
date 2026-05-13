@@ -1,15 +1,14 @@
-import { Icons, Input, InputRef, Modal } from "fidesui";
+import { Icons, Input, type InputRef, Modal } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { pluralize } from "~/features/common/utils";
-
-import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
+import type { NavGroup } from "./nav-config";
 import { RouterLink } from "./RouterLink";
 import useNavSearchItems, {
+  type FlatNavItem,
   filterAndRankNavItems,
-  FlatNavItem,
 } from "./useNavSearchItems";
 
 const SEARCH_ICON_STYLE = {

@@ -1,14 +1,14 @@
 import { useCallback, useRef } from "preact/hooks";
 
-import {
+import type {
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
-import { FidesEventDetailsPreference } from "../../lib/events";
+import type { FidesEventDetailsPreference } from "../../lib/events";
 import { FetchState } from "../../lib/hooks";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { PAGE_SIZE } from "../../lib/paging";
-import {
+import type {
   EnabledIds,
   PrivacyNoticeWithBestTranslation,
 } from "../../lib/tcf/types";

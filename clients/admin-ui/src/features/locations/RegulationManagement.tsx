@@ -1,11 +1,11 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraSimpleGrid as SimpleGrid,
-  ChakraVStack as VStack,
   useMessage,
   useModal,
   useNotification,
+  ChakraVStack as VStack,
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
@@ -15,7 +15,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
 import SearchInput from "~/features/common/SearchInput";
 import ToastLink from "~/features/common/ToastLink";
-import {
+import type {
   LocationRegulationBase,
   LocationRegulationResponse,
   Selection,

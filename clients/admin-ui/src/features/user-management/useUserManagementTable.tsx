@@ -1,4 +1,4 @@
-import { Button, ColumnsType, Flex, Icons, Tag } from "fidesui";
+import { Button, type ColumnsType, Flex, Icons, Tag } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -16,7 +16,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import { ROLES } from "./constants";
 import DeleteUserModal from "./DeleteUserModal";
-import { User } from "./types";
+import type { User } from "./types";
 import {
   useGetAllUsersQuery,
   useGetUserManagedSystemsQuery,

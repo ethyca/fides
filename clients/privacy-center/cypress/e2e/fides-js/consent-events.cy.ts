@@ -71,7 +71,7 @@ describe("Consent FidesEvents", () => {
       // Load the banner_and_modal experience
       const fixture = "experience_banner_modal.json";
       cy.fixture(`consent/${fixture}`).then((data) => {
-        let experience = data.items[0];
+        const experience = data.items[0];
         stubConfig({ experience });
       });
     });
@@ -782,7 +782,7 @@ describe("Consent FidesEvents", () => {
       // Load the banner_and_modal experience
       const fixture = "experience_banner_modal.json";
       cy.fixture(`consent/${fixture}`).then((data) => {
-        let experience = data.items[0];
+        const experience = data.items[0];
 
         // Add non-applicable privacy notices
         experience.non_applicable_privacy_notices = [

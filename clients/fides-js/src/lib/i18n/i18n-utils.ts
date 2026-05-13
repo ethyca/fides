@@ -1,15 +1,15 @@
 import {
   ComponentType,
-  ExperienceConfig,
-  ExperienceConfigMinimal,
-  ExperienceConfigTranslation,
-  FidesInitOptions,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  PrivacyNotice,
-  PrivacyNoticeTranslation,
+  type ExperienceConfig,
+  type ExperienceConfigMinimal,
+  type ExperienceConfigTranslation,
+  type FidesInitOptions,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
+  type PrivacyNotice,
+  type PrivacyNoticeTranslation,
 } from "../consent-types";
-import { GVLTranslations } from "../tcf/types";
+import type { GVLTranslations } from "../tcf/types";
 import {
   DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
@@ -591,7 +591,7 @@ export function initializeI18n(
   // loaded in the background.
   if (
     experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
-    !!experience.gvl
+    experience.gvl
   ) {
     loadGVLMessagesFromExperience(i18n, experience);
   }

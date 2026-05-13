@@ -4,7 +4,7 @@ import {
   FieldTypes,
   TAXONOMY_FIELD_TYPE_LABEL_MAP,
 } from "~/features/custom-fields/constants";
-import { CustomFieldDefinitionWithId } from "~/types/api";
+import type { CustomFieldDefinitionWithId } from "~/types/api";
 
 export const getCustomFieldType = (
   value: CustomFieldDefinitionWithId,

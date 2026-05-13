@@ -3,8 +3,8 @@ import {
   parseAsBoolean,
   parseAsString,
   parseAsStringLiteral,
-  UseQueryStatesKeysMap,
-  Values,
+  type UseQueryStatesKeysMap,
+  type Values,
 } from "nuqs";
 import * as v from "valibot";
 

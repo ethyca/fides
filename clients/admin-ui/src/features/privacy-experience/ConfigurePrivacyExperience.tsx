@@ -23,7 +23,7 @@ import { useGetConfigurationSettingsQuery } from "~/features/config-settings/con
 import {
   findLanguageDisplayName,
   removeUncommittedTranslation,
-  TranslationWithLanguageName,
+  type TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
 import { useExperienceForm } from "~/features/privacy-experience/form/useExperienceForm";
 import {
@@ -32,20 +32,20 @@ import {
   selectPageSize as selectLanguagePageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
-import Preview from "~/features/privacy-experience/preview/Preview";
-import {
-  usePatchExperienceConfigMutation,
-  usePostExperienceConfigMutation,
-} from "~/features/privacy-experience/privacy-experience.slice";
 import {
   PrivacyExperienceForm,
   TCF_PLACEHOLDER_ID,
 } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm, {
-  TranslationFormHandle,
+  type TranslationFormHandle,
 } from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
-import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
+import Preview from "~/features/privacy-experience/preview/Preview";
 import {
+  usePatchExperienceConfigMutation,
+  usePostExperienceConfigMutation,
+} from "~/features/privacy-experience/privacy-experience.slice";
+import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
+import type {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
@@ -377,7 +377,7 @@ const ConfigurePrivacyExperience = ({
                 type="primary"
                 data-testid="translation-save-btn"
               >
-                {!!translationToEdit?.title && !usingOOBValues
+                {translationToEdit?.title && !usingOOBValues
                   ? "Done"
                   : "Add translation"}
               </Button>

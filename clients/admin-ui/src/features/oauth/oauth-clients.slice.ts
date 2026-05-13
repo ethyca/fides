@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   ClientCreatedResponse,
   ClientResponse,
   ClientSecretRotateResponse,

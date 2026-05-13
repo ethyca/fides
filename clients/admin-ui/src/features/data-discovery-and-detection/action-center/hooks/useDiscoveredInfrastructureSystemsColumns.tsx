@@ -1,7 +1,7 @@
-import { ColumnsType } from "fidesui";
+import type { ColumnsType } from "fidesui";
 import { useMemo } from "react";
 
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
+import type { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import { isIdentityProviderColumns } from "../utils/columnBuilders";
 

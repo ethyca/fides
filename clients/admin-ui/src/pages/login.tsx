@@ -14,7 +14,7 @@ import {
 import { motion } from "motion/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { ParsedUrlQuery } from "querystring";
+import type { ParsedUrlQuery } from "querystring";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -30,7 +30,7 @@ import { passwordRules as strongPasswordRules } from "~/features/common/form/val
 import { getErrorMessage } from "~/features/common/helpers";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
   const validPathRegex = /^\/[\w/-]*$/;

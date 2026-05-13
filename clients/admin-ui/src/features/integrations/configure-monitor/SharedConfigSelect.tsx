@@ -1,4 +1,4 @@
-import { Form, FormItemProps, Select, SelectProps } from "fidesui";
+import { Form, type FormItemProps, Select, type SelectProps } from "fidesui";
 
 import {} from "~/features/common/form/ControlledSelect";
 import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";

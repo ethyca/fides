@@ -1,22 +1,22 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Button,
-  ButtonProps,
+  type ButtonProps,
   Collapse,
   Flex,
   Result,
   Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorImage from "~/features/common/errors/ErrorImage";
 import {
   getErrorMessage,
   isFetchBaseQueryError,
-  ParsedError,
+  type ParsedError,
 } from "~/features/common/helpers";
 
 type ActionProps = Omit<ButtonProps, "children"> & { label: ReactNode };
@@ -43,10 +43,10 @@ const ErrorPage = ({
     ? getErrorMessage(error, resolvedDefault)
     : ("message" in error && error.message) || resolvedDefault;
   const dataString =
-    "data" in error && !!error.data
+    "data" in error && error.data
       ? JSON.stringify(error.data)
       : JSON.stringify(error);
-  const status = "status" in error && !!error.status ? error.status : undefined;
+  const status = "status" in error && error.status ? error.status : undefined;
 
   const router = useRouter();
 

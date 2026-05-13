@@ -1,16 +1,15 @@
 import { Flex, Select, TreeSelect, Typography } from "fidesui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import {
   useGetAllFilteredDatasetsQuery,
   useGetDatasetByKeyQuery,
 } from "~/features/dataset/dataset.slice";
-import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
-import { DatasetCollection } from "~/types/api";
+import type { DatasetCollection } from "~/types/api";
 
 import {
   DATASET_REFERENCE_SEPARATOR,
-  DatasetTreeNode,
+  type DatasetTreeNode,
   parseFieldReference,
   transformFieldsToTreeNodes,
 } from "./utils";

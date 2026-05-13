@@ -12,7 +12,7 @@ import { AttributionLink } from "~/components/AttributionLink";
 import HomePage from "~/components/HomePage";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
-import { NextSearchParams } from "~/types/next";
+import type { NextSearchParams } from "~/types/next";
 
 import Custom404 from "../not-found";
 import {

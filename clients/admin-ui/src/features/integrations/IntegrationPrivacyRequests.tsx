@@ -1,6 +1,6 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Flex,
   Input,
   List,
@@ -26,9 +26,9 @@ import {
   usePutDatasetConfigsMutation,
 } from "~/features/datastore-connections";
 import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-  Dataset,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
+  type Dataset,
   SystemType,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";

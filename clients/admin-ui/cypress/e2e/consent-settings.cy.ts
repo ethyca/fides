@@ -5,6 +5,7 @@ import {
   FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS,
   RESTRICTION_TYPE_LABELS,
 } from "~/features/consent-settings/tcf/constants";
+
 describe("Consent settings", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/plus/tcf/purpose_overrides", { body: [] });

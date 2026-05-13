@@ -1,18 +1,23 @@
-import { CmpApi, SignalStatus, TcfEuV2, TcfEuV2Field } from "@iabgpp/cmpapi";
+import {
+  type CmpApi,
+  SignalStatus,
+  TcfEuV2,
+  type TcfEuV2Field,
+} from "@iabgpp/cmpapi";
 
 import {
   ComponentType,
   ConsentMechanism,
-  FidesCookie,
-  NoticeConsent,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
+  type FidesCookie,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
 } from "../consent-types";
-import { DecodedFidesString, decodeFidesString } from "../fides-string";
+import { type DecodedFidesString, decodeFidesString } from "../fides-string";
 import { areLocalesEqual } from "../i18n/i18n-utils";
 import { updateConsent } from "../preferences";
 import { EMPTY_ENABLED_IDS } from "../tcf/constants";
-import { EnabledIds, TcfSavePreferences } from "../tcf/types";
+import type { EnabledIds, TcfSavePreferences } from "../tcf/types";
 import {
   createTcfSavePayload,
   createTcfSavePayloadFromMinExp,

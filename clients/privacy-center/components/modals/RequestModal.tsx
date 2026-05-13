@@ -3,7 +3,7 @@ import {
   ChakraModalContent as ModalContent,
   ChakraModalOverlay as ModalOverlay,
 } from "fidesui";
-import React from "react";
+import type React from "react";
 
 type RequestModalProps = {
   isOpen: boolean;

@@ -34,12 +34,12 @@ import { useIntegrationPropertySelect } from "~/features/properties/useIntegrati
 import { useGetSystemsQuery } from "~/features/system";
 import {
   AccessLevel,
-  BigQueryDocsSchema,
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
+  type BigQueryDocsSchema,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
   ConnectionType,
-  DynamoDBDocsSchema,
-  ScyllaDocsSchema,
+  type DynamoDBDocsSchema,
+  type ScyllaDocsSchema,
   SystemType,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";

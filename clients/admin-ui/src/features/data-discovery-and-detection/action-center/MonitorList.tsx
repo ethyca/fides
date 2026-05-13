@@ -16,7 +16,7 @@ import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import MonitorListSearchForm from "./forms/MonitorListSearchForm";
 import {
-  MonitorSearchForm,
+  type MonitorSearchForm,
   MonitorSearchFormQuerySchema,
   SearchFormQueryState,
 } from "./MonitorList.const";
@@ -97,7 +97,7 @@ const MonitorList = () => {
 
   const results =
     data?.items?.flatMap((monitor) =>
-      !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
+      monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
 
   return (

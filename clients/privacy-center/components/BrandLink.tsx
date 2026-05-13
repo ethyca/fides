@@ -1,6 +1,6 @@
 import {
   ChakraLink as Link,
-  ChakraLinkProps as LinkProps,
+  type ChakraLinkProps as LinkProps,
   Space,
 } from "fidesui";
 

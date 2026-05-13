@@ -4,15 +4,18 @@ import {
   ChakraButton as Button,
   ChakraLink as Link,
   ChakraText as Text,
-  ChakraVStack as VStack,
   useMessage,
+  ChakraVStack as VStack,
 } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import { useGetConnectionConfigDatasetConfigsQuery } from "~/features/datastore-connections";
 import { useSyncDatahubConnectionMutation } from "~/features/plus/plus.slice";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import {
+  type ConnectionConfigurationResponse,
+  ConnectionType,
+} from "~/types/api";
 
 const DATAHUB_COPY_1 = `If you're using DataHub for metadata management, select sync datasets to push data categories from Fides to your DataHub datasets.`;
 

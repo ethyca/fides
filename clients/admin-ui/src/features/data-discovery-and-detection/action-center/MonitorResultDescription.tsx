@@ -7,7 +7,7 @@ import {
   MONITOR_UPDATE_ORDER,
   MONITOR_UPDATES_TO_IGNORE,
 } from "./constants";
-import { MonitorUpdates } from "./types";
+import type { MonitorUpdates } from "./types";
 
 type MonitorUpdateKey = keyof MonitorUpdates;
 

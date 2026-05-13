@@ -1,5 +1,5 @@
-import { Form, FormItemProps, Select } from "fidesui";
-import { ComponentProps, useState } from "react";
+import { Form, type FormItemProps, Select } from "fidesui";
+import { type ComponentProps, useState } from "react";
 
 export type FormikSelectProps = ComponentProps<typeof Select> &
   Pick<
@@ -56,7 +56,7 @@ export const FormikSelect = ({
 
   return (
     <Form.Item
-      validateStatus={touched && !!error ? "error" : undefined}
+      validateStatus={touched && error ? "error" : undefined}
       help={touched && error}
       hasFeedback={touched && !!error}
       required={required}

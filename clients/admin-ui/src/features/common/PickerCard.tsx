@@ -1,13 +1,13 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraCheckbox as Checkbox,
   ChakraCheckboxGroup as CheckboxGroup,
   ChakraFlex as Flex,
-  ChakraVStack as VStack,
   Tag,
+  ChakraVStack as VStack,
 } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { usePicker } from "~/features/common/hooks/usePicker";
 

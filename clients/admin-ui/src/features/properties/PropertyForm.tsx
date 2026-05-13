@@ -8,9 +8,9 @@ import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import {
-  MinimalMessagingTemplate,
-  MinimalPrivacyExperienceConfig,
-  Property,
+  type MinimalMessagingTemplate,
+  type MinimalPrivacyExperienceConfig,
+  type Property,
   PropertyType,
 } from "~/types/api";
 

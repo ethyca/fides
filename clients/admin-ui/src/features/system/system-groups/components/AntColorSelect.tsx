@@ -1,5 +1,5 @@
-import { Select, SelectProps } from "fidesui";
-import { HTMLAttributes } from "react";
+import { Select, type SelectProps } from "fidesui";
+import type { HTMLAttributes } from "react";
 
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
 import { CustomTaxonomyColor } from "~/types/api";

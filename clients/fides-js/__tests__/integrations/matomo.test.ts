@@ -1,9 +1,9 @@
-import { FidesGlobal } from "../../src/fides";
+import type { FidesGlobal } from "../../src/fides";
 import { matomo } from "../../src/integrations/matomo";
 
 // Mock fidesDebugger global
 /* eslint-disable */
-// @ts-ignore
+// @ts-expect-error
 globalThis.fidesDebugger = jest.fn();
 /* eslint-enable */
 

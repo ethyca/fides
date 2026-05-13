@@ -1,4 +1,4 @@
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 import { ApplicationStatus } from "~/types/api/models/ApplicationStatus";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 

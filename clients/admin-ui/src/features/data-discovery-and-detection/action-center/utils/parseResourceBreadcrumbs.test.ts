@@ -3,7 +3,7 @@ import { StagedResourceTypeValue } from "~/types/api";
 import { MAP_DATASTORE_RESOURCE_TYPE_TO_ICON } from "../fields/MonitorFields.const";
 import {
   parseResourceBreadcrumbs,
-  UrnBreadcrumbItem,
+  type UrnBreadcrumbItem,
 } from "./parseResourceBreadcrumbs";
 
 describe(parseResourceBreadcrumbs.name, () => {

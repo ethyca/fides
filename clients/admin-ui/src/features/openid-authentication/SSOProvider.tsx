@@ -1,9 +1,9 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
+  ConfirmationModal,
   ChakraImage as Image,
   ChakraText as Text,
-  ConfirmationModal,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -11,7 +11,7 @@ import {
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import EditSSOProviderModal from "~/features/openid-authentication/EditSSOProviderModal";
 import { useDeleteOpenIDProviderMutation } from "~/features/openid-authentication/openprovider.slice";
-import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
+import type { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
 const SSOProvider = ({
   openIDProvider,

@@ -1,5 +1,5 @@
-import { Node, NodeProps } from "@xyflow/react";
-import { Input, InputRef, Spin } from "fidesui";
+import type { Node, NodeProps } from "@xyflow/react";
+import { Input, type InputRef, Spin } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import useCenterScreenOnNode from "../hooks/useCenterScreenOnNode";

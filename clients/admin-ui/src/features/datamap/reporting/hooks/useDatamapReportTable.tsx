@@ -1,15 +1,15 @@
-import { ColumnsType, Form } from "fidesui";
+import { type ColumnsType, Form } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomReportColumn } from "~/features/common/custom-reports/types";
+import type { CustomReportColumn } from "~/features/common/custom-reports/types";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useAntTable } from "~/features/common/table/hooks/useAntTable";
 import { useTableState } from "~/features/common/table/hooks/useTableState";
 import { getQueryParamsFromArray } from "~/features/common/utils";
-import { ExportFormat } from "~/features/datamap/constants";
+import type { ExportFormat } from "~/features/datamap/constants";
 import {
   useExportMinimalDatamapReportMutation,
   useGetMinimalDatamapReportQuery,
@@ -21,15 +21,15 @@ import {
 } from "~/features/plus/plus.slice";
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import {
-  DATAMAP_GROUPING,
-  Page_DatamapReport_,
+  type DATAMAP_GROUPING,
+  type Page_DatamapReport_,
   ScopeRegistryEnum,
 } from "~/types/api";
 
 import { DATAMAP_LOCAL_STORAGE_KEYS, DEFAULT_COLUMN_NAMES } from "../constants";
-import { useDatamapReport } from "../datamap-report-context";
 import { getDatamapReportColumns } from "../DatamapReportTableColumns";
-import { DatamapReportRow, groupDatamapRows } from "../groupDatamapRows";
+import { useDatamapReport } from "../datamap-report-context";
+import { type DatamapReportRow, groupDatamapRows } from "../groupDatamapRows";
 import { getColKey, getColumnOrder, getPrefixColumns } from "../utils";
 
 const emptyResponse: Page_DatamapReport_ = {

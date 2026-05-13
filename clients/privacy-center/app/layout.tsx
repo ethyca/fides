@@ -12,7 +12,7 @@
 
 import "./ui/global.scss";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import Providers from "~/components/Providers";
 

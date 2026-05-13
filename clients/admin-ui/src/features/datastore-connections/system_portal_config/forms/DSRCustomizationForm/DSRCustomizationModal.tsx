@@ -3,7 +3,7 @@ import {
   useGetAccessManualHookQuery,
   usePatchAccessManualWebhookMutation,
 } from "datastore-connections/datastore-connection.slice";
-import {
+import type {
   CreateAccessManualWebhookRequest,
   PatchAccessManualWebhookRequest,
 } from "datastore-connections/types";
@@ -11,10 +11,10 @@ import { Button, Flex, Modal, Text, Tooltip, useMessage } from "fidesui";
 import React, { useState } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 
 import { DSRCustomizationForm } from "./DSRCustomizationForm";
-import { Field } from "./types";
+import type { Field } from "./types";
 
 type Props = {
   connectionConfig?: ConnectionConfigurationResponse | null;

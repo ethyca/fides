@@ -1,4 +1,4 @@
-import { FidesOverrideValidatorMap } from "./consent-types";
+import type { FidesOverrideValidatorMap } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 import { parseCommaSeparatedString } from "./shared-consent-utils";
 

@@ -1,7 +1,7 @@
 import { useMessage } from "fidesui";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { DiffStatus } from "~/types/api/models/DiffStatus";
+import type { DiffStatus } from "~/types/api/models/DiffStatus";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
@@ -9,8 +9,8 @@ import {
   ACTIONS_DISABLED_MESSAGE,
   FIELD_ACTION_HOTKEYS,
 } from "./FieldActions.const";
-import { MonitorResource } from "./types";
-import { useFieldActions } from "./useFieldActions";
+import type { MonitorResource } from "./types";
+import type { useFieldActions } from "./useFieldActions";
 
 // DOM selectors for category select components
 const SELECTORS = {

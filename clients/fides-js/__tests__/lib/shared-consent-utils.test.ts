@@ -1,7 +1,7 @@
 import {
   ConsentMechanism,
-  NoticeConsent,
-  PrivacyNotice,
+  type NoticeConsent,
+  type PrivacyNotice,
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";

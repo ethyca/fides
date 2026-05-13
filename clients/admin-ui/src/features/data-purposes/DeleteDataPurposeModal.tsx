@@ -4,11 +4,11 @@ import React from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import Restrict from "~/features/common/Restrict";
 import {
-  DataPurpose,
+  type DataPurpose,
   useDeleteDataPurposeMutation,
 } from "~/features/data-purposes/data-purpose.slice";
 import { ScopeRegistryEnum } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 interface Props {
   purpose: DataPurpose;

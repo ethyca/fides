@@ -3,8 +3,8 @@ import { useMessage } from "fidesui";
 import { getErrorMessage } from "~/features/common/helpers";
 import { formatDate } from "~/features/common/utils";
 import { useLazyGetDatastoreConnectionStatusQuery } from "~/features/datastore-connections/datastore-connection.slice";
-import { ConnectionStatusData } from "~/features/integrations/ConnectionStatusNotice";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionStatusData } from "~/features/integrations/ConnectionStatusNotice";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 
 const useTestConnection = (
   integration: ConnectionConfigurationResponse | undefined,

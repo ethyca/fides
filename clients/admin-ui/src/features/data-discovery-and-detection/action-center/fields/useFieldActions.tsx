@@ -13,9 +13,9 @@ import {
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { DiffStatus, Field } from "~/types/api";
+import type { DiffStatus, Field } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
-import { isErrorResult, RTKResult } from "~/types/errors";
+import { isErrorResult, type RTKResult } from "~/types/errors";
 
 import {
   ACTION_ALLOWED_STATUSES,

@@ -2,7 +2,7 @@ import { forwardRef } from "@chakra-ui/react";
 import { ChakraLink as Link } from "fidesui";
 import React from "react";
 
-import { LinkProps } from "./types";
+import type { LinkProps } from "./types";
 
 const defaultProps: LinkProps = {
   color: "gray.700",

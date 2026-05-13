@@ -1,4 +1,4 @@
-import { Button, ChakraText as Text, Flex, useMessage } from "fidesui";
+import { Button, Flex, ChakraText as Text, useMessage } from "fidesui";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 
@@ -16,7 +16,7 @@ import {
   useUpdateSystemAssetsMutation,
 } from "~/features/system/system-assets.slice";
 import WrappedDataUseSelect from "~/features/system/tabs/system-assets/WrappedDataUseSelect";
-import { Asset } from "~/types/api";
+import type { Asset } from "~/types/api";
 
 interface AddEditAssetModalProps {
   isOpen: boolean;

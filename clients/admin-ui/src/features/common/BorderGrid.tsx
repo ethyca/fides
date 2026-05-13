@@ -1,6 +1,6 @@
 import { ChakraBox as Box, ChakraSimpleGrid as SimpleGrid } from "fidesui";
 import { chunk } from "lodash";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import classes from "./BorderGrid.module.css";
 
@@ -9,11 +9,7 @@ interface Props<T> {
   items: T[];
   renderItem: (item: T) => ReactNode;
 }
-const BorderGrid = <T extends unknown>({
-  columns,
-  items,
-  renderItem,
-}: Props<T>) => {
+const BorderGrid = <T,>({ columns, items, renderItem }: Props<T>) => {
   const chunks = chunk(items, columns);
 
   return (

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAPIHelper } from "~/features/common/hooks";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { ConditionLeaf } from "~/types/api";
+import type { ConditionLeaf } from "~/types/api";
 
 import AddConditionForm from "./AddConditionForm";
 

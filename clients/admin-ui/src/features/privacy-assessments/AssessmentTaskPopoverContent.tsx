@@ -2,7 +2,7 @@ import { Descriptions, Flex, Progress, Space, Spin, Tag, Text } from "fidesui";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 
-import { AssessmentTaskResponse, TaskStatus } from "./types";
+import { type AssessmentTaskResponse, TaskStatus } from "./types";
 import { formatSystems, formatTypes } from "./utils";
 
 interface AssessmentTaskPopoverContentProps {

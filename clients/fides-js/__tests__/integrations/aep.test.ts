@@ -1,4 +1,4 @@
-import { FidesGlobal } from "../../src/fides";
+import type { FidesGlobal } from "../../src/fides";
 import { aep } from "../../src/integrations/aep";
 
 // Mock fidesDebugger global

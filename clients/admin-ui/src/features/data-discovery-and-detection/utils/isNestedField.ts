@@ -1,4 +1,4 @@
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import type { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
 /**
  * Helper method to determine whether a resource is a "top-level" field.

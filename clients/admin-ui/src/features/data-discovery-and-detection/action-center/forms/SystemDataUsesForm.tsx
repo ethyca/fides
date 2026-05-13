@@ -2,7 +2,7 @@ import { Form, useMessage } from "fidesui";
 
 import {
   TaxonomySelect,
-  TaxonomySelectOption,
+  type TaxonomySelectOption,
 } from "~/features/common/dropdown/TaxonomySelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";

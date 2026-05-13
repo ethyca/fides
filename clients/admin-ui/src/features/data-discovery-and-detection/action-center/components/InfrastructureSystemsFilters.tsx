@@ -1,4 +1,4 @@
-import { Button, DisplayValueType, Flex, Select, Tooltip } from "fidesui";
+import { Button, type DisplayValueType, Flex, Select, Tooltip } from "fidesui";
 import { useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -10,7 +10,7 @@ import {
 import { DiffStatus } from "~/types/api";
 
 import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
-import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
+import type { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 
 interface InfrastructureSystemsFiltersProps
   extends ReturnType<typeof useInfrastructureSystemsFilters> {

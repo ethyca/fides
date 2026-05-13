@@ -1,8 +1,11 @@
 import { baseApi } from "~/features/common/api.slice";
-import { ConfigMessagingSecretsRequest } from "~/features/privacy-requests/types";
-import { Page_MessagingConfigResponse_ } from "~/types/api";
+import type { ConfigMessagingSecretsRequest } from "~/features/privacy-requests/types";
+import type { Page_MessagingConfigResponse_ } from "~/types/api";
 
-import { ConfigMessagingDetailsRequest, ConfigMessagingRequest } from "./types";
+import type {
+  ConfigMessagingDetailsRequest,
+  ConfigMessagingRequest,
+} from "./types";
 
 export type UserEmailInviteStatus = {
   enabled: boolean;

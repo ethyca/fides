@@ -1,13 +1,13 @@
 import {
   ConsentMechanism,
   EnforcementLevel,
-  FidesCookie,
-  PrivacyNotice,
-  PrivacyNoticeTranslation,
+  type FidesCookie,
+  type PrivacyNotice,
+  type PrivacyNoticeTranslation,
   UserConsentPreference,
 } from "fides-js";
 
-import {
+import type {
   EmbeddedVendor,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,

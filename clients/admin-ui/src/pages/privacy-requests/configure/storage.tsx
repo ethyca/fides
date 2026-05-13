@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 
 import StorageConfiguration from "~/features/privacy-requests/configuration/StorageConfiguration";
 

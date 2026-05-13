@@ -4,8 +4,8 @@ import type { NextPage } from "next";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { useGetAllDataConsumersQuery } from "~/features/data-consumers/data-consumer.slice";
 import DataConsumersTable from "~/features/data-consumers/DataConsumersTable";
+import { useGetAllDataConsumersQuery } from "~/features/data-consumers/data-consumer.slice";
 
 const DataConsumersPage: NextPage = () => {
   const { error } = useGetAllDataConsumersQuery({});

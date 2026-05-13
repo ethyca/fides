@@ -1,4 +1,4 @@
-import { FilterValue } from "fidesui";
+import type { FilterValue } from "fidesui";
 import { parseAsJson, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { decodePolicyKey } from "~/common/policy-key";
 import { useConfig } from "~/features/common/config.slice";
-import { PrivacyRequestOption } from "~/types/config";
+import type { PrivacyRequestOption } from "~/types/config";
 
 /**
  * Looks up a PrivacyRequestOption from the config based on an encoded action key

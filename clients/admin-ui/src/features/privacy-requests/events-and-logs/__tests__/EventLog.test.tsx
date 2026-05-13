@@ -1,10 +1,10 @@
 import { fireEvent, screen } from "@testing-library/react";
-import React from "react";
+import type React from "react";
 
 import { render } from "~/../__tests__/utils/test-utils";
 import EventLog from "~/features/privacy-requests/events-and-logs/EventLog";
 import {
-  ExecutionLog,
+  type ExecutionLog,
   ExecutionLogStatus,
 } from "~/features/privacy-requests/types";
 import { ActionType } from "~/types/api";

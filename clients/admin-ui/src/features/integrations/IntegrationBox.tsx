@@ -1,14 +1,14 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
-  ChakraText as Text,
-  ChakraWrap as Wrap,
   Icons,
   Tag,
+  ChakraText as Text,
   Tooltip,
+  ChakraWrap as Wrap,
 } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { useConnectionLogo } from "~/features/common/hooks";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
@@ -16,15 +16,18 @@ import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeL
 import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnectionModal";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo, {
-  IntegrationTypeInfo,
+  type IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import { useJiraAuthorization } from "~/features/integrations/hooks/useJiraAuthorization";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import {
+  type ConnectionConfigurationResponse,
+  ConnectionType,
+} from "~/types/api";
 
 const IntegrationBox = ({
   integration,

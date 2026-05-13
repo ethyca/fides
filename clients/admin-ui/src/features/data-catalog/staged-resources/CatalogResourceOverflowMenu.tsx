@@ -1,4 +1,4 @@
-import { Button, Dropdown, Icons, MenuProps } from "fidesui";
+import { Button, Dropdown, Icons, type MenuProps } from "fidesui";
 import { useMemo } from "react";
 
 const CatalogResourceOverflowMenu = ({

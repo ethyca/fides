@@ -1,5 +1,5 @@
 import type { Option } from "common/form/inputs";
-import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
+import type { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchDatastoreConnectionsMutation,
@@ -18,7 +18,7 @@ import {
 } from "fidesui";
 import _ from "lodash";
 import React, { useEffect, useMemo } from "react";
-import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
+import type { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
@@ -30,13 +30,13 @@ import {
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import { useIntegrationPropertySelect } from "~/features/properties/useIntegrationPropertySelect";
 import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
   ConnectionType,
   SystemType,
 } from "~/types/api";
 
-import { ConnectionConfigFormValues } from "../types";
+import type { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
 
 export interface TestConnectionResponse {

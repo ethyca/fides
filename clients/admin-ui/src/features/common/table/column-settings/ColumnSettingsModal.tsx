@@ -5,7 +5,7 @@ import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
 import { getColumnHeaderText } from "../v2/util";
 import {
-  DraggableColumn,
+  type DraggableColumn,
   DraggableColumnList,
   useEditableColumns,
 } from "./DraggableColumnList";

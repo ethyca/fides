@@ -1,4 +1,4 @@
-import { RTKErrorResult } from "~/types/errors";
+import type { RTKErrorResult } from "~/types/errors";
 
 export interface TreeNode {
   label: string;

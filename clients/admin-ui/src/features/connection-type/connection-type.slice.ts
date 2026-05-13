@@ -1,8 +1,12 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 import { CONNECTION_TYPE_ROUTE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   Page_ConnectionSystemTypeMap_,
@@ -10,7 +14,7 @@ import {
 } from "~/types/api";
 
 import type { RootState } from "../../app/store";
-import {
+import type {
   ConnectionTypeParams,
   ConnectionTypeSecretSchemaResponse,
   ConnectionTypeState,

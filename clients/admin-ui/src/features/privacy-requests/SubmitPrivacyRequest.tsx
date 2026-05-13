@@ -16,7 +16,7 @@ import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { usePostPrivacyRequestMutation } from "~/features/privacy-requests/privacy-requests.slice";
 import SubmitPrivacyRequestForm, {
   CopyPrivacyRequestLinkForm,
-  PrivacyRequestSubmitFormValues,
+  type PrivacyRequestSubmitFormValues,
 } from "~/features/privacy-requests/SubmitPrivacyRequestForm";
 import { isErrorResult } from "~/types/errors";
 

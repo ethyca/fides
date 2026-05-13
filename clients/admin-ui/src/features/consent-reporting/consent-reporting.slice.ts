@@ -1,11 +1,14 @@
-import { Dayjs } from "dayjs";
+import type { Dayjs } from "dayjs";
 
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   ConditionalTotalPage_ConsentReportingSchema_,
   PreferencesSavedExtended,
 } from "~/types/api";
-import { DateRangeParams, PaginationQueryParams } from "~/types/query-params";
+import type {
+  DateRangeParams,
+  PaginationQueryParams,
+} from "~/types/query-params";
 
 const startOfDayIso = (date?: Dayjs | null) =>
   date?.startOf("day")?.utc()?.toISOString();

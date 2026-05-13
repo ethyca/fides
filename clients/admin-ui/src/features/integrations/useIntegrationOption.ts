@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import { ConnectionType } from "~/types/api/models/ConnectionType";
 
 const useIntegrationOption = (

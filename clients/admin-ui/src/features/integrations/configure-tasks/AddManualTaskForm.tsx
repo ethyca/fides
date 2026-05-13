@@ -2,7 +2,7 @@ import {
   Button,
   ChakraFlex as Flex,
   Form,
-  FormInstance,
+  type FormInstance,
   Icons,
   Input,
   Select,
@@ -13,7 +13,7 @@ import React, { useEffect } from "react";
 import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
 
 import { FIELD_TYPE_LABELS, REQUEST_TYPE_LABELS } from "./constants";
-import { Task } from "./types";
+import type { Task } from "./types";
 
 type Props = {
   isSubmitting: boolean;

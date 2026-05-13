@@ -1,6 +1,6 @@
 import { cloneDeep } from "lodash";
 
-import {
+import type {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
 } from "~/features/connection-type/types";

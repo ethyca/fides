@@ -1,21 +1,21 @@
 import {
-  Button,
   ChakraAccordion as Accordion,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
+  Button,
   ChakraCheckbox as Checkbox,
-  ChakraSimpleGrid as SimpleGrid,
   Flex,
   Modal,
+  ChakraSimpleGrid as SimpleGrid,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { usePicker } from "~/features/common/hooks/usePicker";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { Location, LocationGroup } from "~/types/api";
+import type { Location, LocationGroup } from "~/types/api";
 
 import { HeaderCheckboxRow } from "./modal";
 import RegulatedToggle from "./RegulatedToggle";

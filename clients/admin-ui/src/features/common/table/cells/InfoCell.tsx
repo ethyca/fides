@@ -1,5 +1,5 @@
 import { Flex } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 

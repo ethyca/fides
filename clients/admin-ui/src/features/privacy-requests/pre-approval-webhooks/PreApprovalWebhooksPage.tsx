@@ -20,7 +20,7 @@ import {
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections/datastore-connection.slice";
-import { PreApprovalWebhookResponse } from "~/types/api";
+import type { PreApprovalWebhookResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import {

@@ -1,5 +1,5 @@
-import { Node, NodeProps, useReactFlow } from "@xyflow/react";
-import { Input, InputRef } from "fidesui";
+import { type Node, type NodeProps, useReactFlow } from "@xyflow/react";
+import { Input, type InputRef } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import styles from "./DatasetNode.module.scss";

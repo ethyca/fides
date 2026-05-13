@@ -1,5 +1,5 @@
 import {
-  DefaultOptionType,
+  type DefaultOptionType,
   Flex,
   Icons,
   Select,
@@ -10,7 +10,7 @@ import { useField } from "formik";
 import { uniq } from "lodash";
 import { useMemo } from "react";
 
-import { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
+import type { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
 import { ErrorMessage, Label } from "~/features/common/form/inputs";
 
 const ALL_SUGGESTED_VALUE = "all-suggested";

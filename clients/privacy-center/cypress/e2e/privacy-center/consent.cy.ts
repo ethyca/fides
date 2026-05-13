@@ -1,8 +1,8 @@
-import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
+import { CONSENT_COOKIE_NAME, type FidesCookie } from "fides-js";
 import { mockPrivacyNotice } from "support/mocks";
 import { stubConfig } from "support/stubs";
 
-import { ConsentPreferencesWithVerificationCode } from "../../../types/api";
+import type { ConsentPreferencesWithVerificationCode } from "../../../types/api";
 import { API_URL } from "../../support/constants";
 
 describe("Consent modal deeplink", () => {

@@ -1,8 +1,12 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { DataCategory } from "~/types/api";
+import type { DataCategory } from "~/types/api";
 
 const dataCategoryApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

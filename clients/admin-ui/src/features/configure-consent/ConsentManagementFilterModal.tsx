@@ -9,7 +9,7 @@ import {
   AccordionMultifieldFilter,
   FilterModal,
   FilterSection,
-  Option,
+  type Option,
 } from "~/features/common/modals/FilterModal";
 import {
   selectPurposes,

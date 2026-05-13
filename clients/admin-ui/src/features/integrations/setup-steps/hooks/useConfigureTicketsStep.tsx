@@ -1,6 +1,6 @@
 import { ConnectionType } from "~/types/api";
 
-import { BaseStepHookParams, Step } from "./types";
+import type { BaseStepHookParams, Step } from "./types";
 
 export const useConfigureTicketsStep = ({
   connection,

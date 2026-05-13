@@ -1,5 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react";
-import React from "react";
+import type React from "react";
 
 import useAssetReportingDownload from "../../../src/features/asset-reporting/hooks/useAssetReportingDownload";
 import { useAssetReportingTable } from "../../../src/features/asset-reporting/hooks/useAssetReportingTable";

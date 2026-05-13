@@ -1,15 +1,15 @@
 import {
   getCoreRowModel,
-  RowSelectionState,
+  type RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
   Button,
-  ChakraSpacer as Spacer,
-  ChakraText as Text,
   ConfirmationModal,
   Empty,
   Icons,
+  ChakraSpacer as Spacer,
+  ChakraText as Text,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -32,7 +32,7 @@ import {
 } from "~/features/system/system-assets.slice";
 import AddEditAssetModal from "~/features/system/tabs/system-assets/AddEditAssetModal";
 import useSystemAssetColumns from "~/features/system/tabs/system-assets/useSystemAssetColumns";
-import { Asset, SystemResponse } from "~/types/api";
+import type { Asset, SystemResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const COPY = `This page displays all assets associated with this system. Use the table below to review and manage these technologies for compliance and detailed insights.`;

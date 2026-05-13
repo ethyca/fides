@@ -1,8 +1,8 @@
 import { Empty, Flex, Spin } from "fidesui";
 
-import { PolicyGroup } from "./hooks/useAccessPolicyGroups";
+import type { PolicyGroup } from "./hooks/useAccessPolicyGroups";
 import PolicyCategoryGroup from "./PolicyCategoryGroup";
-import { AccessPolicyListItem } from "./types";
+import type { AccessPolicyListItem } from "./types";
 
 interface PoliciesGridProps {
   groups: PolicyGroup[];

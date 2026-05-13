@@ -1,5 +1,5 @@
 import { Flex, Typography } from "fidesui";
-import React from "react";
+import type React from "react";
 
 const DatasetSelectOption = ({
   label,

@@ -1,11 +1,11 @@
 import {
   Button,
+  type FilterValue,
   ChakraFlex as Flex,
-  FilterValue,
   Icons,
   Spin,
   Table,
-  TablePaginationConfig,
+  type TablePaginationConfig,
   Typography,
 } from "fidesui";
 import { isEqual } from "lodash";
@@ -20,10 +20,10 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
 import { formatUser } from "~/features/common/utils";
 import {
-  ManualFieldRequestType,
-  ManualFieldStatus,
-  ManualFieldSystem,
-  ManualFieldUser,
+  type ManualFieldRequestType,
+  type ManualFieldStatus,
+  type ManualFieldSystem,
+  type ManualFieldUser,
   ScopeRegistryEnum,
 } from "~/types/api";
 

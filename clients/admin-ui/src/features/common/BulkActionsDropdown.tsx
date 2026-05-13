@@ -1,5 +1,5 @@
-import { Button, Dropdown, Icons, MenuProps } from "fidesui";
-import React from "react";
+import { Button, Dropdown, Icons, type MenuProps } from "fidesui";
+import type React from "react";
 
 interface BulkActionsDropdownProps {
   selectedIds: React.Key[];

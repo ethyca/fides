@@ -2,12 +2,12 @@ import { Button, Flex, Form, Input, Text } from "fidesui";
 import React, { useEffect } from "react";
 
 import CustomFieldRenderer, {
-  CustomFieldRendererProps,
+  type CustomFieldRendererProps,
 } from "~/components/common/CustomFieldRenderer";
-import { ModalViews } from "~/components/modals/types";
+import type { ModalViews } from "~/components/modals/types";
 import { PhoneInput } from "~/components/phone-input";
 import { useConfig } from "~/features/common/config.slice";
-import { CustomConfigField } from "~/types/config";
+import type { CustomConfigField } from "~/types/config";
 
 import useConsentRequestForm from "./useConsentRequestForm";
 
@@ -69,9 +69,7 @@ const ConsentRequestForm = ({
       >
         {!!emailInput && (
           <Form.Item
-            validateStatus={
-              touched.email && !!errors.email ? "error" : undefined
-            }
+            validateStatus={touched.email && errors.email ? "error" : undefined}
             help={touched.email && errors.email}
             required={emailInput === "required"}
             hasFeedback={touched.email && !!errors.email}
@@ -91,9 +89,7 @@ const ConsentRequestForm = ({
         )}
         {!!phoneInput && (
           <Form.Item
-            validateStatus={
-              touched.phone && !!errors.phone ? "error" : undefined
-            }
+            validateStatus={touched.phone && errors.phone ? "error" : undefined}
             help={touched.phone && errors.phone}
             required={phoneInput === "required"}
             hasFeedback={touched.phone && !!errors.phone}
@@ -148,9 +144,7 @@ const ConsentRequestForm = ({
             <Form.Item
               key={key}
               id={key}
-              validateStatus={
-                touched[key] && Boolean(errors[key]) ? "error" : undefined
-              }
+              validateStatus={touched[key] && errors[key] ? "error" : undefined}
               help={touched[key] && errors[key]}
               required={item.required !== false}
               hasFeedback={

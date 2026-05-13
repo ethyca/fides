@@ -1,4 +1,4 @@
-import { Button, Flex, Icons, Text, Title } from "fidesui";
+import { Button, Flex, type Icons, Text, Title } from "fidesui";
 import { useQueryStates } from "nuqs";
 
 import { useFlags } from "~/features/common/features";
@@ -54,7 +54,7 @@ const MonitorProgressWidget = ({
   return (
     heliosInsights && (
       <Flex className="w-full" gap="middle">
-        {(data && totalMonitors > 0) || !!filters.steward_key || isLoading ? (
+        {(data && totalMonitors > 0) || filters.steward_key || isLoading ? (
           <ProgressCard
             {...buildWidgetProps({
               monitor_type: monitorType,

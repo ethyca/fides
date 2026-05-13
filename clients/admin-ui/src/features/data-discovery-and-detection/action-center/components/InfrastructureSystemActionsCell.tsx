@@ -1,5 +1,5 @@
 import { Button, Icons, Space, Tooltip } from "fidesui";
-import React from "react";
+import type React from "react";
 
 import { DiffStatus } from "~/types/api";
 

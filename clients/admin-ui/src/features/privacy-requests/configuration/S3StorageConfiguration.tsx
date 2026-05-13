@@ -17,7 +17,7 @@ import {
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { S3SecretsDetails } from "~/features/privacy-requests/types";
+import type { S3SecretsDetails } from "~/features/privacy-requests/types";
 
 interface SavedStorageDetails {
   storageDetails: {

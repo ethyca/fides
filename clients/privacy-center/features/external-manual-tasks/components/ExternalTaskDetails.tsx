@@ -11,7 +11,7 @@
 
 import { Flex, Tag, Typography } from "fidesui";
 
-import { ManualFieldListItem } from "../external-manual-tasks.slice";
+import type { ManualFieldListItem } from "../external-manual-tasks.slice";
 
 interface ExternalTaskDetailsProps {
   task: ManualFieldListItem;

@@ -9,10 +9,10 @@ import {
 import { Form, Formik } from "formik";
 
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
-import { PrivacyDeclarationResponse } from "~/types/api";
+import type { PrivacyDeclarationResponse } from "~/types/api";
 
 import {
-  DataProps,
+  type DataProps,
   PrivacyDeclarationFormComponents,
   usePrivacyDeclarationForm,
   ValidationSchema,

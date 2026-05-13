@@ -1,4 +1,4 @@
-import {
+import type {
   AccessPolicy,
   Control,
 } from "~/features/access-policies/access-policies.slice";

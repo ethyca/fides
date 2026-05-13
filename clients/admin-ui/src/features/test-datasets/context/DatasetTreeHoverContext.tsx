@@ -1,7 +1,7 @@
-import { Edge } from "@xyflow/react";
+import type { Edge } from "@xyflow/react";
 import {
   createContext,
-  ReactNode,
+  type ReactNode,
   useCallback,
   useMemo,
   useState,

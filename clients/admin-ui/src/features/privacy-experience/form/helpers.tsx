@@ -1,15 +1,15 @@
-import { FormInstance } from "fidesui";
+import type { FormInstance } from "fidesui";
 
 import {
   ComponentType,
-  ExperienceConfigCreate,
-  ExperienceConfigResponse,
-  ExperienceTranslation,
-  ExperienceTranslationCreate,
-  ExperienceTranslationResponse,
-  Language,
+  type ExperienceConfigCreate,
+  type ExperienceConfigResponse,
+  type ExperienceTranslation,
+  type ExperienceTranslationCreate,
+  type ExperienceTranslationResponse,
+  type Language,
   Layer1ButtonOption,
-  PrivacyNoticeRegion,
+  type PrivacyNoticeRegion,
   SupportedLanguage,
 } from "~/types/api";
 

@@ -1,6 +1,6 @@
-import { CustomFieldsFormValues } from "~/features/common/custom-fields";
-import { TreeNode } from "~/features/common/types";
-import { DataSubjectRights } from "~/types/api";
+import type { CustomFieldsFormValues } from "~/features/common/custom-fields";
+import type { TreeNode } from "~/features/common/types";
+import type { DataSubjectRights } from "~/types/api";
 
 export interface TaxonomyEntityNode extends TreeNode {
   description?: string | null;

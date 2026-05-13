@@ -1,4 +1,4 @@
-import { MenuProps } from "fidesui";
+import type { MenuProps } from "fidesui";
 
 import { DiffStatus } from "~/types/api";
 

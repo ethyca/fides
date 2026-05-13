@@ -1,19 +1,19 @@
 import { CmpApi } from "@iabgpp/cmpapi";
 
-import { InitializedFidesGlobal } from "~/lib/providers/fides-global-context";
+import type { InitializedFidesGlobal } from "~/lib/providers/fides-global-context";
 
 import {
   ComponentType,
-  ExperienceConfig,
-  FidesCookie,
-  PrivacyExperienceMinimal,
+  type ExperienceConfig,
+  type FidesCookie,
+  type PrivacyExperienceMinimal,
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
 import { fidesStringToConsent } from "../../../src/lib/gpp/string-to-consent";
 import { makeStub } from "../../../src/lib/gpp/stub";
 import {
+  type UpdateConsentOptions,
   updateConsent,
-  UpdateConsentOptions,
 } from "../../../src/lib/preferences";
 
 // Mock fidesDebugger

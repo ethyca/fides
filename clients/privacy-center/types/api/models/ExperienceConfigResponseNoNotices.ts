@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { RejectAllMechanism } from "./RejectAllMechanism";
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * Schema for embedding an Experience Config in a Privacy Experience response.

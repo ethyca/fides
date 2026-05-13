@@ -1,11 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
-import { CommentResponse } from "~/types/api/models/CommentResponse";
-import { CommentType } from "~/types/api/models/CommentType";
-import { Page_CommentResponse_ } from "~/types/api/models/Page_CommentResponse_";
+import type { CommentResponse } from "~/types/api/models/CommentResponse";
+import type { CommentType } from "~/types/api/models/CommentType";
+import type { Page_CommentResponse_ } from "~/types/api/models/Page_CommentResponse_";
 
-export interface State {}
+export type State = {};
 
 const initialState: State = {};
 

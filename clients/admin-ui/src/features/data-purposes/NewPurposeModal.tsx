@@ -5,7 +5,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import { useCreateDataPurposeMutation } from "./data-purpose.slice";
 

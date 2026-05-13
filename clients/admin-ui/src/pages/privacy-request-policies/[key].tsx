@@ -9,13 +9,13 @@ import { POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { PolicyConditionsTab } from "~/features/policies/conditions/PolicyConditionsTab";
+import { PolicyBox } from "~/features/policies/PolicyBox";
+import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
 import {
   useDeletePolicyMutation,
   useGetDefaultPoliciesQuery,
   useGetPolicyQuery,
 } from "~/features/policies/policy.slice";
-import { PolicyBox } from "~/features/policies/PolicyBox";
-import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
 import { RulesTab } from "~/features/policies/rules/RulesTab";
 import { extractLeafConditions } from "~/features/policies/utils/extractLeafConditions";
 

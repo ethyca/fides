@@ -1,12 +1,12 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useMessage } from "fidesui";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useBulkUpdateCustomFieldsMutation } from "~/features/plus/plus.slice";
 import { useUpdateSystemMutation } from "~/features/system";
-import {
+import type {
   BulkCustomFieldRequest,
   CustomFieldWithId,
   PrivacyDeclaration,

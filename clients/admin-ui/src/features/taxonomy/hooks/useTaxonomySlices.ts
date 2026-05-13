@@ -31,7 +31,7 @@ import {
   useLazyGetTaxonomyQuery,
   useUpdateTaxonomyMutation,
 } from "~/features/taxonomy/taxonomy.slice";
-import { TaxonomyEntity } from "~/features/taxonomy/types";
+import type { TaxonomyEntity } from "~/features/taxonomy/types";
 
 type TriggerFn = (...args: any[]) => any;
 export type UseTaxonomySlicesResult = {

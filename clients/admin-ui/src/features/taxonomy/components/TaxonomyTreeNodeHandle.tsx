@@ -1,4 +1,4 @@
-import { Handle, HandleType, Position } from "@xyflow/react";
+import { Handle, type HandleType, Position } from "@xyflow/react";
 
 interface TaxonomyTreeNodeHandleProps {
   type: HandleType;

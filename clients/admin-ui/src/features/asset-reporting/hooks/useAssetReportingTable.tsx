@@ -1,12 +1,12 @@
 import {
-  ColumnsType,
+  type ColumnsType,
   CUSTOM_TAG_COLOR,
   formatIsoLocation,
   isoStringToEntry,
   Tag,
   Text,
 } from "fidesui";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -16,7 +16,11 @@ import { expandCollapseAllMenuItems } from "~/features/common/table/cells/consta
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { convertToAntFilters } from "~/features/common/utils";
 import { DiscoveryStatusDisplayNames } from "~/features/data-discovery-and-detection/action-center/constants";
-import { Asset, ConsentStatus, PrivacyNoticeRegion } from "~/types/api";
+import {
+  type Asset,
+  ConsentStatus,
+  type PrivacyNoticeRegion,
+} from "~/types/api";
 
 import type { AssetReportingFilters } from "../asset-reporting.slice";
 import {

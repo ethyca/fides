@@ -7,7 +7,7 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import ToastLink from "~/features/common/ToastLink";
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
+import type { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import {
   useAddMonitorResultSystemsMutation,

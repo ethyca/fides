@@ -6,7 +6,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { useUpdateSystemAssetsMutation } from "~/features/system/system-assets.slice";
-import { Asset } from "~/types/api";
+import type { Asset } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const SystemAssetsDataUseCell = ({

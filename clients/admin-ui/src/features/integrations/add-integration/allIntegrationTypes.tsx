@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import AWS_TYPE_INFO from "~/features/integrations/integration-type-info/awsInfo";
 import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
@@ -21,9 +21,9 @@ import SALESFORCE_TYPE_INFO from "~/features/integrations/integration-type-info/
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
-import { AccessLevel, ConnectionConfigurationResponse } from "~/types/api";
+import { AccessLevel, type ConnectionConfigurationResponse } from "~/types/api";
 import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
-import { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
+import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 import { ConnectionType } from "~/types/api/models/ConnectionType";
 import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 

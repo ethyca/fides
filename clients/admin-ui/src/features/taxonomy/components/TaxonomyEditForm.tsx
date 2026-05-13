@@ -1,8 +1,8 @@
-import { Form, FormInstance, Input } from "fidesui";
+import { Form, type FormInstance, Input } from "fidesui";
 import { isEmpty, unset } from "lodash";
 
 import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
-import { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
+import type { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
 
 import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
 import SystemGroupEditForm from "./SystemGroupEditForm";

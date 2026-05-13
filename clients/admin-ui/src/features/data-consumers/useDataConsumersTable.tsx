@@ -1,6 +1,6 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Empty,
   Flex,
   Space,
@@ -16,11 +16,11 @@ import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 
 import { getDisplayNameForScope } from "./constants";
+import DataConsumerActionsCell from "./DataConsumerActionsCell";
 import {
-  DataConsumer,
+  type DataConsumer,
   useGetAllDataConsumersQuery,
 } from "./data-consumer.slice";
-import DataConsumerActionsCell from "./DataConsumerActionsCell";
 import useConsumerTypeOptions from "./useConsumerTypeOptions";
 
 const useDataConsumersTable = () => {

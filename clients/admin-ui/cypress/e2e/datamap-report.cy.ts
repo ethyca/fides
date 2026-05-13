@@ -9,7 +9,7 @@ import {
   LegacyResourceTypes,
 } from "~/features/common/custom-fields/types";
 import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
-import { CustomFieldDefinition, ReportType } from "~/types/api";
+import { type CustomFieldDefinition, ReportType } from "~/types/api";
 
 const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
   const base = {

@@ -1,5 +1,5 @@
 import {
-  ColumnsType,
+  type ColumnsType,
   formatIsoLocation,
   isoStringToEntry,
   Tag,
@@ -13,7 +13,7 @@ import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { truncateUrl } from "~/features/common/utils";
-import {
+import type {
   ConsentBreakdown,
   ConsentStatus,
   PrivacyNoticeRegion,

@@ -1,8 +1,8 @@
 import { createContext } from "preact";
-import { FC } from "preact/compat";
+import type { FC } from "preact/compat";
 import {
-  Dispatch,
-  StateUpdater,
+  type Dispatch,
+  type StateUpdater,
   useContext,
   useMemo,
   useState,

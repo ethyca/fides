@@ -1,4 +1,4 @@
-import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import {
   Avatar,
   Button,
@@ -13,7 +13,7 @@ import {
 } from "fidesui";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
-
+import styles from "./ConstraintNode.module.scss";
 import {
   CONSENT_REQUIREMENT_OPTIONS,
   CONSTRAINT_TYPE_OPTIONS,
@@ -21,7 +21,6 @@ import {
   DATA_FLOW_OPERATOR_OPTIONS,
   GEO_OPERATOR_OPTIONS,
 } from "./constants";
-import styles from "./ConstraintNode.module.scss";
 import NodeActions from "./NodeActions";
 import PrivacyNoticeSelect from "./PrivacyNoticeSelect";
 import {

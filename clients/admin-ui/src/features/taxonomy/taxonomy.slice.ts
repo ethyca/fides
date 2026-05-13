@@ -1,10 +1,10 @@
 import { baseApi } from "~/features/common/api.slice";
-import { Page_EventAuditResponse_ } from "~/types/api/models/Page_EventAuditResponse_";
-import { TaxonomyCreate } from "~/types/api/models/TaxonomyCreate";
-import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
-import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
+import type { Page_EventAuditResponse_ } from "~/types/api/models/Page_EventAuditResponse_";
+import type { TaxonomyCreate } from "~/types/api/models/TaxonomyCreate";
+import type { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
+import type { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
-import { TaxonomyEntity } from "./types";
+import type { TaxonomyEntity } from "./types";
 
 type TaxonomySummary = { fides_key: string; name: string };
 

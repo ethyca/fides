@@ -6,7 +6,7 @@ import {
   Title,
   Tooltip,
   Upload,
-  UploadFile,
+  type UploadFile,
   useMessage,
 } from "fidesui";
 import { useCallback, useState } from "react";
@@ -14,7 +14,7 @@ import { useCallback, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { useHasPermission } from "~/features/common/Restrict";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import type { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { ScopeRegistryEnum } from "~/types/api";
 import { AttachmentType } from "~/types/api/models/AttachmentType";
 

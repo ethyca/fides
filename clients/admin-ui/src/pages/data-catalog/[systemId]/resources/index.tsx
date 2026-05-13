@@ -21,7 +21,7 @@ import CatalogDatasetDetailDrawer from "~/features/data-catalog/datasets/Catalog
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import useCatalogDatasetColumns from "~/features/data-catalog/datasets/useCatalogDatasetColumns";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],

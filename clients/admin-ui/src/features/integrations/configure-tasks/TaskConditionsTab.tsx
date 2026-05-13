@@ -15,7 +15,7 @@ import {
   useGetManualTaskConfigQuery,
   useUpdateDependencyConditionsMutation,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
-import { ConditionLeaf } from "~/types/api";
+import type { ConditionLeaf } from "~/types/api";
 
 import AddEditConditionModal from "./AddEditConditionModal";
 import { operatorLabels } from "./constants";

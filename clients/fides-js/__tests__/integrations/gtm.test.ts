@@ -1,9 +1,9 @@
-import { FidesEventType } from "../../src/docs";
+import type { FidesEventType } from "../../src/docs";
 import { gtm } from "../../src/integrations/gtm";
 import {
   ConsentFlagType,
   ConsentNonApplicableFlagMode,
-  FidesGlobal,
+  type FidesGlobal,
 } from "../../src/lib/consent-types";
 
 const fidesEvents: Record<

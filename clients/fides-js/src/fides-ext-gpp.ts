@@ -15,9 +15,9 @@ import {
   UsNat,
 } from "@iabgpp/cmpapi";
 
-import { FidesEvent } from "./fides";
+import type { FidesEvent } from "./fides";
 import { getGpcContext } from "./lib/consent-context";
-import {
+import type {
   FidesGlobal,
   FidesOptions,
   NoticeConsent,
@@ -37,7 +37,7 @@ import {
 } from "./lib/gpp/constants";
 import { fidesStringToConsent } from "./lib/gpp/string-to-consent";
 import { makeStub } from "./lib/gpp/stub";
-import { GppFunction } from "./lib/gpp/types";
+import type { GppFunction } from "./lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookieAndExperience,

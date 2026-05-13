@@ -1,10 +1,10 @@
-import { VNode } from "preact";
+import type { VNode } from "preact";
 
 import {
-  FidesInitOptions,
+  type FidesInitOptions,
   Layer1ButtonOption,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
 import { TcfLoadingErrorMessage } from "./TcfLoadingErrorMessage";

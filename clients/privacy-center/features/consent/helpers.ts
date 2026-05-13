@@ -1,14 +1,14 @@
 import {
-  ConsentContext,
+  type ConsentContext,
   GpcStatus,
-  NoticeConsent,
+  type NoticeConsent,
   resolveLegacyConsentValue,
 } from "fides-js";
 
-import { ConfigConsentOption } from "~/types/api";
-import { ConsentConfig, LegacyConsentConfig } from "~/types/config";
+import type { ConfigConsentOption } from "~/types/api";
+import type { ConsentConfig, LegacyConsentConfig } from "~/types/config";
 
-import { FidesKeyToConsent } from "./types";
+import type { FidesKeyToConsent } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useCallback, useState } from "react";
 
-import { Sparkline, SparklineProps } from "../../index";
+import { Sparkline, type SparklineProps } from "../../index";
 import { COLOR_OPTIONS } from "./chart-constants";
 
 const sampleData = [12, 18, 15, 22, 28, 25, 34, 30, 38, 42, 39, 47];

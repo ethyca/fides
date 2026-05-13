@@ -1,8 +1,8 @@
 import { useMessage, useModal } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
-import { APIMonitorType } from "~/types/api";
-import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
+import type { APIMonitorType } from "~/types/api";
+import type { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult } from "~/types/errors";
 

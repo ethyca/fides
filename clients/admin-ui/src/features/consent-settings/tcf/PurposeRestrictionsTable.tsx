@@ -1,6 +1,6 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Empty,
   Flex,
   Table,
@@ -20,7 +20,7 @@ import {
 import { PublisherRestrictionActionCell } from "./PublisherRestrictionActionCell";
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { useGetPublisherRestrictionsQuery } from "./tcf-config.slice";
-import { PurposeRestriction } from "./types";
+import type { PurposeRestriction } from "./types";
 
 const { Text, Title } = Typography;
 

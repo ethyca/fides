@@ -1,11 +1,11 @@
-import { FormInstance } from "fidesui";
+import type { FormInstance } from "fidesui";
 
 import {
   ComponentType,
-  ExperienceConfigCreate,
-  ExperienceConfigResponse,
-  ExperienceTranslation,
-  ExperienceTranslationResponse,
+  type ExperienceConfigCreate,
+  type ExperienceConfigResponse,
+  type ExperienceTranslation,
+  type ExperienceTranslationResponse,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -16,9 +16,9 @@ import {
   getSelectedRegionIds,
   getTranslationFormFields,
   removeUncommittedTranslation,
+  type TranslationWithLanguageName,
   transformConfigResponseToCreate,
   transformTranslationResponseToCreate,
-  TranslationWithLanguageName,
 } from "./helpers";
 
 describe("getSelectedRegionIds", () => {

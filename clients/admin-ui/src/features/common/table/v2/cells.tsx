@@ -1,34 +1,40 @@
-import { HeaderContext } from "@tanstack/react-table";
+import type { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
   Button,
   ChakraCheckbox as Checkbox,
-  ChakraCheckboxProps as CheckboxProps,
+  type ChakraCheckboxProps as CheckboxProps,
   ChakraFlex as Flex,
-  ChakraFlexProps as FlexProps,
+  type ChakraFlexProps as FlexProps,
+  Input,
   ChakraList as List,
   ChakraListItem as ListItem,
-  ChakraText as Text,
-  ChakraTextProps as TextProps,
-  Input,
   Switch,
-  SwitchProps,
+  type SwitchProps,
   Tag,
-  TagProps,
+  type TagProps,
+  ChakraText as Text,
+  type ChakraTextProps as TextProps,
   Tooltip,
   useMessage,
   useModal,
 } from "fidesui";
 import { FastField, useFormikContext } from "formik";
 import { isBoolean } from "lodash";
-import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  type ReactElement,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { formatDate, sentenceCase } from "~/features/common/utils";
-import { RTKResult } from "~/types/errors";
+import type { RTKResult } from "~/types/errors";
 
 import { InfoTooltip } from "../../InfoTooltip";
-import { FidesCellProps, FidesCellState } from "./FidesCell";
+import type { FidesCellProps, FidesCellState } from "./FidesCell";
 
 export const DefaultCell = <T,>({
   value,
@@ -49,7 +55,7 @@ export const DefaultCell = <T,>({
       textOverflow="ellipsis"
       overflow={isExpanded ? undefined : "hidden"}
       whiteSpace={isExpanded ? "normal" : undefined}
-      title={isExpanded && !!value ? undefined : value?.toString()}
+      title={isExpanded && value ? undefined : value?.toString()}
       {...chakraStyleProps}
     >
       {isBoolean(value) ? value.toString() : value}

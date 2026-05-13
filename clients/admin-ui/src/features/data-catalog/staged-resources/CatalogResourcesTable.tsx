@@ -22,7 +22,7 @@ import useCatalogResourceColumns from "~/features/data-catalog/useCatalogResourc
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
-import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
+import { DiffStatus, type StagedResourceAPIResponse } from "~/types/api";
 
 // everything except muted
 const DIFF_STATUS_FILTERS = [

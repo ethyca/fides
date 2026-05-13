@@ -3,8 +3,8 @@ import {
   DrpAction,
   GroupOperator,
   Operator,
-  PolicyResponse,
-  RuleResponse,
+  type PolicyResponse,
+  type RuleResponse,
 } from "~/types/api";
 
 /**

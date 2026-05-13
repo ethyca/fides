@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
-import { TaxonomyEntity } from "./types";
+import type { TaxonomyEntity } from "./types";
 
 // Seed data for Sensitivity taxonomy
 export const mockSensitivityData: TaxonomyEntity[] = [

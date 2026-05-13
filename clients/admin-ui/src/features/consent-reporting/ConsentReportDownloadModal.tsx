@@ -1,4 +1,4 @@
-import { Dayjs } from "dayjs";
+import type { Dayjs } from "dayjs";
 import { Button, Flex, Modal, Typography } from "fidesui";
 
 import useConsentReportingDownload from "./hooks/useConsentReportingDownload";

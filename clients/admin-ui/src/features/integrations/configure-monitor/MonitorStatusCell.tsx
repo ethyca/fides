@@ -4,7 +4,7 @@ import { Fragment, useState } from "react";
 
 import { formatDate } from "~/features/common/utils";
 import { MonitorExecutionStatus } from "~/types/api";
-import { MonitorStatusResponse } from "~/types/api/models/MonitorStatusResponse";
+import type { MonitorStatusResponse } from "~/types/api/models/MonitorStatusResponse";
 
 const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
   const executionRecord = monitor.execution_records?.[0];

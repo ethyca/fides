@@ -14,7 +14,7 @@ import {
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
-import { Key, useEffect, useRef, useState } from "react";
+import { type Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -30,17 +30,17 @@ import {
   useGetMonitorConfigQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
+import type { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
-  MonitorFieldSearchForm,
+  type MonitorFieldSearchForm,
   MonitorFieldSearchFormQuerySchema,
   MonitorFieldSearchFormQueryState,
 } from "../forms/MonitorFieldSearchForm.util";
 import MonitorFieldsSearchForm from "../forms/MonitorFieldsSearchForm";
 import useSearchForm from "../hooks/useSearchForm";
-import { DatastorePageSettings } from "../types";
+import type { DatastorePageSettings } from "../types";
 import {
   ACTION_ALLOWED_STATUSES,
   ACTIONS_DISABLED_MESSAGE,
@@ -53,7 +53,6 @@ import {
   RESOURCE_ACTIONS,
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
-import { useLazyGetAllowedActionsQuery } from "./monitor-fields.slice";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
   DEFAULT_FILTER_STATUSES,
@@ -62,7 +61,8 @@ import {
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
 } from "./MonitorFields.const";
-import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
+import MonitorTree, { type MonitorTreeRef } from "./MonitorTree";
+import { useLazyGetAllowedActionsQuery } from "./monitor-fields.slice";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import type { MonitorResource } from "./types";

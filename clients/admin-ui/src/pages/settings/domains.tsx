@@ -20,14 +20,14 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import {
-  CORSOrigins,
+  type CORSOrigins,
   selectApplicationConfig,
   selectCORSOrigins,
   useGetConfigurationSettingsQuery,
   usePutConfigurationSettingsMutation,
 } from "~/features/config-settings/config-settings.slice";
-import { PlusApplicationConfig } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { PlusApplicationConfig } from "~/types/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 type FormValues = CORSOrigins;
 

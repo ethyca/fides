@@ -1,4 +1,4 @@
-import { Card, CardProps, theme, Typography } from "antd/lib";
+import { Card, type CardProps, Typography, theme } from "antd/lib";
 import classNames from "classnames";
 import React from "react";
 

@@ -19,10 +19,10 @@ import { useEffect, useMemo, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
 import {
-  CustomReportResponse,
-  CustomReportResponseMinimal,
-  Page_CustomReportResponseMinimal_,
-  ReportType,
+  type CustomReportResponse,
+  type CustomReportResponseMinimal,
+  type Page_CustomReportResponseMinimal_,
+  type ReportType,
   ScopeRegistryEnum,
 } from "~/types/api";
 
@@ -31,7 +31,7 @@ import {
   useGetMinimalCustomReportsQuery,
   useLazyGetCustomReportByIdQuery,
 } from "../../datamap/reporting/custom-reports.slice";
-import { CustomReportTableState } from "../../datamap/types";
+import type { CustomReportTableState } from "../../datamap/types";
 import { CustomReportCreationModal } from "./CustomReportCreationModal";
 
 const CUSTOM_REPORT_TITLE = "Report";

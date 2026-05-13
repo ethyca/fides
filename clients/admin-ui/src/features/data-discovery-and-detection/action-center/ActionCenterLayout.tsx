@@ -1,24 +1,24 @@
 import {
   Badge,
-  BadgeProps,
+  type BadgeProps,
   Button,
   Dropdown,
-  DropdownProps,
+  type DropdownProps,
   Flex,
   Icons,
   Menu,
 } from "fidesui";
 import _ from "lodash";
-import { PropsWithChildren, useState } from "react";
+import { type PropsWithChildren, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useActionCenterNavigation, {
   ActionCenterRoute,
-  ActionCenterRouteConfig,
+  type ActionCenterRouteConfig,
 } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
-import { APIMonitorType } from "~/types/api/models/APIMonitorType";
+import type { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import MonitorStats from "./MonitorStats";
 

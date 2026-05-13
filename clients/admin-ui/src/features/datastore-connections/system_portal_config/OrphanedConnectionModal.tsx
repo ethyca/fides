@@ -1,14 +1,14 @@
 import ConnectionTypeLogo, {
   connectionLogoFromConfiguration,
 } from "datastore-connections/ConnectionTypeLogo";
-import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
+import type { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
+  Modal,
   ChakraStack as Stack,
   ChakraText as Text,
-  Modal,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -22,8 +22,8 @@ import {
 } from "~/features/connection-type";
 import { usePatchSystemConnectionConfigsMutation } from "~/features/system";
 import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
   ConnectionType,
 } from "~/types/api";
 

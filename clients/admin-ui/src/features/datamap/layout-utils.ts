@@ -1,4 +1,4 @@
-import { Edge, Node, Position } from "@xyflow/react";
+import { type Edge, type Node, Position } from "@xyflow/react";
 import dagre from "dagre";
 
 type AlignOption = "UL" | "UR" | "DL" | "DR" | undefined;

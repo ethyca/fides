@@ -1,4 +1,8 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import { saveAs } from "file-saver";
 
 import type { RootState } from "~/app/store";
@@ -7,13 +11,13 @@ import { getFileNameFromContentDisposition } from "~/features/common/utils";
 import {
   COLUMN_NAME_MAP,
   DATA_CATEGORY_COLUMN_ID,
-  ExportFormat,
+  type ExportFormat,
   SYSTEM_DESCRIPTION,
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
-import { DATAMAP_GROUPING, Page_DatamapReport_ } from "~/types/api";
+import type { DATAMAP_GROUPING, Page_DatamapReport_ } from "~/types/api";
 
 export interface DatamapRow {
   [fieldName: string]: string;

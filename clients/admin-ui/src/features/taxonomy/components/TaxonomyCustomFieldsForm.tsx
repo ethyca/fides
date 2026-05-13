@@ -1,7 +1,7 @@
-import { Form, FormInstance, Input, Select, Spin } from "fidesui";
+import { Form, type FormInstance, Input, Select, Spin } from "fidesui";
 import { isEmpty } from "lodash";
 
-import { useCustomFields } from "~/features/common/custom-fields";
+import type { useCustomFields } from "~/features/common/custom-fields";
 import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
 

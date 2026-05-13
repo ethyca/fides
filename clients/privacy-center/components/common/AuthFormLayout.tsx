@@ -9,8 +9,8 @@
  * Used by both ExternalAuthLayout and PrivacyRequestLayout to avoid duplication.
  */
 
-import { ChakraLink as Link, Flex, Space, Typography } from "fidesui";
-import React from "react";
+import { Flex, ChakraLink as Link, Space, Typography } from "fidesui";
+import type React from "react";
 
 import { getEffectivePrivacyCenterLinks } from "~/common/config-links";
 import { useConfig } from "~/features/common/config.slice";

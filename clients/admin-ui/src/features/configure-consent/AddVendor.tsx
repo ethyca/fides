@@ -1,9 +1,9 @@
 import {
   Button,
-  ButtonProps,
+  type ButtonProps,
   Flex,
   Form,
-  FormRule,
+  type FormRule,
   Input,
   Modal,
   useMessage,
@@ -30,7 +30,7 @@ import {
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
 import VendorSelectorAnt from "~/features/system/VendorSelectorAnt";
-import { System } from "~/types/api";
+import type { System } from "~/types/api";
 
 import {
   extractVendorSource,
@@ -38,7 +38,7 @@ import {
   isErrorResult,
   VendorSources,
 } from "../common/helpers";
-import { EMPTY_DECLARATION, FormValues } from "./constants";
+import { EMPTY_DECLARATION, type FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
 const defaultInitialValues: FormValues = {

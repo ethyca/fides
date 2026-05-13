@@ -1,4 +1,4 @@
-import { GpcStatus } from "fides-js";
+import type { GpcStatus } from "fides-js";
 import {
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
@@ -8,7 +8,7 @@ import {
   ChakraFlex as Flex,
   ChakraText as Text,
 } from "fidesui";
-import React from "react";
+import type React from "react";
 
 import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";
 

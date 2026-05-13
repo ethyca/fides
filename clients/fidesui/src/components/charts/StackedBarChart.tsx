@@ -1,4 +1,4 @@
-import { Flex, theme, Typography } from "antd/lib";
+import { Flex, Typography, theme } from "antd/lib";
 import React, { type ReactNode, useCallback, useMemo } from "react";
 import {
   Bar,
@@ -10,10 +10,10 @@ import {
 } from "recharts";
 
 import { ArrowRight } from "../../icons/carbon";
+import { ChartText } from "./ChartText";
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";
-import { ChartText } from "./ChartText";
 
 export interface StackedBarSegment {
   key: string;

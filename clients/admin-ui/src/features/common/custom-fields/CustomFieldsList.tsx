@@ -1,9 +1,9 @@
 import { ChakraFlex as Flex, Spin } from "fidesui";
-import { Field, FieldInputProps } from "formik";
+import { Field, type FieldInputProps } from "formik";
 
 import {
   LegacyAllowedTypes,
-  LegacyResourceTypes,
+  type LegacyResourceTypes,
 } from "~/features/common/custom-fields/types";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 

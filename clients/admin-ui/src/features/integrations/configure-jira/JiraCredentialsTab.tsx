@@ -18,11 +18,11 @@ import {
   useLinkJiraSaasCredentialsMutation,
   useUnlinkJiraSaasCredentialsMutation,
 } from "~/features/plus/plus.slice";
-import {
+import type {
   ConnectionConfigurationResponse,
   JiraCredentialLinkStatus,
 } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors";
+import type { RTKErrorResult } from "~/types/errors";
 
 interface JiraCredentialsTabProps {
   connection: ConnectionConfigurationResponse;

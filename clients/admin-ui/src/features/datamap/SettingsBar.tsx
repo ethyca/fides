@@ -1,8 +1,8 @@
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraText as Text,
   Tag,
+  ChakraText as Text,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { uniq } from "lodash";

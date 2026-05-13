@@ -1,10 +1,10 @@
 import {
-  ChakraSkeleton as Skeleton,
-  ChakraText as Text,
   Flex,
+  ChakraSkeleton as Skeleton,
   Space,
+  ChakraText as Text,
 } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 

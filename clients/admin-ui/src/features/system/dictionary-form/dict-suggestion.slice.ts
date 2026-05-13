@@ -1,6 +1,10 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
-import { type RootState } from "~/app/store";
+import type { RootState } from "~/app/store";
 
 // `initial` is like `hiding`, although it helps to know when we are setting
 // an initial value vs reverting to a previous value

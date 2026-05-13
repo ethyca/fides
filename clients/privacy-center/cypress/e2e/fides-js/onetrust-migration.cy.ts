@@ -3,11 +3,9 @@
 
 // Make TypeScript ignore window augmentation errors in test files
 
-import { CONSENT_COOKIE_NAME, ConsentMethod, FidesCookie } from "fides-js";
+import { CONSENT_COOKIE_NAME, ConsentMethod, type FidesCookie } from "fides-js";
 
 import { stubConfig } from "~/cypress/support/stubs";
-
-export {};
 
 const ADVERTISING_KEY = "advertising";
 const ESSENTIAL_KEY = "essential";

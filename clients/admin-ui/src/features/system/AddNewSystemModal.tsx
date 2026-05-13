@@ -5,7 +5,7 @@ import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-import { System } from "~/types/api";
+import type { System } from "~/types/api";
 
 import { useFeatures } from "../common/features";
 import { ControlledSelect } from "../common/form/ControlledSelect";
@@ -23,11 +23,11 @@ import {
   useGetAllDictionaryEntriesQuery,
   usePostSystemVendorsMutation,
 } from "../plus/plus.slice";
+import { DictSuggestionTextArea } from "./dictionary-form/DictSuggestionInputs";
 import {
   dictSuggestionsSlice,
   selectLockedForGVL,
 } from "./dictionary-form/dict-suggestion.slice";
-import { DictSuggestionTextArea } from "./dictionary-form/DictSuggestionInputs";
 import {
   useCreateSystemMutation,
   useLazyGetSystemsQuery,

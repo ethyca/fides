@@ -1,6 +1,6 @@
 import { Flex, Form, Input } from "fidesui";
 
-import { Dataset } from "~/types/api";
+import type { Dataset } from "~/types/api";
 
 import { InfoTooltip } from "../common/InfoTooltip";
 import { DATASET } from "./constants";

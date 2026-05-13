@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import { NavGroup } from "~/features/common/nav/nav-config";
-import { FlatNavItem } from "~/features/common/nav/useNavSearchItems";
+import type { NavGroup } from "~/features/common/nav/nav-config";
+import type { FlatNavItem } from "~/features/common/nav/useNavSearchItems";
 
 // Mock fidesui (same setup as NavSearch.test.tsx)
 jest.mock("fidesui", () => {

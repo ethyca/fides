@@ -16,7 +16,7 @@ import {
 } from "~/features/system/system.slice";
 import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
 import { useGetAllUsersQuery } from "~/features/user-management";
-import { SystemGroupCreate } from "~/types/api";
+import type { SystemGroupCreate } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface SystemActionsMenuProps {

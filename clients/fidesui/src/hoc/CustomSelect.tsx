@@ -1,5 +1,5 @@
-import { Flex, Select, SelectProps, Typography } from "antd/lib";
-import { BaseOptionType, DefaultOptionType } from "antd/lib/select";
+import { Flex, Select, type SelectProps, Typography } from "antd/lib";
+import type { BaseOptionType, DefaultOptionType } from "antd/lib/select";
 import React from "react";
 
 import { Checkmark, ChevronDown } from "../icons/carbon";

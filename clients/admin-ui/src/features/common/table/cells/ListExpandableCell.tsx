@@ -1,8 +1,8 @@
-import { Button, Flex, FlexProps, List, Typography } from "fidesui";
+import { Button, Flex, type FlexProps, List, Typography } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { COLLAPSE_BUTTON_TEXT } from "./constants";
-import { ColumnState } from "./types";
+import type { ColumnState } from "./types";
 
 const { Text } = Typography;
 

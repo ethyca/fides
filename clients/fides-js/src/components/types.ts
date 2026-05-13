@@ -1,7 +1,7 @@
-import { ContainerNode } from "preact";
+import type { ContainerNode } from "preact";
 
 import type { I18n } from "../lib/i18n";
-import { InitializedFidesGlobal } from "../lib/providers/fides-global-context";
+import type { InitializedFidesGlobal } from "../lib/providers/fides-global-context";
 
 /**
  * The type of the parent component for the preact app

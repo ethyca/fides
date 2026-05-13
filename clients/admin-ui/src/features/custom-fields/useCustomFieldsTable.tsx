@@ -1,4 +1,4 @@
-import { Button, ColumnsType, Flex } from "fidesui";
+import { Button, type ColumnsType, Flex } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
@@ -13,7 +13,10 @@ import EnableCustomFieldCellV2 from "~/features/custom-fields/EnableCustomFieldC
 import { getCustomFieldTypeLabel } from "~/features/custom-fields/utils";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
-import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
+import {
+  type CustomFieldDefinitionWithId,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 const LOCATION_LABEL_MAP = {
   [LegacyResourceTypes.SYSTEM]: "System",

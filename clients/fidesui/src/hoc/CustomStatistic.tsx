@@ -1,5 +1,5 @@
 import type { GlobalToken } from "antd";
-import { Statistic, StatisticProps, theme } from "antd/lib";
+import { Statistic, type StatisticProps, theme } from "antd/lib";
 import React from "react";
 
 type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;

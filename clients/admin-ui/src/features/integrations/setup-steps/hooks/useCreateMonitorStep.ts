@@ -2,7 +2,7 @@ import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
-import { BaseStepHookParams, Step } from "./types";
+import type { BaseStepHookParams, Step } from "./types";
 
 export const useCreateMonitorStep = (
   params: BaseStepHookParams,

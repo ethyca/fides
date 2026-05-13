@@ -1,11 +1,11 @@
-import { SkipToken } from "@reduxjs/toolkit/query";
+import type { SkipToken } from "@reduxjs/toolkit/query";
 import _ from "lodash";
 
 import useNodeMap, { mapNodes } from "~/features/common/hooks/useNodeMap";
 import { useGetStagedResourceDetailsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 
 import { useGetMonitorFieldsQuery } from "./monitor-fields.slice";
-import { MonitorResource } from "./types";
+import type { MonitorResource } from "./types";
 
 const useNormalizedResources = (
   listQueryParams: Exclude<

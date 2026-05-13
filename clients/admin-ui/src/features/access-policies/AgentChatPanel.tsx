@@ -12,10 +12,9 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import Image from "~/features/common/Image";
-import { RTKErrorResult } from "~/types/errors";
-
-import { useSendAccessPolicyChatMessageMutation } from "./agent-chat.slice";
+import type { RTKErrorResult } from "~/types/errors";
 import styles from "./AgentChatPanel.module.scss";
+import { useSendAccessPolicyChatMessageMutation } from "./agent-chat.slice";
 
 interface AgentChatPanelProps {
   currentYaml: string;

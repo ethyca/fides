@@ -5,7 +5,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  RowSelectionState,
+  type RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useFeatures } from "common/features";
@@ -29,18 +29,18 @@ import {
   useClientSidePagination,
 } from "common/table/v2";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
   ChakraHStack as HStack,
-  ChakraText as Text,
-  ChakraVStack as VStack,
   Spin,
   Tag,
+  ChakraText as Text,
   Tooltip,
   useChakraDisclosure as useDisclosure,
   useMessage,
   useModal,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -49,7 +49,7 @@ import { useAppSelector } from "~/app/hooks";
 import { INDEX_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
-  DictSystems,
+  type DictSystems,
   selectAllDictSystems,
   useGetAllSystemVendorsQuery,
   useGetHealthQuery,

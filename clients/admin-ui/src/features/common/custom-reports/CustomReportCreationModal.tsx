@@ -9,12 +9,12 @@ import {
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
-import { CustomReportColumn } from "~/features/common/custom-reports/types";
+import type { CustomReportColumn } from "~/features/common/custom-reports/types";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { CustomReportResponse, ReportType } from "~/types/api";
+import { type CustomReportResponse, ReportType } from "~/types/api";
 
 import { usePostCustomReportMutation } from "../../datamap/reporting/custom-reports.slice";
-import { CustomReportTableState } from "../../datamap/types";
+import type { CustomReportTableState } from "../../datamap/types";
 
 const CUSTOM_REPORT_LABEL = "Report name";
 

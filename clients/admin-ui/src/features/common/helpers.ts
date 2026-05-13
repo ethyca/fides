@@ -1,7 +1,7 @@
 /**
  * Taken from https://redux-toolkit.js.org/rtk-query/usage-with-typescript#inline-error-handling-example
  */
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 import {
   isAlreadyExistsErrorData,
@@ -10,7 +10,7 @@ import {
   isHTTPValidationErrorData,
   isNotFoundError,
   isParsingError,
-  RTKErrorResult,
+  type RTKErrorResult,
 } from "~/types/errors/api";
 
 export { isErrorResult } from "~/types/errors/api";

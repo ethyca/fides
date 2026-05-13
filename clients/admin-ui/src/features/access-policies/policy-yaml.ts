@@ -1,24 +1,24 @@
-import { Edge, Node } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 import yaml from "js-yaml";
 
-import { ConstraintNodeData } from "./ConstraintNode";
-import { ActionNodeData } from "./DecisionNode";
-import { ConditionNodeData } from "./MatchNode";
-import { PolicyNodeData } from "./PolicyNode";
+import type { ConstraintNodeData } from "./ConstraintNode";
+import type { ActionNodeData } from "./DecisionNode";
+import type { ConditionNodeData } from "./MatchNode";
+import type { PolicyNodeData } from "./PolicyNode";
 import {
-  AccessPolicyYaml,
-  ActionBlock,
+  type AccessPolicyYaml,
+  type ActionBlock,
   ActionType,
   ConditionOperator,
   ConditionProperty,
-  ConsentRequirement,
+  type ConsentRequirement,
   ConstraintType,
   DataFlowDirection,
   DataFlowOperator,
   GeoOperator,
-  MatchBlock,
-  MatchDimension,
-  UnlessItem,
+  type MatchBlock,
+  type MatchDimension,
+  type UnlessItem,
 } from "./types";
 
 export const parseYaml = (yamlString: string): AccessPolicyYaml | null => {

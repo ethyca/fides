@@ -1,7 +1,7 @@
 import type { NextApiResponse } from "next";
 
 import pool from "../../lib/db";
-import { Address, Customer, JsonApiRequest, UserData } from "../../types";
+import type { Address, Customer, JsonApiRequest, UserData } from "../../types";
 
 interface ResponseData {
   address: Address;

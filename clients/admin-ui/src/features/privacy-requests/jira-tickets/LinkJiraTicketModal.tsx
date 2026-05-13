@@ -2,7 +2,7 @@ import { Button, Flex, Modal, useMessage } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import { useLinkJiraTicketMutation } from "./privacy-request-jira-tickets.slice";
 

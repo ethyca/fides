@@ -1,4 +1,4 @@
-import { ValidTargets } from "~/types/api";
+import type { ValidTargets } from "~/types/api";
 
 export enum SystemMethods {
   MANUAL = "manual",

@@ -4,11 +4,11 @@ import { useRouter } from "next/router";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import { PrivacyNoticeForm } from "~/features/privacy-notices/PrivacyNoticeForm";
 import {
   useGetAvailableNoticeTranslationsQuery,
   useGetPrivacyNoticeByIdQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import { PrivacyNoticeForm } from "~/features/privacy-notices/PrivacyNoticeForm";
 
 const { Paragraph, Text } = Typography;
 

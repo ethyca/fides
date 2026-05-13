@@ -12,14 +12,14 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
-import { ParsedError, parseError } from "~/features/common/helpers";
+import { type ParsedError, parseError } from "~/features/common/helpers";
 import {
-  GenerateResponse,
+  type GenerateResponse,
   GenerateTypes,
-  System,
+  type System,
   ValidTargets,
 } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import ErrorPage from "../common/errors/ErrorPage";
 import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
@@ -30,8 +30,8 @@ import {
 } from "./config-wizard.slice";
 import { AWS_REGION_OPTIONS } from "./constants";
 import { isSystem } from "./helpers";
-import { useGenerateMutation } from "./scanner.slice";
 import ScannerLoading from "./ScannerLoading";
+import { useGenerateMutation } from "./scanner.slice";
 
 const initialValues = {
   aws_access_key_id: "",

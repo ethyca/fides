@@ -1,4 +1,11 @@
-import { Button, Flex, FlexProps, Icons, Typography, useModal } from "fidesui";
+import {
+  Button,
+  Flex,
+  type FlexProps,
+  Icons,
+  Typography,
+  useModal,
+} from "fidesui";
 import { useState } from "react";
 
 import Restrict from "~/features/common/Restrict";
@@ -6,7 +13,7 @@ import { useGetConfigurationSettingsQuery } from "~/features/config-settings/con
 import { useGetActiveMessagingProviderQuery } from "~/features/messaging/messaging.slice";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import {
-  PrivacyRequestResponse,
+  type PrivacyRequestResponse,
   PrivacyRequestStatus,
   ScopeRegistryEnum,
 } from "~/types/api";
@@ -14,7 +21,7 @@ import {
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
 import { getButtonVisibility } from "./helpers";
 import { useMutations } from "./hooks/useMutations";
-import { PrivacyRequestEntity } from "./types";
+import type { PrivacyRequestEntity } from "./types";
 
 interface RequestTableActionsProps extends FlexProps {
   subjectRequest: PrivacyRequestResponse | PrivacyRequestEntity;

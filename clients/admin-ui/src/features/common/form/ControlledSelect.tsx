@@ -1,12 +1,12 @@
 import {
+  Flex,
   ChakraFormControl as FormControl,
   ChakraFormHelperText as FormHelperText,
-  ChakraFormLabelProps as FormLabelProps,
+  type ChakraFormLabelProps as FormLabelProps,
   ChakraGrid as Grid,
-  ChakraVStack as VStack,
-  Flex,
   Select,
-  SelectProps,
+  type SelectProps,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { useField } from "formik";
 import { useState } from "react";

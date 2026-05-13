@@ -14,13 +14,13 @@ import {
   Button,
   Dropdown,
   Icons,
-  MenuProps,
+  type MenuProps,
   Space,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import {
-  ManualFieldListItem,
+  type ManualFieldListItem,
   ManualFieldStatus,
 } from "../external-manual-tasks.slice";
 import { ExternalCompleteTaskModal } from "./ExternalCompleteTaskModal";

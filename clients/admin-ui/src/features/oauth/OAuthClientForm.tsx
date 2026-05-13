@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
-import { ClientResponse, ScopeRegistryEnum } from "~/types/api";
+import { type ClientResponse, ScopeRegistryEnum } from "~/types/api";
 
 import {
   useCreateOAuthClientMutation,

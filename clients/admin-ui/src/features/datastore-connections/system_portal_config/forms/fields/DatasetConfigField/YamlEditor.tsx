@@ -2,16 +2,16 @@ import {
   Button,
   ChakraFlex as Flex,
   ChakraText as Text,
-  ChakraVStack as VStack,
   useMessage,
+  ChakraVStack as VStack,
 } from "fidesui";
-import yaml, { YAMLException } from "js-yaml";
+import yaml, { type YAMLException } from "js-yaml";
 import React, { Fragment, useRef, useState } from "react";
 
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
-import { Dataset } from "~/types/api";
+import type { Dataset } from "~/types/api";
 
 type YamlEditorFormProps = {
   data: Dataset[];

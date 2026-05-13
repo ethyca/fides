@@ -1,5 +1,8 @@
-import { PrivacyExperience, PrivacyExperienceMinimal } from "../consent-types";
-import {
+import type {
+  PrivacyExperience,
+  PrivacyExperienceMinimal,
+} from "../consent-types";
+import type {
   GVLJson,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,

@@ -1,15 +1,15 @@
 import {
   Button,
-  ChakraUseDisclosureReturn as UseDisclosureReturn,
+  type ChakraUseDisclosureReturn as UseDisclosureReturn,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { ConfigureIntegrationForm } from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 
 const ConfigureIntegrationModal = ({
   isOpen,

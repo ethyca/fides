@@ -1,4 +1,4 @@
-import { SelectProps } from "fidesui";
+import type { SelectProps } from "fidesui";
 
 import { useFeatures } from "~/features/common/features";
 import {

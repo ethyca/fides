@@ -3,7 +3,7 @@ import {
   Card,
   Flex,
   Form,
-  FormInstance,
+  type FormInstance,
   Input,
   Paragraph,
   useFormModal,

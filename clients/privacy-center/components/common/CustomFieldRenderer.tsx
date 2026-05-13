@@ -1,7 +1,7 @@
 import { Input, LocationSelect, Select } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import {
+import type {
   CustomLocationField,
   CustomMultiSelectField,
   CustomSelectField,

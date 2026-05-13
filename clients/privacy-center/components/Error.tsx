@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraImage as Image,
@@ -11,7 +11,7 @@ import {
   ChakraText as Text,
 } from "fidesui";
 import { useState } from "react";
-import { FallbackProps } from "react-error-boundary";
+import type { FallbackProps } from "react-error-boundary";
 
 import { useAppSelector } from "~/app/hooks";
 

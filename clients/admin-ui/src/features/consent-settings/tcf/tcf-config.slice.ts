@@ -1,8 +1,12 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   Page_TCFConfigurationResponse_,
   Page_TCFPublisherRestrictionResponse_,
   TCFConfigurationDetail,
@@ -10,7 +14,7 @@ import {
   TCFPublisherRestrictionRequest,
   TCFPublisherRestrictionUpdateRequest,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/query-params";
+import type { PaginationQueryParams } from "~/types/query-params";
 
 export interface State {
   page: number;

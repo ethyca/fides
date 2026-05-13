@@ -1,6 +1,6 @@
-import { InputType } from "storybook/internal/csf";
+import type { InputType } from "storybook/internal/csf";
 
-import { InputProps } from "../../index";
+import type { InputProps } from "../../index";
 
 const INPUT_VARIANT: Record<
   NonNullable<InputProps["variant"]>,

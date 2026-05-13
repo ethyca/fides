@@ -1,8 +1,8 @@
 import {
   ChakraBox as Box,
   ChakraHeading as Heading,
-  ChakraText as Text,
   Tabs,
+  ChakraText as Text,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -19,7 +19,7 @@ import ConnectionTypeLogo, {
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
 import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
-import { ConnectionSystemTypeMap } from "~/types/api";
+import type { ConnectionSystemTypeMap } from "~/types/api";
 
 const DESCRIBE_SYSTEM_COPY =
   "Systems are anything that might store or process data in your organization, from a web application, to a database or data warehouse. Describe your system below to register it to the map. You may optionally complete data entry for the system using the additional tabs to navigate the sections.";

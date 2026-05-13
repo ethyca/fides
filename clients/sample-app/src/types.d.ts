@@ -6,5 +6,3 @@ declare global {
     fides_overrides: Partial<FidesOptions>;
   }
 }
-
-export {};

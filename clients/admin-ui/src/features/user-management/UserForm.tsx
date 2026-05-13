@@ -1,5 +1,5 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Button,
   Flex,
@@ -29,10 +29,10 @@ import {
 } from "~/features/config-settings/config-settings.slice";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
-import { UserCreateExtended } from "~/types/api";
+import type { UserCreateExtended } from "~/types/api";
 
 import PasswordManagement from "./PasswordManagement";
-import { User, UserCreateResponse } from "./types";
+import type { User, UserCreateResponse } from "./types";
 import {
   shouldShowPasswordField,
   shouldShowPasswordLoginToggle,

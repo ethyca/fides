@@ -1,6 +1,6 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraDivider as Divider,
   ChakraFlex as Flex,
   ChakraGrid as Grid,
@@ -11,11 +11,11 @@ import {
 import type { NextPage } from "next";
 
 import { useFeatures } from "~/features/common/features";
+import { FlagControl } from "~/features/common/features/FlagControl";
 import {
   FLAG_NAMES,
   useFlags,
 } from "~/features/common/features/features.slice";
-import { FlagControl } from "~/features/common/features/FlagControl";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 

@@ -1,11 +1,11 @@
 import {
   Button,
   ChakraCode as Code,
+  Icons,
   ChakraLink as Link,
+  Modal,
   ChakraStack as Stack,
   ChakraText as Text,
-  Icons,
-  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo } from "react";

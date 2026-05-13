@@ -10,16 +10,16 @@ import {
 import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { ParsedError, parseError } from "~/features/common/helpers";
+import { type ParsedError, parseError } from "~/features/common/helpers";
 import { OKTA_AUTH_DESCRIPTION } from "~/features/integrations/integration-type-info/oktaInfo";
 import {
-  GenerateResponse,
+  type GenerateResponse,
   GenerateTypes,
-  OktaConfig,
-  System,
+  type OktaConfig,
+  type System,
   ValidTargets,
 } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import ErrorPage from "../common/errors/ErrorPage";
 import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
@@ -29,8 +29,8 @@ import {
   setSystemsForReview,
 } from "./config-wizard.slice";
 import { isSystem } from "./helpers";
-import { useGenerateMutation } from "./scanner.slice";
 import ScannerLoading from "./ScannerLoading";
+import { useGenerateMutation } from "./scanner.slice";
 
 const initialValues = {
   orgUrl: "",

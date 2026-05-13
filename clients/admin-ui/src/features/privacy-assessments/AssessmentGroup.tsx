@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 
 import { AssessmentCard } from "./AssessmentCard";
-import { PrivacyAssessmentResponse } from "./types";
+import type { PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;
 

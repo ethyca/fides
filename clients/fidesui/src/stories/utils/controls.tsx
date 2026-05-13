@@ -1,4 +1,4 @@
-import { InputType } from "storybook/internal/csf";
+import type { InputType } from "storybook/internal/csf";
 
 import { Icons } from "../../index";
 

@@ -1,4 +1,4 @@
-import { Flex, Spin, SpinProps } from "antd/lib";
+import { Flex, Spin, type SpinProps } from "antd/lib";
 import classNames from "classnames";
 
 export interface CustomSpinProps extends SpinProps {

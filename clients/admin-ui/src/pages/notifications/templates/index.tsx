@@ -1,6 +1,6 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Empty,
   Flex,
   Skeleton,
@@ -8,7 +8,7 @@ import {
   Table,
   Typography,
 } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
@@ -17,11 +17,11 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import InfoBox from "~/features/common/InfoBox";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
+import NotificationTabs from "~/features/common/NotificationTabs";
 import {
   NOTIFICATIONS_ADD_TEMPLATE_ROUTE,
   NOTIFICATIONS_TEMPLATES_ROUTE,
 } from "~/features/common/nav/routes";
-import NotificationTabs from "~/features/common/NotificationTabs";
 import PageHeader from "~/features/common/PageHeader";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
@@ -29,12 +29,12 @@ import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { buildExpandCollapseMenu } from "~/features/data-discovery-and-detection/action-center/utils/columnBuilders";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
-import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import type { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
 import { useGetAllPropertiesQuery } from "~/features/properties";
-import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
+import type { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 
 const MissingMessagesInfoBox = () => {
   /**

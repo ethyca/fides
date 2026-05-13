@@ -2,7 +2,7 @@ import { Space, Tooltip } from "fidesui";
 
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
+import type { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import { DiscoveryStatusIcon } from "../../DiscoveryStatusIcon";
 

@@ -1,7 +1,7 @@
 import {
   CONSENT_COOKIE_NAME,
-  NoticeConsent,
-  PrivacyExperience,
+  type NoticeConsent,
+  type PrivacyExperience,
 } from "fides-js";
 
 import { mockCookie } from "../../support/mocks";
@@ -78,7 +78,8 @@ describe("Fides.shouldShowExperience()", () => {
       describe(`when rendering ${fixture} and saved consent ${savedConsent ? "exists" : "does not exist"} ${expiredTcfVersionHash ? "(with expired tcf_version_hash)" : ""}`, () => {
         it(`Fides.shouldShowExperience() returns ${shouldShowExperience}`, () => {
           cy.fixture(`consent/${fixture}`).then((data) => {
-            let experience: PrivacyExperience = data.items[0] || OVERRIDE.EMPTY;
+            const experience: PrivacyExperience =
+              data.items[0] || OVERRIDE.EMPTY;
             const tcfEnabled = /tcf/.test(fixture);
 
             // If the test requires it, generate and save a prior consent cookie

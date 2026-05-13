@@ -1,14 +1,14 @@
-import { CookieAttributes } from "js-cookie";
+import type { CookieAttributes } from "js-cookie";
 
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
-  Cookies as CookiesType,
-  FidesCookie,
-  FidesJSMeta,
-  LegacyConsentConfig,
-  NoticeConsent,
-  PrivacyExperience,
-  PrivacyNoticeWithPreference,
+  type Cookies as CookiesType,
+  type FidesCookie,
+  type FidesJSMeta,
+  type LegacyConsentConfig,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type PrivacyNoticeWithPreference,
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
@@ -28,7 +28,10 @@ import {
   updateCookieFromNoticePreferences,
   updateExperienceFromCookieConsentNotices,
 } from "../../src/lib/cookie";
-import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
+import type {
+  TcfOtherConsent,
+  TcfSavePreferences,
+} from "../../src/lib/tcf/types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";

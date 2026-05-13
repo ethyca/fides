@@ -1,8 +1,8 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Flex,
-  FlexProps,
+  type FlexProps,
   Icons,
   useMessage,
 } from "fidesui";
@@ -34,11 +34,11 @@ import SystemDataUseCell from "~/features/system/table/SystemDataUseCell";
 import SystemGroupCell from "~/features/system/table/SystemGroupCell";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
-  BasicSystemResponseExtended,
-  PrivacyDeclaration,
+  type BasicSystemResponseExtended,
+  type PrivacyDeclaration,
   ScopeRegistryEnum,
-  SystemGroup,
-  SystemGroupCreate,
+  type SystemGroup,
+  type SystemGroupCreate,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 

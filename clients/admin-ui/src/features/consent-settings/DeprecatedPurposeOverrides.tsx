@@ -1,4 +1,4 @@
-import { ColumnsType, Form, Switch, Table } from "fidesui";
+import { type ColumnsType, Form, Switch, Table } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";

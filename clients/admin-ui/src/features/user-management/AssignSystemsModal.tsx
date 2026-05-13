@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import SearchInput from "~/features/common/SearchInput";
 import { useGetAllSystemsQuery } from "~/features/system";
-import { System } from "~/types/api";
+import type { System } from "~/types/api";
 
 import AssignSystemsTable from "./AssignSystemsTable";
 

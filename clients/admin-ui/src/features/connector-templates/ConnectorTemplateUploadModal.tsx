@@ -1,9 +1,9 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  Button,
   ChakraBox as Box,
-  ChakraText as Text,
+  Button,
   Modal,
+  ChakraText as Text,
   useMessage,
 } from "fidesui";
 import React, { useState } from "react";

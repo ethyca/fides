@@ -23,7 +23,7 @@ import {
   useGetOnboardingIndustriesQuery,
 } from "./access-policies.slice";
 import DataUseCard from "./DataUseCard";
-import { OnboardingFormState } from "./types";
+import type { OnboardingFormState } from "./types";
 
 const INITIAL_STATE: OnboardingFormState = {
   industry: null,

@@ -20,7 +20,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CHAT_PROVIDERS_CONFIGURE_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { TableSkeletonLoader } from "~/features/common/table/v2";
-import { ChatConfigResponse, ScopeRegistryEnum } from "~/types/api";
+import { type ChatConfigResponse, ScopeRegistryEnum } from "~/types/api";
 
 import { SlackLogo } from "../common/logos/SlackLogo";
 import {

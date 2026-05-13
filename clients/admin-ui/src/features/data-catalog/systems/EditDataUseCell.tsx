@@ -11,7 +11,7 @@ import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import EditMinimalDataUseModal from "~/features/data-catalog/systems/EditMinimalDataUseModal";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
-import {
+import type {
   PrivacyDeclaration,
   PrivacyDeclarationResponse,
   SystemResponse,

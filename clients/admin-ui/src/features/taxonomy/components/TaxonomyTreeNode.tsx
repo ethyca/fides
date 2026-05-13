@@ -1,4 +1,4 @@
-import { Node, NodeProps } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { Button, Icons, Typography } from "fidesui";
 import { useCallback, useContext, useEffect } from "react";
 
@@ -12,7 +12,7 @@ import {
   TreeNodeHoverStatus,
 } from "../context/TaxonomyTreeHoverContext";
 import useCenterScreenOnNode from "../hooks/useCenterScreenOnNode";
-import { TaxonomyEntity } from "../types";
+import type { TaxonomyEntity } from "../types";
 import styles from "./TaxonomyTreeNode.module.scss";
 import TaxonomyTreeNodeHandle from "./TaxonomyTreeNodeHandle";
 

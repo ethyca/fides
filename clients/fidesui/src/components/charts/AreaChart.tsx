@@ -2,14 +2,14 @@ import { theme } from "antd/lib";
 import { useEffect, useId, useRef } from "react";
 import {
   Area,
-  AreaChart as RechartsAreaChart,
   CartesianGrid,
+  AreaChart as RechartsAreaChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-
+import { ChartGradient } from "./ChartGradient";
 import type { AntColorTokenKey } from "./chart-constants";
 import {
   CHART_ANIMATION,
@@ -25,7 +25,6 @@ import {
   useChartAnimation,
   useContainerSize,
 } from "./chart-utils";
-import { ChartGradient } from "./ChartGradient";
 import { XAxisTick } from "./XAxisTick";
 
 export interface AreaChartSeries {

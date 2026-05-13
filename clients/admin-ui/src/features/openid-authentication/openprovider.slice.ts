@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { OpenIDProvider } from "~/types/api";
+import type { OpenIDProvider } from "~/types/api";
 
 interface OpenIDProviderDeleteResponse {
   message: string;

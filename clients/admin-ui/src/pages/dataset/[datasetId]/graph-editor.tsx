@@ -25,8 +25,8 @@ import {
 } from "~/features/dataset/dataset.slice";
 import DatasetNodeEditor from "~/features/test-datasets/DatasetNodeEditor";
 import { removeNulls } from "~/features/test-datasets/helpers";
-import { Dataset } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { Dataset } from "~/types/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./graph-editor.module.scss";
 

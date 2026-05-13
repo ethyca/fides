@@ -1,9 +1,9 @@
 import { getErrorMessage } from "common/helpers";
 import {
   ChakraBox as Box,
-  ChakraText as Text,
   ConfirmationModal,
   Spin,
+  ChakraText as Text,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -16,13 +16,13 @@ import { NOTIFICATIONS_TEMPLATES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
-  MessagingTemplateCreateOrUpdate,
+  type MessagingTemplateCreateOrUpdate,
   useDeleteMessagingTemplateByIdMutation,
   useGetMessagingTemplateByIdQuery,
 } from "~/features/messaging-templates/messaging-templates.slice";
 import { usePutMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import PropertySpecificMessagingTemplateForm, {
-  FormValues,
+  type FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
 

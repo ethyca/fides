@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";

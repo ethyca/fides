@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 
-import { ConsentStatus } from "~/types/api";
+import type { ConsentStatus } from "~/types/api";
 
 // Mock the message hook
 const mockMessage = {

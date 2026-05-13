@@ -1,16 +1,16 @@
 import {
   combineReducers,
   configureStore,
-  StateFromReducersMapObject,
+  type StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import {
   FLUSH,
   PAUSE,
   PERSIST,
+  PURGE,
   persistReducer,
   persistStore,
-  PURGE,
   REGISTER,
   REHYDRATE,
 } from "redux-persist";

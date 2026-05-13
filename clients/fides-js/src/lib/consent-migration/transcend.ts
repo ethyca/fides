@@ -1,11 +1,11 @@
 import {
   ConsentMethod,
-  FidesInitOptionsOverrides,
-  NoticeConsent,
-  TranscendToFidesConsentMapping,
+  type FidesInitOptionsOverrides,
+  type NoticeConsent,
+  type TranscendToFidesConsentMapping,
 } from "../consent-types";
 import { getCookieByName } from "../cookie";
-import { ConsentMigrationProvider } from "./types";
+import type { ConsentMigrationProvider } from "./types";
 
 /**
  * Transcend implementation of consent migration

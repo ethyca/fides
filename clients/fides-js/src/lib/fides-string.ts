@@ -1,4 +1,4 @@
-import { CmpApi } from "@iabgpp/cmpapi";
+import type { CmpApi } from "@iabgpp/cmpapi";
 
 import { isValidAcString } from "./consent-utils";
 import { FIDES_SEPARATOR } from "./tcf/constants";

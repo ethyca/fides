@@ -1,4 +1,4 @@
-import { ComponentChildren, Fragment, VNode } from "preact";
+import { type ComponentChildren, Fragment, type VNode } from "preact";
 import type { HTMLAttributes } from "preact/compat";
 
 import { getGpcContext } from "../lib/consent-context";

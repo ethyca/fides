@@ -4,8 +4,8 @@ import ConnectionListDropdown, {
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
 import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
   ChakraStack as Stack,
   useChakraDisclosure as useDisclosure,
@@ -17,8 +17,8 @@ import ConnectorTemplateUploadModal from "~/features/connector-templates/Connect
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
 import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
   ConnectionType,
   ScopeRegistryEnum,
   SystemType,

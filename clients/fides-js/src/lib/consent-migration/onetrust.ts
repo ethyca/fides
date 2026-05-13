@@ -1,11 +1,11 @@
 import {
   ConsentMethod,
-  FidesInitOptionsOverrides,
-  NoticeConsent,
-  OtToFidesConsentMapping,
+  type FidesInitOptionsOverrides,
+  type NoticeConsent,
+  type OtToFidesConsentMapping,
 } from "../consent-types";
 import { getCookieByName } from "../cookie";
-import { ConsentMigrationProvider } from "./types";
+import type { ConsentMigrationProvider } from "./types";
 
 /**
  * OneTrust implementation of consent migration

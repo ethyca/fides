@@ -3,8 +3,8 @@ import { useRouter } from "next/router";
 
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
-import { DataPurpose } from "~/features/data-purposes/data-purpose.slice";
 import DeleteDataPurposeModal from "~/features/data-purposes/DeleteDataPurposeModal";
+import type { DataPurpose } from "~/features/data-purposes/data-purpose.slice";
 import { ScopeRegistryEnum } from "~/types/api";
 
 interface Props {

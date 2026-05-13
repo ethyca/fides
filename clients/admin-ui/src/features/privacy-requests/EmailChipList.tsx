@@ -1,5 +1,6 @@
-import { Flex, Input, InputRef, Tag } from "fidesui";
-import React, { forwardRef, useState } from "react";
+import { Flex, Input, type InputRef, Tag } from "fidesui";
+import type React from "react";
+import { forwardRef, useState } from "react";
 
 const EMAIL_REGEXP = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
 const isValidEmail = (email: string) => EMAIL_REGEXP.test(email);

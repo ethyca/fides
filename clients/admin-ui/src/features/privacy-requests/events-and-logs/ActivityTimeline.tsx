@@ -8,9 +8,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   ActivityTimelineItemTypeEnum,
-  ExecutionLog,
+  type ExecutionLog,
   ExecutionLogStatus,
-  PrivacyRequestEntity,
+  type PrivacyRequestEntity,
 } from "~/features/privacy-requests/types";
 
 import ActivityTimelineEntry from "./ActivityTimelineEntry";

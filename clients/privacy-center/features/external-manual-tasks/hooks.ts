@@ -6,7 +6,11 @@
  * Provides typed Redux hooks for the external store
  */
 
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import {
+  type TypedUseSelectorHook,
+  useDispatch,
+  useSelector,
+} from "react-redux";
 
 import type { ExternalDispatch, ExternalRootState } from "./store";
 

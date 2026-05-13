@@ -1,5 +1,5 @@
 import { ChakraTd as Td, ChakraTfoot as Tfoot, ChakraTr as Tr } from "fidesui";
-import React, { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 type Props = {
   totalColumns: number;

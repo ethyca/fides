@@ -5,7 +5,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { useLazyGetPrivacyRequestDiagnosticsQuery } from "../privacy-requests.slice";
-import { PrivacyRequestEntity } from "../types";
+import type { PrivacyRequestEntity } from "../types";
 
 const isLikelyRemoteUrl = (value: string) => /^https?:\/\//i.test(value);
 

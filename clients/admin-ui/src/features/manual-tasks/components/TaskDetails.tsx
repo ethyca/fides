@@ -3,7 +3,7 @@ import { Tag, Typography } from "fidesui";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {
   ActionType,
-  ManualFieldListItem,
+  type ManualFieldListItem,
   ManualFieldRequestType,
 } from "~/types/api";
 

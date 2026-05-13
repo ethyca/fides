@@ -1,8 +1,8 @@
-import { Icons, MenuProps, useMessage, useModal } from "fidesui";
+import { Icons, type MenuProps, useMessage, useModal } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { pluralize } from "~/features/common/utils";
-import { PrivacyRequestResponse } from "~/types/api";
+import type { PrivacyRequestResponse } from "~/types/api";
 
 import {
   BulkActionType,

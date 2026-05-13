@@ -7,7 +7,7 @@ import {
   DatePicker,
   Flex,
   Form,
-  FormInstance,
+  type FormInstance,
   Input,
   isoCodesToOptions,
   LocationSelect,
@@ -27,9 +27,9 @@ import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
-  EditableMonitorConfig,
+  type EditableMonitorConfig,
   MonitorFrequency,
-  WebsiteMonitorParams,
+  type WebsiteMonitorParams,
 } from "~/types/api";
 
 import { SharedConfigSelect } from "./SharedConfigSelect";

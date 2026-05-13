@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useFlags } from "~/features/common/features/features.slice";
-import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
+import type { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 
 export enum IntegrationFilterTabs {
   ALL = "All",

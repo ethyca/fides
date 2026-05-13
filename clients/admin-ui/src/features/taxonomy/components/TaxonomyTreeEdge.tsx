@@ -1,4 +1,4 @@
-import { BezierEdge, BezierEdgeProps } from "@xyflow/react";
+import { BezierEdge, type BezierEdgeProps } from "@xyflow/react";
 import { useCallback, useContext } from "react";
 
 import {

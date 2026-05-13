@@ -26,9 +26,9 @@ import { useState } from "react";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
 import MessageDemoCard from "~/features/poc/MessageDemoCard";
+import { ModalMethodsCard } from "~/features/poc/ModalMethodsCard";
 import type { ListDataItem } from "~/features/poc/mockListData";
 import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
-import { ModalMethodsCard } from "~/features/poc/ModalMethodsCard";
 
 const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;

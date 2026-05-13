@@ -1,6 +1,6 @@
-import { Flex, FlexProps, Typography } from "fidesui";
-import { Url } from "next/dist/shared/lib/router/router";
-import { ComponentProps } from "react";
+import { Flex, type FlexProps, Typography } from "fidesui";
+import type { Url } from "next/dist/shared/lib/router/router";
+import type { ComponentProps } from "react";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
 

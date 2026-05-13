@@ -1,12 +1,16 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import { utf8ToB64 } from "~/features/common/utils";
-import { User } from "~/features/user-management/types";
-import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
+import type { User } from "~/features/user-management/types";
+import type { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
-import {
+import type {
   AuthenticationMethods,
   LoginRequest,
   LoginResponse,

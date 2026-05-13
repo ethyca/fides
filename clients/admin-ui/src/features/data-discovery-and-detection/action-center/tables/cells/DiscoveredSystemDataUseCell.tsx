@@ -1,8 +1,8 @@
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
-import { ColumnState } from "~/features/common/table/cells/types";
+import type { ColumnState } from "~/features/common/table/cells/types";
 import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
+import type { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 const DiscoveredSystemDataUseCell = ({
   system,

@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 
@@ -7,8 +7,8 @@ import {
   ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
   ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
 } from "~/features/common/nav/routes";
-import { useCalcAggregateStatisticsMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
+import { useCalcAggregateStatisticsMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 import { useDiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredInfrastructureSystemsTable";
 import { DiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredInfrastructureSystemsTable";

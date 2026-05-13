@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
-import { DatasetConfigSchema } from "~/types/api";
+import type { DatasetConfigSchema } from "~/types/api";
 
 interface DatasetTestState {
   privacyRequestId: string | null;

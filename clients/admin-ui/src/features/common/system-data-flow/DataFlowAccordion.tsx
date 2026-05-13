@@ -1,7 +1,7 @@
 import { ChakraAccordion as Accordion } from "fidesui";
 import React from "react";
 
-import { System } from "~/types/api";
+import type { System } from "~/types/api";
 
 import { DataFlowAccordionForm } from "./DataFlowAccordionForm";
 

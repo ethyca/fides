@@ -1,7 +1,7 @@
-import { Edge, Node } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
 
-import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
+import type { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 import { buildProtectedPathsByCollection } from "./helpers";
 

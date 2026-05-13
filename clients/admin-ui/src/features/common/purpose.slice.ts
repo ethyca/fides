@@ -2,7 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { PurposesResponse } from "~/types/api";
+import type { PurposesResponse } from "~/types/api";
 
 export const purposeApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

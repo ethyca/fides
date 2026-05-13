@@ -1,4 +1,4 @@
-import { Icons, Popover, PopoverProps } from "fidesui";
+import { Icons, Popover, type PopoverProps } from "fidesui";
 
 interface InfoPopoverProps extends Omit<PopoverProps, "children" | "title"> {
   title: string | null | undefined;

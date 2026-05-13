@@ -1,6 +1,6 @@
-import { CookieAttributes } from "js-cookie";
+import type { CookieAttributes } from "js-cookie";
 
-import { FidesCookie } from "../../src/lib/consent-types";
+import type { FidesCookie } from "../../src/lib/consent-types";
 import {
   getFidesConsentCookie,
   getOrMakeFidesCookie,

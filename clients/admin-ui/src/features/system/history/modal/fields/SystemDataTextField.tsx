@@ -9,9 +9,9 @@ import _ from "lodash";
 import { useEffect, useRef, useState } from "react";
 
 import {
-  CustomInputProps,
+  type CustomInputProps,
   Label,
-  StringField,
+  type StringField,
 } from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 

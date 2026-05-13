@@ -1,4 +1,4 @@
-import { RangePickerProps } from "antd/es/date-picker";
+import type { RangePickerProps } from "antd/es/date-picker";
 import { DatePicker } from "antd/lib";
 import React from "react";
 

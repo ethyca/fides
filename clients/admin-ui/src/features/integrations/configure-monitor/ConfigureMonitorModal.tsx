@@ -1,7 +1,7 @@
 import {
-  ChakraUseDisclosureReturn as UseDisclosureReturn,
   Form,
   Spin,
+  type ChakraUseDisclosureReturn as UseDisclosureReturn,
   useMessage,
 } from "fidesui";
 
@@ -15,13 +15,13 @@ import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-mon
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
 import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monitor/ConfigureWebsiteMonitorForm";
 import {
-  ConnectionConfigurationResponseWithSystemKey,
-  ConnectionSystemTypeMap,
+  type ConnectionConfigurationResponseWithSystemKey,
+  type ConnectionSystemTypeMap,
   ConnectionType,
-  EditableMonitorConfig,
+  type EditableMonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
-import { isErrorResult, RTKResult } from "~/types/errors";
+import { isErrorResult, type RTKResult } from "~/types/errors";
 
 const TIMEOUT_DELAY = 5000;
 const TIMEOUT_COPY =

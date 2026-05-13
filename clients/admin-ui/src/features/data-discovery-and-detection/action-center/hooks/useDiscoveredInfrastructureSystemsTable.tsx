@@ -6,13 +6,13 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import { useGetIdentityProviderMonitorResultsQuery } from "../../discovery-detection.slice";
 import useActionCenterTabs, {
-  ActionCenterTabHash,
+  type ActionCenterTabHash,
 } from "./useActionCenterTabs";
 
 interface UseDiscoveredInfrastructureSystemsTableConfig {

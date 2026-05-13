@@ -16,7 +16,7 @@ import {
   useGetActiveStorageQuery,
   useGetStorageDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { StorageTypeApiAccepted } from "~/types/api";
+import type { StorageTypeApiAccepted } from "~/types/api";
 
 import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";

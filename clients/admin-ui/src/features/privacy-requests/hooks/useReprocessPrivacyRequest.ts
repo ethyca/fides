@@ -4,7 +4,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import { useRetryMutation } from "../privacy-requests.slice";
-import { PrivacyRequestEntity } from "../types";
+import type { PrivacyRequestEntity } from "../types";
 
 const useReprocessPrivacyRequest = ({
   privacyRequest,

@@ -4,11 +4,11 @@ import { useAPIHelper } from "common/hooks";
 import {
   Button,
   ChakraHStack as HStack,
-  ChakraText as Text,
   Icons,
   Modal,
   Space,
   Switch,
+  ChakraText as Text,
   Tooltip,
   useMessage,
 } from "fidesui";
@@ -19,8 +19,8 @@ import { MESSAGING_PROVIDERS_EDIT_ROUTE } from "~/features/common/nav/routes";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { usePatchConfigurationSettingsMutation } from "~/features/config-settings/config-settings.slice";
 import {
-  MessagingConfigResponse,
-  MessagingServiceType,
+  type MessagingConfigResponse,
+  type MessagingServiceType,
   ScopeRegistryEnum,
 } from "~/types/api";
 
@@ -28,12 +28,12 @@ import { AwsSesLogo } from "../../common/logos/AwsSesLogo";
 import { MailgunLogo } from "../../common/logos/MailgunLogo";
 import { TwilioLogo } from "../../common/logos/TwilioLogo";
 import { useHasPermission } from "../../common/Restrict";
+import MessagingVerificationStatusCell from "../MessagingTestStatusCell";
 import {
   useDeleteMessagingConfigurationByKeyMutation,
   useGetActiveMessagingProviderQuery,
   useGetMessagingConfigurationsQuery,
 } from "../messaging.slice";
-import MessagingVerificationStatusCell from "../MessagingTestStatusCell";
 
 // Define column keys for type safety
 enum MessagingConfigurationColumnKeys {

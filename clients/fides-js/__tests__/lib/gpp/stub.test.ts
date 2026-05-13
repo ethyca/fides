@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
-import { EventData, PingData } from "@iabgpp/cmpapi";
+import type { EventData, PingData } from "@iabgpp/cmpapi";
 
 import { makeStub } from "~/lib/gpp/stub";
-import { GppCallback } from "~/lib/gpp/types";
+import type { GppCallback } from "~/lib/gpp/types";
 
 const EXPECTED_PING_DATA = {
   gppVersion: "1.1",

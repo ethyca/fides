@@ -1,4 +1,4 @@
-import { NodeProps } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import { Button, Icons, Tag, Typography } from "fidesui";
 import { useContext } from "react";
 
@@ -7,7 +7,7 @@ import {
   DatasetNodeHoverStatus,
   DatasetTreeHoverContext,
 } from "../context/DatasetTreeHoverContext";
-import { FieldNodeData } from "../useDatasetGraph";
+import type { FieldNodeData } from "../useDatasetGraph";
 import styles from "./DatasetNode.module.scss";
 import DatasetNodeHandle from "./DatasetNodeHandle";
 import { getNodeHoverClass } from "./getNodeHoverClass";

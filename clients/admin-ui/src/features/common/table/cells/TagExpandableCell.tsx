@@ -1,8 +1,21 @@
-import { Button, Flex, FlexProps, Tag, TagProps, Text } from "fidesui";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  Flex,
+  type FlexProps,
+  Tag,
+  type TagProps,
+  Text,
+} from "fidesui";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { COLLAPSE_BUTTON_TEXT, TAG_MAX_WIDTH } from "./constants";
-import { ColumnState } from "./types";
+import type { ColumnState } from "./types";
 
 type TagExpandableCellValues = {
   label: string | ReactNode;

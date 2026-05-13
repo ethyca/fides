@@ -1,12 +1,12 @@
 import { Card, Icons, Steps } from "fidesui";
 import { useMemo } from "react";
 
-import { ConnectionSystemTypeMap } from "~/types/api";
-import { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionConfigurationResponse";
+import type { ConnectionSystemTypeMap } from "~/types/api";
+import type { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionConfigurationResponse";
 
 import type { ConnectionStatusData } from "../ConnectionStatusNotice";
 import {
-  Step,
+  type Step,
   useAddManualTaskStep,
   useAssignTasksToUsersStep,
   useAuthorizeIntegrationStep,

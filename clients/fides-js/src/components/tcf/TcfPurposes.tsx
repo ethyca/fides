@@ -1,27 +1,30 @@
 import { useMemo, useState } from "preact/hooks";
 
-import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
+import type { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
 import { getGpcContext } from "../../lib/consent-context";
-import { PrivacyExperience } from "../../lib/consent-types";
+import type { PrivacyExperience } from "../../lib/consent-types";
 import { getGpcStatusFromNotice } from "../../lib/consent-utils";
-import { FidesEventDetailsPreference } from "../../lib/events";
+import type { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import {
-  EnabledIds,
+  type EnabledIds,
   LegalBasisEnum,
-  PrivacyNoticeWithBestTranslation,
-  PurposeRecord,
-  TCFPurposeConsentRecord,
-  TCFPurposeLegitimateInterestsRecord,
-  TCFSpecialPurposeRecord,
+  type PrivacyNoticeWithBestTranslation,
+  type PurposeRecord,
+  type TCFPurposeConsentRecord,
+  type TCFPurposeLegitimateInterestsRecord,
+  type TCFSpecialPurposeRecord,
 } from "../../lib/tcf/types";
 import { GpcBadge } from "../GpcBadge";
 import EmbeddedVendorList from "./EmbeddedVendorList";
 import RadioGroup from "./RadioGroup";
-import RecordsList, { RecordListItem, RecordListType } from "./RecordsList";
+import RecordsList, {
+  type RecordListItem,
+  type RecordListType,
+} from "./RecordsList";
 
 const PurposeDetails = ({
   type,

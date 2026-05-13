@@ -1,4 +1,4 @@
-import { Dayjs } from "dayjs";
+import type { Dayjs } from "dayjs";
 import { useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";

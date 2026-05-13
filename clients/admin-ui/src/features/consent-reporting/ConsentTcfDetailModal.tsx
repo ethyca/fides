@@ -2,7 +2,7 @@
 import { Modal } from "fidesui";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { PreferencesSaved } from "~/types/api";
+import type { PreferencesSaved } from "~/types/api";
 
 import TcfConsentTable from "./TcfConsentTable";
 

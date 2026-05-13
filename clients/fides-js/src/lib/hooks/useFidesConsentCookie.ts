@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 
-import { FidesCookie, FidesInitOptions } from "../consent-types";
+import type { FidesCookie, FidesInitOptions } from "../consent-types";
 import { getFidesConsentCookie } from "../cookie";
 
 /**

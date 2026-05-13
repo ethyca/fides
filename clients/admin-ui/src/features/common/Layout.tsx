@@ -1,7 +1,7 @@
-import { ChakraFlex as Flex, ChakraFlexProps as FlexProps } from "fidesui";
+import { ChakraFlex as Flex, type ChakraFlexProps as FlexProps } from "fidesui";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React from "react";
+import type React from "react";
 
 import { useFeatures } from "~/features/common/features";
 import { useGetActiveStorageQuery } from "~/features/privacy-requests/privacy-requests.slice";

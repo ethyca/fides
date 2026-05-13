@@ -15,7 +15,7 @@ import { useAppSelector } from "~/app/hooks";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
 
-import { Field } from "./types";
+import type { Field } from "./types";
 
 type DSRCustomizationFormProps = {
   data: Field[];

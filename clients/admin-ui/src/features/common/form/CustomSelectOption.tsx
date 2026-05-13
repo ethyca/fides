@@ -1,4 +1,4 @@
-import { Button, ButtonProps } from "fidesui";
+import { Button, type ButtonProps } from "fidesui";
 
 interface CustomSelectOptionProps extends Omit<ButtonProps, "type"> {}
 

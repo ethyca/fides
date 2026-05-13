@@ -1,19 +1,19 @@
-import { CacheControl, stringify } from "cache-control-parser";
+import { type CacheControl, stringify } from "cache-control-parser";
 import {
   ComponentType,
-  ConsentOption,
+  type ConsentOption,
   constructFidesRegionString,
   DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_ID,
-  EmptyExperience,
+  type EmptyExperience,
   experienceIsValid,
-  fetchExperience,
   FidesAttStatus,
-  FidesConfig,
+  type FidesConfig,
+  fetchExperience,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
   parseCommaSeparatedString,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  UserGeolocation,
+  type UserGeolocation,
 } from "fides-js"; // NOTE: these import from the mjs file
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -25,7 +25,7 @@ import {
   loadServerSettings,
 } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
-import { MissingExperienceBehaviors } from "~/app/server-utils/PrivacyCenterSettings";
+import type { MissingExperienceBehaviors } from "~/app/server-utils/PrivacyCenterSettings";
 import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";

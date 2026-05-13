@@ -1,4 +1,4 @@
-import { Avatar, AvatarProps } from "antd/lib";
+import { Avatar, type AvatarProps } from "antd/lib";
 import classNames from "classnames";
 import React from "react";
 

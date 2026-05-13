@@ -1,5 +1,5 @@
 import { Flex, Input, Typography } from "fidesui";
-import { KeyboardEvent, useRef, useState } from "react";
+import { type KeyboardEvent, useRef, useState } from "react";
 
 import styles from "./TemplateVariableInput.module.css";
 

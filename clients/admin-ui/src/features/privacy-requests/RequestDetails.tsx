@@ -6,9 +6,9 @@ import { RouterLink } from "~/features/common/nav/RouterLink";
 import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import type { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { useGetPropertyByIdQuery } from "~/features/properties/property.slice";
-import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
+import type { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ClipboardButton from "../common/ClipboardButton";
 import RequestAttachments from "./attachments/RequestAttachments";

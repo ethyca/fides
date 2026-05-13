@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import CheckboxTree from "~/features/common/CheckboxTree";
 import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
-import { DataCategory } from "~/types/api";
+import type { DataCategory } from "~/types/api";
 
 const { Text } = Typography;
 

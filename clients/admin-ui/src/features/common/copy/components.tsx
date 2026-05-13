@@ -1,7 +1,7 @@
 import {
   ChakraCode as Code,
   ChakraHeading as Heading,
-  ChakraHeadingProps as HeadingProps,
+  type ChakraHeadingProps as HeadingProps,
   ChakraLink as Link,
   ChakraOrderedList as OrderedList,
   ChakraTable as Table,
@@ -14,7 +14,7 @@ import {
   ChakraTr as Tr,
   ChakraUnorderedList as UnorderedList,
 } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export const InfoHeading = ({
   text,

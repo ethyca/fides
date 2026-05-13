@@ -2,7 +2,14 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { Button, DatePicker, Form, FormInstance, Input, Select } from "fidesui";
+import {
+  Button,
+  DatePicker,
+  Form,
+  type FormInstance,
+  Input,
+  Select,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -12,10 +19,10 @@ import { formatUser } from "~/features/common/utils";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
-  ClassifyLlmPromptTemplateOptions,
-  ConnectionSystemTypeMap,
+  type ClassifyLlmPromptTemplateOptions,
+  type ConnectionSystemTypeMap,
   ConnectionType,
-  EditableMonitorConfig,
+  type EditableMonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
 

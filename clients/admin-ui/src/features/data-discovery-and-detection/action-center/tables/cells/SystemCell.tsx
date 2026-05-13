@@ -1,13 +1,13 @@
 import { Icons, Tag, useMessage } from "fidesui";
 import { truncate } from "lodash";
-import { MouseEventHandler, useCallback, useState } from "react";
+import { type MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import styles from "~/features/common/table/cells/Cells.module.scss";
 import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 interface SystemCellProps {
   aggregateSystem: StagedResourceAPIResponse;

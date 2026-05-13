@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { Table, TableProps } from "../../index";
+import { Table, type TableProps } from "../../index";
 
 const meta = {
   title: "Data Display/Table",

@@ -1,12 +1,12 @@
 /* eslint-disable react/no-unstable-nested-components */
 
 import {
-  ColumnDef,
+  type ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, ChakraFlex as Flex, ChakraText as Text, Spin } from "fidesui";
+import { Button, ChakraFlex as Flex, Spin, ChakraText as Text } from "fidesui";
 import { useMemo } from "react";
 
 import {

@@ -4,7 +4,7 @@ import {
   Col,
   CUSTOM_TAG_COLOR,
   Divider,
-  ListItemProps,
+  type ListItemProps,
   Row,
   Space,
   Spin,
@@ -19,8 +19,8 @@ import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
-  ConnectionType,
-  MonitorTaskResponse,
+  type ConnectionType,
+  type MonitorTaskResponse,
   MonitorTaskType,
 } from "~/types/api";
 

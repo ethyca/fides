@@ -6,7 +6,7 @@ import UserManagementTabs from "user-management/UserManagementTabs";
 import { useAppDispatch } from "~/app/hooks";
 import { isErrorResult } from "~/features/common/helpers";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { UserCreateExtended } from "~/types/api";
+import type { UserCreateExtended } from "~/types/api";
 
 import PageHeader from "../common/PageHeader";
 import {

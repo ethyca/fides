@@ -1,8 +1,12 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import { useCallback, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { type RootState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { selectHealth } from "~/features/common/health.slice";
 import { selectInitialConnections } from "~/features/datastore-connections";
 import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
@@ -10,7 +14,7 @@ import { selectSystemsCount } from "~/features/system";
 import flagDefaults from "~/flags.json";
 
 import { configureFlags, flagsForEnv } from "./config";
-import { Env, FlagsFor, NamesFor, ValueFor } from "./types";
+import type { Env, FlagsFor, NamesFor, ValueFor } from "./types";
 
 export const FLAG_CONFIG = configureFlags(flagDefaults);
 export type FlagConfig = typeof FLAG_CONFIG;

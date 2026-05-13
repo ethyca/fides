@@ -1,14 +1,14 @@
 import { Button, Flex, Modal, Typography } from "fidesui";
 import React, { useCallback } from "react";
 
-import { PrivacyRequestResponse } from "~/types/api";
+import type { PrivacyRequestResponse } from "~/types/api";
 
 import {
   getCustomFields,
   getOtherIdentities,
   getPrimaryIdentity,
 } from "./dashboard/utils";
-import { PrivacyRequestEntity } from "./types";
+import type { PrivacyRequestEntity } from "./types";
 
 type ApproveModalProps = {
   isOpen: boolean;

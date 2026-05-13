@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";

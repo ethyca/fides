@@ -1,12 +1,12 @@
 import { baseApi } from "~/features/common/api.slice";
 import { buildArrayQueryParams } from "~/features/common/utils";
-import { AllowedActionsResponse } from "~/types/api/models/AllowedActionsResponse";
-import { FilteredFieldActionRequest } from "~/types/api/models/FilteredFieldActionRequest";
-import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
-import { PaginationQueryParams } from "~/types/query-params";
+import type { AllowedActionsResponse } from "~/types/api/models/AllowedActionsResponse";
+import type { FilteredFieldActionRequest } from "~/types/api/models/FilteredFieldActionRequest";
+import type { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
+import type { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
+import type { PaginationQueryParams } from "~/types/query-params";
 
-import {
+import type {
   FieldActionTypeValue,
   MonitorFieldParameters,
   MonitorFieldQueryParameters,

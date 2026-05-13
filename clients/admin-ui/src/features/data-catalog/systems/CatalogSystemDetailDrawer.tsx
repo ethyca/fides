@@ -2,7 +2,7 @@ import { Button, Drawer } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
 import EditDataUseCell from "~/features/data-catalog/systems/EditDataUseCell";
-import { SystemResponse, SystemWithMonitorKeys } from "~/types/api";
+import type { SystemResponse, SystemWithMonitorKeys } from "~/types/api";
 
 const CatalogSystemDetailDrawer = ({
   system,

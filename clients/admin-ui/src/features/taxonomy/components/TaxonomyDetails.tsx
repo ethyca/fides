@@ -19,10 +19,13 @@ import { VALUE_TYPE_RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
 import useCustomFieldValueTypeOptions from "~/features/custom-fields/useCustomFieldValueTypeOptions";
 import { useDeleteCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
-import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
-import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
-import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
-import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
+import type { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
+import {
+  type CustomFieldDefinitionWithId,
+  ScopeRegistryEnum,
+} from "~/types/api";
+import type { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
+import type { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 import { isErrorResult } from "~/types/errors";
 
 interface TaxonomyDetailsProps {

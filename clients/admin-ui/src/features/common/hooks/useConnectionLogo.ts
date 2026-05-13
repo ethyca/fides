@@ -2,12 +2,15 @@ import { useMemo } from "react";
 
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import {
+  type ConnectionLogoSource,
   connectionLogoFromConfiguration,
   connectionLogoFromKey,
   connectionLogoFromSystemType,
-  type ConnectionLogoSource,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import {
+  type ConnectionConfigurationResponse,
+  ConnectionType,
+} from "~/types/api";
 
 /**
  * Custom hook to get the correct logo data for ConnectionTypeLogo component.

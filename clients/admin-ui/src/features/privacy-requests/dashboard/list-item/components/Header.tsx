@@ -7,9 +7,9 @@ import { useFlags } from "~/features/common/features";
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
-import { PrivacyRequestResponseExtended } from "~/types/api";
+import type { PrivacyRequestResponseExtended } from "~/types/api";
 
-import { IdentityValueWithKey } from "../../utils";
+import type { IdentityValueWithKey } from "../../utils";
 
 interface HeaderProps {
   privacyRequest: PrivacyRequestResponseExtended;

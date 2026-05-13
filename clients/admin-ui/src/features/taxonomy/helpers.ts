@@ -1,7 +1,7 @@
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 import { TaxonomyTypeEnum } from "./constants";
-import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
+import type { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
 export const transformTaxonomyEntityToNodes = (
   entities: TaxonomyEntity[],

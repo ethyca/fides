@@ -1,7 +1,7 @@
-import Cookies, { CookiesStatic } from "js-cookie";
+import Cookies, { type CookiesStatic } from "js-cookie";
 
-import { ConsentContext } from "./consent-context";
-import {
+import type { ConsentContext } from "./consent-context";
+import type {
   Cookies as CookiesType,
   FidesCookie,
   FidesInitOptions,

@@ -1,4 +1,4 @@
-import { NodeProps } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import { Button, Icons, Typography } from "fidesui";
 import { useContext } from "react";
 

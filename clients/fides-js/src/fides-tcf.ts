@@ -10,18 +10,18 @@
  */
 import { TCString } from "@iabtechlabtcf/core";
 
-import { FidesCookie, isNewFidesCookie } from "./fides";
+import { type FidesCookie, isNewFidesCookie } from "./fides";
 import { getConsentContext } from "./lib/consent-context";
 import {
-  FidesConfig,
-  FidesGlobal,
-  FidesInitOptionsOverrides,
-  FidesOverrides,
-  GetPreferencesFnResp,
-  NoticeConsent,
-  NoticeValues,
+  type FidesConfig,
+  type FidesGlobal,
+  type FidesInitOptionsOverrides,
+  type FidesOverrides,
+  type GetPreferencesFnResp,
+  type NoticeConsent,
+  type NoticeValues,
   OverrideType,
-  PrivacyExperience,
+  type PrivacyExperience,
 } from "./lib/consent-types";
 import { hasFidesConsentCookie } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
@@ -30,7 +30,7 @@ import {
   dispatchFidesEvent,
   dispatchReadyEvents,
 } from "./lib/events";
-import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
+import { type DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import type { GppFunction } from "./lib/gpp/types";
 import { getCoreFides, raise, updateWindowFides } from "./lib/init-utils";
 import {

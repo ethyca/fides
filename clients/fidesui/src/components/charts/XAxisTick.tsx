@@ -1,5 +1,5 @@
-import { formatTimestamp } from "./chart-utils";
 import { ChartText } from "./ChartText";
+import { formatTimestamp } from "./chart-utils";
 
 interface XAxisTickProps {
   x?: number;

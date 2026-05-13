@@ -17,7 +17,7 @@ import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { FormValues } from "~/types/forms";
+import type { FormValues } from "~/types/forms";
 
 const useConsentRequestForm = ({
   onClose,

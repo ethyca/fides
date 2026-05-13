@@ -20,9 +20,9 @@ import { useFeatures } from "~/features/common/features";
 import PageHeader from "~/features/common/PageHeader";
 import { DEFAULT_DATA_SECTIONS } from "~/features/prompt-explorer/constants";
 import {
-  DataSectionConfig,
-  PromptInfo,
-  TemplateSummary,
+  type DataSectionConfig,
+  type PromptInfo,
+  type TemplateSummary,
   useExecutePromptMutation,
   useGetAssessmentsQuery,
   useGetDataSectionsQuery,

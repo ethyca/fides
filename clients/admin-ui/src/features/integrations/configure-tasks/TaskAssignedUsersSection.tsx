@@ -1,11 +1,11 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
-  ChakraText as Text,
   Icons,
   Select,
   Table,
+  ChakraText as Text,
   Typography,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
@@ -15,7 +15,7 @@ import {
   useGetManualTaskConfigQuery,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
-import { UserResponse } from "~/types/api";
+import type { UserResponse } from "~/types/api";
 
 type Props = {
   connectionKey: string;

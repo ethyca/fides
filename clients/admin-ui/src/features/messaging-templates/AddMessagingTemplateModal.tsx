@@ -2,7 +2,7 @@ import { Button, Flex, Modal, Select, Typography } from "fidesui";
 import { useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import type { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 
 interface AddMessagingTemplateModalProps {

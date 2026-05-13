@@ -1,5 +1,5 @@
-import { ColumnsType } from "antd/es/table";
-import { MenuProps, Table, TableProps } from "antd/lib";
+import type { ColumnsType } from "antd/es/table";
+import { type MenuProps, Table, type TableProps } from "antd/lib";
 import React from "react";
 
 import { CustomTableHeaderCell } from "./CustomTableHeaderCell";

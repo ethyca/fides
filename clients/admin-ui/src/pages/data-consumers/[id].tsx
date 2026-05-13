@@ -7,15 +7,15 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import DataConsumerForm, {
+  type DataConsumerFormValues,
+} from "~/features/data-consumers/DataConsumerForm";
 import {
   useAssignConsumerPurposesMutation,
   useGetDataConsumerByIdQuery,
   useUpdateDataConsumerMutation,
 } from "~/features/data-consumers/data-consumer.slice";
-import DataConsumerForm, {
-  DataConsumerFormValues,
-} from "~/features/data-consumers/DataConsumerForm";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 const EditDataConsumerPage: NextPage = () => {
   const message = useMessage();

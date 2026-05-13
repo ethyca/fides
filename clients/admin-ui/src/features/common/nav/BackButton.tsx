@@ -1,4 +1,4 @@
-import { Avatar, Button, ButtonProps, Icons } from "fidesui";
+import { Avatar, Button, type ButtonProps, Icons } from "fidesui";
 import { useRouter } from "next/navigation";
 
 import styles from "./BackButton.module.css";

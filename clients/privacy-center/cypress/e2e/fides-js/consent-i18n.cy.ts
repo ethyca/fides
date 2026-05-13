@@ -1,14 +1,14 @@
 /* eslint-disable spaced-comment */
 import {
   ComponentType,
-  ExperienceConfigTranslation,
+  type ExperienceConfigTranslation,
   FidesEndpointPaths,
-  FidesInitOptions,
-  PrivacyExperience,
-  PrivacyNotice,
+  type FidesInitOptions,
+  type PrivacyExperience,
+  type PrivacyNotice,
 } from "fides-js";
 
-import { Locale } from "~/../fides-js/src/lib/i18n";
+import type { Locale } from "~/../fides-js/src/lib/i18n";
 
 import { API_URL, TEST_OVERRIDE_WINDOW_PATH } from "../../support/constants";
 import { stubConfig, stubTCFExperience } from "../../support/stubs";

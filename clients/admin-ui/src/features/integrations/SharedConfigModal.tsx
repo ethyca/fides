@@ -5,7 +5,7 @@ import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import SharedMonitorConfigForm from "~/features/monitors/SharedMonitorConfigForm";
 import SharedMonitorConfigTable from "~/features/monitors/SharedMonitorConfigTable";
-import { SharedMonitorConfig } from "~/types/api";
+import type { SharedMonitorConfig } from "~/types/api";
 
 enum SharedConfigModalState {
   MAIN_VIEW = "main",

@@ -20,7 +20,10 @@ import {
   useGetJiraTemplateVariablesQuery,
   usePreviewJiraTicketMutation,
 } from "~/features/plus/plus.slice";
-import { ConnectionConfigurationResponse, JiraTicketData } from "~/types/api";
+import type {
+  ConnectionConfigurationResponse,
+  JiraTicketData,
+} from "~/types/api";
 
 const DUE_DATE_TYPE_NONE = "none";
 const DUE_DATE_TYPE_FIXED_DAYS = "fixed_days";

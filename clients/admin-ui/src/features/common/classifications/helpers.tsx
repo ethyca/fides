@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useGetAllClassifyInstancesQuery } from "~/features/plus/plus.slice";
-import { ClassificationStatus, GenerateTypes } from "~/types/api";
+import { ClassificationStatus, type GenerateTypes } from "~/types/api";
 
 const POLL_INTERVAL_SECONDS = 3;
 

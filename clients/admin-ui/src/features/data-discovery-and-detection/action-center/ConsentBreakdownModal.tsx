@@ -1,7 +1,7 @@
 import { Alert, Button, Flex, Modal, Table, Typography } from "fidesui";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 import { useConsentBreakdownTable } from "./hooks/useConsentBreakdownTable";
 

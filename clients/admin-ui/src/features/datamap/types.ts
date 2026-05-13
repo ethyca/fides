@@ -1,4 +1,4 @@
-import { DATAMAP_GROUPING } from "~/types/api";
+import type { DATAMAP_GROUPING } from "~/types/api";
 
 export type Link = {
   source: string;

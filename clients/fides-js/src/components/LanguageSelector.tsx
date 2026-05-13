@@ -6,11 +6,11 @@ import {
   useState,
 } from "preact/hooks";
 
-import { FidesInitOptions } from "../lib/consent-types";
+import type { FidesInitOptions } from "../lib/consent-types";
 import {
   DEFAULT_LOCALE,
+  type Locale,
   loadMessagesFromGVLTranslations,
-  Locale,
 } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { GVLContext } from "../lib/tcf/gvl-context";

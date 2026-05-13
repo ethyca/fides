@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { v4 } from "uuid";
 
 import {
   applyRequestContext,
   applyResponseHeaders,
   getApplicableHeaderRules,
-  MiddlewareResponseInit,
+  type MiddlewareResponseInit,
 } from "./app/server-utils/headers";
 import loadEnvironmentVariables from "./app/server-utils/loadEnvironmentVariables";
 import { createLogger } from "./app/server-utils/logger";
-import { PrivacyCenterSettings } from "./app/server-utils/PrivacyCenterSettings";
+import type { PrivacyCenterSettings } from "./app/server-utils/PrivacyCenterSettings";
 import { recommendedSecurityHeaders } from "./app/server-utils/recommendedSecurityHeaders";
 import { safelyGetHost } from "./app/server-utils/safelyGetHost";
 

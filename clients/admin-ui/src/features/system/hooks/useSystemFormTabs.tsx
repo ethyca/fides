@@ -1,9 +1,9 @@
 import {
   ChakraBox as Box,
   ChakraLink as Link,
-  ChakraText as Text,
   Space,
-  TabsProps,
+  type TabsProps,
+  ChakraText as Text,
   useNotification,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -19,8 +19,8 @@ import {
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
-import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import ToastLink from "~/features/common/ToastLink";
+import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { selectConsentModuleEnabled } from "~/features/config-settings/config-settings.slice";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
@@ -30,10 +30,10 @@ import {
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemHistoryTable from "~/features/system/history/SystemHistoryTable";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
+import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
-import { SystemResponse } from "~/types/api";
+import type { SystemResponse } from "~/types/api";
 
 import useOAuthStatusHandler from "./useOAuthStatusHandler";
 

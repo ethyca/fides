@@ -3,7 +3,10 @@ import {
   getGpcContext,
 } from "../../src/lib/consent-context";
 import { readConsentFromAnyProvider } from "../../src/lib/consent-migration";
-import { ConsentMethod, FidesInitOptions } from "../../src/lib/consent-types";
+import {
+  ConsentMethod,
+  type FidesInitOptions,
+} from "../../src/lib/consent-types";
 import { decodeFidesString } from "../../src/lib/fides-string";
 import mockFidesInitOptions from "../__fixtures__/mock_fides_init_options.json";
 

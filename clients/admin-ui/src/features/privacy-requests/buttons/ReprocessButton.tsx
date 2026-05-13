@@ -1,5 +1,5 @@
 import { Button, Icons, Typography, useMessage } from "fidesui";
-import { ForwardedRef, forwardRef, useState } from "react";
+import { type ForwardedRef, forwardRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -10,7 +10,7 @@ import {
   useBulkRetryMutation,
   useRetryMutation,
 } from "../privacy-requests.slice";
-import { PrivacyRequestEntity } from "../types";
+import type { PrivacyRequestEntity } from "../types";
 
 type ReprocessButtonProps = {
   handleBlur?: (ref: ForwardedRef<any>) => void;

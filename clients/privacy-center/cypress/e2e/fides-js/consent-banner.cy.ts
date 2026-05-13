@@ -1,17 +1,17 @@
 import {
-  ComponentType,
   CONSENT_COOKIE_NAME,
+  ComponentType,
   ConsentFlagType,
   ConsentMechanism,
   ConsentMethod,
   ConsentNonApplicableFlagMode,
   encodeNoticeConsentString,
-  FidesCookie,
-  FidesInitOptions,
+  type FidesCookie,
+  type FidesInitOptions,
   Layer1ButtonOption,
-  PrivacyNotice,
-  RecordConsentServedRequest,
+  type PrivacyNotice,
   REQUEST_SOURCE,
+  type RecordConsentServedRequest,
   UserConsentPreference,
 } from "fides-js";
 
@@ -3562,7 +3562,7 @@ describe("Consent overlay", () => {
       });
       it("applies fides_disabled_notices override", () => {
         // Disable the analytics notice which is opted in by default
-        let overrides = {
+        const overrides = {
           fides_disabled_notices: "analytics_opt_out",
         };
         cy.fixture("consent/experience_banner_modal.json").then(() => {

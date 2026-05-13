@@ -3,7 +3,7 @@ import { useChakraDisclosure as useDisclosure, useMessage } from "fidesui";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { PrivacyRequestStatus } from "~/types/api";
 
-import { PrivacyRequestEntity } from "../types";
+import type { PrivacyRequestEntity } from "../types";
 import { useMutations } from "./useMutations";
 
 const useApproveDenyPrivacyRequest = ({

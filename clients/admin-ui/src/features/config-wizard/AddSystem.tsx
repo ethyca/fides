@@ -1,10 +1,10 @@
 import {
   ChakraBox as Box,
   ChakraHeading as Heading,
+  ManualSetupIcon,
   ChakraSimpleGrid as SimpleGrid,
   ChakraStack as Stack,
   ChakraText as Text,
-  ManualSetupIcon,
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";

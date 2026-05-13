@@ -5,7 +5,7 @@
  * In the future, this should hold interactions with the CMP API as well as string generation.
  */
 
-import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
+import { CmpApi, type TCData } from "@iabtechlabtcf/cmpapi";
 import {
   GVL,
   PurposeRestriction,
@@ -15,10 +15,13 @@ import {
   TCString,
 } from "@iabtechlabtcf/core";
 
-import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
+import type {
+  PrivacyExperience,
+  PrivacyExperienceMinimal,
+} from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
-import { EnabledIds, TcfPublisherRestriction } from "./tcf/types";
+import type { EnabledIds, TcfPublisherRestriction } from "./tcf/types";
 import {
   decodeVendorId,
   uniqueGvlVendorIds,
@@ -178,10 +181,7 @@ export const generateFidesString = async ({
       // Set legitimate interest for special-purpose only vendors and vendors that
       // have declared only purposes based on consent (no LI) + at least one SP
       Object.values(experience.gvl?.vendors ?? {}).forEach((vendor) => {
-        if (
-          !!vendor.specialPurposes?.length &&
-          !vendor.legIntPurposes?.length
-        ) {
+        if (vendor.specialPurposes?.length && !vendor.legIntPurposes?.length) {
           tcModel.vendorLegitimateInterests.set(vendor.id);
         }
       });
@@ -307,8 +307,8 @@ export const initializeTcfCmpApi = () => {
   window.addEventListener("FidesConsentLoaded", (event) => {
     const tcString = extractTCStringForCmpApi(event);
     if (
-      !!tcString &&
-      !!event.detail.extraDetails &&
+      tcString &&
+      event.detail.extraDetails &&
       !event.detail.extraDetails.shouldShowExperience
     ) {
       // we are not showing the experience, so we use false

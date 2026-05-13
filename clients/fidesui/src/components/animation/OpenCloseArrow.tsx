@@ -1,6 +1,6 @@
 import classNames from "classnames";
-import { Easing, HTMLMotionProps, motion } from "motion/react";
-import { CSSProperties } from "react";
+import { type Easing, type HTMLMotionProps, motion } from "motion/react";
+import type { CSSProperties } from "react";
 
 import styles from "./OpenCloseArrow.module.scss";
 

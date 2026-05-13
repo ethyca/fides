@@ -1,6 +1,6 @@
 import { get } from "lodash";
 
-import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
+import type { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 /**
  * Because there is only one /dataset endpoint which handles dataset, collection,

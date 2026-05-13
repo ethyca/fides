@@ -1,12 +1,12 @@
-import { FidesEvent, FidesEventType } from "../docs";
+import type { FidesEvent, FidesEventType } from "../docs";
 import {
   ConsentFlagType,
   ConsentNonApplicableFlagMode,
-  FidesGlobal,
-  NoticeConsent,
+  type FidesGlobal,
+  type NoticeConsent,
 } from "../lib/consent-types";
 import { applyOverridesToConsent } from "../lib/consent-utils";
-import { FidesEventDetail } from "../lib/events";
+import type { FidesEventDetail } from "../lib/events";
 
 declare global {
   interface Window {

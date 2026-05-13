@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 
-import { NextSearchParams } from "~/types/next";
+import type { NextSearchParams } from "~/types/next";
 
 import {
   CLOUDFRONT_HEADER_COUNTRY,

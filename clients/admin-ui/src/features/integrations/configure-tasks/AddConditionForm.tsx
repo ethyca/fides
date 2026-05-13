@@ -1,17 +1,17 @@
-import { Dayjs } from "dayjs";
+import type { Dayjs } from "dayjs";
 import {
   Button,
   ChakraFlex as Flex,
   Form,
-  FormInstance,
+  type FormInstance,
   Radio,
-  RadioChangeEvent,
+  type RadioChangeEvent,
   Select,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
 import { DatasetReferencePicker } from "~/features/common/dataset";
-import { ConditionLeaf, Operator } from "~/types/api";
+import { type ConditionLeaf, Operator } from "~/types/api";
 
 import { ConditionValueSelector } from "./components/ConditionValueSelector";
 import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
@@ -25,9 +25,9 @@ import {
   getInitialFieldSource,
   getValueTooltip,
   OPERATOR_OPTIONS,
+  PrivacyRequestField,
   parseConditionValue,
   parseStoredValueForForm,
-  PrivacyRequestField,
   STANDARD_IDENTITY_FIELDS,
 } from "./utils";
 

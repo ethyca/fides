@@ -1,7 +1,7 @@
-import { Table } from "@tanstack/react-table";
+import type { Table } from "@tanstack/react-table";
 import React from "react";
 
-import { DatamapRow } from "../datamap.slice";
+import type { DatamapRow } from "../datamap.slice";
 
 type DatamapTableInstance = Table<DatamapRow>;
 

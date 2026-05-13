@@ -1,8 +1,8 @@
-import { Edge, MarkerType, Node } from "@xyflow/react";
+import { type Edge, MarkerType, type Node } from "@xyflow/react";
 import { useMemo } from "react";
 
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
-import { SpatialData } from "~/features/datamap/types";
+import type { SpatialData } from "~/features/datamap/types";
 
 type UseDatamapGraphProps = {
   data: SpatialData;

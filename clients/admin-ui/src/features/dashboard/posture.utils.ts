@@ -1,4 +1,4 @@
-import { DiffDirection, PostureResponse } from "./types";
+import { DiffDirection, type PostureResponse } from "./types";
 
 interface PostureDiffText {
   direction: DiffDirection;

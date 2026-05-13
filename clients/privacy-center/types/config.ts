@@ -1,4 +1,4 @@
-import { ConfigConsentOption } from "./api";
+import type { ConfigConsentOption } from "./api";
 
 type LegacyIdentityConfigProps = "optional" | "required" | string | null;
 

@@ -1,8 +1,8 @@
 import { Divider, Flex, Form, Input, Title } from "fidesui";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
-import { SystemInfoFormValues } from "~/features/datamap/datamap-drawer/types";
-import { System } from "~/types/api";
+import type { SystemInfoFormValues } from "~/features/datamap/datamap-drawer/types";
+import type { System } from "~/types/api";
 
 type SystemInfoProps = {
   system: System;

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, renderHook } from "@testing-library/react";
-import { TablePaginationConfig, TableProps } from "fidesui";
+import type { TablePaginationConfig, TableProps } from "fidesui";
 
 // Mock nuqs using shared mock implementation to prevent ESM issues
 // eslint-disable-next-line global-require

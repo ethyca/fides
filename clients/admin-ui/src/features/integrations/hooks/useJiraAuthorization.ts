@@ -2,7 +2,10 @@ import { useAPIHelper } from "common/hooks";
 import { useMessage } from "fidesui";
 
 import { useInitiateJiraOAuthMutation } from "~/features/plus/plus.slice";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import {
+  type ConnectionConfigurationResponse,
+  ConnectionType,
+} from "~/types/api";
 
 interface UseJiraAuthorizationProps {
   connection?: ConnectionConfigurationResponse;

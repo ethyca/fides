@@ -5,16 +5,16 @@ import { fidesStringToConsent } from "~/lib/gpp/string-to-consent";
 import {
   ComponentType,
   ConsentMechanism,
-  ExperienceConfig,
-  FidesCookie,
-  PrivacyExperience,
-  PrivacyNotice,
+  type ExperienceConfig,
+  type FidesCookie,
+  type PrivacyExperience,
+  type PrivacyNotice,
   PrivacyNoticeFramework,
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
 import { GPPUSApproach } from "../../../src/lib/gpp/constants";
 import { makeStub } from "../../../src/lib/gpp/stub";
-import {
+import type {
   GPPFieldMapping,
   GPPMechanismMapping,
 } from "../../../src/lib/gpp/types";

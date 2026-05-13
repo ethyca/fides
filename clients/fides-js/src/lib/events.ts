@@ -3,7 +3,7 @@ import type {
   FidesEventType,
   FidesLocaleEvent,
 } from "../docs";
-import { FidesCookie } from "./consent-types";
+import type { FidesCookie } from "./consent-types";
 import { applyOverridesToConsent } from "./consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types

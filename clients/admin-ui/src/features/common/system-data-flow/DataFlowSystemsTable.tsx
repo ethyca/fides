@@ -1,5 +1,6 @@
 import {
   ChakraBox as Box,
+  Switch,
   ChakraTable as Table,
   ChakraTbody as Tbody,
   ChakraTd as Td,
@@ -7,12 +8,11 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
-  Switch,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 
-import { DataFlow, System } from "~/types/api";
+import type { DataFlow, System } from "~/types/api";
 
 type Props = {
   allSystems: System[];

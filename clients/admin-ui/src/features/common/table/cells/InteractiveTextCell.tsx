@@ -1,5 +1,5 @@
-import { Flex, FlexProps, Typography } from "fidesui";
-import { ComponentProps, MouseEventHandler } from "react";
+import { Flex, type FlexProps, Typography } from "fidesui";
+import type { ComponentProps, MouseEventHandler } from "react";
 
 const { Link: LinkText, Text } = Typography;
 

@@ -22,14 +22,14 @@ import {
   useRef,
 } from "react";
 
-import { DatasetCollection, DatasetField } from "~/types/api";
+import type { DatasetCollection, DatasetField } from "~/types/api";
 
 import DatasetEditorActionsContext from "./context/DatasetEditorActionsContext";
 import FieldMetadataFormItems, {
   buildFieldMeta,
   DataCategoryTagSelect,
 } from "./FieldMetadataFormItems";
-import { CollectionNodeData, FieldNodeData } from "./useDatasetGraph";
+import type { CollectionNodeData, FieldNodeData } from "./useDatasetGraph";
 
 interface DatasetNodeDetailPanelProps {
   open: boolean;

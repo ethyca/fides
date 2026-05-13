@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { InfoPopover } from "~/features/common/InfoPopover";
 import { snakeCaseToTitleCase } from "~/features/common/utils";
 import { useGetMaskingStrategiesQuery } from "~/features/policies/policy.slice";
-import { ActionType, RuleResponse } from "~/types/api";
+import { ActionType, type RuleResponse } from "~/types/api";
 
 const { Text } = Typography;
 

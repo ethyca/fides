@@ -1,4 +1,4 @@
-import { Headers as HeadersPolyfill } from "headers-polyfill";
+import type { Headers as HeadersPolyfill } from "headers-polyfill";
 
 /**
  * Adds common headers to all api calls to fides

@@ -1,5 +1,5 @@
 import { Typography } from "fidesui";
-import { Rule } from "privacy-requests/types";
+import type { Rule } from "privacy-requests/types";
 import React from "react";
 
 import { capitalize } from "~/features/common/utils";

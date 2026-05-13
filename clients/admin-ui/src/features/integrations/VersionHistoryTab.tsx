@@ -11,7 +11,7 @@ import React, { useMemo, useState } from "react";
 
 import { useGetConnectorTemplateVersionsQuery } from "~/features/connector-templates/connector-template.slice";
 import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
-import { SaaSConfigVersionResponse } from "~/types/api";
+import type { SaaSConfigVersionResponse } from "~/types/api";
 
 interface VersionHistoryTabProps {
   connectorType: string;

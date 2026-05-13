@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 
 import { ChatConfigurations } from "~/features/chat-provider/ChatConfigurations";
 import Layout from "~/features/common/Layout";

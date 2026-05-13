@@ -8,7 +8,7 @@ import {
 import EditCategoryCell from "~/features/data-discovery-and-detection/tables/cells/EditCategoryCell";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import {
-  StagedResourceAPIResponse,
+  type StagedResourceAPIResponse,
   StagedResourceTypeValue,
 } from "~/types/api";
 

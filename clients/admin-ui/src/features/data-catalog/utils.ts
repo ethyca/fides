@@ -1,4 +1,4 @@
-import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
+import { DiffStatus, type StagedResourceAPIResponse } from "~/types/api";
 
 /** TODO: centralize to a ResourceStatus mapping */
 export enum CatalogResourceStatus {

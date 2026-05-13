@@ -1,8 +1,8 @@
 import { Col, Divider, Flex, Row, Text, Typography } from "fidesui";
 
-import { Control } from "./access-policies.slice";
+import type { Control } from "./access-policies.slice";
 import PolicyCard from "./PolicyCard";
-import { AccessPolicyListItem } from "./types";
+import type { AccessPolicyListItem } from "./types";
 
 const { Title } = Typography;
 

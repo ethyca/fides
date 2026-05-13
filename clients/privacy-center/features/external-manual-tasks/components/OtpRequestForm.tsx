@@ -1,9 +1,10 @@
 "use client";
 
 import { Alert, Button, Input, Space, Typography } from "fidesui";
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 
-import { OtpRequestFormProps } from "../types";
+import type { OtpRequestFormProps } from "../types";
 
 /**
  * OTP Request Form Component - Step 1 of Authentication

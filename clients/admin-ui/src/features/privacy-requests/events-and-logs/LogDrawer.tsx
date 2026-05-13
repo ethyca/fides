@@ -1,8 +1,8 @@
 import { Button, Drawer, Flex, Icons } from "fidesui";
 import {
-  ExecutionLog,
+  type ExecutionLog,
   ExecutionLogStatus,
-  PrivacyRequestEntity,
+  type PrivacyRequestEntity,
 } from "privacy-requests/types";
 import React from "react";
 

@@ -4,14 +4,14 @@ import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { FIDES_KEY_RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
-import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
+import type { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
 import TaxonomyDetails from "~/features/taxonomy/components/TaxonomyDetails";
 import TaxonomyHistory from "~/features/taxonomy/components/TaxonomyHistory";
 import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
-import { CustomFieldDefinitionWithId } from "~/types/api";
-import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
-import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
+import type { CustomFieldDefinitionWithId } from "~/types/api";
+import type { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
+import type { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
 interface TaxonomyEditDrawerProps extends Omit<DetailsDrawerProps, "itemKey"> {
   taxonomy: TaxonomyResponse;

@@ -1,7 +1,7 @@
 import { Flex } from "fidesui";
 import Head from "next/head";
+import type { ReactNode } from "react";
 import * as React from "react";
-import { ReactNode } from "react";
 
 type HomeLayoutProps = {
   children: ReactNode;

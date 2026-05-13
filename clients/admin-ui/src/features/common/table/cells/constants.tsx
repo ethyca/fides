@@ -1,4 +1,4 @@
-import { Icons, MenuProps } from "fidesui";
+import { Icons, type MenuProps } from "fidesui";
 
 export const COLLAPSE_BUTTON_TEXT = "show less";
 

@@ -1,10 +1,14 @@
 // test-utils.jsx
-import { Store } from "@reduxjs/toolkit";
-import { render as rtlRender, RenderOptions } from "@testing-library/react";
-import React, { ReactNode } from "react";
+import type { Store } from "@reduxjs/toolkit";
+import {
+  type RenderOptions,
+  render as rtlRender,
+} from "@testing-library/react";
+import type React from "react";
+import type { ReactNode } from "react";
 import { Provider } from "react-redux";
 
-import { makeStore, persistedReducer } from "~/app/store";
+import { makeStore, type persistedReducer } from "~/app/store";
 
 type CustomRenderOptions = {
   preloadedState?: Parameters<typeof persistedReducer>[0];

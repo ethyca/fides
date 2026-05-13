@@ -1,18 +1,17 @@
 import { Spin, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-
+import AccessPolicyEditor, {
+  type SidebarFormValues,
+} from "~/features/access-policies/AccessPolicyEditor";
 import {
   useDeleteAccessPolicyMutation,
   useGetAccessPolicyQuery,
   useUpdateAccessPolicyMutation,
 } from "~/features/access-policies/access-policies.slice";
-import AccessPolicyEditor, {
-  SidebarFormValues,
-} from "~/features/access-policies/AccessPolicyEditor";
 import { getErrorMessage } from "~/features/common/helpers";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
-import { RTKErrorResult } from "~/types/errors";
+import type { RTKErrorResult } from "~/types/errors";
 
 const EditAccessPolicyPage: NextPage = () => {
   const router = useRouter();

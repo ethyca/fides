@@ -1,5 +1,5 @@
 import { Collapse, useChakraDisclosure as useDisclosure } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 const ShowMoreContent = ({ children }: { children: ReactNode }) => {
   const { isOpen, onToggle } = useDisclosure();

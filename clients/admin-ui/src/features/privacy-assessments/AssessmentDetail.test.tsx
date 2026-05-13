@@ -6,9 +6,9 @@ import {
   AnswerSource,
   AnswerStatus,
   AssessmentStatus,
-  PrivacyAssessmentDetailResponse,
+  type PrivacyAssessmentDetailResponse,
   QuestionnaireSessionStatus,
-  QuestionnaireStatus,
+  type QuestionnaireStatus,
 } from "./types";
 
 // ── Mocks ──────────────────────────────────────────────────────────────

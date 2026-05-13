@@ -1,4 +1,4 @@
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { formatIsoLocation, isoStringToEntry } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -13,7 +13,7 @@ import { AssetType } from "~/features/system/tabs/system-assets/AddEditAssetModa
 import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCell";
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
-import { Asset, PrivacyNoticeRegion } from "~/types/api";
+import type { Asset, PrivacyNoticeRegion } from "~/types/api";
 
 const useSystemAssetColumns = ({
   systemKey,

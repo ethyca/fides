@@ -1,21 +1,21 @@
-import { Column } from "@tanstack/react-table";
+import type { Column } from "@tanstack/react-table";
 import {
-  Button,
   ChakraAccordion as Accordion,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
+  Button,
   ChakraCheckbox as Checkbox,
   ChakraHeading as Heading,
   ChakraSimpleGrid as SimpleGrid,
   ChakraText as Text,
 } from "fidesui";
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { DatamapRow } from "~/features/datamap";
+import type { DatamapRow } from "~/features/datamap";
 import { DATA_CATEGORY_COLUMN_ID } from "~/features/datamap/constants";
 import { selectDataCategoriesMap } from "~/features/taxonomy";
 

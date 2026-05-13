@@ -29,7 +29,7 @@ import {
   useGetUserRolesQuery,
   useRemoveUserRoleMutation,
 } from "~/features/rbac/rbac.slice";
-import { ScopeRegistryEnum, System } from "~/types/api";
+import { ScopeRegistryEnum, type System } from "~/types/api";
 
 import AssignSystemsModal from "./AssignSystemsModal";
 import { AssignSystemsDeleteTable } from "./AssignSystemsTable";

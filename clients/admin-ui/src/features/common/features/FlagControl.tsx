@@ -2,13 +2,13 @@ import {
   ChakraBox as Box,
   ChakraFormControl as FormControl,
   ChakraFormLabel as FormLabel,
-  ChakraText as Text,
   Switch,
+  ChakraText as Text,
 } from "fidesui";
 
 import { camelToSentenceCase } from "../utils";
-import { FLAG_CONFIG, FLAG_NAMES } from "./features.slice";
-import { FlagValue } from "./types";
+import { FLAG_CONFIG, type FLAG_NAMES } from "./features.slice";
+import type { FlagValue } from "./types";
 
 export const FlagControl = ({
   flag,

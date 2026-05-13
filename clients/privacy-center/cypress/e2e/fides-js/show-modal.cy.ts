@@ -1,4 +1,4 @@
-import { ComponentType, CONSENT_COOKIE_NAME } from "fides-js";
+import { CONSENT_COOKIE_NAME, ComponentType } from "fides-js";
 
 import { stubConfig } from "../../support/stubs";
 

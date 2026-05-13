@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { Alert, GetProps } from "../../index";
+import { Alert, type GetProps } from "../../index";
 import { PARAGRAPH_LOREM, SUBTITLE_LOREM } from "../../stories/utils/content";
 import { iconControl } from "../../stories/utils/controls";
 

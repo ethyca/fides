@@ -1,26 +1,26 @@
 import {
-  ArrowDownRightIcon,
-  Button,
   ChakraAccordion as Accordion,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
+  ArrowDownRightIcon,
   ChakraBox as Box,
-  ChakraBoxProps as BoxProps,
+  type ChakraBoxProps as BoxProps,
+  Button,
   ChakraFormLabel as FormLabel,
   ChakraHStack as HStack,
+  Select,
   ChakraSimpleGrid as SimpleGrid,
   ChakraSkeleton as Skeleton,
   ChakraText as Text,
-  Select,
   useMessage,
 } from "fidesui";
-import { Form, Formik, FormikValues, useField } from "formik";
+import { Form, Formik, type FormikValues, useField } from "formik";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { Option } from "~/features/common/form/inputs";
+import type { Option } from "~/features/common/form/inputs";
 import {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
@@ -30,7 +30,7 @@ import {
   selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import {
+import type {
   ConsentableItem,
   LimitedPrivacyNoticeResponseSchema,
 } from "~/types/api";

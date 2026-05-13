@@ -3,7 +3,7 @@ export { default as FetchPreferencesSection } from "./FetchPreferencesSection";
 export { default as PreviewCard } from "./PreviewCard";
 export { default as PrivacyNoticesTree } from "./PrivacyNoticesTree";
 export {
+  default as SavePreferencesSection,
   type NoticeMappings,
   type PreferenceState,
-  default as SavePreferencesSection,
 } from "./SavePreferencesSection";

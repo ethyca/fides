@@ -1,10 +1,10 @@
 import _ from "lodash";
 import React from "react";
 
-import { DictOption } from "~/features/plus/plus.slice";
-import { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
-import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
-import { SystemResponse } from "~/types/api/models/SystemResponse";
+import type { DictOption } from "~/features/plus/plus.slice";
+import type { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
+import type { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
+import type { SystemResponse } from "~/types/api/models/SystemResponse";
 
 /**
  * The backend stores system history before/after as Dict[str, Any] (JSONB).

@@ -22,7 +22,7 @@ import {
   AccessLevel,
   ConnectionType,
   MonitorFrequency,
-  TestMonitorParams,
+  type TestMonitorParams,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors/api";
 

@@ -5,17 +5,18 @@ import {
   BackgroundVariant,
   Controls,
   MiniMap,
-  Node,
-  NodeTypes,
+  type Node,
+  type NodeTypes,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import DatamapSystemNode from "~/features/datamap/DatamapSystemNode";
 import { useDatamapGraph } from "~/features/datamap/hooks/useDatamapGraph";
-import { SpatialData } from "~/features/datamap/types";
+import type { SpatialData } from "~/features/datamap/types";
 
 /**
  * DatamapGraph - Interactive system data flow visualization using ReactFlow

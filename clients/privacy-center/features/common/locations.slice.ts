@@ -1,4 +1,4 @@
-import { LocationRegulationResponse } from "~/types/api";
+import type { LocationRegulationResponse } from "~/types/api";
 
 import { baseApi } from "./api.slice";
 

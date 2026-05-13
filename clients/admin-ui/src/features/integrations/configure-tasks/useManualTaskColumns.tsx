@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 
 import { FIELD_TYPE_LABELS, REQUEST_TYPE_LABELS } from "./constants";
-import { Task } from "./types";
+import type { Task } from "./types";
 
 interface UseManualTaskColumnsProps {
   onEdit: (task: Task) => void;

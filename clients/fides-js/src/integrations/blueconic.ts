@@ -1,5 +1,5 @@
 import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
-import { NoticeConsent } from "../lib/consent-types";
+import type { NoticeConsent } from "../lib/consent-types";
 import { subscribeToConsent } from "./integration-utils";
 
 declare global {

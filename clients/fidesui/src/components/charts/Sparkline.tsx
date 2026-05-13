@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import type { CurveType } from "recharts/types/shape/Curve";
-
+import { ChartGradient } from "./ChartGradient";
 import type { AntColorTokenKey } from "./chart-constants";
 import {
   CHART_ANIMATION,
@@ -19,7 +19,6 @@ import {
   CHART_TYPOGRAPHY,
 } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";
-import { ChartGradient } from "./ChartGradient";
 
 const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
 

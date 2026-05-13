@@ -4,9 +4,9 @@ import { useCallback, useEffect } from "react";
 import { ConditionValueSelector } from "~/features/integrations/configure-tasks/components/ConditionValueSelector";
 import {
   getFieldType,
+  PrivacyRequestField,
   parseConditionValue,
   parseStoredValueForForm,
-  PrivacyRequestField,
 } from "~/features/integrations/configure-tasks/utils";
 import type { ConditionLeaf, Operator } from "~/types/api";
 import { Operator as Op } from "~/types/api";

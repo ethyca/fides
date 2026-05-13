@@ -1,6 +1,6 @@
 import {
   Button,
-  ColumnsType,
+  type ColumnsType,
   Empty,
   Flex,
   formatIsoLocation,
@@ -9,7 +9,8 @@ import {
   Tag,
 } from "fidesui";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
+import type React from "react";
+import { useMemo, useState } from "react";
 
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -22,8 +23,8 @@ import { EnablePrivacyExperienceCell } from "~/features/privacy-experience/cells
 import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
 import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import {
-  ExperienceConfigListViewResponse,
-  PrivacyNoticeRegion,
+  type ExperienceConfigListViewResponse,
+  type PrivacyNoticeRegion,
   ScopeRegistryEnum,
 } from "~/types/api";
 

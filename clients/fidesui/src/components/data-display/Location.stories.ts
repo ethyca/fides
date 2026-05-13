@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { iso31661, ISO31661Entry, iso31662, ISO31662Entry } from "iso-3166";
+import {
+  type ISO31661Entry,
+  type ISO31662Entry,
+  iso31661,
+  iso31662,
+} from "iso-3166";
 
 import { LocationDisplay } from "./Location";
 import { isoStringToEntry } from "./location.utils";

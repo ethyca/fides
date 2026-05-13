@@ -6,7 +6,7 @@ import { isErrorResult } from "~/features/common/helpers";
 
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { useDeletePublisherRestrictionMutation } from "./tcf-config.slice";
-import { PurposeRestriction } from "./types";
+import type { PurposeRestriction } from "./types";
 
 interface PublisherRestrictionActionCellProps {
   currentValues?: PurposeRestriction;

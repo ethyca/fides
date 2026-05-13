@@ -1,14 +1,14 @@
-import { PrivacyExperience } from "../../lib/consent-types";
-import { FidesEventDetailsPreference } from "../../lib/events";
+import type { PrivacyExperience } from "../../lib/consent-types";
+import type { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import {
+import type {
   EnabledIds,
   TCFFeatureRecord,
   TCFSpecialFeatureRecord,
 } from "../../lib/tcf/types";
 import EmbeddedVendorList from "./EmbeddedVendorList";
-import RecordsList, { RecordListType } from "./RecordsList";
-import { UpdateEnabledIds } from "./TcfTabs";
+import RecordsList, { type RecordListType } from "./RecordsList";
+import type { UpdateEnabledIds } from "./TcfTabs";
 
 const FeatureChildren = ({
   type,

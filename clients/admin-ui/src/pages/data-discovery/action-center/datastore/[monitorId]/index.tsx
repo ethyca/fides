@@ -1,5 +1,5 @@
 import { Icons } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -8,8 +8,8 @@ import {
   ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
   ACTION_CENTER_DATASTORE_MONITOR_ROUTE,
 } from "~/features/common/nav/routes";
-import { useCalcAggregateStatisticsMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
+import { useCalcAggregateStatisticsMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { monitorFieldUtil } from "~/features/data-discovery-and-detection/action-center/fields/monitor-fields.slice";
 import ActionCenterFields from "~/features/data-discovery-and-detection/action-center/fields/page";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";

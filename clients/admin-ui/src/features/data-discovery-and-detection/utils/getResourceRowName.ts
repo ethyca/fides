@@ -1,4 +1,4 @@
-import { StagedResource } from "~/types/api";
+import type { StagedResource } from "~/types/api";
 
 const getResourceRowName = (row: StagedResource) => row.urn;
 

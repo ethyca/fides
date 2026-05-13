@@ -1,19 +1,19 @@
 import {
   ComponentType,
-  ConsentMethod,
-  EmptyExperience,
-  FidesApiOptions,
-  FidesCookie,
-  FidesInitOptions,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  PrivacyPreferencesRequest,
-  RecordConsentServedRequest,
-  RecordsServedResponse,
+  type ConsentMethod,
+  type EmptyExperience,
+  type FidesApiOptions,
+  type FidesCookie,
+  type FidesInitOptions,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
+  type PrivacyPreferencesRequest,
+  type RecordConsentServedRequest,
+  type RecordsServedResponse,
 } from "../lib/consent-types";
-import { Locale } from "../lib/i18n";
+import type { Locale } from "../lib/i18n";
 import sizeOf from "../lib/size-of";
-import { GVLTranslations } from "../lib/tcf/types";
+import type { GVLTranslations } from "../lib/tcf/types";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",

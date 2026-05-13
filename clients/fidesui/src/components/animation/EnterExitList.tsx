@@ -1,6 +1,6 @@
 import { Flex } from "antd/lib";
-import { AnimatePresence, Easing, motion } from "motion/react";
-import { HTMLAttributes, ReactNode } from "react";
+import { AnimatePresence, type Easing, motion } from "motion/react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 export interface EnterExitListProps<T> extends HTMLAttributes<HTMLDivElement> {
   /**

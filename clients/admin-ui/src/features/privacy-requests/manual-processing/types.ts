@@ -1,4 +1,4 @@
-import { PatchUploadManualWebhookDataRequest } from "~/features/privacy-requests/types";
+import type { PatchUploadManualWebhookDataRequest } from "~/features/privacy-requests/types";
 
 export type ManualInputData = {
   checked: boolean;

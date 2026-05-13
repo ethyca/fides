@@ -1,4 +1,4 @@
-import { Alert, AlertProps, Typography } from "antd/lib";
+import { Alert, type AlertProps, Typography } from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
 import React from "react";
 

@@ -4,17 +4,17 @@ import {
   Dropdown,
   Flex,
   Form,
-  FormRule,
+  type FormRule,
   Icons,
   Input,
-  MenuProps,
+  type MenuProps,
   Select,
 } from "fidesui";
-import { KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { AutosuggestSuffix } from "~/features/common/AutosuggestSuffix";
-import { DictOption as VendorOption } from "~/features/plus/plus.slice";
+import type { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 
 const NEW_SYSTEM_PREFIX = "Create new system";

@@ -1,4 +1,4 @@
-import { StatusType } from "~/types/api";
+import type { StatusType } from "~/types/api";
 
 export interface JiraTicketResult {
   ticket_id: string;

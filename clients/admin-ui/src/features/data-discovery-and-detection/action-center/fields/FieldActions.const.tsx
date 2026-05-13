@@ -1,12 +1,12 @@
 import type { ModalFuncProps } from "antd/es/modal";
 import { Icons, SparkleIcon } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { pluralize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
-import { FieldActionTypeValue } from "./types";
+import type { FieldActionTypeValue } from "./types";
 
 const { REVIEW, CLASSIFY, PROMOTE, MUTE, UN_MUTE, PROMOTE_REMOVALS } =
   FieldActionType;

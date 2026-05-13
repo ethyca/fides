@@ -1,23 +1,24 @@
 import {
-  Button,
   ChakraBox as Box,
-  ChakraChakraProps as ChakraProps,
+  Button,
+  type ChakraChakraProps as ChakraProps,
   ChakraFlex as Flex,
-  ChakraList as List,
-  ChakraText as Text,
   Icons,
+  ChakraList as List,
   Select,
-  SelectProps,
+  type SelectProps,
   Space,
+  ChakraText as Text,
   Tooltip,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 
-import { Label, Option } from "~/features/common/form/inputs";
+import { Label, type Option } from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 
-const ScrollableListItem = <T extends unknown>({
+const ScrollableListItem = <T,>({
   item,
   label,
   draggable,
@@ -198,7 +199,7 @@ const ScrollableListAdd = ({
   );
 };
 
-const ScrollableList = <T extends unknown>({
+const ScrollableList = <T,>({
   label,
   tooltip,
   draggable,

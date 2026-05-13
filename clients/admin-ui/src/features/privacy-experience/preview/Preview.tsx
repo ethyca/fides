@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { useGetVendorReportQuery } from "~/features/plus/plus.slice";
-import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
+import type { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
   generateMockNotices,
@@ -15,11 +15,11 @@ import {
 import theme from "~/theme";
 import {
   ComponentType,
-  ExperienceConfigCreate,
-  ExperienceTranslation,
+  type ExperienceConfigCreate,
+  type ExperienceTranslation,
   Layer1ButtonOption,
-  LimitedPrivacyNoticeResponseSchema,
-  PrivacyNoticeResponse,
+  type LimitedPrivacyNoticeResponseSchema,
+  type PrivacyNoticeResponse,
 } from "~/types/api";
 
 import { COMPONENT_MAP } from "../constants";

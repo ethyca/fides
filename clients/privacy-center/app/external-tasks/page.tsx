@@ -1,12 +1,12 @@
 "use server";
 
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import getPrivacyCenterEnvironmentCached from "~/app/server-utils/getPrivacyCenterEnvironment";
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
-import { NextSearchParams } from "~/types/next";
+import type { NextSearchParams } from "~/types/next";
 
 import ExternalTasksClient from "./ExternalTasksClient";
 

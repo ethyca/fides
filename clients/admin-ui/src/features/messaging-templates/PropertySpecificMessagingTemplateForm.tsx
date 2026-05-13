@@ -4,16 +4,16 @@ import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import ScrollableList from "~/features/common/ScrollableList";
-import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import type { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
-import { MessagingTemplateResponse } from "~/features/messaging-templates/messaging-templates.slice";
+import type { MessagingTemplateResponse } from "~/features/messaging-templates/messaging-templates.slice";
 import {
   selectAllProperties,
   selectPage as selectPropertyPage,
   selectPageSize as selectPropertyPageSize,
   useGetAllPropertiesQuery,
 } from "~/features/properties";
-import { MinimalProperty } from "~/types/api";
+import type { MinimalProperty } from "~/types/api";
 
 interface Props {
   template: MessagingTemplateResponse;

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import type { AntColorTokenKey } from "../../index";
-import { DonutChart, DonutChartProps } from "../../index";
+import { DonutChart, type DonutChartProps } from "../../index";
 
 const sampleSegments: DonutChartProps["segments"] = [
   { value: 60, color: "colorSuccess", name: "Compliant" },

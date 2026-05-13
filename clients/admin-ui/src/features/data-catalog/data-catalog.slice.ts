@@ -1,11 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   Page_StagedResourceAPIResponse_,
   Page_SystemWithMonitorKeys_,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/query-params";
+import type { PaginationQueryParams } from "~/types/query-params";
 
 const initialState = {
   page: 1,

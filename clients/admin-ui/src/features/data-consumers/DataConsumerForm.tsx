@@ -7,7 +7,7 @@ import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpos
 
 import { getDisplayNameForScope } from "./constants";
 import {
-  DataConsumer,
+  type DataConsumer,
   useGetAvailableScopesQuery,
 } from "./data-consumer.slice";
 import useConsumerTypeOptions from "./useConsumerTypeOptions";

@@ -4,14 +4,14 @@ import { useState } from "react";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import getIntegrationTypeInfo, {
-  IntegrationTypeInfo,
+  type IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import { ConfigureIntegrationForm } from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType, {
   useIntegrationFilters,
 } from "~/features/integrations/add-integration/SelectIntegrationType";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 
 enum IntegrationModalStep {

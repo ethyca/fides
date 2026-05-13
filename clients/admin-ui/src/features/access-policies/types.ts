@@ -1,4 +1,4 @@
-import { AccessPolicy } from "./access-policies.slice";
+import type { AccessPolicy } from "./access-policies.slice";
 
 export enum ViewMode {
   CARDS = "cards",

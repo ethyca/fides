@@ -16,8 +16,8 @@ import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-
 import {
   CONSENT_USE_OPTIONS,
   EMPTY_DECLARATION,
-  FormValues,
-  MinimalPrivacyDeclaration,
+  type FormValues,
+  type MinimalPrivacyDeclaration,
 } from "./constants";
 
 interface DataUseBlockProps {

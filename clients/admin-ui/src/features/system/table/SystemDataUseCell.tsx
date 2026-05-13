@@ -1,9 +1,9 @@
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import {
   TagExpandableCell,
-  TagExpandableCellProps,
+  type TagExpandableCellProps,
 } from "~/features/common/table/cells";
-import { PrivacyDeclaration } from "~/types/api";
+import type { PrivacyDeclaration } from "~/types/api";
 
 const SystemDataUseCell = ({
   privacyDeclarations,

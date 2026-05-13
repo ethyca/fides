@@ -2,11 +2,11 @@ import {
   ChakraBox as Box,
   ChakraHeading as Heading,
   ChakraHStack as HStack,
+  Icons,
   ChakraTag as Tag,
   ChakraText as Text,
-  Icons,
 } from "fidesui";
-import yaml from "js-yaml";
+import type yaml from "js-yaml";
 import * as React from "react";
 
 type YamlErrorProps = {

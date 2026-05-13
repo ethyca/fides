@@ -14,7 +14,7 @@ import {
 import { useRouter } from "next/router";
 import {
   forwardRef,
-  Key,
+  type Key,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -23,17 +23,17 @@ import {
 } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { Node } from "~/features/common/hooks/useNodeMap";
-import { CursorPaginationState } from "~/features/common/pagination";
+import type { Node } from "~/features/common/hooks/useNodeMap";
+import type { CursorPaginationState } from "~/features/common/pagination";
 import { pluralize } from "~/features/common/utils";
 import {
   useLazyGetMonitorTreeAncestorsStatusesQuery,
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
-import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
+import type { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 
-import { DatastorePageSettings } from "../types";
+import type { DatastorePageSettings } from "../types";
 import {
   DEFAULT_FILTER_STATUSES,
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
@@ -52,7 +52,7 @@ import {
   shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
-import { CustomTreeDataNode, TreeNodeAction } from "./types";
+import type { CustomTreeDataNode, TreeNodeAction } from "./types";
 import { intoDiffStatus } from "./utils";
 
 const getIconComponent = (

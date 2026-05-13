@@ -1,4 +1,4 @@
-import { CustomFieldDefinition } from "~/types/api";
+import type { CustomFieldDefinition } from "~/types/api";
 
 export interface CustomFieldsFormValues
   extends Omit<CustomFieldDefinition, "field_type"> {

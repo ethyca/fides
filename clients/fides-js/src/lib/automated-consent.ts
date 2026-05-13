@@ -1,11 +1,11 @@
-import { ConsentContext } from "./consent-context";
+import type { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
   ConsentMethod,
-  FidesGlobal,
-  NoticeConsent,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
+  type FidesGlobal,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
 } from "./consent-types";
 import {
   constructFidesRegionString,

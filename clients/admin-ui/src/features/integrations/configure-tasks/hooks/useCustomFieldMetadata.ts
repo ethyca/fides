@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { extractUniqueCustomFields } from "~/features/privacy-requests/dashboard/utils";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 
-import { CustomFieldMetadata, CustomFieldMetadataMap } from "../types";
+import type { CustomFieldMetadata, CustomFieldMetadataMap } from "../types";
 import { PrivacyRequestField } from "../utils";
 
 /**

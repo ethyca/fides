@@ -1,6 +1,7 @@
 import { Modal } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
-import React, { useCallback, useState } from "react";
+import type React from "react";
+import { useCallback, useState } from "react";
 
 import { useLocalStorage } from "~/common/hooks";
 import { useConfig } from "~/features/common/config.slice";

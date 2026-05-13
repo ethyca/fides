@@ -1,12 +1,12 @@
-import { Row } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
 import { ChakraBox as Box } from "fidesui";
 import React, { useContext, useMemo } from "react";
 
 import DatamapGraph from "~/features/datamap/DatamapGraph";
 
-import { DatamapRow } from "./datamap.slice";
+import type { DatamapRow } from "./datamap.slice";
 import DatamapTableContext from "./datamap-table/DatamapTableContext";
-import { Link, SystemNode } from "./types";
+import type { Link, SystemNode } from "./types";
 
 const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   const systemKeysFromFilteredRows = useMemo(

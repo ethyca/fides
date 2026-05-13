@@ -1,4 +1,4 @@
-import { Select, SelectProps } from "fidesui";
+import { Select, type SelectProps } from "fidesui";
 
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 

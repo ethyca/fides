@@ -11,14 +11,14 @@ import {
 import { capitalize } from "lodash";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
-import { TaxonomySelectOption } from "~/features/common/dropdown/TaxonomySelect";
+import type { TaxonomySelectOption } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import SearchInput from "~/features/common/SearchInput";
-import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
+import type useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
-import { RESOURCE_STATUS } from "../fields/MonitorFields.const";
-import { MonitorFieldSearchForm } from "./MonitorFieldSearchForm.util";
+import type { RESOURCE_STATUS } from "../fields/MonitorFields.const";
+import type { MonitorFieldSearchForm } from "./MonitorFieldSearchForm.util";
 import RegexToggle from "./RegexToggle";
 
 const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [

@@ -5,7 +5,7 @@ import Image from "~/features/common/Image";
 import { formatDate, pluralize } from "~/features/common/utils";
 
 import styles from "./SlackThreadCard.module.scss";
-import { EvidenceItem, SlackMessage } from "./types";
+import type { EvidenceItem, SlackMessage } from "./types";
 import { getInitials } from "./utils";
 
 interface SlackThreadCardProps {

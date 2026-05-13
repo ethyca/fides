@@ -1,18 +1,24 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraCloseButton as CloseButton,
-  ChakraFormControl as FormControl,
-  ChakraHStack as HStack,
-  ChakraSpacer as Spacer,
-  ChakraVStack as VStack,
   CompassIcon,
   Dropdown,
-  MenuProps,
+  ChakraFormControl as FormControl,
+  ChakraHStack as HStack,
+  type MenuProps,
   Select,
+  ChakraSpacer as Spacer,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
-import { FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
+import {
+  type FocusEvent,
+  type KeyboardEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -21,9 +27,9 @@ import {
   Label,
 } from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import { DictOption as VendorOption } from "~/features/plus/plus.slice";
+import type { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
-import { FormValues } from "~/features/system/form";
+import type { FormValues } from "~/features/system/form";
 
 import { AutosuggestSuffix } from "../common/AutosuggestSuffix";
 

@@ -1,16 +1,16 @@
 import { baseApi } from "~/features/common/api.slice";
-import {
-  RBACConstraintCreate,
+import type {
   RBACConstraintResponse as RBACConstraint,
+  RBACConstraintCreate,
   RBACEvaluateRequest,
   RBACEvaluateResponse,
   RBACPermissionResponse as RBACPermission,
+  RBACRoleResponse as RBACRole,
   RBACRoleCreate,
   RBACRolePermissionsUpdate,
-  RBACRoleResponse as RBACRole,
   RBACRoleUpdate,
-  RBACUserRoleCreate,
   RBACUserRoleResponse as RBACUserRole,
+  RBACUserRoleCreate,
 } from "~/types/api";
 
 export const rbacApi = baseApi.injectEndpoints({

@@ -8,7 +8,7 @@
  * @see https://developer.matomo.org/guides/tracking-consent
  */
 
-import { NoticeConsent } from "../lib/consent-types";
+import type { NoticeConsent } from "../lib/consent-types";
 import { processExternalConsentValue } from "../lib/shared-consent-utils";
 import { subscribeToConsent } from "./integration-utils";
 

@@ -1,5 +1,5 @@
-import { PrivacyDeclarationResponse } from "~/types/api";
-import { DataUseDeclaration } from "~/types/dictionary-api";
+import type { PrivacyDeclarationResponse } from "~/types/api";
+import type { DataUseDeclaration } from "~/types/dictionary-api";
 
 export const transformDictDataUseToDeclaration = (
   dataUse: DataUseDeclaration,

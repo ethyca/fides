@@ -6,7 +6,7 @@ import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
-import { CustomTreeDataNode, NodeAction } from "./types";
+import type { CustomTreeDataNode, NodeAction } from "./types";
 
 const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {

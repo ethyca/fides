@@ -1,6 +1,6 @@
 /// <reference types="next/image-types/global" />
 
-declare module globalThis {
+declare namespace globalThis {
   // needs to be in global scope of Admin UI for when we import fides-js components which contain fidesDebugger
   let fidesDebugger: (...args: unknown[]) => void;
 }

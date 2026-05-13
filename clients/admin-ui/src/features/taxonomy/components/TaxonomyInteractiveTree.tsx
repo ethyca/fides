@@ -4,11 +4,11 @@ import {
   Background,
   BackgroundVariant,
   Controls,
-  Edge,
-  EdgeTypes,
+  type Edge,
+  type EdgeTypes,
   MiniMap,
-  Node,
-  NodeTypes,
+  type Node,
+  type NodeTypes,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
@@ -18,13 +18,15 @@ import { useEffect, useMemo } from "react";
 import { TAXONOMY_ROOT_NODE_ID } from "~/features/taxonomy/constants";
 import { TaxonomyTreeHoverProvider } from "~/features/taxonomy/context/TaxonomyTreeHoverContext";
 import useD3HierarchyLayout from "~/features/taxonomy/hooks/useD3HierarchyLayout";
-import { TaxonomyEntity } from "~/features/taxonomy/types";
+import type { TaxonomyEntity } from "~/features/taxonomy/types";
 
 import TaxonomyTextInputNode, {
-  TextInputNodeType,
+  type TextInputNodeType,
 } from "./TaxonomyTextInputNode";
 import TaxonomyTreeEdge from "./TaxonomyTreeEdge";
-import TaxonomyTreeNode, { TaxonomyTreeNodeType } from "./TaxonomyTreeNode";
+import TaxonomyTreeNode, {
+  type TaxonomyTreeNodeType,
+} from "./TaxonomyTreeNode";
 
 interface TaxonomyInteractiveTreeProps {
   taxonomyType: string;

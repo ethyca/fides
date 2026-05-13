@@ -1,6 +1,10 @@
 import { CUSTOM_TAG_COLOR, Icons } from "fidesui";
 
-import { DiffStatus, StagedResourceTypeValue, StatusCounts } from "~/types/api";
+import {
+  DiffStatus,
+  StagedResourceTypeValue,
+  type StatusCounts,
+} from "~/types/api";
 
 export const TREE_PAGE_SIZE = 100;
 export const TREE_NODE_LOAD_MORE_TEXT = "Load more...";

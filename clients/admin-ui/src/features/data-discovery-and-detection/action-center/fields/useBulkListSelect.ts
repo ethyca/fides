@@ -1,6 +1,6 @@
-import { CheckboxProps } from "fidesui";
+import type { CheckboxProps } from "fidesui";
 import _ from "lodash";
-import { Key, useState } from "react";
+import { type Key, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import type { Node } from "~/features/common/hooks/useNodeMap";

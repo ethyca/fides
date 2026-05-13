@@ -1,6 +1,6 @@
-import { ChakraFlex as Flex, ChakraFlexProps as FlexProps } from "fidesui";
+import { ChakraFlex as Flex, type ChakraFlexProps as FlexProps } from "fidesui";
 import Head from "next/head";
-import React from "react";
+import type React from "react";
 
 const FixedLayout = ({
   children,

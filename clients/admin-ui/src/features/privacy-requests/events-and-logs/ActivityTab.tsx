@@ -4,7 +4,7 @@ import { useState } from "react";
 import Restrict from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import { PrivacyRequestEntity } from "../types";
+import type { PrivacyRequestEntity } from "../types";
 import ActivityTimeline from "./ActivityTimeline";
 import { CommentInput } from "./CommentInput";
 

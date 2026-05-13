@@ -2,7 +2,7 @@ import {
   Descriptions,
   LIST_HOTKEYS,
   Modal,
-  ModalProps,
+  type ModalProps,
   Typography,
 } from "fidesui";
 

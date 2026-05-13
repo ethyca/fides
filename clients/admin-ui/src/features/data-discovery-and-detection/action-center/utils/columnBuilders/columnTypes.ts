@@ -1,5 +1,5 @@
-import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterTabs";
-import {
+import type { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterTabs";
+import type {
   ConsentAlertInfo,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";

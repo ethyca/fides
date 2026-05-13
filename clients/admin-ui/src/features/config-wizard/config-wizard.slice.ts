@@ -1,11 +1,15 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-import { Organization, System } from "~/types/api";
+import type { Organization, System } from "~/types/api";
 
 import { STEPS } from "./constants";
-import { AddSystemMethods, SystemMethods } from "./types";
+import { type AddSystemMethods, SystemMethods } from "./types";
 
 export interface State {
   step: number;

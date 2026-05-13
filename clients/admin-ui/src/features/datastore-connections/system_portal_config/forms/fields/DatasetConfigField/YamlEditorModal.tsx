@@ -1,7 +1,7 @@
 import { Modal } from "fidesui";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { Dataset } from "~/types/api";
+import type { Dataset } from "~/types/api";
 
 import YamlEditor from "./YamlEditor";
 

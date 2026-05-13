@@ -4,7 +4,7 @@
  * https://nextjs.org/docs/pages/api-reference/next-config-js/headers#cache-control
  */
 
-import { CacheControl, stringify } from "cache-control-parser";
+import { type CacheControl, stringify } from "cache-control-parser";
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 

@@ -1,4 +1,4 @@
-import { Select, SelectProps } from "fidesui";
+import { Select, type SelectProps } from "fidesui";
 
 import { useGetTaxonomyQuery } from "~/features/taxonomy/taxonomy.slice";
 

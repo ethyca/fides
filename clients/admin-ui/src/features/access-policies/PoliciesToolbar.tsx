@@ -2,7 +2,7 @@ import { Flex, Form, Icons, Segmented, Select } from "fidesui";
 
 import SearchInput from "~/features/common/SearchInput";
 
-import { Control } from "./access-policies.slice";
+import type { Control } from "./access-policies.slice";
 import { ViewMode } from "./types";
 
 export { ViewMode };

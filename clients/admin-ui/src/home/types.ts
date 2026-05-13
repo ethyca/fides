@@ -1,5 +1,5 @@
-import { FlagNames } from "~/features/common/features";
-import { ScopeRegistryEnum } from "~/types/api";
+import type { FlagNames } from "~/features/common/features";
+import type { ScopeRegistryEnum } from "~/types/api";
 
 type ModuleCard = {
   description: string;

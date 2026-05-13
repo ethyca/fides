@@ -17,8 +17,8 @@ import {
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
 } from "~/features/organization";
-import { Organization } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { Organization } from "~/types/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import { changeStep, setOrganization } from "./config-wizard.slice";
 

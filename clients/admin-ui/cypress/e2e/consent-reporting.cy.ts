@@ -61,8 +61,8 @@ describe("Consent report", () => {
       cy.getByTestId("subject-search-input").type("test@example.com{enter}");
       cy.wait("@lookupConsentPreferences").then((interception) => {
         const { url: requestUrl } = interception.request;
-        let url = new URL(requestUrl);
-        let params = new URLSearchParams(url.search);
+        const url = new URL(requestUrl);
+        const params = new URLSearchParams(url.search);
         expect(params.get("email")).to.equal("test@example.com");
         expect(params.get("phone_number")).to.equal("test@example.com");
         expect(params.get("fides_user_device_id")).to.equal("test@example.com");
@@ -133,8 +133,8 @@ describe("Consent report", () => {
 
       cy.wait("@getConsentReport").then((interception) => {
         const { url: requestUrl } = interception.request;
-        let url = new URL(requestUrl);
-        let params = new URLSearchParams(url.search);
+        const url = new URL(requestUrl);
+        const params = new URLSearchParams(url.search);
         expect(params.get("request_timestamp_gt")).to.be.null;
         expect(params.get("request_timestamp_lt")).to.be.null;
       });
@@ -161,8 +161,8 @@ describe("Consent report", () => {
 
       cy.wait("@getConsentReport").then((interception) => {
         const { url: requestUrl } = interception.request;
-        let url = new URL(requestUrl);
-        let params = new URLSearchParams(url.search);
+        const url = new URL(requestUrl);
+        const params = new URLSearchParams(url.search);
 
         // Calculate expected timestamps accounting for local timezone
         const startDate = new Date("2023-11-01T00:00:00");

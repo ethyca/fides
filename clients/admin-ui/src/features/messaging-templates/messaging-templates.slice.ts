@@ -1,7 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
-import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
-import { MinimalProperty } from "~/types/api";
-import { BulkUpdateFailed } from "~/types/api/models/BulkUpdateFailed";
+import type { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import type { MinimalProperty } from "~/types/api";
+import type { BulkUpdateFailed } from "~/types/api/models/BulkUpdateFailed";
 
 export type MessagingTemplate = {
   type: string;

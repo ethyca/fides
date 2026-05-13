@@ -6,7 +6,7 @@ import { formatDate } from "~/features/common/utils";
 import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
 import styles from "./EvidenceCardGroup.module.scss";
 import { SlackThreadCard } from "./SlackThreadCard";
-import { EvidenceItem, EvidenceType } from "./types";
+import { type EvidenceItem, EvidenceType } from "./types";
 
 export interface EvidenceCardGroupProps {
   items: EvidenceItem[];

@@ -1,5 +1,5 @@
 import {
-  ColumnsType,
+  type ColumnsType,
   formatIsoLocation,
   isoStringToEntry,
   Space,
@@ -10,7 +10,7 @@ import {
   ListExpandableCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
-import {
+import type {
   PrivacyNoticeRegion,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
@@ -21,7 +21,7 @@ import { DiscoveredSystemActionsCell } from "../../tables/cells/DiscoveredSystem
 import { DiscoveredSystemStatusCell } from "../../tables/cells/DiscoveredSystemAggregateStatusCell";
 import DiscoveredSystemDataUseCell from "../../tables/cells/DiscoveredSystemDataUseCell";
 import { buildExpandCollapseMenu } from "./columnHelpers";
-import { ColumnBuilderParams } from "./columnTypes";
+import type { ColumnBuilderParams } from "./columnTypes";
 
 const buildBaseColumns = ({
   consentStatus,

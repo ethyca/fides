@@ -1,4 +1,4 @@
-import { Input, InputProps, InputRef } from "antd/lib";
+import { Input, type InputProps, type InputRef } from "antd/lib";
 import { debounce } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 

@@ -12,9 +12,9 @@
  * IMPORTANT: When updating admin-ui auth.slice.ts, review this slice for sync!
  */
 
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import { ExternalUser, OtpVerifyResponse } from "./types";
+import type { ExternalUser, OtpVerifyResponse } from "./types";
 
 // External Auth State
 export interface ExternalAuthState {

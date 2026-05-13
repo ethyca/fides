@@ -1,20 +1,20 @@
 // External libraries
 import {
-  Button,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
+  Button,
   ChakraFlex as Flex,
+  Icons,
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
   ChakraTag as Tag,
   ChakraText as Text,
-  Icons,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, type FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
 // Internal features
@@ -27,7 +27,7 @@ import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system";
-import { DataFlow, System } from "~/types/api";
+import type { DataFlow, System } from "~/types/api";
 
 const defaultInitialValues = {
   dataFlowSystems: [] as DataFlow[],

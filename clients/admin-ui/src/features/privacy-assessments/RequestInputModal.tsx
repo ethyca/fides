@@ -13,12 +13,12 @@ import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import { AnswerStatusTags } from "./AnswerStatusTags";
 import { useCreateQuestionnaireMutation } from "./privacy-assessments.slice";
 import styles from "./RequestInputModal.module.scss";
-import { AnswerStatus, AssessmentQuestion } from "./types";
+import { AnswerStatus, type AssessmentQuestion } from "./types";
 
 interface RequestInputModalProps {
   open: boolean;

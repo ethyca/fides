@@ -1,4 +1,4 @@
-import { SystemType } from "~/types/api";
+import type { SystemType } from "~/types/api";
 
 export type AddConnectionStep = {
   stepId: number;

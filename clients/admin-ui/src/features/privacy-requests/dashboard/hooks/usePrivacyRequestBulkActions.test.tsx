@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
-import { MenuProps } from "fidesui";
+import type { MenuProps } from "fidesui";
 
-import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
+import { type PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
 import { BulkActionType } from "../../helpers";
 import { usePrivacyRequestBulkActions } from "./usePrivacyRequestBulkActions";

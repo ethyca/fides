@@ -11,7 +11,8 @@ import {
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useMemo } from "react";
+import type React from "react";
+import { useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { RouterLink } from "~/features/common/nav/RouterLink";

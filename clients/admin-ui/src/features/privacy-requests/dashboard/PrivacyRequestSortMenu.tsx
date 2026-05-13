@@ -1,6 +1,6 @@
 import { Icons, Select } from "fidesui";
 
-import { FilterQueryParams } from "~/features/privacy-requests/dashboard/hooks/usePrivacyRequestsFilters";
+import type { FilterQueryParams } from "~/features/privacy-requests/dashboard/hooks/usePrivacyRequestsFilters";
 import { ColumnSort } from "~/types/api";
 
 export interface SortParams

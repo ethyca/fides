@@ -1,4 +1,4 @@
-import { Button, ChakraBox as Box, ChakraStack as Stack } from "fidesui";
+import { ChakraBox as Box, Button, ChakraStack as Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 

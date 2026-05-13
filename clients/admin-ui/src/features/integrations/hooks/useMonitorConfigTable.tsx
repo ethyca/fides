@@ -1,4 +1,4 @@
-import { ColumnsType, formatIsoLocation, isoStringToEntry } from "fidesui";
+import { type ColumnsType, formatIsoLocation, isoStringToEntry } from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -9,12 +9,12 @@ import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
 import {
-  ConnectionConfigurationResponse,
+  type ConnectionConfigurationResponse,
   ConnectionType,
-  EditableMonitorConfig,
-  MonitorConfig,
+  type EditableMonitorConfig,
+  type MonitorConfig,
   PrivacyNoticeRegion,
-  WebsiteSchema,
+  type WebsiteSchema,
 } from "~/types/api";
 
 import { MonitorConfigEnableCell } from "../configure-monitor/MonitorConfigEnableCell";

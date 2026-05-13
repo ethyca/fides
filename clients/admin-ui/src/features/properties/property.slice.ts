@@ -2,7 +2,7 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { Page_Property_, Property } from "~/types/api";
+import type { Page_Property_, Property } from "~/types/api";
 
 export interface State {
   page?: number;

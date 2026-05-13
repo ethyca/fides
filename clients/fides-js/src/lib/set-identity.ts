@@ -1,4 +1,4 @@
-import { FidesGlobal, SetIdentityOptions } from "./consent-types";
+import type { FidesGlobal, SetIdentityOptions } from "./consent-types";
 import {
   FIDES_IDENTITY_KEY_EXTERNAL_ID,
   FIDES_IDENTITY_KEY_USER_DEVICE_ID,

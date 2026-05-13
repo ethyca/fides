@@ -1,21 +1,21 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
   ChakraFormControl as FormControl,
   ChakraFormLabel as FormLabel,
-  ChakraStack as Stack,
-  ChakraText as Text,
   Modal,
+  ChakraStack as Stack,
   Switch,
   Tag,
+  ChakraText as Text,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import SearchInput from "~/features/common/SearchInput";
-import { DataFlow, System } from "~/types/api";
+import type { DataFlow, System } from "~/types/api";
 
 import DataFlowSystemsTable from "./DataFlowSystemsTable";
 

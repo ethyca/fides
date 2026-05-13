@@ -1,8 +1,16 @@
-import { Drawer, DrawerProps, Icons, Input, Space, Text, Title } from "fidesui";
+import {
+  Drawer,
+  type DrawerProps,
+  Icons,
+  Input,
+  Space,
+  Text,
+  Title,
+} from "fidesui";
 
 import styles from "./EvidenceDrawer.module.scss";
 import { EvidenceSection } from "./EvidenceSection";
-import { EvidenceItem, QuestionGroup } from "./types";
+import type { EvidenceItem, QuestionGroup } from "./types";
 
 interface EvidenceDrawerProps extends Omit<DrawerProps, "onClose"> {
   open: boolean;

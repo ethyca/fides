@@ -1,11 +1,11 @@
 import {
   Button,
   ChakraCode as Code,
+  Icons,
   ChakraLink as Link,
+  Modal,
   ChakraStack as Stack,
   ChakraText as Text,
-  Icons,
-  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo } from "react";
@@ -13,7 +13,7 @@ import { useMemo } from "react";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { useFeatures } from "~/features/common/features";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
-import { Property } from "~/types/api";
+import type { Property } from "~/types/api";
 
 const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
 const PROPERTY_UNIQUE_ID_TEMPLATE = "{property-unique-id}";

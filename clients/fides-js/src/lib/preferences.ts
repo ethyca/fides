@@ -2,18 +2,18 @@ import { patchUserPreference } from "../services/api";
 import {
   ConsentMechanism,
   ConsentMethod,
-  ConsentOptionCreate,
-  FidesCookie,
-  FidesGlobal,
-  FidesInitOptions,
-  NoticeConsent,
-  NoticeValues,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
-  PrivacyNotice,
-  PrivacyNoticeWithPreference,
-  PrivacyPreferencesRequest,
-  SaveConsentPreference,
+  type ConsentOptionCreate,
+  type FidesCookie,
+  type FidesGlobal,
+  type FidesInitOptions,
+  type NoticeConsent,
+  type NoticeValues,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
+  type PrivacyNotice,
+  type PrivacyNoticeWithPreference,
+  type PrivacyPreferencesRequest,
+  type SaveConsentPreference,
   UpdateConsentValidation,
   UserConsentPreference,
 } from "./consent-types";
@@ -30,8 +30,8 @@ import {
 } from "./cookie";
 import {
   dispatchFidesEvent,
-  FidesEventDetailsTrigger,
-  FidesEventExtraDetails,
+  type FidesEventDetailsTrigger,
+  type FidesEventExtraDetails,
   FidesEventOrigin,
 } from "./events";
 import { fidesLifecycleManager } from "./fides-lifecycle-manager";
@@ -42,7 +42,7 @@ import {
   selectBestExperienceConfigTranslation,
 } from "./i18n";
 import { buildConsentPreferencesArray } from "./shared-consent-utils";
-import { TcfSavePreferences } from "./tcf/types";
+import type { TcfSavePreferences } from "./tcf/types";
 
 const EXTERNAL_CONSENT_METHODS = [
   ConsentMethod.SCRIPT,

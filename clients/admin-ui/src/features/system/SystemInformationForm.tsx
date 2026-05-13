@@ -1,7 +1,7 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Alert, Button, Flex, Typography, useMessage } from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, type FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
@@ -30,24 +30,30 @@ import {
   useLazyGetDictionaryDataUsesQuery,
 } from "~/features/plus/plus.slice";
 import {
-  selectLockedForGVL,
-  setLockedForGVL,
-  setSuggestions,
-} from "~/features/system/dictionary-form/dict-suggestion.slice";
-import {
   DictSuggestionNumberInput,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
 } from "~/features/system/dictionary-form/DictSuggestionInputs";
+import {
+  selectLockedForGVL,
+  setLockedForGVL,
+  setSuggestions,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import {
   defaultInitialValues,
-  FormValues,
+  type FormValues,
   transformFormValuesToSystem,
   transformSystemToFormValues,
 } from "~/features/system/form";
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
+import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
+import {
+  legalBasisForProfilingOptions,
+  legalBasisForTransferOptions,
+  responsibilityOptions,
+} from "~/features/system/SystemInformationFormSelectOptions";
 import {
   useBulkAssignStewardMutation,
   useCreateSystemMutation,
@@ -58,18 +64,12 @@ import {
 } from "~/features/system/system.slice";
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
-import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import {
-  legalBasisForProfilingOptions,
-  legalBasisForTransferOptions,
-  responsibilityOptions,
-} from "~/features/system/SystemInformationFormSelectOptions";
 import VendorSelector from "~/features/system/VendorSelector";
 import {
   useGetAllUsersQuery,
   useRemoveUserManagedSystemMutation,
 } from "~/features/user-management";
-import { ScopeRegistryEnum, SystemResponse } from "~/types/api";
+import { ScopeRegistryEnum, type SystemResponse } from "~/types/api";
 
 import { formatUser } from "../common/utils";
 

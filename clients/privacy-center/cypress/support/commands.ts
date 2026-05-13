@@ -6,9 +6,10 @@ import type { FidesConfig, FidesEventType } from "fides-js";
 
 import {
   getClientSettings,
-  PrivacyCenterClientSettings,
+  type PrivacyCenterClientSettings,
 } from "~/app/server-environment";
 import type { AppDispatch } from "~/app/store";
+
 import VisitOptions = Cypress.VisitOptions;
 
 declare global {
@@ -364,6 +365,3 @@ Cypress.Commands.add("expectFidesAlreadyLoadedException", () => {
     // on any other error message the test fails
   });
 });
-
-// Convert this to a module instead of script (allows import/export)
-export {};

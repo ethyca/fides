@@ -1,4 +1,4 @@
-import { antTheme } from "fidesui";
+import type { antTheme } from "fidesui";
 
 export const getTrendPrefix = (trend: number) => {
   if (trend < 0) {

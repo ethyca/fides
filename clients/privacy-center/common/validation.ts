@@ -4,7 +4,7 @@ import {
   isV1ConsentConfig,
   translateV1ConfigToV2,
 } from "~/features/consent/helpers";
-import { Config, LegacyConfig, PrivacyCenterLink } from "~/types/config";
+import type { Config, LegacyConfig, PrivacyCenterLink } from "~/types/config";
 
 /**
  * Check whether a string is a valid URL (http or https).

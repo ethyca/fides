@@ -6,10 +6,10 @@ import { getErrorMessage } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import styles from "~/features/common/table/cells/Cells.module.scss";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
-import { ColumnState } from "~/features/common/table/cells/types";
+import type { ColumnState } from "~/features/common/table/cells/types";
 import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
-import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
+import type { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 import { isErrorResult } from "~/types/errors";
 
 const DiscoveredAssetDataUseCell = ({

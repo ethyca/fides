@@ -4,10 +4,10 @@ import {
   ConsentMechanism,
   ConsentMethod,
   ConsentNonApplicableFlagMode,
-  FidesCookie,
-  FidesGlobal,
-  NoticeConsent,
-  PrivacyExperience,
+  type FidesCookie,
+  type FidesGlobal,
+  type NoticeConsent,
+  type PrivacyExperience,
   UserConsentPreference,
 } from "~/lib/consent-types";
 import {

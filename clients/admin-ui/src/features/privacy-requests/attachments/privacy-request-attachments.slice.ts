@@ -1,11 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
-import { AttachmentResponse } from "~/types/api/models/AttachmentResponse";
-import { AttachmentType } from "~/types/api/models/AttachmentType";
-import { Page_AttachmentResponse_ } from "~/types/api/models/Page_AttachmentResponse_";
+import type { AttachmentResponse } from "~/types/api/models/AttachmentResponse";
+import type { AttachmentType } from "~/types/api/models/AttachmentType";
+import type { Page_AttachmentResponse_ } from "~/types/api/models/Page_AttachmentResponse_";
 
-export interface State {}
+export type State = {};
 
 const initialState: State = {};
 

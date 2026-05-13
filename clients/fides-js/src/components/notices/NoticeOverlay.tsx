@@ -8,7 +8,7 @@ import {
   useState,
 } from "preact/hooks";
 
-import { FidesEvent } from "../../docs/fides-event";
+import type { FidesEvent } from "../../docs/fides-event";
 import { getGpcContext } from "../../lib/consent-context";
 import {
   AssetType,
@@ -16,10 +16,10 @@ import {
   ConsentMethod,
   FidesAttStatus,
   Layer1ButtonOption,
-  NoticeConsent,
-  PrivacyExperience,
-  PrivacyNotice,
-  PrivacyNoticeItem,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type PrivacyNotice,
+  type PrivacyNoticeItem,
   ServingComponent,
 } from "../../lib/consent-types";
 import {
@@ -27,7 +27,7 @@ import {
   isConsentOverride,
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import {
+import type {
   FidesEventDetailsPreference,
   FidesEventDetailsServingComponent,
 } from "../../lib/events";
@@ -40,14 +40,14 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
 import {
-  InitializedFidesGlobal,
+  type InitializedFidesGlobal,
   useFidesGlobal,
 } from "../../lib/providers/fides-global-context";
 import { processExternalConsentValue } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
-import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
+import { type NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 import VendorAssetDisclosure from "./VendorAssetDisclosure";
 
 const NoticeOverlay = () => {

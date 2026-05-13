@@ -15,7 +15,7 @@ import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
 
 import DecisionTag from "./DecisionTag";
 import styles from "./PolicyCard.module.scss";
-import { AccessPolicyListItem } from "./types";
+import type { AccessPolicyListItem } from "./types";
 import { formatRelativeTime } from "./utils";
 
 interface PolicyCardProps {

@@ -3,13 +3,13 @@ import {
   Col,
   Flex,
   Form,
-  FormInstance,
+  type FormInstance,
   Icons,
   Input,
   Row,
   Upload,
-  UploadChangeParam,
-  UploadFile,
+  type UploadChangeParam,
+  type UploadFile,
   useMessage,
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
@@ -22,8 +22,8 @@ import {
   useCreateSharedMonitorConfigMutation,
   useUpdateSharedMonitorConfigMutation,
 } from "~/features/monitors/shared-monitor-config.slice";
-import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
-import { isErrorResult, RTKResult } from "~/types/errors";
+import type { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
+import { isErrorResult, type RTKResult } from "~/types/errors";
 
 import BackButton from "../common/nav/BackButton";
 

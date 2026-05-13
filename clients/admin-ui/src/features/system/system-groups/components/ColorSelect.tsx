@@ -1,8 +1,8 @@
-import { HTMLAttributes, useState } from "react";
+import { type HTMLAttributes, useState } from "react";
 
 import {
   ControlledSelect,
-  ControlledSelectProps,
+  type ControlledSelectProps,
 } from "~/features/common/form/ControlledSelect";
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
 import { CustomTaxonomyColor } from "~/types/api";

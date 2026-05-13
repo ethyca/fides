@@ -8,7 +8,7 @@ import {
   getDescendantsAndCurrent,
   matchNodeOrDescendant,
 } from "./helpers";
-import { TreeNode, TreeNodes } from "./types";
+import type { TreeNode, TreeNodes } from "./types";
 
 interface CheckboxTreeProps {
   nodes: TreeNodes;

@@ -3,9 +3,9 @@ import { useMemo } from "react";
 
 import {
   TaxonomySelect,
-  TaxonomySelectOption,
-  TaxonomySelectOptions,
-  TaxonomySelectProps,
+  type TaxonomySelectOption,
+  type TaxonomySelectOptions,
+  type TaxonomySelectProps,
 } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { CONSENT_CATEGORIES } from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";

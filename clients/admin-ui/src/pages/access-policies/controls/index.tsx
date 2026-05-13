@@ -2,7 +2,7 @@ import { Button, List, Text, Typography, useMessage, useModal } from "fidesui";
 import type { NextPage } from "next";
 
 import {
-  Control,
+  type Control,
   useDeleteControlMutation,
   useGetControlsQuery,
 } from "~/features/access-policies/access-policies.slice";
@@ -15,7 +15,7 @@ import {
   CONTROLS_NEW_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 const ControlsPage: NextPage = () => {
   const message = useMessage();

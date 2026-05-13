@@ -6,13 +6,13 @@ import {
   Flex,
   Paragraph,
   StackedBarChart,
-  StackedBarChartProps,
+  type StackedBarChartProps,
   Statistic,
   Text,
   Title,
   Tooltip,
 } from "fidesui";
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import { nFormatter } from "~/features/common/utils";

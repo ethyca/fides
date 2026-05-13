@@ -4,7 +4,7 @@ import {
   stubPrivacyRequestsConfigurationCrud,
 } from "cypress/support/stubs";
 
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import type { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus, RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy Requests", () => {

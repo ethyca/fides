@@ -1,4 +1,4 @@
-import { Layout, Row, Tabs, TabsProps, Typography } from "fidesui";
+import { Layout, Row, Tabs, type TabsProps, Typography } from "fidesui";
 
 import { AntFormPOC } from "./form-experiments/AntForm";
 import { FormikAntFormItemPOC } from "./form-experiments/FormikAntFormItem";

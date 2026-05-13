@@ -1,10 +1,10 @@
-import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
+import type { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
-  CreateSaasConnectionConfig,
+  type CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
   useLazyGetAuthorizationUrlQuery,
 } from "datastore-connections/datastore-connection.slice";
-import {
+import type {
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionSecretsResponse,
@@ -12,8 +12,8 @@ import {
 import {
   ChakraBox as Box,
   ChakraFlex as Flex,
-  ChakraSpacer as Spacer,
   Icons,
+  ChakraSpacer as Spacer,
   useMessage,
 } from "fidesui";
 import router from "next/router";
@@ -31,25 +31,25 @@ import {
   usePatchPlusSystemConnectionConfigsMutation,
 } from "~/features/plus/plus.slice";
 import {
-  ConnectionConfigSecretsRequest,
+  type ConnectionConfigSecretsRequest,
   useDeleteSystemConnectionConfigMutation,
   usePatchSystemConnectionConfigsMutation,
   usePatchSystemConnectionSecretsMutation,
 } from "~/features/system/system.slice";
 import {
   AccessLevel,
-  ActionType,
-  BulkPutConnectionConfiguration,
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-  ConnectionType,
+  type ActionType,
+  type BulkPutConnectionConfiguration,
+  type ConnectionConfigurationResponse,
+  type ConnectionSystemTypeMap,
+  type ConnectionType,
   SystemType,
 } from "~/types/api";
 
-import { ConnectionConfigFormValues } from "../types";
+import type { ConnectionConfigFormValues } from "../types";
 import {
   ConnectorParametersForm,
-  TestConnectionResponse,
+  type TestConnectionResponse,
 } from "./ConnectorParametersForm";
 import { generateIntegrationKey } from "./helpers";
 

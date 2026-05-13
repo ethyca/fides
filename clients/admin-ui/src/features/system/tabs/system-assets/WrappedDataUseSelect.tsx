@@ -1,8 +1,8 @@
-import { ChakraFormControl as FormControl, Flex } from "fidesui";
+import { Flex, ChakraFormControl as FormControl } from "fidesui";
 import { useField } from "formik";
 
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
-import { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
+import type { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
 import { ErrorMessage, Label } from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 

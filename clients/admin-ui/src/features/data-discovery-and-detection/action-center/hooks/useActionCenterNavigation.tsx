@@ -1,4 +1,4 @@
-import { Icons, MenuProps } from "fidesui";
+import { Icons, type MenuProps } from "fidesui";
 
 import useMenuNavigation from "~/features/common/hooks/useMenuNavigation";
 import type { NavConfigTab } from "~/features/common/nav/nav-config";

@@ -1,13 +1,13 @@
 /* eslint-disable no-nested-ternary */
 import "./fides.css";
 
-import { FunctionComponent, VNode } from "preact";
+import type { FunctionComponent, VNode } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
-import { A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
+import { type A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { getGpcContext } from "../lib/consent-context";
-import {
+import type {
   FidesCookie,
   FidesInitOptions,
   NoticeConsent,
@@ -225,7 +225,7 @@ const Overlay: FunctionComponent<Props> = ({
   }, [disableBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (!!experience && !options.fidesEmbed && window.Fides) {
+    if (experience && !options.fidesEmbed && window.Fides) {
       window.Fides.showModal = () => {
         handleOpenModal(FidesEventOrigin.EXTERNAL);
       };

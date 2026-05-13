@@ -3,7 +3,7 @@ import {
   selectIsNoticeDriven,
   useSettings,
 } from "~/features/common/settings.slice";
-import { PrivacyNoticeRegion } from "~/types/api";
+import type { PrivacyNoticeRegion } from "~/types/api";
 
 import { selectPropertyId } from "../common/property.slice";
 import {

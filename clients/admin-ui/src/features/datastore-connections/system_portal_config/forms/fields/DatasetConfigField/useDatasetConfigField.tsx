@@ -1,15 +1,15 @@
-import { Option } from "common/form/inputs";
+import type { Option } from "common/form/inputs";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
   usePutDatasetConfigsMutation,
 } from "datastore-connections/datastore-connection.slice";
-import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
-import { PatchDatasetsConfigRequest } from "datastore-connections/types";
+import type { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
+import type { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import { useMessage } from "fidesui";
 import { useMemo } from "react";
 
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
-import {
+import type {
   ConnectionConfigurationResponse,
   DatasetConfigCtlDataset,
 } from "~/types/api";

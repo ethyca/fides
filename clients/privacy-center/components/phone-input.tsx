@@ -1,4 +1,7 @@
-import { ChakraInput as Input, ChakraInputProps as InputProps } from "fidesui";
+import {
+  ChakraInput as Input,
+  type ChakraInputProps as InputProps,
+} from "fidesui";
 import dynamic from "next/dynamic";
 // Importing the flag icons causes them to be bundled into the app instead of loaded from an outside
 // domain. See: https://gitlab.com/catamphetamine/react-phone-number-input#including-all-flags

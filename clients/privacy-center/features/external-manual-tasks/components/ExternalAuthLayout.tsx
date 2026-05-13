@@ -5,7 +5,7 @@
  * Follows the admin-ui login design pattern with Fides logo and centered form box.
  */
 
-import React from "react";
+import type React from "react";
 
 import { AuthFormLayout } from "~/components/common/AuthFormLayout";
 

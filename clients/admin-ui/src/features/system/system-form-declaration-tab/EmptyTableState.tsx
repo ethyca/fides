@@ -1,12 +1,12 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHStack as HStack,
+  Icons,
   ChakraStack as Stack,
   ChakraText as Text,
-  Icons,
 } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type Props = {
   title: string;

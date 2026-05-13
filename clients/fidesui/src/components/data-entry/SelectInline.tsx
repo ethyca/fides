@@ -1,7 +1,8 @@
 import { Select } from "antd/lib";
-import React, { ComponentProps, useState } from "react";
+import type React from "react";
+import { type ComponentProps, useState } from "react";
 
-import { CustomTag as Tag, CustomTypography } from "../../hoc";
+import { CustomTypography, CustomTag as Tag } from "../../hoc";
 import styles from "./SelectInline.module.scss";
 
 type SelectProps = ComponentProps<typeof Select>;

@@ -17,7 +17,7 @@ import {
   generateFormRulesFromAction,
 } from "~/features/privacy-requests/form/helpers";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import {
+import type {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
   PrivacyRequestCreateExtended as PrivacyRequestCreate,

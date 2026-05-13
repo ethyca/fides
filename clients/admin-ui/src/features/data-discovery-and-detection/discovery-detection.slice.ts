@@ -3,7 +3,7 @@ import queryString from "query-string";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   CloudInfraMonitorResourcesDynamicFilters,
   CloudInfraStagedResource,
   DiffStatus,

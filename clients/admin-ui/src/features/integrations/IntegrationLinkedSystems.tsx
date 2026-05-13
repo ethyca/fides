@@ -17,13 +17,13 @@ import { RouterLink } from "~/features/common/nav/RouterLink";
 import { EDIT_SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { debounce } from "~/features/common/utils";
 import {
-  SystemLinkResponse,
+  type SystemLinkResponse,
   useDeleteSystemLinkMutation,
   useGetSystemLinksQuery,
   useSetSystemLinksMutation,
 } from "~/features/integrations/system-links.slice";
 import { useGetSystemsQuery } from "~/features/system/system.slice";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const { Paragraph, Text } = Typography;

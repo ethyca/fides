@@ -1,14 +1,14 @@
 import {
-  ExperienceConfig,
+  type ExperienceConfig,
   ExperienceConfigTranslation,
   FidesEndpointPaths,
-  FidesInitOptions,
+  type FidesInitOptions,
   getCoreFides,
-  LegacyConsentConfig,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
+  type LegacyConsentConfig,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
   PrivacyNoticeTranslation,
-  UserGeolocation,
+  type UserGeolocation,
 } from "fides-js";
 
 import { API_URL } from "./constants";

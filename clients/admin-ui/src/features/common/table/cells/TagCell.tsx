@@ -1,4 +1,4 @@
-import { CUSTOM_TAG_COLOR, Tag, TagProps, Tooltip } from "fidesui";
+import { type CUSTOM_TAG_COLOR, Tag, type TagProps, Tooltip } from "fidesui";
 
 interface TagCellProps extends TagProps {
   value: string;

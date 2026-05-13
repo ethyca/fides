@@ -2,7 +2,7 @@ import {
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraTable as Table,
-  ChakraTableHeadProps as TableHeadProps,
+  type ChakraTableHeadProps as TableHeadProps,
   ChakraTbody as Tbody,
   ChakraTd as Td,
   ChakraText as Text,
@@ -10,9 +10,9 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
 } from "fidesui";
-import React from "react";
+import type React from "react";
 
-import { System } from "../types/api";
+import type { System } from "../types/api";
 import { resolvePath } from "./helpers";
 
 export interface ColumnMetadata<T> {

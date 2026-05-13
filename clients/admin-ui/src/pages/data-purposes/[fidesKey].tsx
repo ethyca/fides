@@ -1,10 +1,9 @@
 import { Button, Flex, Result, Spin } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-
-import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
+import { useFeatures } from "~/features/common/features";
 import { isFetchBaseQueryError } from "~/features/common/helpers";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";

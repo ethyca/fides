@@ -18,7 +18,7 @@ import {
   GPPUSApproach,
   SECTIONS_WITH_GPC_SUBSECTION,
 } from "./constants";
-import {
+import type {
   ConsentContext,
   GPPPrivacyExperience,
   GPPSection,

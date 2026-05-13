@@ -20,7 +20,8 @@ import {
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useState } from "react";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage } from "~/features/common/helpers";

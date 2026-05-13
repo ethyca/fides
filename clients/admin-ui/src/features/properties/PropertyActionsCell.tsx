@@ -5,7 +5,7 @@ import React from "react";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import NewJavaScriptTag from "~/features/privacy-experience/NewJavaScriptTag";
-import { Property, ScopeRegistryEnum } from "~/types/api";
+import { type Property, ScopeRegistryEnum } from "~/types/api";
 
 import DeletePropertyModal from "./DeletePropertyModal";
 

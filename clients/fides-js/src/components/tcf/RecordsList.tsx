@@ -1,6 +1,6 @@
-import { VNode } from "preact";
+import type { VNode } from "preact";
 
-import { PrivacyNoticeTranslation } from "../../lib/consent-types";
+import type { PrivacyNoticeTranslation } from "../../lib/consent-types";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";

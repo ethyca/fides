@@ -1,6 +1,6 @@
 import { EnableCell } from "~/features/common/table/v2/cells";
 import { useUpdateCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
-import { CustomFieldDefinitionWithId } from "~/types/api";
+import type { CustomFieldDefinitionWithId } from "~/types/api";
 
 const EnableCustomFieldCell = ({
   field,

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "@jest/globals";
 
 import {
+  type FlatNavItem,
   filterAndRankNavItems,
-  FlatNavItem,
   matchesNavQuery,
-  navMatchRank,
   NavMatchTier,
+  navMatchRank,
 } from "./useNavSearchItems";
 
 const makeItem = (overrides: Partial<FlatNavItem> = {}): FlatNavItem => ({

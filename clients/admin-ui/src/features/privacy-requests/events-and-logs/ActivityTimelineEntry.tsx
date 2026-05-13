@@ -5,7 +5,7 @@ import React from "react";
 import { formatDate, pluralize } from "~/features/common/utils";
 
 import {
-  ActivityTimelineItem,
+  type ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
   TimelineItemColorMap,
 } from "../types";

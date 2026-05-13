@@ -6,10 +6,10 @@ import {
   Background,
   BackgroundVariant,
   Controls,
-  Edge,
-  EdgeTypes,
-  Node,
-  NodeTypes,
+  type Edge,
+  type EdgeTypes,
+  type Node,
+  type NodeTypes,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
@@ -30,36 +30,36 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { Editor } from "~/features/common/yaml/helpers";
-import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
+import type { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 import DatasetEditorActionsContext, {
-  DatasetEditorActions,
+  type DatasetEditorActions,
 } from "./context/DatasetEditorActionsContext";
 import { DatasetTreeHoverProvider } from "./context/DatasetTreeHoverContext";
+import DatasetNodeDetailPanel, {
+  type DatasetNodeDetailPanelHandle,
+} from "./DatasetNodeDetailPanel";
 import {
   addNestedField,
   getFieldsAtPath,
   removeFieldAtPath,
   updateFieldAtPath,
 } from "./dataset-field-helpers";
-import DatasetNodeDetailPanel, {
-  DatasetNodeDetailPanelHandle,
-} from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
 import { buildProtectedPathsByCollection, removeNulls } from "./helpers";
 import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
 import DatasetFieldNode from "./nodes/DatasetFieldNode";
 import DatasetRootNode from "./nodes/DatasetRootNode";
 import DatasetTextInputNode, {
-  DatasetTextInputNodeType,
+  type DatasetTextInputNodeType,
 } from "./nodes/DatasetTextInputNode";
 import useDatasetGraph, {
-  collectDatasetCategories,
   COLLECTION_ROOT_PREFIX,
-  CollectionNodeData,
+  type CollectionNodeData,
+  collectDatasetCategories,
   DATASET_ROOT_ID,
-  FieldNodeData,
-  ProtectedFieldsInfo,
+  type FieldNodeData,
+  type ProtectedFieldsInfo,
 } from "./useDatasetGraph";
 import useDatasetNodeLayout from "./useDatasetNodeLayout";
 

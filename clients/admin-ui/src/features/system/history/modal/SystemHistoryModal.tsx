@@ -1,7 +1,7 @@
 import { ChakraFlex as Flex, Modal, Tag } from "fidesui";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { SystemHistoryResponse } from "~/types/api";
+import type { SystemHistoryResponse } from "~/types/api";
 
 import SelectedHistoryProvider from "./SelectedHistoryContext";
 import SystemDataForm from "./SystemDataForm";

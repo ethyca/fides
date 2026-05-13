@@ -2,7 +2,7 @@ import {
   readConsentFromAnyProvider,
   registerDefaultProviders,
 } from "./consent-migration";
-import {
+import type {
   ConsentMethod,
   FidesInitOptions,
   FidesInitOptionsOverrides,

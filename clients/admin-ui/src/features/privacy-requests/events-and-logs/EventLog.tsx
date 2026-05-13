@@ -1,28 +1,28 @@
 import { formatDate } from "common/utils";
 import {
   ChakraBox as Box,
+  CUSTOM_TAG_COLOR,
   ChakraFlex as Flex,
+  Icons,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
+  Tag,
   ChakraTbody as Tbody,
   ChakraTd as Td,
   ChakraText as Text,
   ChakraTh as Th,
   ChakraThead as Thead,
-  ChakraTr as Tr,
-  CUSTOM_TAG_COLOR,
-  Icons,
-  Tag,
   Tooltip,
+  ChakraTr as Tr,
 } from "fidesui";
 import {
-  ExecutionLog,
+  type ExecutionLog,
   ExecutionLogStatus,
   ExecutionLogStatusColors,
   ExecutionLogStatusLabels,
-  PrivacyRequestEntity,
+  type PrivacyRequestEntity,
 } from "privacy-requests/types";
-import React from "react";
+import type React from "react";
 
 import { useSaaSVersionModal } from "~/features/connector-templates/hooks/useSaaSVersionModal";
 import { ActionType } from "~/types/api";

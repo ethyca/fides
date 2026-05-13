@@ -1,7 +1,7 @@
 import { Typography } from "fidesui";
 
 import RequestDetailsRow from "./RequestDetailsRow";
-import { PrivacyRequestEntity } from "./types";
+import type { PrivacyRequestEntity } from "./types";
 
 type RequestCustomFieldsProps = {
   subjectRequest: PrivacyRequestEntity;

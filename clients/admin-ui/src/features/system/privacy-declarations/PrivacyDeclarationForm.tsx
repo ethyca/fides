@@ -4,18 +4,18 @@
 
 import {
   CustomFieldsList,
-  CustomFieldValues,
+  type CustomFieldValues,
   useCustomFields,
 } from "common/custom-fields";
 import {
   ChakraBox as Box,
-  ChakraBoxProps as BoxProps,
+  type ChakraBoxProps as BoxProps,
   ChakraHeading as Heading,
+  Icons,
   ChakraStack as Stack,
   ChakraText as Text,
-  Icons,
 } from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, type FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
@@ -24,10 +24,10 @@ import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
-import {
+import type {
   DataCategory,
-  Dataset,
   DataSubject,
+  Dataset,
   DataUse,
   PrivacyDeclarationResponse,
 } from "~/types/api";

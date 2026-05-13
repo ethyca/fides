@@ -2,13 +2,13 @@
 import {
   Button,
   ChakraFlex as Flex,
+  Icons,
   ChakraTable as Table,
   ChakraTbody as Tbody,
   ChakraTd as Td,
   ChakraText as Text,
   ChakraThead as Thead,
   ChakraTr as Tr,
-  Icons,
 } from "fidesui";
 import React, { useState } from "react";
 
@@ -18,8 +18,8 @@ import {
   useGetSystemHistoryQuery,
 } from "~/features/plus/plus.slice";
 import { useGetAllSystemsQuery } from "~/features/system/system.slice";
-import { SystemHistoryResponse } from "~/types/api";
-import { SystemResponse } from "~/types/api/models/SystemResponse";
+import type { SystemHistoryResponse } from "~/types/api";
+import type { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import {
   alignPrivacyDeclarationCustomFields,

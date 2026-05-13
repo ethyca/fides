@@ -1,33 +1,33 @@
 import { baseApi } from "~/features/common/api.slice";
-import { CursorPaginationQueryParams } from "~/features/common/pagination";
+import type { CursorPaginationQueryParams } from "~/features/common/pagination";
 import {
   buildArrayQueryParams,
   getQueryParamsFromArray,
 } from "~/features/common/utils";
 import {
-  ConnectionConfigurationResponseWithSystemKey,
+  type ConnectionConfigurationResponseWithSystemKey,
   ConnectionType,
-  ConsentStatus,
+  type ConsentStatus,
   DiffStatus,
-  MonitorConfig,
-  Page_ConsentBreakdown_,
-  Page_StagedResourceAPIResponse_,
-  Page_SystemStagedResourcesAggregateRecord_,
-  PromoteResourcesResponse,
-  Schema,
-  StagedResourceAPIResponse,
-  WebsiteMonitorResourcesFilters,
+  type MonitorConfig,
+  type Page_ConsentBreakdown_,
+  type Page_StagedResourceAPIResponse_,
+  type Page_SystemStagedResourcesAggregateRecord_,
+  type PromoteResourcesResponse,
+  type Schema,
+  type StagedResourceAPIResponse,
+  type WebsiteMonitorResourcesFilters,
 } from "~/types/api";
-import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
-import { APIMonitorType } from "~/types/api/models/APIMonitorType";
-import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
-import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
-import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
-import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
-import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
-import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
-import { MonitorTaskResponse } from "~/types/api/models/MonitorTaskResponse";
-import {
+import type { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
+import type { APIMonitorType } from "~/types/api/models/APIMonitorType";
+import type { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
+import type { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
+import type { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
+import type { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
+import type { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
+import type { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
+import type { MonitorTaskResponse } from "~/types/api/models/MonitorTaskResponse";
+import type {
   PaginatedResponse,
   PaginationQueryParams,
   SearchQueryParams,
@@ -35,8 +35,8 @@ import {
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
-import { MonitorResource } from "./fields/types";
-import {
+import type { MonitorResource } from "./fields/types";
+import type {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
 } from "./types";

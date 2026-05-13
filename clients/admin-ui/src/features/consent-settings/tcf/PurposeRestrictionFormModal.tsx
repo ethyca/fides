@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { isErrorResult } from "~/features/common/helpers";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
-  TCFPublisherRestrictionRequest,
+  type TCFPublisherRestrictionRequest,
   TCFRestrictionType,
   TCFVendorRestriction,
 } from "~/types/api";
@@ -19,7 +19,7 @@ import {
   useCreatePublisherRestrictionMutation,
   useUpdatePublisherRestrictionMutation,
 } from "./tcf-config.slice";
-import { FormValues, PurposeRestriction } from "./types";
+import type { FormValues, PurposeRestriction } from "./types";
 import {
   checkForVendorRestrictionConflicts,
   convertVendorIdsToRangeEntries,

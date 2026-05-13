@@ -6,5 +6,3 @@ declare global {
     Cypress?: boolean;
   }
 }
-
-export {};

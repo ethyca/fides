@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import React from "react";
+import type React from "react";
 
 import JiraConfigTab from "~/features/integrations/configure-jira/JiraConfigTab";
 import {
   AccessLevel,
-  ConnectionConfigurationResponse,
+  type ConnectionConfigurationResponse,
   ConnectionType,
 } from "~/types/api";
 

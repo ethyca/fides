@@ -1,4 +1,4 @@
-import { Checkbox, List, ListProps } from "antd/lib";
+import { Checkbox, List, type ListProps } from "antd/lib";
 import type { ListItemProps } from "antd/lib/list";
 import React, { useCallback, useEffect, useId, useMemo } from "react";
 

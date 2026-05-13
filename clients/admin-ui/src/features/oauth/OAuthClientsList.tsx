@@ -4,7 +4,7 @@ import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useHasPermission } from "~/features/common/Restrict";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import { ClientResponse, ScopeRegistryEnum } from "~/types/api";
+import { type ClientResponse, ScopeRegistryEnum } from "~/types/api";
 
 import { pluralize } from "../common/utils";
 import { useListOAuthClientsQuery } from "./oauth-clients.slice";

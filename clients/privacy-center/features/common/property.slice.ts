@@ -1,8 +1,8 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import { Property } from "~/types/api";
+import type { Property } from "~/types/api";
 
 interface PropertyState {
   property?: Property | null;

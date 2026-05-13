@@ -1,11 +1,11 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraSimpleGrid as SimpleGrid,
-  ChakraVStack as VStack,
   useMessage,
   useModal,
   useNotification,
+  ChakraVStack as VStack,
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
@@ -14,9 +14,9 @@ import { useMemo, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import SearchInput from "~/features/common/SearchInput";
 import {
-  LocationRegulationResponse,
+  type LocationRegulationResponse,
   PrivacyNoticeRegion,
-  Selection,
+  type Selection,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 

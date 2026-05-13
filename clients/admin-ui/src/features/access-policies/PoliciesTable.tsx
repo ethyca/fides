@@ -1,13 +1,8 @@
 import classNames from "classnames";
 import type { Identifier, XYCoord } from "dnd-core";
 import { Flex, Icons, Input, Switch, Table, Text } from "fidesui";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
@@ -16,10 +11,10 @@ import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 
-import { Control } from "./access-policies.slice";
+import type { Control } from "./access-policies.slice";
 import DecisionTag from "./DecisionTag";
 import styles from "./PoliciesTable.module.scss";
-import { AccessPolicyListItem } from "./types";
+import type { AccessPolicyListItem } from "./types";
 import { formatRelativeTime } from "./utils";
 
 const ROW_TYPE = "PolicyTableRow";

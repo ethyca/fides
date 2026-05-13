@@ -1,7 +1,7 @@
 import {
+  type CSSProperties,
   createContext,
-  CSSProperties,
-  ReactNode,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,

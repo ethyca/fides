@@ -2,7 +2,7 @@ import { Button, Card, Flex, Tooltip, Typography, useModal } from "fidesui";
 
 import { confirmDeletePolicy } from "~/features/policies/confirmDeletePolicy";
 import { DEFAULT_POLICY_TOOLTIP } from "~/features/policies/constants";
-import { PolicyResponse } from "~/types/api";
+import type { PolicyResponse } from "~/types/api";
 
 const { Title, Text } = Typography;
 

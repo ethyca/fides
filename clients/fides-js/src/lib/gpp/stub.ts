@@ -6,12 +6,12 @@
 import {
   CmpDisplayStatus,
   CmpStatus,
-  PingData,
+  type PingData,
   SignalStatus,
 } from "@iabgpp/cmpapi";
 
 import { addFrame, GPP_FRAME_NAME, locateFrame } from "../cmp-stubs";
-import { GppCallback, GppFunction } from "./types";
+import type { GppCallback, GppFunction } from "./types";
 
 /* eslint-disable no-underscore-dangle */
 

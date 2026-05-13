@@ -1,4 +1,9 @@
-import { DatePicker, DatePickerProps, Form, FormItemProps } from "fidesui";
+import {
+  DatePicker,
+  type DatePickerProps,
+  Form,
+  type FormItemProps,
+} from "fidesui";
 
 /*
  * @description: Transitory component that migrates away from chakra while retaining formik
@@ -23,7 +28,7 @@ export const FormikDateTimeInput = ({
   }) => {
   return (
     <Form.Item
-      validateStatus={touched && !!error ? "error" : undefined}
+      validateStatus={touched && error ? "error" : undefined}
       help={touched && error}
       hasFeedback={touched && !!error}
       required={required}

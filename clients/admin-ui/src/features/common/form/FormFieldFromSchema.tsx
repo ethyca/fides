@@ -1,7 +1,7 @@
 import { Form, Input, Select } from "fidesui";
 
 import { FIDES_DATASET_REFERENCE } from "~/features/common/form/useFormFieldsFromSchema";
-import {
+import type {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
 } from "~/features/connection-type/types";

@@ -1,5 +1,5 @@
-import { Card, CardProps } from "fidesui";
-import { ReactNode } from "react";
+import { Card, type CardProps } from "fidesui";
+import type { ReactNode } from "react";
 
 const SettingsBox = ({
   title,

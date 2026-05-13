@@ -2,8 +2,8 @@ import { Modal, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
-import { ConnectionSystemTypeMap } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { ConnectionSystemTypeMap } from "~/types/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 /**
  * Hook for handling removal of custom integration templates.

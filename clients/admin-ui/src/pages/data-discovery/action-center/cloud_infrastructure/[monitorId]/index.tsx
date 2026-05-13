@@ -1,5 +1,5 @@
 import { Icons } from "fidesui";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";

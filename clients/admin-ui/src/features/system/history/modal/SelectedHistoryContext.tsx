@@ -1,6 +1,11 @@
-import React, { createContext, ReactNode, useContext, useMemo } from "react";
+import React, {
+  createContext,
+  type ReactNode,
+  useContext,
+  useMemo,
+} from "react";
 
-import { SystemHistoryResponse } from "~/types/api";
+import type { SystemHistoryResponse } from "~/types/api";
 
 type FormType = "before" | "after";
 

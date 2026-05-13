@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  FidesCookie,
+  type FidesCookie,
+  GPC_FALLBACKS,
   getGpcContext,
   getOrMakeFidesCookie,
-  GPC_FALLBACKS,
   initializeI18n,
   loadMessagesFromFiles,
-  PrivacyExperience,
+  type PrivacyExperience,
   saveFidesCookie,
   setupI18n,
 } from "fides-js";
@@ -41,7 +41,7 @@ import {
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import { ConsentPreferences } from "~/types/api";
+import type { ConsentPreferences } from "~/types/api";
 
 import ClientMetadata from "./ClientMetadata";
 

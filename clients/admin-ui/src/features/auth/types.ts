@@ -1,4 +1,4 @@
-import { User } from "user-management/types";
+import type { User } from "user-management/types";
 
 export interface LoginRequest {
   username: string;
@@ -18,8 +18,8 @@ export interface LoginResponse {
   };
 }
 
-export interface LogoutRequest {}
-export interface LogoutResponse {}
+export type LogoutRequest = {};
+export type LogoutResponse = {};
 
 export interface AuthenticationMethods {
   username_password: boolean;

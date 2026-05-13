@@ -2,7 +2,7 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import {
+import type {
   LocationRegulationResponse,
   LocationRegulationSelections,
 } from "~/types/api";

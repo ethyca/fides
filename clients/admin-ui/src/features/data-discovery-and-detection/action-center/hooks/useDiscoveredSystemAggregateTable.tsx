@@ -8,17 +8,17 @@ import {
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
+import ToastLink from "~/features/common/ToastLink";
 import {
-  AntTableHookConfig,
+  type AntTableHookConfig,
   useAntTable,
   useTableState,
 } from "~/features/common/table/hooks";
-import ToastLink from "~/features/common/ToastLink";
 import {
   AlertLevel,
-  ConsentAlertInfo,
+  type ConsentAlertInfo,
   DiffStatus,
-  SystemStagedResourcesAggregateRecord,
+  type SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 

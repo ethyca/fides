@@ -1,4 +1,4 @@
-import { ChakraText as Text, Spin } from "fidesui";
+import { Spin, ChakraText as Text } from "fidesui";
 import type { NextPage } from "next";
 
 import { useAppSelector } from "~/app/hooks";

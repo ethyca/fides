@@ -3,20 +3,20 @@
  */
 
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
 } from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, type FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import {
   CustomFieldsList,
-  CustomFieldValues,
+  type CustomFieldValues,
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
@@ -25,13 +25,13 @@ import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
 import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
-import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import {
+import type {
   DataCategory,
-  Dataset,
   DataSubject,
+  Dataset,
   DataUse,
   PrivacyDeclarationResponse,
 } from "~/types/api";

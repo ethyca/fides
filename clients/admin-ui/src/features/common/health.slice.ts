@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "~/app/store";
 import { selectToken } from "~/features/auth";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
-import { CoreHealthCheck } from "~/types/api";
+import type { CoreHealthCheck } from "~/types/api";
 
 /**
  * Note: this one does not extend from baseApi because the health endpoint is

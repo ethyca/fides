@@ -15,7 +15,7 @@ import {
   useGetConfigurationSettingsQuery,
   usePatchConfigurationSettingsMutation,
 } from "~/features/config-settings/config-settings.slice";
-import { DuplicateDetectionApplicationConfig } from "~/types/api/models/DuplicateDetectionApplicationConfig";
+import type { DuplicateDetectionApplicationConfig } from "~/types/api/models/DuplicateDetectionApplicationConfig";
 import { isErrorResult } from "~/types/errors";
 
 interface FormValues {

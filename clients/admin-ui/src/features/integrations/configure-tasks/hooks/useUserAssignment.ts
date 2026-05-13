@@ -6,7 +6,10 @@ import {
   useGetManualTaskConfigQuery,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
-import { ConnectionConfigurationResponse, UserResponse } from "~/types/api";
+import type {
+  ConnectionConfigurationResponse,
+  UserResponse,
+} from "~/types/api";
 
 interface UseUserAssignmentProps {
   integration: ConnectionConfigurationResponse;

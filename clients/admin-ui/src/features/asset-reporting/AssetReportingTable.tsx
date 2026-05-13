@@ -1,8 +1,8 @@
-import { ColumnsType, Flex, Table, TableProps } from "fidesui";
+import { type ColumnsType, Flex, Table, type TableProps } from "fidesui";
 import React from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { Asset } from "~/types/api";
+import type { Asset } from "~/types/api";
 
 interface AssetReportingTableProps {
   columns: ColumnsType<Asset>;

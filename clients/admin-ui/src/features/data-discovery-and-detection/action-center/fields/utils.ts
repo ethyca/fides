@@ -1,10 +1,10 @@
 import type { ModalFuncProps } from "antd/es/modal";
 import type { ReactNode } from "react";
 
-import { Severity } from "~/features/common/progress/SeverityGauge/types";
+import type { Severity } from "~/features/common/progress/SeverityGauge/types";
 import { pluralize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
+import type { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
@@ -13,7 +13,7 @@ import {
 } from "./FieldActions.const";
 import {
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
-  ResourceStatusLabel,
+  type ResourceStatusLabel,
 } from "./MonitorFields.const";
 
 export const getActionModalProps = (

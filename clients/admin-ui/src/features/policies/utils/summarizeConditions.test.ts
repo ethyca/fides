@@ -1,6 +1,6 @@
 import {
-  ConditionGroup,
-  ConditionLeaf,
+  type ConditionGroup,
+  type ConditionLeaf,
   GroupOperator,
   Operator,
 } from "~/types/api";

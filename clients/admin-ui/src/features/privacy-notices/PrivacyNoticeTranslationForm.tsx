@@ -3,7 +3,7 @@ import {
   Card,
   Flex,
   Form,
-  FormInstance,
+  type FormInstance,
   Icons,
   Input,
   Select,
@@ -21,7 +21,7 @@ import {
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
 import { OOBTranslationNotice } from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
-import {
+import type {
   NoticeTranslation,
   NoticeTranslationCreate,
   PrivacyNoticeCreation,

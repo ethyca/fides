@@ -8,12 +8,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraHStack as HStack,
+  Icons,
   ChakraText as Text,
   ChakraVStack as VStack,
-  Icons,
 } from "fidesui";
 import { cloneDeep, set } from "lodash";
 import type { NextPage } from "next";
@@ -22,7 +22,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
-import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
+import type { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
@@ -47,7 +47,7 @@ import {
 import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import { EditFieldDrawer } from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
-import { DatasetField } from "~/types/api";
+import type { DatasetField } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetField>();
 

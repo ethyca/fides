@@ -1,8 +1,8 @@
 import { baseApi } from "~/features/common/api.slice";
 import {
-  CustomReportCreate,
-  CustomReportResponse,
-  Page_CustomReportResponseMinimal_,
+  type CustomReportCreate,
+  type CustomReportResponse,
+  type Page_CustomReportResponseMinimal_,
   ReportType,
 } from "~/types/api";
 

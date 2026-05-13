@@ -1,6 +1,6 @@
 import { baseApi } from "~/features/common/api.slice";
 
-import { JiraTicketResult } from "./types";
+import type { JiraTicketResult } from "./types";
 
 interface LinkJiraTicketRequest {
   privacy_request_id: string;

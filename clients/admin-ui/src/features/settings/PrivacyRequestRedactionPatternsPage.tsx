@@ -1,9 +1,9 @@
 import {
-  Button,
   ChakraBox as Box,
+  Button,
   ChakraFlex as Flex,
-  ChakraText as Text,
   Icons,
+  ChakraText as Text,
   Typography,
   useMessage,
 } from "fidesui";

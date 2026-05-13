@@ -1,4 +1,4 @@
-import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
+import { type ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
 
 import { ActionType } from "~/types/api";
 

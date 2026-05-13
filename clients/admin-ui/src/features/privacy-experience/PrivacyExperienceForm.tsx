@@ -10,7 +10,7 @@ import {
   Input,
   isoStringToEntry,
   Select,
-  SelectProps,
+  type SelectProps,
   Typography,
   useModal,
 } from "fidesui";
@@ -28,7 +28,7 @@ import {
 } from "~/features/locations/locations.slice";
 import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
-import { ExperienceFormInstance } from "~/features/privacy-experience/form/useExperienceForm";
+import type { ExperienceFormInstance } from "~/features/privacy-experience/form/useExperienceForm";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
   selectPage as selectNoticePage,
@@ -44,16 +44,16 @@ import {
 import {
   ComponentType,
   ConsentMechanism,
-  ExperienceConfigCreate,
-  ExperienceTranslation,
+  type ExperienceConfigCreate,
+  type ExperienceTranslation,
   Layer1ButtonOption,
-  LimitedPrivacyNoticeResponseSchema,
+  type LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeFramework,
-  Property,
+  type Property,
   RejectAllMechanism,
   ResurfaceBehavior,
   StagedResourceTypeValue,
-  SupportedLanguage,
+  type SupportedLanguage,
 } from "~/types/api";
 
 import { useFeatures } from "../common/features";
@@ -296,7 +296,7 @@ export const PrivacyExperienceForm = ({
     allNotices: LimitedPrivacyNoticeResponseSchema[],
   ): LimitedPrivacyNoticeResponseSchema[] => {
     const childrenNoticeIds: FlatArray<(string[] | undefined)[], 1>[] =
-      allNotices.map((n) => n.children?.map((child) => child.id)).flat();
+      allNotices.flatMap((n) => n.children?.map((child) => child.id));
     return allNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? [];
   };
 

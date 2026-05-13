@@ -1,4 +1,4 @@
-import { ComponentChildren } from "preact";
+import type { ComponentChildren } from "preact";
 
 const ExternalLink = ({
   href,

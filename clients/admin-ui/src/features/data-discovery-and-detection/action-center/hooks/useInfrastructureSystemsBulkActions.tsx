@@ -2,10 +2,10 @@ import { useMessage } from "fidesui";
 import { useCallback } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 import {
-  IdentityProviderMonitorResultFilters,
+  type IdentityProviderMonitorResultFilters,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,

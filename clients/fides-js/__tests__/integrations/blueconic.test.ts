@@ -1,4 +1,4 @@
-import { FidesGlobal } from "../../src/fides";
+import type { FidesGlobal } from "../../src/fides";
 import { blueconic } from "../../src/integrations/blueconic";
 import { MARKETING_CONSENT_KEYS } from "../../src/lib/consent-constants";
 

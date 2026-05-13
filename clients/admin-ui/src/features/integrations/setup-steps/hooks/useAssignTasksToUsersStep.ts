@@ -1,7 +1,7 @@
 import { useGetManualTaskConfigQuery } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { ConnectionType } from "~/types/api";
 
-import { BaseStepHookParams, Step } from "./types";
+import type { BaseStepHookParams, Step } from "./types";
 
 export const useAssignTasksToUsersStep = ({
   connection,

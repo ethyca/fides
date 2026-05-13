@@ -8,7 +8,7 @@ import { useLocalStorage } from "~/common/hooks";
 import { ErrorToastOptions } from "~/common/toast-options";
 import { useSettings } from "~/features/common/settings.slice";
 
-import { ModalViews, VerificationType } from "../types";
+import type { ModalViews, VerificationType } from "../types";
 
 export const useVerificationForm = ({
   onClose,

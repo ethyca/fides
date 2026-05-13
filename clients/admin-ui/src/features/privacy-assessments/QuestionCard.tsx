@@ -1,13 +1,13 @@
 import { Flex, Text, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import { AnswerStatusTags } from "./AnswerStatusTags";
 import { EditableTextBlock } from "./EditableTextBlock";
 import { useUpdateAssessmentAnswerMutation } from "./privacy-assessments.slice";
 import styles from "./QuestionCard.module.scss";
-import { AssessmentQuestion } from "./types";
+import type { AssessmentQuestion } from "./types";
 
 interface QuestionCardProps {
   assessmentId: string;

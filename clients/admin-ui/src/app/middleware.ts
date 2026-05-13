@@ -1,4 +1,4 @@
-import { isRejectedWithValue, Middleware } from "@reduxjs/toolkit";
+import { isRejectedWithValue, type Middleware } from "@reduxjs/toolkit";
 import { getGlobalMessageApi } from "fidesui";
 
 import { selectApplicationConfig } from "~/features/config-settings/config-settings.slice";

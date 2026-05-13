@@ -1,9 +1,8 @@
-import { Space, Tabs, TabsProps } from "fidesui";
+import { Space, Tabs, type TabsProps } from "fidesui";
 import type { NextPage } from "next";
 import { useEffect, useMemo } from "react";
-
-import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
+import { useFeatures } from "~/features/common/features";
 import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
 import { ManualTasks } from "~/features/manual-tasks/ManualTasks";

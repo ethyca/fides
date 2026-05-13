@@ -1,24 +1,26 @@
 import {
-  ColumnSort,
+  type ColumnSort,
   flexRender,
-  Header,
-  Row,
-  RowData,
-  Table as TableInstance,
+  type Header,
+  type Row,
+  type RowData,
+  type Table as TableInstance,
 } from "@tanstack/react-table";
 import {
   ChakraBox as Box,
   ChakraButton as Button,
   ChakraCheckbox as Checkbox,
   ChakraHStack as HStack,
+  Icons,
   ChakraMenu as Menu,
   ChakraMenuButton as MenuButton,
   ChakraMenuDivider as MenuDivider,
   ChakraMenuItem as MenuItem,
   ChakraMenuList as MenuList,
   ChakraPortal as Portal,
+  TableSpinner as Spin,
   ChakraTable as Table,
-  ChakraTableCellProps as TableCellProps,
+  type ChakraTableCellProps as TableCellProps,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
   ChakraTd as Td,
@@ -26,11 +28,9 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
-  Icons,
-  TableSpinner as Spin,
   theme,
 } from "fidesui";
-import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import React, { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";

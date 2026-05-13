@@ -1,7 +1,11 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
-import { PrivacyCenterClientSettings } from "~/app/server-environment";
+import type { PrivacyCenterClientSettings } from "~/app/server-environment";
 import type { RootState } from "~/app/store";
 
 interface SettingsState {

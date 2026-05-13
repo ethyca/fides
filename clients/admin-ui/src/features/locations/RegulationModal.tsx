@@ -1,15 +1,15 @@
 import {
   Button,
   ChakraCheckbox as Checkbox,
-  ChakraSimpleGrid as SimpleGrid,
   Flex,
   Modal,
+  ChakraSimpleGrid as SimpleGrid,
 } from "fidesui";
 import { useState } from "react";
 
 import { usePicker } from "~/features/common/hooks/usePicker";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { LocationRegulationBase } from "~/types/api";
+import type { LocationRegulationBase } from "~/types/api";
 
 import { HeaderCheckboxRow } from "./modal";
 

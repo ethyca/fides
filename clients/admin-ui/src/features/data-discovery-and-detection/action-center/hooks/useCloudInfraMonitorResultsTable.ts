@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearch } from "~/features/common/hooks";
 import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
-import { DiffStatus } from "~/types/api/models/DiffStatus";
+import type { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
+import type { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import { useGetCloudInfraMonitorResultsQuery } from "../../discovery-detection.slice";
 

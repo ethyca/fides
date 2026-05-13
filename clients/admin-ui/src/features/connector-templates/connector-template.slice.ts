@@ -2,9 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { CONNECTOR_TEMPLATE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
-import { SaaSConfigVersionResponse } from "~/types/api";
+import type { SaaSConfigVersionResponse } from "~/types/api";
 
-export interface State {}
+export type State = {};
 const initialState: State = {};
 
 export const connectorTemplateSlice = createSlice({

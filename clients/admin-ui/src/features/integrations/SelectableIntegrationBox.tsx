@@ -3,13 +3,13 @@ import { Button, Flex, Icons, Tag, Tooltip, Typography } from "fidesui";
 import { useConnectionLogo } from "~/features/common/hooks";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import getIntegrationTypeInfo, {
-  IntegrationTypeInfo,
+  type IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import styles from "~/features/integrations/SelectableIntegrationBox.module.scss";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import type { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 
 interface SelectableIntegrationBoxProps {
   integration?: ConnectionConfigurationResponse;

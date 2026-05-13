@@ -1,7 +1,7 @@
 import {
   ChakraButton as Button,
   ChakraStack as Stack,
-  ChakraStackProps as StackProps,
+  type ChakraStackProps as StackProps,
 } from "fidesui";
 
 import useI18n from "~/common/hooks/useI18n";

@@ -1,11 +1,11 @@
-import { Icons, StackedBarChartProps } from "fidesui";
+import { Icons, type StackedBarChartProps } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
-import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
-import { APIMonitorType } from "~/types/api/models/APIMonitorType";
+import type { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
+import type { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import { STATUS_COUNTS_TO_RESOURCE_STATUS } from "../fields/MonitorFields.const";
-import { ProgressCardProps } from "./ProgressCard";
+import type { ProgressCardProps } from "./ProgressCard";
 
 export const MONITOR_TYPE_TO_LABEL: Record<APIMonitorType, string> = {
   datastore: "Monitored data stores",

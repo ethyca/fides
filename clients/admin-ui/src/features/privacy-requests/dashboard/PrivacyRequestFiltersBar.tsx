@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import {
   antTheme,
   DatePicker,
-  DisplayValueType,
+  type DisplayValueType,
   Flex,
   LocationSelect,
   Select,
@@ -13,11 +13,11 @@ import { useMemo } from "react";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
 import PrivacyRequestSortMenu, {
-  SortParams,
+  type SortParams,
 } from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
 import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import type { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 import { CustomFieldFilter } from "./CustomFieldFilter";
 import { extractUniqueCustomFields } from "./utils";

@@ -2,7 +2,7 @@ import {
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraTable as Table,
-  ChakraTableHeadProps as TableHeadProps,
+  type ChakraTableHeadProps as TableHeadProps,
   ChakraTbody as Tbody,
   ChakraTd as Td,
   ChakraText as Text,
@@ -12,7 +12,7 @@ import {
 } from "fidesui";
 
 import type { ColumnMetadata } from "~/features/common/ColumnDropdown";
-import { System } from "~/types/api";
+import type { System } from "~/types/api";
 
 /**
  * Index into an object with possibility of nesting

@@ -3,7 +3,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import { buildArrayQueryParams } from "~/features/common/utils";
 import { SystemColumnKeys } from "~/features/system/table/SystemColumnKeys";
-import {
+import type {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
@@ -13,7 +13,7 @@ import {
   SystemSchemaExtended,
   TestStatusMessage,
 } from "~/types/api";
-import {
+import type {
   PaginationQueryParams,
   SearchQueryParams,
   SortQueryParams,

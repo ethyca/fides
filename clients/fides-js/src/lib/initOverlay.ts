@@ -1,9 +1,9 @@
-import { ContainerNode, render } from "preact";
+import { type ContainerNode, render } from "preact";
 
-import { RenderOverlayType } from "../components/types";
+import type { RenderOverlayType } from "../components/types";
 import { ComponentType } from "./consent-types";
 import type { I18n } from "./i18n";
-import { InitializedFidesGlobal } from "./providers/fides-global-context";
+import type { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
@@ -133,7 +133,7 @@ export const initOverlay = async ({
       }
 
       if (
-        !!renderOverlay &&
+        renderOverlay &&
         (experience.experience_config?.component === ComponentType.MODAL ||
           experience.experience_config?.component ===
             ComponentType.BANNER_AND_MODAL ||

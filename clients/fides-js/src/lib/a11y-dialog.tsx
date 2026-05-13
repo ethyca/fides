@@ -4,8 +4,8 @@
  */
 
 import A11yDialog from "a11y-dialog";
-import { RefCallback } from "preact";
-import { HTMLAttributes } from "preact/compat";
+import type { RefCallback } from "preact";
+import type { HTMLAttributes } from "preact/compat";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 const useA11yDialogInstance = () => {

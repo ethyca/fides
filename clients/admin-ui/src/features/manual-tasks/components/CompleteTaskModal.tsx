@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { ManualFieldListItem, ManualTaskFieldType } from "~/types/api";
+import { type ManualFieldListItem, ManualTaskFieldType } from "~/types/api";
 
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
 import { TaskDetails } from "./TaskDetails";

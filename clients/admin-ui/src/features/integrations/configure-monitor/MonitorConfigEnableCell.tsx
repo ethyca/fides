@@ -1,6 +1,6 @@
 import { EnableCell } from "~/features/common/table/cells/EnableCell";
 import { usePutDiscoveryMonitorMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { MonitorConfig } from "~/types/api";
+import type { MonitorConfig } from "~/types/api";
 
 const MODAL_TITLE = "Disabling monitor";
 const MODAL_TEXT =

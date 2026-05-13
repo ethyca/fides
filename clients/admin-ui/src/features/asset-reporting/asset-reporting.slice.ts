@@ -1,6 +1,6 @@
 import { baseApi } from "~/features/common/api.slice";
 import { buildArrayQueryParams } from "~/features/common/utils";
-import { ConsentStatus, Page_Asset_ } from "~/types/api";
+import type { ConsentStatus, Page_Asset_ } from "~/types/api";
 import type { SortQueryParams } from "~/types/query-params";
 
 export interface AssetReportingFilters {

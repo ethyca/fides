@@ -2,14 +2,14 @@
 
 import { cache } from "react";
 
-import { NextSearchParams } from "~/types/next";
+import type { NextSearchParams } from "~/types/next";
 
 import {
   getClientSettings,
   getFidesApiUrl,
   loadConfigFromFile,
   loadStylesFromFile,
-  PrivacyCenterEnvironment,
+  type PrivacyCenterEnvironment,
 } from "../server-environment";
 import fetchPropertyFromApi from "./fetchPropertyFromApi";
 import loadEnvironmentVariables from "./loadEnvironmentVariables";

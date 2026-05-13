@@ -6,7 +6,7 @@ import {
   configureNavGroups,
   findActiveNav,
   NAV_CONFIG,
-  NavGroup,
+  type NavGroup,
 } from "./nav-config";
 import * as routes from "./routes";
 

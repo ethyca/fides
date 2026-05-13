@@ -30,7 +30,7 @@ import {
   UsVa,
 } from "@iabgpp/cmpapi";
 
-import { GPPSection } from "./types";
+import type { GPPSection } from "./types";
 
 export const CMP_VERSION = 1;
 

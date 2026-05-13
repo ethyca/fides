@@ -1,7 +1,7 @@
-import { ChakraFlex as Flex, ChakraText as Text, Icons, Spin } from "fidesui";
+import { ChakraFlex as Flex, Icons, Spin, ChakraText as Text } from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
-import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
+import { type ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
 
 export type ConnectionStatusData = {
   timestamp?: string | null;

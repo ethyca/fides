@@ -11,8 +11,8 @@ import {
 import { useCallback, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
-import { MonitorTaskResponse } from "~/types/api";
-import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
+import type { MonitorTaskResponse } from "~/types/api";
+import type { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";

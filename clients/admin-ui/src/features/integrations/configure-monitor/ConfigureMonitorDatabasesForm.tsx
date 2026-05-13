@@ -1,8 +1,8 @@
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraText as Text,
   Spin,
+  ChakraText as Text,
   Tooltip,
   useMessage,
 } from "fidesui";
@@ -11,7 +11,7 @@ import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
-import { EditableMonitorConfig } from "~/types/api";
+import type { EditableMonitorConfig } from "~/types/api";
 
 const TIMEOUT_COPY =
   "Loading resources is taking longer than expected. The monitor has been saved and is tracking all available resources. You can return later to limit its scope if needed";

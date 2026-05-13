@@ -6,7 +6,7 @@
  */
 
 import { externalBaseApi } from "./external-base-api.slice";
-import {
+import type {
   OtpRequestPayload,
   OtpRequestResponse,
   OtpVerifyPayload,

@@ -1,9 +1,8 @@
 import { Col, DatePicker, Flex, Result, Row } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
-
-import { useGetFiltersQuery } from "~/features/access-control/access-control.slice";
 import { AccessControlTableTabs } from "~/features/access-control/AccessControlTableTabs";
+import { useGetFiltersQuery } from "~/features/access-control/access-control.slice";
 import { DataConsumersCard } from "~/features/access-control/DataConsumersCard";
 import {
   type FacetDefinition,

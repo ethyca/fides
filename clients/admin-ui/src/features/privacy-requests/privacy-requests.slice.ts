@@ -1,26 +1,30 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import dayjs, { Dayjs } from "dayjs";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import dayjs, { type Dayjs } from "dayjs";
 import { isEmpty, isNil, pickBy } from "lodash";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
-  ActionType,
-  BulkPostPrivacyRequests,
-  ColumnSort,
-  fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
-  Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
-  PrivacyRequestAccessResults,
-  PrivacyRequestCreateExtended as PrivacyRequestCreate,
-  PrivacyRequestDiagnosticsExportResponse,
-  PrivacyRequestFilter,
-  PrivacyRequestNotificationInfo,
+  type ActionType,
+  type BulkPostPrivacyRequests,
+  type ColumnSort,
+  type Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
+  type fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
+  type PrivacyRequestAccessResults,
+  type PrivacyRequestCreateExtended as PrivacyRequestCreate,
+  type PrivacyRequestDiagnosticsExportResponse,
+  type PrivacyRequestFilter,
+  type PrivacyRequestNotificationInfo,
   PrivacyRequestStatus,
 } from "~/types/api";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
 import { SubjectRequestStatusMap } from "./constants";
-import {
+import type {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
   DenyPrivacyRequest,

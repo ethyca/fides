@@ -1,7 +1,7 @@
-import { ComponentChildren, VNode } from "preact";
-import { HTMLAttributes } from "preact/compat";
+import type { ComponentChildren, VNode } from "preact";
+import type { HTMLAttributes } from "preact/compat";
 
-import { A11yDialogAttributes } from "../lib/a11y-dialog";
+import type { A11yDialogAttributes } from "../lib/a11y-dialog";
 import { useEvent } from "../lib/providers/event-context";
 import { useFidesGlobal } from "../lib/providers/fides-global-context";
 import CloseButton from "./CloseButton";

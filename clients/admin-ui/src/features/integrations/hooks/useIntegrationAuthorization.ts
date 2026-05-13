@@ -2,7 +2,7 @@ import { useMessage } from "fidesui";
 
 import { useAPIHelper } from "~/features/common/hooks";
 import { useLazyGetAuthorizationUrlQuery } from "~/features/datastore-connections/datastore-connection.slice";
-import {
+import type {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
 } from "~/types/api";

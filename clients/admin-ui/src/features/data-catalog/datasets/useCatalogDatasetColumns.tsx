@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { Button, Dropdown, Icons, MenuProps } from "fidesui";
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { Button, Dropdown, Icons, type MenuProps } from "fidesui";
 import { useMemo } from "react";
 
 import { DefaultCell } from "~/features/common/table/v2";
@@ -9,7 +9,7 @@ import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import CatalogResourceNameCell from "~/features/data-catalog/CatalogResourceNameCell";
 import CatalogStatusBadgeCell from "~/features/data-catalog/CatalogStatusBadgeCell";
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
-import { StagedResourceAPIResponse } from "~/types/api";
+import type { StagedResourceAPIResponse } from "~/types/api";
 
 const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 

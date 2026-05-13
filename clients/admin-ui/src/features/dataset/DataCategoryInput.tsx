@@ -1,6 +1,6 @@
 import { Flex, Form, Space, Tag } from "fidesui";
 
-import { DataCategory } from "~/types/api";
+import type { DataCategory } from "~/types/api";
 
 import { InfoTooltip } from "../common/InfoTooltip";
 import { DataCategoryDropdown } from "./DataCategoryDropdown";

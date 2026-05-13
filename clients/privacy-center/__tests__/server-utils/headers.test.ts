@@ -4,8 +4,8 @@ import {
   applyRequestContext,
   applyResponseHeaders,
   getApplicableHeaderRules,
-  HeaderRule,
-  MiddlewareResponseInit,
+  type HeaderRule,
+  type MiddlewareResponseInit,
 } from "~/app/server-utils/headers";
 
 const contextFactory = jest.fn<MiddlewareResponseInit, []>(() => ({

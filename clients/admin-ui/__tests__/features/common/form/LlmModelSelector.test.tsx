@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import { Form } from "fidesui";
-import React from "react";
+import type React from "react";
 
 import { LlmModelSelector } from "../../../../src/features/common/form/LlmModelSelector";
 import { render } from "../../../utils/test-utils";

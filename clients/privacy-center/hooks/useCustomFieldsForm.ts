@@ -2,7 +2,7 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUserLocation } from "~/features/consent/consent.slice";
-import { CustomConfigField } from "~/types/config";
+import type { CustomConfigField } from "~/types/config";
 
 interface UseCustomFieldsFormProps {
   customPrivacyRequestFields: Record<string, CustomConfigField>;

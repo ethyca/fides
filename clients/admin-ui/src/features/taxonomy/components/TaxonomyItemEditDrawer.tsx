@@ -1,11 +1,11 @@
 import {
   Button,
-  ChakraStack as Stack,
-  ChakraText as Text,
   ConfirmationModal,
   Flex,
   Form,
   Icons,
+  ChakraStack as Stack,
+  ChakraText as Text,
   Tooltip,
   Typography,
   useChakraDisclosure as useDisclosure,
@@ -19,7 +19,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { taxonomyKeyToScopeRegistryEnum } from "~/features/taxonomy/constants";
 import { taxonomyTypeToResourceType } from "~/features/taxonomy/helpers";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
-import { TaxonomyEntity } from "~/features/taxonomy/types";
+import type { TaxonomyEntity } from "~/features/taxonomy/types";
 import { isErrorResult } from "~/types/errors";
 
 import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";

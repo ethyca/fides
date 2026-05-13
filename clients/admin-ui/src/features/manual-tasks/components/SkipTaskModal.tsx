@@ -2,7 +2,7 @@ import { Button, Divider, Input, Modal, Space, useMessage } from "fidesui";
 import { useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { ManualFieldListItem } from "~/types/api";
+import type { ManualFieldListItem } from "~/types/api";
 
 import { useSkipTaskMutation } from "../manual-tasks.slice";
 import { TaskDetails } from "./TaskDetails";

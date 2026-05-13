@@ -6,14 +6,14 @@
 
 /* eslint-disable no-underscore-dangle */
 import {
-  ComponentType,
   CONSENT_COOKIE_NAME,
+  ComponentType,
   ConsentMethod,
-  FidesCookie,
+  type FidesCookie,
   FidesEndpointPaths,
   FidesGlobal,
   FidesOptions,
-  PrivacyExperience,
+  type PrivacyExperience,
 } from "fides-js";
 
 import { API_URL, TCF_VERSION_HASH } from "../../support/constants";

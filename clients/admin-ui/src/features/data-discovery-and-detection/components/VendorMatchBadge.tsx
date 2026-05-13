@@ -3,7 +3,7 @@ import {
   Flex,
   Icons,
   Tag,
-  TagProps,
+  type TagProps,
   Tooltip,
   Typography,
 } from "fidesui";

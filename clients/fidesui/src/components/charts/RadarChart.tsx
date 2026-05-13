@@ -10,12 +10,11 @@ import {
   RadarChart as RechartsRadarChart,
   ResponsiveContainer,
 } from "recharts";
-
+import { ChartGradient } from "./ChartGradient";
+import { ChartText } from "./ChartText";
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";
-import { ChartGradient } from "./ChartGradient";
-import { ChartText } from "./ChartText";
 import styles from "./RadarChart.module.scss";
 
 export type RadarPointStatus = "success" | "warning" | "error";

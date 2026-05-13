@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useDispatch } from "react-redux";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -7,11 +7,11 @@ import {
   ACTION_CENTER_ACTIVITY_ROUTE,
   ACTION_CENTER_ROUTE,
 } from "~/features/common/nav/routes";
+import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import {
   useCalcAggregateStatisticsMutation,
   useGetAggregateMonitorResultsQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import { monitorFieldUtil } from "~/features/data-discovery-and-detection/action-center/fields/monitor-fields.slice";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 import MonitorList from "~/features/data-discovery-and-detection/action-center/MonitorList";

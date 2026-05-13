@@ -1,5 +1,5 @@
-import { Button, ButtonProps } from "fidesui";
-import { ReactElement } from "react";
+import { Button, type ButtonProps } from "fidesui";
+import type { ReactElement } from "react";
 
 interface ActionButtonProps extends ButtonProps {
   title: string;

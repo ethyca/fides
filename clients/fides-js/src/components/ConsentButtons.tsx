@@ -1,16 +1,16 @@
-import { Fragment, VNode } from "preact";
+import { Fragment, type VNode } from "preact";
 
 import {
   ButtonType,
   ConsentMethod,
-  FidesInitOptions,
-  PrivacyExperience,
-  PrivacyNotice,
+  type FidesInitOptions,
+  type PrivacyExperience,
+  type PrivacyNotice,
 } from "../lib/consent-types";
 import { FidesEventTargetType } from "../lib/events";
 import { useAutoResetFlag } from "../lib/hooks";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
-import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
+import { DEFAULT_LOCALE, type Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
 import { AttributionLink } from "./AttributionLink";

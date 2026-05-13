@@ -3,12 +3,12 @@ import { TCString } from "@iabtechlabtcf/core";
 import {
   CONSENT_COOKIE_NAME,
   ConsentMethod,
-  FidesCookie,
+  type FidesCookie,
   FidesEndpointPaths,
   Layer1ButtonOption,
-  NoticeConsent,
-  PrivacyExperience,
-  PrivacyExperienceMinimal,
+  type NoticeConsent,
+  type PrivacyExperience,
+  type PrivacyExperienceMinimal,
   RejectAllMechanism,
 } from "fides-js";
 

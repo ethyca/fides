@@ -2,7 +2,7 @@ import { Badge, Collapse, Flex, Text } from "fidesui";
 
 import { EvidenceCardGroup } from "./EvidenceCardGroup";
 import styles from "./EvidenceSection.module.scss";
-import { EvidenceItem, EvidenceType, QuestionGroup } from "./types";
+import { type EvidenceItem, EvidenceType, type QuestionGroup } from "./types";
 
 export interface EvidenceSectionProps {
   groupId: string;

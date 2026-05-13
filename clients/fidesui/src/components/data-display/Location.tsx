@@ -1,4 +1,4 @@
-import { ISO31661Entry, ISO31662Entry } from "iso-3166";
+import type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 
 import { isoEntryToLocationProps } from "./location.utils";
 

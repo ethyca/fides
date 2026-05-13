@@ -2,7 +2,7 @@ import { formatDistance } from "date-fns";
 import { Tag, Tooltip } from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
-import { MessagingConfigResponse } from "~/types/api";
+import type { MessagingConfigResponse } from "~/types/api";
 
 interface MessagingTestStatusCellProps {
   messagingConfig: MessagingConfigResponse;

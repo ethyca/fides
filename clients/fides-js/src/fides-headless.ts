@@ -8,14 +8,14 @@
 import { updateTcfStubGdprApplies } from "./lib/cmp-stubs";
 import { getConsentContext } from "./lib/consent-context";
 import {
-  FidesConfig,
-  FidesCookie,
-  FidesGlobal,
-  FidesInitOptionsOverrides,
-  FidesOverrides,
-  GetPreferencesFnResp,
-  NoticeConsent,
-  NoticeValues,
+  type FidesConfig,
+  type FidesCookie,
+  type FidesGlobal,
+  type FidesInitOptionsOverrides,
+  type FidesOverrides,
+  type GetPreferencesFnResp,
+  type NoticeConsent,
+  type NoticeValues,
   OverrideType,
 } from "./lib/consent-types";
 import {
@@ -29,7 +29,7 @@ import {
   dispatchFidesEvent,
   dispatchReadyEvents,
 } from "./lib/events";
-import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
+import { type DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import {
   getCoreFides,
   raise,

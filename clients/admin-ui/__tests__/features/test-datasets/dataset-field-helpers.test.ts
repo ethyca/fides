@@ -4,7 +4,7 @@ import {
   removeFieldAtPath,
   updateFieldAtPath,
 } from "~/features/test-datasets/dataset-field-helpers";
-import { DatasetField } from "~/types/api";
+import type { DatasetField } from "~/types/api";
 
 const makeField = (name: string, children?: DatasetField[]): DatasetField => ({
   name,

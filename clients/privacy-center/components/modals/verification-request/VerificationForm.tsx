@@ -1,7 +1,7 @@
 import { Button, Flex, Form, Input, Text, Title } from "fidesui";
 import React, { useEffect } from "react";
 
-import { ModalViews, VerificationType } from "../types";
+import type { ModalViews, VerificationType } from "../types";
 import { useVerificationForm } from "./useVerificationForm";
 
 type VerificationFormProps = {
@@ -73,7 +73,7 @@ const VerificationForm = ({
         <Form.Item
           className="pc-field pc-field--code"
           required
-          validateStatus={touched.code && !!errors.code ? "error" : undefined}
+          validateStatus={touched.code && errors.code ? "error" : undefined}
           label="Verification code"
           help={touched.code && errors.code}
           hasFeedback={touched.code && !!errors.code}

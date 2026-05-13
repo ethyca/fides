@@ -8,9 +8,10 @@ import { GPPUSApproach } from "./constants";
 
 export type { ConsentContext } from "../consent-context";
 
-export interface GppCallback {
-  (event: PingData | EventData | boolean | null, success: boolean): void;
-}
+export type GppCallback = (
+  event: PingData | EventData | boolean | null,
+  success: boolean,
+) => void;
 
 export type GppFunction = (
   command: string,

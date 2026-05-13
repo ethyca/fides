@@ -1,4 +1,4 @@
-import { Icons } from "fidesui";
+import type { Icons } from "fidesui";
 
 import { StagedResourceTypeValue } from "~/types/api";
 

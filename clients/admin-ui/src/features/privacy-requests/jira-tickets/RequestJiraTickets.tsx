@@ -14,9 +14,9 @@ import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import type { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { ConnectionType, PrivacyRequestStatus, StatusType } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import ForceCloseModal from "./ForceCloseModal";
 import LinkJiraTicketModal from "./LinkJiraTicketModal";
@@ -25,7 +25,7 @@ import {
   useRefreshJiraTicketMutation,
   useRetryJiraTicketMutation,
 } from "./privacy-request-jira-tickets.slice";
-import { JiraTicketResult } from "./types";
+import type { JiraTicketResult } from "./types";
 
 const statusColorMap: Record<string, CUSTOM_TAG_COLOR> = {
   done: CUSTOM_TAG_COLOR.SUCCESS,

@@ -1,12 +1,12 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable no-console */
 import {
+  Form as AntForm,
   Card,
   Checkbox,
   Col,
   DatePicker,
   Flex,
-  Form as AntForm,
   Input,
   InputNumber,
   Radio,

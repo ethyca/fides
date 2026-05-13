@@ -6,7 +6,7 @@ import SSOProviderForm, {
   transformOpenIDProviderToFormValues,
   useSSOProviderSubmit,
 } from "~/features/openid-authentication/SSOProviderForm";
-import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
+import type { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
 const EditSSOProviderModal = ({
   isOpen,

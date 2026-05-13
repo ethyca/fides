@@ -1,4 +1,4 @@
-import {
+import type {
   Page_UserResponse_,
   ScopeRegistryEnum,
   UserCreateExtended,

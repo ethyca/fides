@@ -3,8 +3,8 @@ import {
   ChakraBox as Box,
   ChakraDivider as Divider,
   ChakraFlex as Flex,
-  ChakraText as Text,
   Tag,
+  ChakraText as Text,
 } from "fidesui";
 import {
   ExecutionLogStatus,

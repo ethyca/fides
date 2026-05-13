@@ -4,9 +4,9 @@ import {
   Checkbox,
   Flex,
   List,
-  ListItemProps,
-  ListProps,
-  SelectProps,
+  type ListItemProps,
+  type ListProps,
+  type SelectProps,
   SparkleIcon,
   Tag,
   Text,
@@ -18,12 +18,12 @@ import { DiffStatus } from "~/types/api";
 
 import {
   parseResourceBreadcrumbs,
-  UrnBreadcrumbItem,
+  type UrnBreadcrumbItem,
 } from "../utils/parseResourceBreadcrumbs";
 import ClassificationSelect from "./ClassificationSelect";
 import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
-import { MonitorResource } from "./types";
+import type { MonitorResource } from "./types";
 import { getMaxSeverity, mapConfidenceBucketToSeverity } from "./utils";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];

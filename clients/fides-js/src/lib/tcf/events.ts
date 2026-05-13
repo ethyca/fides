@@ -1,4 +1,4 @@
-import { FidesEvent } from "../events";
+import type { FidesEvent } from "../events";
 import { decodeFidesString } from "../fides-string";
 
 /**

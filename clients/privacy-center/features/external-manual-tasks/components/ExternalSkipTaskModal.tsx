@@ -12,21 +12,21 @@
 
 import {
   Button,
+  Divider,
+  Input,
   ChakraModal as Modal,
   ChakraModalBody as ModalBody,
   ChakraModalContent as ModalContent,
   ChakraModalFooter as ModalFooter,
   ChakraModalHeader as ModalHeader,
   ChakraModalOverlay as ModalOverlay,
-  Divider,
-  Input,
   Space,
   Typography,
 } from "fidesui";
 import { useState } from "react";
 
 import {
-  ManualFieldListItem,
+  type ManualFieldListItem,
   useSkipExternalTaskMutation,
 } from "../external-manual-tasks.slice";
 import { ExternalTaskDetails } from "./ExternalTaskDetails";

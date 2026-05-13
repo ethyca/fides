@@ -1,4 +1,4 @@
-import { Fragment, VNode } from "preact";
+import { Fragment, type VNode } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 
 import { FidesEventTargetType } from "../lib/events";

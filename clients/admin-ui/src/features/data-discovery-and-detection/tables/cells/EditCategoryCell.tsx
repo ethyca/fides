@@ -4,7 +4,7 @@ import { useState } from "react";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import type { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 

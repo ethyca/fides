@@ -1,6 +1,12 @@
-import { Switch, SwitchProps, Typography, useMessage, useModal } from "fidesui";
+import {
+  Switch,
+  type SwitchProps,
+  Typography,
+  useMessage,
+  useModal,
+} from "fidesui";
 
-import { isErrorResult, RTKResult } from "~/types/errors";
+import { isErrorResult, type RTKResult } from "~/types/errors";
 
 import { getErrorMessage } from "../../helpers";
 

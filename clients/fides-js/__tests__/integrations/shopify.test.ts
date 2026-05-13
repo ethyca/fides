@@ -1,6 +1,6 @@
 import { createShopifyConsent } from "../../src/integrations/shopify";
 import {
-  NoticeConsent,
+  type NoticeConsent,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
 

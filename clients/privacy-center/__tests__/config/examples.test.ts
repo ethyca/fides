@@ -2,7 +2,7 @@ import basicJson from "~/config/examples/basic.json";
 import fullJson from "~/config/examples/full.json";
 import minimalJson from "~/config/examples/minimal.json";
 import v2ConsentJson from "~/config/examples/v2Consent.json";
-import { LegacyConfig } from "~/types/config";
+import type { LegacyConfig } from "~/types/config";
 
 describe("The Config type", () => {
   /**

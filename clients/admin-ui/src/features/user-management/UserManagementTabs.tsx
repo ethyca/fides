@@ -8,11 +8,11 @@ import { ScopeRegistryEnum } from "~/types/api";
 import { useHasPermission } from "../common/Restrict";
 import PermissionsForm from "./PermissionsForm";
 import RolesForm from "./RolesForm";
+import UserForm, { type UserFormProps } from "./UserForm";
 import {
   selectActiveUserId,
   useGetUserByIdQuery,
 } from "./user-management.slice";
-import UserForm, { type UserFormProps } from "./UserForm";
 
 const UserManagementTabs = ({
   onSubmit,

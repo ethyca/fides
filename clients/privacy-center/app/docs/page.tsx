@@ -2,8 +2,9 @@
 
 // import "swagger-ui-react/swagger-ui.css";
 
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { notFound } from "next/navigation";
+
 // import SwaggerUI from "swagger-ui-react";
 
 const DocsPage: NextPage = () => {

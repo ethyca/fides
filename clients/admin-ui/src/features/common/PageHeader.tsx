@@ -1,7 +1,7 @@
 import { Flex, Title } from "fidesui";
-import { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
-import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";
+import { NextBreadcrumb, type NextBreadcrumbProps } from "./nav/NextBreadcrumb";
 
 interface PageHeaderProps extends ComponentProps<"div"> {
   heading?: ReactNode;
@@ -59,7 +59,7 @@ const PageHeader = ({
     <Flex justify="space-between">
       {typeof heading === "string" ? (
         <Title
-          className={!!breadcrumbItems || !!children ? "pb-4" : undefined}
+          className={breadcrumbItems || children ? "pb-4" : undefined}
           level={1}
           data-testid="page-heading"
         >

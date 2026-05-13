@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { EnableCell } from "~/features/common/table/cells/EnableCell";
 import { useLimitedPatchExperienceConfigMutation } from "~/features/privacy-experience/privacy-experience.slice";
-import { ExperienceConfigListViewResponse } from "~/types/api";
+import type { ExperienceConfigListViewResponse } from "~/types/api";
 
 export const EnablePrivacyExperienceCell = ({
   record,

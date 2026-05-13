@@ -19,8 +19,8 @@ import { useSettings } from "~/features/common/settings.slice";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
-import { FormValues, MultiselectFieldValue } from "~/types/forms";
+import type { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
+import type { FormValues, MultiselectFieldValue } from "~/types/forms";
 
 /**
  *

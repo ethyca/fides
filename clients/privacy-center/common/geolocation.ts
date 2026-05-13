@@ -1,4 +1,4 @@
-import { UserGeolocation } from "fides-js";
+import type { UserGeolocation } from "fides-js";
 import type { NextApiRequest } from "next";
 
 import { createRequestLogger } from "~/app/server-utils/requestLogger";

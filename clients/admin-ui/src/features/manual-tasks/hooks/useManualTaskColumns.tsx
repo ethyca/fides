@@ -1,4 +1,4 @@
-import { ColumnsType, SelectInline, Tag, Typography } from "fidesui";
+import { type ColumnsType, SelectInline, Tag, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
@@ -6,10 +6,10 @@ import { formatUser } from "~/features/common/utils";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {
   ActionType,
-  ManualFieldListItem,
+  type ManualFieldListItem,
   ManualFieldRequestType,
-  ManualFieldStatus,
-  ManualFieldUser,
+  type ManualFieldStatus,
+  type ManualFieldUser,
   PrivacyRequestStatus,
 } from "~/types/api";
 

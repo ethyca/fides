@@ -1,5 +1,5 @@
 import { Button, Flex, Icons, Popconfirm, Space } from "fidesui";
-import React from "react";
+import type React from "react";
 
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";

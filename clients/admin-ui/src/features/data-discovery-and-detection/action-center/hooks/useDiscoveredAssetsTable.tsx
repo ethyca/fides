@@ -1,6 +1,6 @@
 import {
-  ColumnsType,
-  DefaultOptionType,
+  type ColumnsType,
+  type DefaultOptionType,
   formatIsoLocation,
   isoStringToEntry,
   Space,
@@ -20,20 +20,20 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import ToastLink from "~/features/common/ToastLink";
 import {
   ListExpandableCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import ToastLink from "~/features/common/ToastLink";
 import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
-  ConsentAlertInfo,
+  type ConsentAlertInfo,
   ConsentStatus,
-  PrivacyNoticeRegion,
-  StagedResourceAPIResponse,
+  type PrivacyNoticeRegion,
+  type StagedResourceAPIResponse,
 } from "~/types/api";
 
 import {

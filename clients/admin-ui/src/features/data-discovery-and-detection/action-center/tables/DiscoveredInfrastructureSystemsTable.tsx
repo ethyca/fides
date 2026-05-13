@@ -17,9 +17,9 @@ import { DiffStatus } from "~/types/api";
 
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
 import { InfrastructureSystemsFilters } from "../components/InfrastructureSystemsFilters";
-import { InfrastructureSystemBulkActionType } from "../constants";
+import type { InfrastructureSystemBulkActionType } from "../constants";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
-import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
+import type { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
 import { useInfrastructureSystemsBulkActions } from "../hooks/useInfrastructureSystemsBulkActions";
 import { useInfrastructureSystemsSelection } from "../hooks/useInfrastructureSystemsSelection";

@@ -1,4 +1,4 @@
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import type { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
 import { StagedResourceTypeValue } from "~/types/api";

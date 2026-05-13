@@ -8,12 +8,12 @@ import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
-  MessagingTemplateCreateOrUpdate,
+  type MessagingTemplateCreateOrUpdate,
   useGetMessagingTemplateDefaultQuery,
 } from "~/features/messaging-templates/messaging-templates.slice";
 import { useCreateMessagingTemplateByTypeMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import PropertySpecificMessagingTemplateForm, {
-  FormValues,
+  type FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
 

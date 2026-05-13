@@ -1,11 +1,11 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Button, Card, Flex, Form, Input, useMessage } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 
 import {
-  MessagingTemplate,
+  type MessagingTemplate,
   useUpdateMessagingTemplatesMutation,
 } from "./messaging-templates.slice";
 

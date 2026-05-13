@@ -23,15 +23,18 @@ import {
   useGetDatasetReachabilityQuery,
   usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { ConnectionType, Dataset, DatasetFieldWarning } from "~/types/api";
-
+import {
+  ConnectionType,
+  type Dataset,
+  type DatasetFieldWarning,
+} from "~/types/api";
+import DatasetNodeEditor from "./DatasetNodeEditor";
 import {
   selectCurrentDataset,
   selectCurrentPolicyKey,
   setCurrentDataset,
   setReachability,
 } from "./dataset-test.slice";
-import DatasetNodeEditor from "./DatasetNodeEditor";
 import { removeNulls } from "./helpers";
 
 interface EditorSectionProps {

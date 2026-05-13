@@ -12,10 +12,10 @@ import { useState } from "react";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import { useMonitorConfigTable } from "~/features/integrations/hooks/useMonitorConfigTable";
 import {
-  ConnectionConfigurationResponseWithSystemKey,
-  ConnectionSystemTypeMap,
+  type ConnectionConfigurationResponseWithSystemKey,
+  type ConnectionSystemTypeMap,
   ConnectionType,
-  EditableMonitorConfig,
+  type EditableMonitorConfig,
   SystemType,
 } from "~/types/api";
 

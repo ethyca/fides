@@ -2,7 +2,7 @@ import { Avatar, Flex, Icons, List, Tag, Text } from "fidesui";
 
 import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "~/features/data-discovery-and-detection/action-center/constants";
 import { DiffStatus } from "~/types/api";
-import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
+import type { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
 import {
   getServiceIconUrl,

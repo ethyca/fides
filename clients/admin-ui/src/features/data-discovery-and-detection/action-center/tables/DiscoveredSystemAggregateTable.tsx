@@ -13,7 +13,7 @@ import { SelectedText } from "~/features/common/table/SelectedText";
 import { DiffStatus } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
-import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
+import type { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredSystemAggregateTable } from "../hooks/useDiscoveredSystemAggregateTable";
 
 interface DiscoveredSystemAggregateTableProps {

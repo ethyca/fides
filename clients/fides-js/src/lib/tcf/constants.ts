@@ -1,8 +1,8 @@
 import {
-  EnabledIds,
+  type EnabledIds,
   LegalBasisEnum,
-  TcfExperienceRecords,
-  TcfModelType,
+  type TcfExperienceRecords,
+  type TcfModelType,
 } from "./types";
 
 /** CMP ID assigned to us by the IAB */

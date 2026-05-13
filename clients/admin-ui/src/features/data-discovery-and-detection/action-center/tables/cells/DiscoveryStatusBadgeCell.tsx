@@ -1,6 +1,6 @@
 import { Tag, Tooltip } from "fidesui";
 
-import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
+import { ConsentStatus, type StagedResourceAPIResponse } from "~/types/api";
 
 import {
   DiscoveryErrorStatuses,

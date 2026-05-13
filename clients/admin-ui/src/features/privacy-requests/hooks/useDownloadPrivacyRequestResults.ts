@@ -9,7 +9,7 @@ import {
 } from "~/types/api";
 
 import { useGetPrivacyRequestAccessResultsQuery } from "../privacy-requests.slice";
-import { PrivacyRequestEntity } from "../types";
+import type { PrivacyRequestEntity } from "../types";
 
 const useDownloadPrivacyRequestResults = ({
   privacyRequest,

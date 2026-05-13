@@ -14,20 +14,20 @@ import {
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
-import { LegacyResourceTypes } from "~/features/common/custom-fields";
+import type { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
+import {
+  CUSTOM_TEMPLATE_VALUE,
+  type CustomFieldsFormValues,
+} from "~/features/custom-fields/CustomFieldFormValues";
 import {
   FIELD_TYPE_OPTIONS,
   FieldTypes,
   RESOURCE_TYPE_MAP,
   VALUE_TYPE_RESOURCE_TYPE_MAP,
 } from "~/features/custom-fields/constants";
-import {
-  CUSTOM_TEMPLATE_VALUE,
-  CustomFieldsFormValues,
-} from "~/features/custom-fields/CustomFieldFormValues";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
 import useCustomFieldValueTypeOptions from "~/features/custom-fields/useCustomFieldValueTypeOptions";
 import { getCustomFieldType } from "~/features/custom-fields/utils";
@@ -37,8 +37,8 @@ import {
   useGetCustomFieldLocationsQuery,
 } from "~/features/plus/plus.slice";
 import {
-  CustomFieldDefinition,
-  CustomFieldDefinitionWithId,
+  type CustomFieldDefinition,
+  type CustomFieldDefinitionWithId,
   ScopeRegistryEnum,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
