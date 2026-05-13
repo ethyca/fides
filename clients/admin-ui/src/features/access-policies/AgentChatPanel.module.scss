@@ -2,6 +2,20 @@
   height: 100%;
   overflow: hidden;
   border-left: 1px solid var(--fidesui-color-border);
+
+
+  & :global(.x-markdown){
+    --padding-ul-ol: 0 !important;
+    --margin-ul-ol: 0 !important;
+
+    // Keep cells single-line so the table grows to its natural width and the
+    // package's `overflow: auto` can show a horizontal scrollbar. Otherwise
+    // Tailwind's `:where(*) { word-wrap: break-word }` shrinks cells to fit.
+    th,
+    td {
+      white-space: nowrap;
+    }
+  }
 }
 
 .header {
