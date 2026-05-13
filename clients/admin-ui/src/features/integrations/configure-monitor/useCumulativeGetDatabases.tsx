@@ -43,7 +43,6 @@ const useCumulativeGetDatabases = (
     setDatabases(initialDatabases);
   }, [initialIsLoading, initialDatabases]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     const t = setTimeout(() => {
       if (initialLoadingRef.current && onTimeout) {
@@ -52,6 +51,7 @@ const useCumulativeGetDatabases = (
     }, TIMEOUT_DELAY);
     return () => clearTimeout(t);
     // this should only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [

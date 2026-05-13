@@ -66,9 +66,9 @@ const CORSConfigurationPage: NextPage = () => {
       .catch(() => setSubmittable(false));
   }, [form, allValues]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   const isDirty = useMemo(
     () => !isEqual(form.getFieldsValue(true), baseline),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [allValues, baseline],
   );
 

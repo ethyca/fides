@@ -123,7 +123,6 @@ const EditorSection = ({
     [datasetConfigs?.items],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (!datasetConfigs?.items.length) {
       return;
@@ -138,6 +137,7 @@ const EditorSection = ({
     dispatch(setCurrentDataset(matched ?? datasetConfigs.items[0]));
     // currentDataset intentionally excluded from deps: we only want to re-sync
     // when a new server response arrives, not when Redux updates in response.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datasetConfigs, dispatch]);
 
   // SaaS: store as Dataset object; DB: store as YAML string

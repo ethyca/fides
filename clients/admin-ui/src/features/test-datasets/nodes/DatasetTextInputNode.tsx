@@ -52,7 +52,6 @@ const DatasetTextInputNode = ({
 
   // Center on the draft node and focus the input. Re-runs when the parent
   // changes (user clicks + on a different node without canceling first).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -68,6 +67,7 @@ const DatasetTextInputNode = ({
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentId]);
 
   const handleSubmit = () => {

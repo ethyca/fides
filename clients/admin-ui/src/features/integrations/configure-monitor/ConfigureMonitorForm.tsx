@@ -187,9 +187,9 @@ const ConfigureMonitorForm = ({
   }));
 
   // TODO: build better pattern for async form initialization
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     form.resetFields();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingSystem]);
 
   const initialValues = {

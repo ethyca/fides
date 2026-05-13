@@ -110,7 +110,6 @@ const QuestionnaireChat = ({
 
   const initChatCalled = useRef(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (initialQuestionnaireId || initChatCalled.current) {
       return;
@@ -139,6 +138,7 @@ const QuestionnaireChat = ({
     };
 
     initChat();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSend = useCallback(

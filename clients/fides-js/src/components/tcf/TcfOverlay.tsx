@@ -169,7 +169,6 @@ export const TcfOverlay = () => {
    * locale changes!
    */
   const privacyNoticesWithBestTranslation: PrivacyNoticeWithBestTranslation[] =
-    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
     useMemo(
       () =>
         (experienceMinimal.privacy_notices || []).map((notice) => {
@@ -188,6 +187,7 @@ export const TcfOverlay = () => {
           );
           return { ...notice, bestTranslation, disabled };
         }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [experienceMinimal.privacy_notices, currentLocale],
     );
 
@@ -234,7 +234,6 @@ export const TcfOverlay = () => {
   });
 
   useEffect(() => {
-    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
     if (userlocale && bestLocale !== minExperienceLocale) {
       // The minimal experience translation is different from the user's language.
       // This occurs when the customer has set their overrides on the window object
@@ -256,6 +255,7 @@ export const TcfOverlay = () => {
       });
     }
     fidesDebugger("Fetching full TCF experience...");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { setVendorCount } = useVendorButton();
@@ -264,7 +264,6 @@ export const TcfOverlay = () => {
 
   useEffect(() => {
     const isFullExperience = !!experienceFull;
-    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
     if (isFullExperience) {
       // Load messages from experience
       // This includes any custom notices, but not the GVL translations.
@@ -286,6 +285,7 @@ export const TcfOverlay = () => {
         setIsI18nLoading(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experienceFull]);
 
   useEffect(() => {
@@ -646,7 +646,6 @@ export const TcfOverlay = () => {
   useEffect(() => {
     if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
       fidesDebugger(
-        // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
         "Consent automatically accepted by fides_consent_override!",
       );
       handleAcceptAll(true);
@@ -656,6 +655,7 @@ export const TcfOverlay = () => {
       );
       handleRejectAll(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.fidesConsentOverride]);
 
   const initialTab = parseModalDefaultView(options.fidesModalDefaultView);

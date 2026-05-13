@@ -54,15 +54,15 @@ const useDictSuggestion = (
   const isShowingSuggestions = useAppSelector(selectSuggestions);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (isShowingSuggestions === "showing") {
       setPreSuggestionValue(field.value);
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowingSuggestions, setPreSuggestionValue]);
 
   useEffect(() => {
-    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
     if (isShowingSuggestions === "showing" && dictEntry) {
       // Either use the passed in getter for a dictfield, or default to the field name
       const dictFieldValue = dictField
@@ -80,6 +80,7 @@ const useDictSuggestion = (
         }, 300);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShowingSuggestions, setValue, dictEntry, inputRef.current]);
 
   useEffect(() => {

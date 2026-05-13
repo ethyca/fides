@@ -243,10 +243,10 @@ const ActionCenterFields = ({
   /**
    * @todo: this should be handled on a form/state action level
    */
-  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     resetPagination();
     resetListSelect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedNodeKeys]);
 
   // Set up keyboard shortcuts for field actions
