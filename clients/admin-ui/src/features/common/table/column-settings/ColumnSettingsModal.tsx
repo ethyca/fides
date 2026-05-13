@@ -33,6 +33,7 @@ export const ColumnSettingsModal = ({
   onColumnOrderChange,
   onColumnVisibilityChange,
 }: ColumnSettingsModalProps) => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   const initialColumns = useMemo(
     () =>
       columns
@@ -46,7 +47,6 @@ export const ColumnSettingsModal = ({
           isVisible: c.isVisible,
         })),
     // watch savedCustomReportId so that when a saved report is loaded, we can update these column definitions to match
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [savedCustomReportId, columnNameMap, columns, prefixColumns],
   );
 

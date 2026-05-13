@@ -92,12 +92,12 @@ export const useRetryableFetch = <T>({
     executeWithRetry();
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (enabled) {
       setFetchState(FetchState.Loading);
       executeWithRetry();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
   return {

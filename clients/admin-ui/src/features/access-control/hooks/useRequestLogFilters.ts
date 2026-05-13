@@ -76,6 +76,7 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
 
   const skipUrlSyncRef = useRef(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     if (skipUrlSyncRef.current) {
       skipUrlSyncRef.current = false;
@@ -95,7 +96,6 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     router.replace({ pathname: router.pathname, query }, undefined, {
       shallow: true,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValues]);
 
   const [intervalHours, setIntervalHours] = useState<number | undefined>();

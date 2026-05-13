@@ -57,9 +57,9 @@ const useSearchForm = <RequestData, FormType>({
   };
 
   // Unfortunate need for effect due to current routing strategy
+  // biome-ignore lint/correctness/useExhaustiveDependencies: migrated from eslint-disable
   useEffect(() => {
     form.setFieldsValue(searchForm);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchForm]);
 
   return {
