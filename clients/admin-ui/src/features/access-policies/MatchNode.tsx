@@ -128,12 +128,14 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
 
   return (
     <div className={styles.node} data-testid="condition-node">
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        className={styles.handle}
-      />
+      {data.isFirstOfType && (
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="left"
+          className={styles.handle}
+        />
+      )}
       {!data.isFirstOfType && (
         <Handle
           type="target"
@@ -221,12 +223,14 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
           showAddConstraint={false}
         />
       )}
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className={styles.handle}
-      />
+      {data.isFirstOfType && (
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="right"
+          className={styles.handle}
+        />
+      )}
       <Handle
         type="source"
         position={Position.Bottom}
