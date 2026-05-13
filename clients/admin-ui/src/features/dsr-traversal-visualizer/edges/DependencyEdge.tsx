@@ -28,6 +28,7 @@ export const DependencyEdge = (
   return (
     <path
       d={path}
+      // eslint-disable-next-line tailwindcss/no-custom-classname
       className="react-flow__edge-path"
       markerEnd={markerEnd}
       style={{
