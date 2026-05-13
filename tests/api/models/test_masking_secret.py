@@ -1,6 +1,6 @@
 """Tests for the MaskingSecret model and related functionality."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from sqlalchemy.orm import Session
@@ -147,15 +147,14 @@ class TestMaskingSecretFallback:
     TODO: Remove these tests once we fully move to the new DB based approach.
     """
 
-    @patch(
-        "fides.api.service.privacy_request.request_runner_service.get_all_masking_secret_keys"
-    )
+    @patch("fides.api.service.privacy_request.request_runner_service.get_cache")
     def test_verify_masking_secrets_expired(
-        self, mock_get_all_keys, db: Session, privacy_request
+        self, mock_get_cache, db: Session, privacy_request
     ):
         """Test that _verify_masking_secrets raises appropriate exception."""
-        # Mock to return empty list of keys
-        mock_get_all_keys.return_value = []
+        mock_cache = MagicMock()
+        mock_cache.get.return_value = None
+        mock_get_cache.return_value = mock_cache
 
         # Create a policy that requires masking secrets
         policy_mock = Mock(spec=Policy)
@@ -198,13 +197,21 @@ class TestMaskingSecretFallback:
         # Should not raise an exception
         _verify_masking_secrets(policy_mock, privacy_request, CurrentStep.erasure)
 
-    @patch(
-        "fides.api.service.privacy_request.request_runner_service.get_all_masking_secret_keys"
-    )
+    @patch("fides.api.service.privacy_request.request_runner_service.get_cache")
     def test_verify_masking_secrets_success_cache(
-        self, mock_get_all_keys, db: Session, privacy_request
+        self, mock_get_cache, db: Session, privacy_request
     ):
         """Test that _verify_masking_secrets succeeds when secrets are in cache."""
+        mock_cache = MagicMock()
+
+        def fake_get(key: str):
+            if f"id-{privacy_request.id}-masking-secret-test-strategy-key" == key:
+                return "present"
+            return None
+
+        mock_cache.get.side_effect = fake_get
+        mock_get_cache.return_value = mock_cache
+
         # Create a policy that requires masking secrets
         policy_mock = Mock(spec=Policy)
         policy_mock.generate_masking_secrets.return_value = [
@@ -213,11 +220,6 @@ class TestMaskingSecretFallback:
                 masking_strategy="test-strategy",
                 secret_type=SecretType.key,
             )
-        ]
-
-        # Mock cache keys to return a non-empty list
-        mock_get_all_keys.return_value = [
-            f"id-{privacy_request.id}-masking-secret-test-strategy-key"
         ]
 
         # Should not raise an exception

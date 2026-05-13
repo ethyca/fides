@@ -14,12 +14,15 @@ later if we want to avoid index consistency concerns.
 """
 
 import re
-from typing import Any, Callable, Dict, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Union
 
+from loguru import logger
 from redis import Redis
 
 from fides.common.cache.key_mapping import DSR_KEY_PREFIX, KeyMapper
 from fides.common.cache.manager import RedisCacheManager, RedisValue
+from fides.common.cache.redis_json_codec import decode_cache_obj, encode_cache_obj
+from fides.config import CONFIG
 
 __all__ = [
     "DSR_KEY_PREFIX",
@@ -404,31 +407,6 @@ class DSRCacheStore:
         """
         return self._has_cached_by_type(":drp:", "-drp-")
 
-    # --- Convenience: masking secret ---
-
-    def write_masking_secret(
-        self,
-        strategy: str,
-        secret_type: str,
-        value: RedisValue,
-        expire_seconds: int,
-    ) -> Optional[bool]:
-        """Write masking secret. New key: dsr:{id}:masking_secret:{strategy}:{secret_type}."""
-        part = f"masking_secret:{strategy}:{secret_type}"
-        return self.set(part, value, expire_seconds)
-
-    def get_masking_secret(
-        self,
-        strategy: str,
-        secret_type: str,
-    ) -> Optional[Union[str, bytes]]:
-        """Get masking secret; reads from legacy id-{id}-masking-secret-{strategy}-{type} if needed."""
-        part = f"masking_secret:{strategy}:{secret_type}"
-        return self.get_with_legacy(
-            part,
-            KeyMapper.masking_secret(self._dsr_id, strategy, secret_type)[1],
-        )
-
     # --- Convenience: async execution (single value per DSR) ---
 
     def write_async_execution(
@@ -459,27 +437,211 @@ class DSRCacheStore:
         part = "retry_count"
         return self.get_with_legacy(part, KeyMapper.retry_count(self._dsr_id)[1])
 
+    # --- Encoded JSON blobs (legacy EN_{logical} + indexed dsr:{id}:…) ---
+
+    @staticmethod
+    def _redis_str(val: Optional[Union[str, bytes]]) -> Optional[str]:
+        if val is None:
+            return None
+        if isinstance(val, bytes):
+            return val.decode("utf-8", errors="replace")
+        return str(val)
+
+    def _legacy_en_key(self, legacy_logical: str) -> str:
+        return f"EN_{legacy_logical}"
+
+    def _get_decoded_encoded_with_legacy(
+        self, part: str, legacy_logical: str
+    ) -> Optional[Any]:
+        """Read JSON-encoded object from new key, else legacy EN_{logical}; optionally migrate."""
+        new_key = _dsr_key(self._dsr_id, part)
+        raw = self._redis.get(new_key)
+        s = self._redis_str(raw)
+        if s is not None:
+            return decode_cache_obj(s)
+
+        legacy_key = self._legacy_en_key(legacy_logical)
+        raw = self._redis.get(legacy_key)
+        if raw is None:
+            return None
+
+        payload = self._redis_str(raw)
+        decoded = decode_cache_obj(payload)
+        if self._migrate_on_read and payload is not None:
+            ttl = self._redis.ttl(legacy_key)
+            expire = ttl if ttl > 0 else self._default_ttl
+            self.set(part, payload, expire)
+            self._redis.delete(legacy_key)
+        return decoded
+
+    def _set_encoded_json(
+        self,
+        part: str,
+        legacy_logical: str,
+        obj: Any,
+        expire_seconds: int,
+    ) -> None:
+        """Write JSON-encoded object to indexed new key and remove legacy EN_* if present."""
+        payload = encode_cache_obj(obj)
+        self.set(part, payload, expire_seconds)
+        legacy_key = self._legacy_en_key(legacy_logical)
+        if self._redis.get(legacy_key) is not None:
+            self._redis.delete(legacy_key)
+
+    def write_encoded_email_info(
+        self,
+        step: str,
+        dataset: str,
+        collection: str,
+        obj: Any,
+        expire_seconds: int,
+    ) -> None:
+        _, legacy_logical = KeyMapper.email_info(
+            self._dsr_id, step, dataset, collection
+        )
+        part = f"email_info:{step}:{dataset}:{collection}"
+        self._set_encoded_json(part, legacy_logical, obj, expire_seconds)
+
+    def list_decoded_email_info_for_dataset(self, step: str, dataset: str) -> List[Any]:
+        """Return decoded email checkpoint payloads for a dataset.
+
+        Always reads ``dsr:{id}:email_info:…`` keys registered in the per-DSR index.
+
+        When ``CONFIG.redis.dsr_cache_strict_index`` is False, also runs a **narrow**
+        ``SCAN … MATCH EN_EMAIL_INFORMATION__{id}__{step}__{dataset}__*`` to discover
+        legacy encoded keys not yet represented under ``dsr:`` parts. When strict
+        mode is True, legacy ``EN_*`` keys are ignored here (index-only listing).
+        """
+        index_prefix = _dsr_index_prefix(self._dsr_id)
+        dsr_full_prefix = f"{DSR_KEY_PREFIX}{self._dsr_id}:"
+        part_prefix = f"email_info:{step}:{dataset}:"
+        items: List[tuple[str, Any]] = []
+        for full_key in self._manager.get_keys_by_index(index_prefix):
+            if not full_key.startswith(dsr_full_prefix):
+                continue
+            part = full_key[len(dsr_full_prefix) :]
+            if not part.startswith(part_prefix):
+                continue
+            collection = part[len(part_prefix) :]
+            _, legacy_logical = KeyMapper.email_info(
+                self._dsr_id, step, dataset, collection
+            )
+            decoded = self._get_decoded_encoded_with_legacy(part, legacy_logical)
+            if decoded is not None:
+                items.append((part, decoded))
+
+        seen_collections = {part[len(part_prefix) :] for part, _ in items}
+
+        if not CONFIG.redis.dsr_cache_strict_index:
+            en_match_prefix = (
+                f"EN_EMAIL_INFORMATION__{self._dsr_id}__{step}__{dataset}__"
+            )
+            for raw_key in self._redis.scan_iter(
+                match=f"{en_match_prefix}*", count=500
+            ):
+                redis_key = decode_dsr_redis_key(raw_key)
+                if not redis_key.startswith("EN_"):
+                    continue
+                logical = redis_key[len("EN_") :]
+                em_pfx = "EMAIL_INFORMATION__"
+                if not logical.startswith(em_pfx):
+                    continue
+                rest = logical[len(em_pfx) :]
+                try:
+                    pr_id, step_v, ds, coll = rest.rsplit("__", 3)
+                except ValueError:
+                    continue
+                if pr_id != self._dsr_id or step_v != step or ds != dataset:
+                    continue
+                if coll in seen_collections:
+                    continue
+                raw_val = self._redis.get(redis_key)
+                payload = self._redis_str(raw_val)
+                if not payload:
+                    continue
+                decoded = decode_cache_obj(payload)
+                if decoded is None:
+                    continue
+                part = f"email_info:{step}:{dataset}:{coll}"
+                items.append((part, decoded))
+                seen_collections.add(coll)
+
+        items.sort(key=lambda t: t[0])
+        return [d for _, d in items]
+
+    def write_encoded_data_use_map(self, obj: Any, expire_seconds: int) -> None:
+        _, legacy_logical = KeyMapper.data_use_map(self._dsr_id)
+        self._set_encoded_json("data_use_map", legacy_logical, obj, expire_seconds)
+
+    def read_encoded_data_use_map(self) -> Optional[Any]:
+        _, legacy_logical = KeyMapper.data_use_map(self._dsr_id)
+        return self._get_decoded_encoded_with_legacy("data_use_map", legacy_logical)
+
+    def write_encoded_webhook_manual_access(
+        self, webhook_id: str, obj: Any, expire_seconds: int
+    ) -> None:
+        _, legacy_logical = KeyMapper.webhook_manual_access(self._dsr_id, webhook_id)
+        part = f"webhook_manual_access:{webhook_id}"
+        self._set_encoded_json(part, legacy_logical, obj, expire_seconds)
+
+    def read_encoded_webhook_manual_access(self, webhook_id: str) -> Optional[Any]:
+        _, legacy_logical = KeyMapper.webhook_manual_access(self._dsr_id, webhook_id)
+        part = f"webhook_manual_access:{webhook_id}"
+        return self._get_decoded_encoded_with_legacy(part, legacy_logical)
+
+    def write_encoded_webhook_manual_erasure(
+        self, webhook_id: str, obj: Any, expire_seconds: int
+    ) -> None:
+        _, legacy_logical = KeyMapper.webhook_manual_erasure(self._dsr_id, webhook_id)
+        part = f"webhook_manual_erasure:{webhook_id}"
+        self._set_encoded_json(part, legacy_logical, obj, expire_seconds)
+
+    def read_encoded_webhook_manual_erasure(self, webhook_id: str) -> Optional[Any]:
+        _, legacy_logical = KeyMapper.webhook_manual_erasure(self._dsr_id, webhook_id)
+        part = f"webhook_manual_erasure:{webhook_id}"
+        return self._get_decoded_encoded_with_legacy(part, legacy_logical)
+
+    def write_encoded_paused_location(self, obj: Any, expire_seconds: int) -> None:
+        _, legacy_logical = KeyMapper.paused_location(self._dsr_id)
+        self._set_encoded_json("paused_location", legacy_logical, obj, expire_seconds)
+
+    def read_encoded_paused_location(self) -> Optional[Any]:
+        _, legacy_logical = KeyMapper.paused_location(self._dsr_id)
+        return self._get_decoded_encoded_with_legacy("paused_location", legacy_logical)
+
+    def write_encoded_failed_location(self, obj: Any, expire_seconds: int) -> None:
+        _, legacy_logical = KeyMapper.failed_location(self._dsr_id)
+        self._set_encoded_json("failed_location", legacy_logical, obj, expire_seconds)
+
+    def read_encoded_failed_location(self) -> Optional[Any]:
+        _, legacy_logical = KeyMapper.failed_location(self._dsr_id)
+        return self._get_decoded_encoded_with_legacy("failed_location", legacy_logical)
+
     # --- List / clear ---
 
     def get_all_keys(self) -> list[str]:
         """
         Return all cache keys for this DSR.
 
-        Uses the index first. If a migration flag confirms no legacy keys remain,
-        returns index contents directly. Otherwise, does a one-time SCAN to find
-        legacy stragglers, backfills them into the index, and sets the migration
-        flag so future calls skip the SCAN.
+        Prefers the DSR index (``SMEMBERS`` on ``__idx:dsr:{id}``). When
+        ``CONFIG.redis.dsr_cache_strict_index`` is True, never scans. Otherwise,
+        performs at most one keyspace ``SCAN`` per DSR until the migration marker
+        shows the index is complete, backfilling discovered keys into the index.
         """
         index_prefix = _dsr_index_prefix(self._dsr_id)
         keys = self._manager.get_keys_by_index(index_prefix)
-
-        # If we've already confirmed no legacy keys remain, index is authoritative
         migration_key = f"__migrated:{self._dsr_id}"
+
+        if CONFIG.redis.dsr_cache_strict_index:
+            return keys
+
         if keys and self._redis.exists(migration_key):
             return keys
 
-        # SCAN for all keys (one-time per DSR until migration confirmed)
-        # Filter out internal keys (__migrated:, __idx:) that match the SCAN pattern
+        logger.warning(
+            "DSR cache: get_all_keys SCAN for dsr_id={} (set redis.dsr_cache_strict_index to skip)",
+            self._dsr_id,
+        )
         scanned_keys = [
             k
             for k in self._redis.scan_iter(match=f"*{self._dsr_id}*", count=500)
@@ -497,7 +659,6 @@ class DSRCacheStore:
                 if k not in indexed:
                     self._manager.add_key_to_index(index_prefix, k)
 
-        # If index existed and no scanned keys found outside it, mark as migrated
         if keys and not (scanned_set - indexed):
             self._redis.setex(migration_key, 86400, "1")  # 24h TTL
 
@@ -505,21 +666,15 @@ class DSRCacheStore:
 
     def clear(self) -> None:
         """
-        Delete all cache keys for this DSR and remove the index.
+        Delete all indexed cache keys for this DSR and remove the index.
 
-        Always uses SCAN to find all keys (both indexed and legacy) to ensure
-        complete cleanup in mixed-key scenarios. Does a second SCAN pass to
-        catch keys written by concurrent migrations between the first SCAN
-        and DELETE.
+        Intentionally **does not** scan Redis: only keys registered in
+        ``__idx:dsr:{id}`` are removed (via ``delete_keys_by_index``). Legacy
+        ``EN_*`` or ``id-{id}-*`` values that never entered that index can remain
+        until TTL expiry or until the **DSR cache sweeper** (and related hygiene)
+        deletes them. Prefer running index backfill / migration before relying on
+        ``clear()`` alone for compliance-sensitive teardown.
         """
-        all_keys = list(self._redis.scan_iter(match=f"*{self._dsr_id}*", count=500))
         index_prefix = _dsr_index_prefix(self._dsr_id)
-        if all_keys:
-            self._redis.delete(*all_keys)
-        self._manager.delete_index(index_prefix)
-        # Invalidate migration flag so future reads re-scan
+        self._manager.delete_keys_by_index(index_prefix)
         self._redis.delete(f"__migrated:{self._dsr_id}")
-        # Second pass: catch keys written by concurrent migrations
-        stragglers = list(self._redis.scan_iter(match=f"*{self._dsr_id}*", count=500))
-        if stragglers:
-            self._redis.delete(*stragglers)

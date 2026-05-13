@@ -488,9 +488,12 @@ def get_masking_secret_cache_key(
 
 
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:
-    """Returns all cache keys related to this privacy request's cached identities"""
-    cache: FidesopsRedis = get_cache()
-    return cache.get_keys_by_prefix(f"id-{privacy_request_id}-")
+    """Return DSR cache keys registered in the per-request index (no keyspace SCAN).
+
+    Legacy keys that were never added to the index are not included.
+    """
+    manager = get_redis_cache_manager()
+    return manager.get_keys_by_index(f"dsr:{privacy_request_id}")
 
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
@@ -642,8 +645,3 @@ def get_queue_counts() -> Dict[str, int]:
         logger.critical(exception)
         queue_counts = {}
     return queue_counts
-
-
-def get_all_masking_secret_keys(privacy_request_id: str) -> List[str]:
-    cache: FidesopsRedis = get_cache()
-    return cache.get_keys_by_prefix(f"id-{privacy_request_id}-masking-secret-")

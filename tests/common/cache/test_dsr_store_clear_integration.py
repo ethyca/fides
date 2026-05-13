@@ -22,14 +22,21 @@ class TestPrivacyRequestClearCachedValues:
     """Test clear_cached_values() with DSR store."""
 
     def test_clear_removes_legacy_keys(self):
-        """clear_cached_values removes legacy cache keys."""
+        """clear_cached_values removes legacy cache keys registered in the DSR index."""
         mock_redis = create_mock_redis()
         pr_id = f"test-pr-{uuid.uuid4()}"
+        manager = RedisCacheManager(mock_redis)
+        idx = f"dsr:{pr_id}"
 
-        # Simulate legacy cached data
-        mock_redis.set(f"id-{pr_id}-identity-email", "test@example.com")
-        mock_redis.set(f"id-{pr_id}-identity-phone_number", "+1234567890")
-        mock_redis.set(f"id-{pr_id}-encryption-key", "encryption-key")
+        # Simulate legacy cached data (also registered on the index so clear() can delete)
+        legacy_keys = [
+            f"id-{pr_id}-identity-email",
+            f"id-{pr_id}-identity-phone_number",
+            f"id-{pr_id}-encryption-key",
+        ]
+        for k in legacy_keys:
+            mock_redis.set(k, "x")
+            manager.add_key_to_index(idx, k)
 
         # Mock privacy request
         pr = MagicMock()
@@ -63,15 +70,22 @@ class TestPrivacyRequestClearCachedValues:
         assert len(mock_redis.keys(f"*{pr_id}*")) == 0
 
     def test_clear_removes_mixed_keys(self):
-        """clear_cached_values removes both legacy and new keys."""
+        """clear_cached_values removes both legacy and new keys when indexed."""
         mock_redis = create_mock_redis()
         pr_id = f"test-pr-{uuid.uuid4()}"
 
-        # Mixed: legacy identity, new encryption
-        mock_redis.set(f"id-{pr_id}-identity-email", "legacy@example.com")
-        mock_redis.set(f"id-{pr_id}-custom-privacy-request-field-dept", "Engineering")
-
         manager = RedisCacheManager(mock_redis)
+        idx = f"dsr:{pr_id}"
+
+        # Mixed: legacy identity/custom keys registered on index, plus new-format store keys
+        legacy_keys = [
+            f"id-{pr_id}-identity-email",
+            f"id-{pr_id}-custom-privacy-request-field-dept",
+        ]
+        for k in legacy_keys:
+            mock_redis.set(k, "x")
+            manager.add_key_to_index(idx, k)
+
         store = DSRCacheStore(pr_id, manager)
         store.write_encryption("key", "new-encryption-key", _TTL)
         store.write_async_execution("task-123", _TTL)
