@@ -199,12 +199,15 @@ describe("Integration management for data detection & discovery", () => {
 
       it("should be able to add a new integration associated with a system", () => {
         stubSystemCrud();
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
         cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
           response: 200,
         }).as("patchConnectionSecrets");
-        cy.intercept("PATCH", "/api/v1/system/*/connection", {
-          response: 200,
-        }).as("patchSystemConnection");
+        cy.intercept("PUT", "/api/v1/connection/*/system-links", {
+          statusCode: 200,
+        }).as("setSystemLinks");
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
         }).as("getSystems");
@@ -230,7 +233,11 @@ describe("Integration management for data detection & discovery", () => {
           "Fidesctl System",
         );
         cy.getByTestId("save-btn").click();
-        cy.wait("@patchSystemConnection");
+        // Connection is created via the top-level PATCH /connection endpoint and
+        // the system link is reconciled via PUT /connection/{key}/system-links —
+        // the form no longer hits the deprecated PATCH /system/{key}/connection.
+        cy.wait("@patchConnection");
+        cy.wait("@setSystemLinks");
       });
 
       it("should display an API integration under the CRM category", () => {

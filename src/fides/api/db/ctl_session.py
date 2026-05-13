@@ -1,4 +1,3 @@
-import ssl
 from asyncio import Lock, gather
 from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
 from typing import Any, AsyncGenerator, Callable, Dict
@@ -11,24 +10,17 @@ from sqlalchemy.orm import sessionmaker
 
 from fides.api.db.session import ExtendedSession
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
+from fides.common.engine_creators import make_async_creator, make_sync_creator
 from fides.config import CONFIG
 
 # asyncio lock and flag for warming up the async pool
 ASYNC_READONLY_POOL_LOCK = Lock()
 ASYNC_READONLY_POOL_WARMED = False
 
-# Associated with a workaround in fides.core.config.database_settings
-# ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
-connect_args: Dict[str, Any] = {}
-if CONFIG.database.params.get("sslrootcert"):
-    ssl_ctx = ssl.create_default_context(cafile=CONFIG.database.params["sslrootcert"])
-    ssl_ctx.verify_mode = ssl.CERT_REQUIRED
-    connect_args["ssl"] = ssl_ctx
-
-# Parameters are hidden for security
+# Primary async engine — credentials resolved per-connection via creator
 async_engine = create_async_engine(
-    CONFIG.database.async_database_uri,
-    connect_args=connect_args,
+    "postgresql+asyncpg://",
+    creator=make_async_creator(),
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
     logging_name="AsyncEngine",
@@ -49,21 +41,12 @@ readonly_async_session_factory: Callable[[], AsyncSession] = async_session_facto
 
 if CONFIG.database.async_readonly_database_uri:
     logger.info("Creating read-only async engine and session factory")
-    # Build connect_args for readonly (similar to primary)
-    readonly_connect_args: Dict[str, Any] = {}
-    readonly_params = CONFIG.database.readonly_params or {}
-
-    if readonly_params.get("sslrootcert"):
-        ssl_ctx = ssl.create_default_context(cafile=readonly_params["sslrootcert"])
-        ssl_ctx.verify_mode = ssl.CERT_REQUIRED
-        readonly_connect_args["ssl"] = ssl_ctx
-
     logger.info(
         f"Read-only async settings: max-overflow: {CONFIG.database.api_async_engine_max_overflow}, pool-size: {CONFIG.database.async_readonly_database_pool_size},  pre-warm = {CONFIG.database.async_readonly_database_prewarm}, autocommit = {CONFIG.database.async_readonly_database_autocommit}, skip rollback = {CONFIG.database.async_readonly_database_pool_skip_rollback}"
     )
     readonly_async_engine = create_async_engine(
-        CONFIG.database.async_readonly_database_uri,
-        connect_args=readonly_connect_args,
+        "postgresql+asyncpg://",
+        creator=make_async_creator(readonly=True),
         echo=False,
         hide_parameters=not CONFIG.dev_mode,
         logging_name="ReadOnlyAsyncEngine",
@@ -92,7 +75,8 @@ if CONFIG.database.async_readonly_database_uri:
 # and they do not respect engine settings like pool_size, max_overflow, etc.
 # these should be removed, and we should standardize on what's provided in `session.py`
 sync_engine = create_engine(
-    CONFIG.database.sync_database_uri,
+    "postgresql+psycopg2://",
+    creator=make_sync_creator(),
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
     logging_name="SyncEngine",
