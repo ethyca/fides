@@ -113,16 +113,13 @@ const renderValuesSelect = (
 };
 
 const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
-  const { groupedOptions, labelByKey } = usePolicyTaxonomyOptions();
+  const { options, labelByKey } = usePolicyTaxonomyOptions();
 
   const disabledSet = new Set(data.disabledProperties ?? []);
-  const propertyOptions = groupedOptions.map((group) => ({
-    label: group.label,
-    options: group.options.map((opt) => ({
-      value: opt.value,
-      label: opt.label,
-      disabled: disabledSet.has(opt.value) && opt.value !== data.property,
-    })),
+  const propertyOptions = options.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+    disabled: disabledSet.has(opt.value) && opt.value !== data.property,
   }));
 
   const valuesLabel = data.property

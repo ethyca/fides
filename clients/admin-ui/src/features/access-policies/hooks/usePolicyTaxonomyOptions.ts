@@ -14,16 +14,9 @@ export interface PolicyTaxonomyOption {
   label: string;
 }
 
-export interface PolicyTaxonomyOptionGroup {
-  label: string;
-  options: PolicyTaxonomyOption[];
-}
-
 export interface UsePolicyTaxonomyOptionsResult {
-  /** Grouped options ready for an Antd Select. */
-  groupedOptions: PolicyTaxonomyOptionGroup[];
-  /** Flat list of all valid taxonomy keys (for membership checks). */
-  allKeys: string[];
+  /** Flat options list — built-ins first, then custom taxonomies. */
+  options: PolicyTaxonomyOption[];
   /** Map of taxonomy key → display label. Falls back to the key when unknown. */
   labelByKey: Record<string, string>;
   isLoading: boolean;
@@ -60,27 +53,15 @@ export const usePolicyTaxonomyOptions = (): UsePolicyTaxonomyOptionsResult => {
         label: t.name || t.fides_key,
       }));
 
-    const groupedOptions: PolicyTaxonomyOptionGroup[] = [
-      { label: "Built-in", options: builtInOptions },
-    ];
-    if (customOptions.length > 0) {
-      groupedOptions.push({ label: "Custom", options: customOptions });
-    }
+    const options = [...builtInOptions, ...customOptions];
 
     const labelByKey: Record<string, string> = {};
-    builtInOptions.forEach((o) => {
-      labelByKey[o.value] = o.label;
-    });
-    customOptions.forEach((o) => {
+    options.forEach((o) => {
       labelByKey[o.value] = o.label;
     });
 
     return {
-      groupedOptions,
-      allKeys: [
-        ...builtInOptions.map((o) => o.value),
-        ...customOptions.map((o) => o.value),
-      ],
+      options,
       labelByKey,
       isLoading: isLoadingCustom,
     };
