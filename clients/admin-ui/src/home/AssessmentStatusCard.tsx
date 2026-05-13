@@ -60,7 +60,7 @@ interface OwnerStat {
   staleCount: number;
 }
 
-export interface AssessmentMetrics {
+interface AssessmentMetrics {
   total: number;
   bySegment: Record<SegmentKey, number>;
   blockedGroups: BlockedGroup[];
@@ -108,7 +108,7 @@ function isStale(
   return new Date(assessment.updated_at).getTime() < staleBefore;
 }
 
-export function computeMetrics(
+function computeMetrics(
   groups: AssessmentGroupResponse[] | undefined,
   now: number = Date.now(),
 ): AssessmentMetrics {
