@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional, Tuple, Type, Union
 
 import toml
 from loguru import logger as log
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -92,6 +92,31 @@ class FidesConfig(FidesSettings):
     user: UserSettings
 
     model_config = SettingsConfigDict(case_sensitive=True)
+
+    @model_validator(mode="after")
+    def _validate_database_credential_secret_ids(self) -> "FidesConfig":
+        """Validate database credential secret IDs against the secrets provider."""
+        if self.secrets.provider == "static":
+            if self.database.credential_secret_id:
+                raise ValueError(
+                    f"database.credential_secret_id is set ({self.database.credential_secret_id!r}) "
+                    "but secrets.provider is 'static'. Either remove the secret ID "
+                    "or set secrets.provider to 'aws_secrets_manager'."
+                )
+            if self.database.readonly_credential_secret_id:
+                raise ValueError(
+                    f"database.readonly_credential_secret_id is set ({self.database.readonly_credential_secret_id!r}) "
+                    "but secrets.provider is 'static'. Either remove the secret ID "
+                    "or set secrets.provider to 'aws_secrets_manager'."
+                )
+        else:
+            if not self.database.credential_secret_id:
+                raise ValueError(
+                    f"secrets.provider is {self.secrets.provider!r} but "
+                    "database.credential_secret_id is not set. "
+                    "Provide the secret name/ARN containing database credentials."
+                )
+        return self
 
     @classmethod
     def settings_customise_sources(
