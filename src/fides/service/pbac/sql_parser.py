@@ -44,11 +44,11 @@ def parse_query(
     )
 
 
-def extract_table_refs(query_text: str) -> list[TableRef]:
+def extract_table_refs(query_text: str, dialect: str | None = None) -> list[TableRef]:
     """Extract table references from SQL using sqlglot."""
     refs: list[TableRef] = []
     try:
-        parsed = sqlglot.parse(query_text)
+        parsed = sqlglot.parse(query_text, dialect=dialect)
     except Exception:
         logger.warning("Failed to parse SQL query for PBAC evaluation", exc_info=True)
         return refs
@@ -68,6 +68,64 @@ def extract_table_refs(query_text: str) -> list[TableRef]:
                 )
             )
     return refs
+
+
+def extract_columns(query_text: str) -> dict[str, list[str]]:
+    """Extract column references per table from SQL using sqlglot.
+
+    Returns ``{table_name: [column_name, ...]}``.
+    Columns qualified with a table alias are resolved to the real
+    table name.  Unqualified columns in single-table queries are
+    attributed to that table.
+
+    ``SELECT *`` and parse failures both return an empty dict,
+    signalling that callers should fall back to all-columns behavior.
+    """
+    try:
+        parsed = sqlglot.parse(query_text)
+    except Exception:
+        logger.warning("Failed to parse SQL for column extraction", exc_info=True)
+        return {}
+
+    alias_to_table: dict[str, str] = {}
+    table_names: list[str] = []
+    columns: dict[str, list[str]] = {}
+
+    for statement in parsed:
+        if statement is None:
+            continue
+
+        for table in statement.find_all(exp.Table):
+            if not table.name:
+                continue
+            name = table.name.lower()
+            alias = table.alias
+            if alias:
+                alias_to_table[alias.lower()] = name
+            alias_to_table[name] = name
+            if name not in table_names:
+                table_names.append(name)
+
+        for select_node in statement.find_all(exp.Select):
+            for column in select_node.expressions:
+                for col_ref in column.find_all(exp.Column):
+                    col_name = col_ref.name
+                    if not col_name:
+                        continue
+                    table_node = col_ref.table
+                    if table_node:
+                        table_key = table_node.lower()
+                        resolved = alias_to_table.get(table_key, table_key)
+                    else:
+                        resolved = ""
+                    columns.setdefault(resolved, []).append(col_name)
+
+    # Attribute unqualified columns to the table when only one exists
+    if "" in columns and len(table_names) == 1:
+        target = table_names[0]
+        columns.setdefault(target, []).extend(columns.pop(""))
+
+    return columns
 
 
 def detect_statement_type(query_text: str) -> str:
