@@ -1,8 +1,7 @@
 import { Typography } from "fidesui";
 
-interface EllipsisCellProps extends React.ComponentProps<
-  typeof Typography.Text
-> {
+interface EllipsisCellProps
+  extends React.ComponentProps<typeof Typography.Text> {
   children: React.ReactNode;
 }
 

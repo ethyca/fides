@@ -135,17 +135,13 @@ export const useFieldActionHotkeys = (
 
   useHotkeys(FIELD_ACTION_HOTKEYS.REFRESH, () => onRefresh(), [onRefresh]);
 
-  useHotkeys(
-    FIELD_ACTION_HOTKEYS.TOGGLE_DRAWER,
-    () => {
-      if (activeListItem && isDrawerOpen) {
-        onNavigate(undefined);
-      } else if (activeListItem && !isDrawerOpen) {
-        onNavigate(activeListItem.urn);
-      }
-    },
-    [activeListItem, onNavigate, isDrawerOpen],
-  );
+  useHotkeys(FIELD_ACTION_HOTKEYS.TOGGLE_DRAWER, () => {
+    if (activeListItem && isDrawerOpen) {
+      onNavigate(undefined);
+    } else if (activeListItem && !isDrawerOpen) {
+      onNavigate(activeListItem.urn);
+    }
+  }, [activeListItem, onNavigate, isDrawerOpen]);
 
   useHotkeys(
     FIELD_ACTION_HOTKEYS.OPEN_CLASSIFICATION_SELECT,

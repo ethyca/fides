@@ -103,13 +103,13 @@ describe("fidesString", () => {
           nc: "",
         },
       },
-    ])(
-      "can decode a fides string of varying formats",
-      ({ fidesString, expected }) => {
-        const result = decodeFidesString(fidesString);
-        expect(result).toEqual(expected);
-      },
-    );
+    ])("can decode a fides string of varying formats", ({
+      fidesString,
+      expected,
+    }) => {
+      const result = decodeFidesString(fidesString);
+      expect(result).toEqual(expected);
+    });
   });
 
   describe("consentIdsFromAcString", () => {
@@ -139,13 +139,13 @@ describe("fidesString", () => {
         acString: "2~1.2.3~dv.4.5",
         expected: ["gacp.1", "gacp.2", "gacp.3"],
       },
-    ])(
-      "can decode a fides string of varying formats",
-      ({ acString, expected }) => {
-        const result = consentIdsFromAcString(acString);
-        expect(result).toEqual(expected);
-      },
-    );
+    ])("can decode a fides string of varying formats", ({
+      acString,
+      expected,
+    }) => {
+      const result = consentIdsFromAcString(acString);
+      expect(result).toEqual(expected);
+    });
   });
 
   describe("formatFidesStringWithGpp", () => {

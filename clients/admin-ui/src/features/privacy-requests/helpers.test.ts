@@ -203,18 +203,21 @@ describe("helpers", () => {
       },
     ];
 
-    describe.each(actionVisibilityByStatus)(
-      "Button visibility for $status",
-      ({ status, approve, deny, finalize, delete: deleteBtn }) => {
-        it("should return correct button visibility", () => {
-          const visibility = getButtonVisibility(status);
+    describe.each(actionVisibilityByStatus)("Button visibility for $status", ({
+      status,
+      approve,
+      deny,
+      finalize,
+      delete: deleteBtn,
+    }) => {
+      it("should return correct button visibility", () => {
+        const visibility = getButtonVisibility(status);
 
-          expect(visibility.approve).toBe(approve);
-          expect(visibility.deny).toBe(deny);
-          expect(visibility.finalize).toBe(finalize);
-          expect(visibility.delete).toBe(deleteBtn);
-        });
-      },
-    );
+        expect(visibility.approve).toBe(approve);
+        expect(visibility.deny).toBe(deny);
+        expect(visibility.finalize).toBe(finalize);
+        expect(visibility.delete).toBe(deleteBtn);
+      });
+    });
   });
 });

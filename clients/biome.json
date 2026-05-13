@@ -18,8 +18,11 @@
       "!admin-ui/src/types/api/**",
       "!fidesui/src/components/chakra-base/types/**",
       "!admin-ui/public/lib/**",
+      "!privacy-center/public/lib/**",
+      "!privacy-center/public/scripts/**",
       "!fides-js/src/lib/gpp/modules/**",
       "!fides-js/docs/**",
+      "!**/.idea",
       "!**/cypress/downloads",
       "!**/cypress/screenshots",
       "!**/cypress/videos"

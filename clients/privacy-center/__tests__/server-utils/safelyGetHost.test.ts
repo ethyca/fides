@@ -16,10 +16,10 @@ describe(safelyGetHost, () => {
       url: "https://geolocation.example.com/example-path",
       expected: "geolocation.example.com",
     },
-  ])(
-    "returns only the $description if given a full url",
-    ({ url, expected }) => {
-      expect(safelyGetHost(url)).toBe(expected);
-    },
-  );
+  ])("returns only the $description if given a full url", ({
+    url,
+    expected,
+  }) => {
+    expect(safelyGetHost(url)).toBe(expected);
+  });
 });

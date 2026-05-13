@@ -249,10 +249,8 @@ interface NodeActions<Action, ActionDict extends Record<string, Action>> {
   primaryAction: keyof ActionDict;
 }
 
-interface MonitorTreeProps extends NodeActions<
-  TreeNodeAction,
-  Record<string, TreeNodeAction>
-> {
+interface MonitorTreeProps
+  extends NodeActions<TreeNodeAction, Record<string, TreeNodeAction>> {
   setSelectedNodeKeys: (keys: Key[]) => void;
   selectedNodeKeys: Key[];
 }

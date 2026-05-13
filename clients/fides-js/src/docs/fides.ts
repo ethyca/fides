@@ -417,7 +417,18 @@ export interface Fides {
    * ```
    */
   gcm: (options?: {
-    purposeMapping?: Record<string, ("ad_storage" | "ad_personalization" | "ad_user_data" | "analytics_storage" | "functionality_storage" | "personalization_storage" | "security_storage")[]>;
+    purposeMapping?: Record<
+      string,
+      (
+        | "ad_storage"
+        | "ad_personalization"
+        | "ad_user_data"
+        | "analytics_storage"
+        | "functionality_storage"
+        | "personalization_storage"
+        | "security_storage"
+      )[]
+    >;
   }) => { consent: () => Record<string, "granted" | "denied"> | null };
 
   /**
@@ -514,9 +525,7 @@ export interface Fides {
    * </head>
    * ```
    */
-  shopify: (options?: {
-    sale_of_data_default?: boolean;
-  }) => void;
+  shopify: (options?: { sale_of_data_default?: boolean }) => void;
 
   /**
    * Initializes FidesJS with an initial configuration object.

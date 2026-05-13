@@ -17,7 +17,7 @@ const DEFAULT_TOOLTIP_ICON = (
  * The default can be overridden per-Form via the `tooltip` prop or per-Item
  * via `Form.Item tooltip={{ icon: <SomeOtherIcon /> }}`.
  */
-const CustomFormBase = <Values = unknown,>(
+const CustomFormBase = <Values = unknown>(
   props: React.PropsWithChildren<FormProps<Values>> &
     React.RefAttributes<FormInstance<Values>>,
 ) => {

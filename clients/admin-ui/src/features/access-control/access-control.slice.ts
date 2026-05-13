@@ -53,7 +53,9 @@ interface ViolationLogsParams extends FacetFilters, DateRange {
 }
 
 interface PolicyViolationsParams
-  extends PaginatedParams, DateRange, FacetFilters {
+  extends PaginatedParams,
+    DateRange,
+    FacetFilters {
   sort_by?: "violation_count" | "last_violation";
   sort_direction?: "asc" | "desc";
 }

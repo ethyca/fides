@@ -100,13 +100,14 @@ describe("getWindowObjFromPath", () => {
       window: windowMock2,
       expected: { hello: "something-else" },
     },
-  ])(
-    "returns $expected when path is $path and window is $window",
-    ({ path, window, expected }) => {
-      windowSpy.mockImplementation(() => window);
-      expect(getWindowObjFromPath(path as any)).toStrictEqual(expected);
-    },
-  );
+  ])("returns $expected when path is $path and window is $window", ({
+    path,
+    window,
+    expected,
+  }) => {
+    windowSpy.mockImplementation(() => window);
+    expect(getWindowObjFromPath(path as any)).toStrictEqual(expected);
+  });
 });
 
 describe("parseFidesDisabledNotices", () => {

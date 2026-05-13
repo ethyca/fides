@@ -346,14 +346,14 @@ describe("matomo", () => {
   });
 
   describe("Event subscription", () => {
-    test.each(["FidesReady", "FidesUpdated"])(
-      "subscribes to %s event",
-      (eventName) => {
-        const spy = jest.spyOn(window, "addEventListener");
-        matomo();
-        expect(spy).toHaveBeenCalledWith(eventName, expect.any(Function));
-      },
-    );
+    test.each([
+      "FidesReady",
+      "FidesUpdated",
+    ])("subscribes to %s event", (eventName) => {
+      const spy = jest.spyOn(window, "addEventListener");
+      matomo();
+      expect(spy).toHaveBeenCalledWith(eventName, expect.any(Function));
+    });
 
     test("pushes consent immediately if Fides is already initialized (synthetic event)", () => {
       setupFidesWithConsent({ analytics: true });

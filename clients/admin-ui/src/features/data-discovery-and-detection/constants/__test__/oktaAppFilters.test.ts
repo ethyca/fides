@@ -52,14 +52,14 @@ describe("Okta App Filters — predicates", () => {
     },
   ];
 
-  it.each(cases)(
-    "filter $label returns expected items",
-    ({ filter, expected }) => {
-      expect(
-        mockApps
-          .filter((a) => filter(a as StagedResourceAPIResponse))
-          .map((a) => a.name),
-      ).toEqual(expected);
-    },
-  );
+  it.each(cases)("filter $label returns expected items", ({
+    filter,
+    expected,
+  }) => {
+    expect(
+      mockApps
+        .filter((a) => filter(a as StagedResourceAPIResponse))
+        .map((a) => a.name),
+    ).toEqual(expected);
+  });
 });

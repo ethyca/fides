@@ -13,17 +13,17 @@ describe("recommended security headers", () => {
     ).toMatchSnapshot();
   });
 
-  it.each([true, false])(
-    "templates and flattens privacy center csp header when isDev is %s",
-    (isDev) => {
-      expect(
-        privacyCenterPagesCspHeader({
-          fidesApiHost: "fides.example.com",
-          geolocationApiHost: "geolocation.example.com",
-          isDev,
-          nonce: "random-nonce-string",
-        }),
-      ).toMatchSnapshot();
-    },
-  );
+  it.each([
+    true,
+    false,
+  ])("templates and flattens privacy center csp header when isDev is %s", (isDev) => {
+    expect(
+      privacyCenterPagesCspHeader({
+        fidesApiHost: "fides.example.com",
+        geolocationApiHost: "geolocation.example.com",
+        isDev,
+        nonce: "random-nonce-string",
+      }),
+    ).toMatchSnapshot();
+  });
 });

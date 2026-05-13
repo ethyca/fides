@@ -12,9 +12,8 @@ import { DiffStatus } from "~/types/api";
 import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 
-interface InfrastructureSystemsFiltersProps extends ReturnType<
-  typeof useInfrastructureSystemsFilters
-> {
+interface InfrastructureSystemsFiltersProps
+  extends ReturnType<typeof useInfrastructureSystemsFilters> {
   monitorId: string;
 }
 

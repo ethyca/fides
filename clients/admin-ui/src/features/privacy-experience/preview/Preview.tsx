@@ -312,9 +312,11 @@ const Preview = ({
         div#${PREVIEW_CONTAINER_ID} {
           width: 100%;
           padding-top: 45px;
-          ${values.component !== ComponentType.TCF_OVERLAY
-            ? "padding-bottom: 45px;"
-            : ""}
+          ${
+            values.component !== ComponentType.TCF_OVERLAY
+              ? "padding-bottom: 45px;"
+              : ""
+          }
           margin: auto;
           pointer-events: none;
         }

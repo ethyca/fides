@@ -38,7 +38,9 @@ export const useBulkListSelect = <T>(
 
   const updateSelectedListItem = (key: React.Key, isSelected: boolean) => {
     const updateMode: "add" | "remove" = (
-      mode === "inclusive" ? isSelected : !isSelected
+      mode === "inclusive"
+        ? isSelected
+        : !isSelected
     )
       ? "add"
       : "remove";

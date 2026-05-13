@@ -70,10 +70,11 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE]: CUSTOM_TAG_COLOR.WARNING,
 };
 
-export interface ExecutionLog extends Pick<
-  ExecutionAndAuditLogResponse,
-  "connection_key" | "saas_version"
-> {
+export interface ExecutionLog
+  extends Pick<
+    ExecutionAndAuditLogResponse,
+    "connection_key" | "saas_version"
+  > {
   collection_name: string | null;
   fields_affected: FieldsAffected[];
   message: string;

@@ -29,9 +29,7 @@ const AddMultipleSystemsPage: NextPage = () => (
     <Box w={{ base: "100%", md: "75%" }}>
       <Text fontSize="sm" mb={8}>
         {DESCRIBE_SYSTEM_COPY}
-        <RouterLink href={ADD_SYSTEMS_MANUAL_ROUTE}>
-          Add a system
-        </RouterLink>{" "}
+        <RouterLink href={ADD_SYSTEMS_MANUAL_ROUTE}>Add a system</RouterLink>{" "}
         page.
       </Text>
     </Box>

@@ -32,10 +32,8 @@ const popupRender = (
   );
 };
 
-interface SystemSelectProps extends Omit<
-  SelectProps,
-  "options" | "filterOption" | "onSearch"
-> {
+interface SystemSelectProps
+  extends Omit<SelectProps, "options" | "filterOption" | "onSearch"> {
   onAddSystem?: MouseEventHandler<HTMLButtonElement>;
 }
 

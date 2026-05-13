@@ -7,9 +7,8 @@ import { useGetCloudInfraMonitorFiltersQuery } from "../../discovery-detection.s
 import { useCloudInfraFilters } from "../fields/useCloudInfraFilters";
 import { getServiceLabel } from "../utils/cloudInfraServiceInfo";
 
-interface CloudInfraResourcesFiltersProps extends ReturnType<
-  typeof useCloudInfraFilters
-> {
+interface CloudInfraResourcesFiltersProps
+  extends ReturnType<typeof useCloudInfraFilters> {
   monitorId: string;
 }
 

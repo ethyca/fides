@@ -22,7 +22,8 @@ export interface CustomFieldWithIdExtended extends CustomFieldWithId {
   allow_list_id?: string;
 }
 
-export interface CustomFieldDefinitionExisting extends CustomFieldDefinitionWithId {
+export interface CustomFieldDefinitionExisting
+  extends CustomFieldDefinitionWithId {
   id: string;
 }
 

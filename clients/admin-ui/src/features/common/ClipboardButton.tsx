@@ -23,10 +23,11 @@ const useClipboardButton = (copyText: string) => {
   };
 };
 
-interface ClipboardButtonProps extends Omit<
-  ButtonProps,
-  "aria-label" | "onClick" | "onMouseUp" | "onMouseEnter" | "onMouseLeave"
-> {
+interface ClipboardButtonProps
+  extends Omit<
+    ButtonProps,
+    "aria-label" | "onClick" | "onMouseUp" | "onMouseEnter" | "onMouseLeave"
+  > {
   copyText: string;
 }
 

@@ -69,8 +69,9 @@ div#fides-banner-inner-container {
 
 .fides-tcf-banner-container .fides-banner-secondary-actions {
   gap: calc(
-    24px - var(--fides-overlay-link-h-padding) -
-      var(--fides-overlay-link-h-padding)
+    24px -
+    var(--fides-overlay-link-h-padding) -
+    var(--fides-overlay-link-h-padding)
   );
 }
 

@@ -32,51 +32,51 @@ describe("filterAttDeniedFromDraft", () => {
   });
 
   describe("when ATT is denied (status is 'denied' or 'restricted')", () => {
-    it.each([FidesAttStatus.DENIED, FidesAttStatus.RESTRICTED])(
-      "removes non-exempt notices from draft when status is %s",
-      (status) => {
-        const notices = [
-          makeNotice({ id: "notice-1", att_exempt: false }),
-          makeNotice({ id: "notice-2", att_exempt: false }),
-          makeNotice({ id: "notice-3", att_exempt: false }),
-        ];
-        const result = filterAttDeniedFromDraft(draftIds, notices, status);
-        expect(result).toEqual([]);
-      },
-    );
+    it.each([
+      FidesAttStatus.DENIED,
+      FidesAttStatus.RESTRICTED,
+    ])("removes non-exempt notices from draft when status is %s", (status) => {
+      const notices = [
+        makeNotice({ id: "notice-1", att_exempt: false }),
+        makeNotice({ id: "notice-2", att_exempt: false }),
+        makeNotice({ id: "notice-3", att_exempt: false }),
+      ];
+      const result = filterAttDeniedFromDraft(draftIds, notices, status);
+      expect(result).toEqual([]);
+    });
 
-    it.each([FidesAttStatus.DENIED, FidesAttStatus.RESTRICTED])(
-      "preserves att_exempt notices when status is %s",
-      (status) => {
-        const notices = [
-          makeNotice({ id: "notice-1", att_exempt: true }),
-          makeNotice({ id: "notice-2", att_exempt: false }),
-          makeNotice({ id: "notice-3", att_exempt: true }),
-        ];
-        const result = filterAttDeniedFromDraft(draftIds, notices, status);
-        expect(result).toEqual(["notice-1", "notice-3"]);
-      },
-    );
+    it.each([
+      FidesAttStatus.DENIED,
+      FidesAttStatus.RESTRICTED,
+    ])("preserves att_exempt notices when status is %s", (status) => {
+      const notices = [
+        makeNotice({ id: "notice-1", att_exempt: true }),
+        makeNotice({ id: "notice-2", att_exempt: false }),
+        makeNotice({ id: "notice-3", att_exempt: true }),
+      ];
+      const result = filterAttDeniedFromDraft(draftIds, notices, status);
+      expect(result).toEqual(["notice-1", "notice-3"]);
+    });
 
-    it.each([FidesAttStatus.DENIED, FidesAttStatus.RESTRICTED])(
-      "preserves notice_only notices regardless of att_exempt when status is %s",
-      (status) => {
-        const notices = [
-          makeNotice({
-            id: "notice-1",
-            consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-            att_exempt: false,
-          }),
-          makeNotice({ id: "notice-2", att_exempt: false }),
-        ];
-        const result = filterAttDeniedFromDraft(
-          ["notice-1", "notice-2"],
-          notices,
-          status,
-        );
-        expect(result).toEqual(["notice-1"]);
-      },
-    );
+    it.each([
+      FidesAttStatus.DENIED,
+      FidesAttStatus.RESTRICTED,
+    ])("preserves notice_only notices regardless of att_exempt when status is %s", (status) => {
+      const notices = [
+        makeNotice({
+          id: "notice-1",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          att_exempt: false,
+        }),
+        makeNotice({ id: "notice-2", att_exempt: false }),
+      ];
+      const result = filterAttDeniedFromDraft(
+        ["notice-1", "notice-2"],
+        notices,
+        status,
+      );
+      expect(result).toEqual(["notice-1"]);
+    });
 
     it("handles IDs not found in the notices map (removes them)", () => {
       const notices = [makeNotice({ id: "notice-1", att_exempt: true })];

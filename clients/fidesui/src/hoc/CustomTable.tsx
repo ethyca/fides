@@ -29,7 +29,7 @@ export type CustomTableProps<RecordType = any> = Omit<
  * - Automatically hides pagination when there's only one page
  *
  */
-export const CustomTable = <RecordType = any,>({
+export const CustomTable = <RecordType = any>({
   size = "small",
   bordered = true,
   pagination,

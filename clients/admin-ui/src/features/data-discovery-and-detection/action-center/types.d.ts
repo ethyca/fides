@@ -7,10 +7,8 @@ import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { InfrastructureMonitorUpdates } from "~/types/api/models/InfrastructureMonitorUpdates";
 import { PaginatedResponse } from "~/types/query-params";
 
-export interface MonitorAggregatedResults extends Omit<
-  MonitorConfigStagedResourcesAggregateRecord,
-  "secrets"
-> {
+export interface MonitorAggregatedResults
+  extends Omit<MonitorConfigStagedResourcesAggregateRecord, "secrets"> {
   secrets?: { url: string } | null;
   monitorType: APIMonitorType;
   isTestMonitor: boolean;
@@ -21,7 +19,8 @@ export type MonitorUpdates =
   | WebMonitorUpdates
   | InfrastructureMonitorUpdates;
 
-export interface MonitorSummaryPaginatedResponse extends PaginatedResponse<MonitorAggregatedResults> {}
+export interface MonitorSummaryPaginatedResponse
+  extends PaginatedResponse<MonitorAggregatedResults> {}
 
 export type DatastorePageSettings = {
   showIgnored: boolean;

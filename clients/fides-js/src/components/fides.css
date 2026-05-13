@@ -1,6 +1,6 @@
 /**
-* Default CSS styles for the banner
-*/
+ * Default CSS styles for the banner
+ */
 :root {
   /* Colors */
   --fides-overlay-primary-color: #2b2e35;
@@ -87,7 +87,7 @@
   --fides-overlay-language-loading-indicator-speed: 5s;
   --fides-overlay-modal-secondary-button-group-height: calc(
     var(--fides-overlay-font-size-body) +
-      (var(--fides-overlay-link-v-padding) * 2)
+    (var(--fides-overlay-link-v-padding) * 2)
   );
   --fides-overlay-toggle-width: 50px;
 }

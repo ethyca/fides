@@ -67,35 +67,33 @@ describe("gtm", () => {
   });
 
   describe("Fides events", () => {
-    test.each(eventsThatAreForwarded)(
-      "fides forwards %s event to gtm if appropriate",
-      (eventName) => {
-        gtm();
-        window.dispatchEvent(
-          new CustomEvent(eventName, { detail: { consent: {} } }),
-        );
+    test.each(
+      eventsThatAreForwarded,
+    )("fides forwards %s event to gtm if appropriate", (eventName) => {
+      gtm();
+      window.dispatchEvent(
+        new CustomEvent(eventName, { detail: { consent: {} } }),
+      );
 
-        expect(
-          (window.dataLayer ?? []).filter((event) => event.event === eventName)
-            .length,
-        ).toBeGreaterThanOrEqual(1);
-      },
-    );
+      expect(
+        (window.dataLayer ?? []).filter((event) => event.event === eventName)
+          .length,
+      ).toBeGreaterThanOrEqual(1);
+    });
 
-    test.each(eventsThatAreNotForwarded)(
-      "fides doesn't forward %s event to gtm",
-      (eventName) => {
-        gtm();
-        window.dispatchEvent(
-          new CustomEvent(eventName, { detail: { consent: {} } }),
-        );
+    test.each(
+      eventsThatAreNotForwarded,
+    )("fides doesn't forward %s event to gtm", (eventName) => {
+      gtm();
+      window.dispatchEvent(
+        new CustomEvent(eventName, { detail: { consent: {} } }),
+      );
 
-        expect(
-          (window.dataLayer ?? []).filter((event) => event.event === eventName)
-            .length,
-        ).toBeLessThan(1);
-      },
-    );
+      expect(
+        (window.dataLayer ?? []).filter((event) => event.event === eventName)
+          .length,
+      ).toBeLessThan(1);
+    });
 
     describe("synthetic initialization events", () => {
       beforeEach(() => {

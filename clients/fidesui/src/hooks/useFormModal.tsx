@@ -20,7 +20,7 @@ export type UseFormModalOptions = Omit<
  * Generic hook for opening a modal with a form, validating and getting the result of the form
  * @returns openFormModal function and form instance
  */
-export const useFormModal = <T = any,>() => {
+export const useFormModal = <T = any>() => {
   const modalApi = useModal();
   const [form] = Form.useForm();
 

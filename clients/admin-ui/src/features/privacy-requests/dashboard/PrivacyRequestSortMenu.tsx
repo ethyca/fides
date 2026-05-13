@@ -3,10 +3,8 @@ import { Icons, Select } from "fidesui";
 import { FilterQueryParams } from "~/features/privacy-requests/dashboard/hooks/usePrivacyRequestsFilters";
 import { ColumnSort } from "~/types/api";
 
-export interface SortParams extends Pick<
-  FilterQueryParams,
-  "sort_field" | "sort_direction"
-> {}
+export interface SortParams
+  extends Pick<FilterQueryParams, "sort_field" | "sort_direction"> {}
 
 interface PrivacyRequestSortMenuProps {
   sortState: SortParams;

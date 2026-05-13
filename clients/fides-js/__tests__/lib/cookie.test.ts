@@ -185,24 +185,24 @@ describe("cookies", () => {
             suffix: "TEST_COOKIE_SUFFIX",
             cookieName: "fides_consent_TEST_COOKIE_SUFFIX",
           },
-        ])(
-          "returns the saved cookie $description",
-          async ({ suffix, cookieName }) => {
-            mockGetCookie.mockReturnValue(JSON.stringify(V090_COOKIE_OBJECT));
-            const cookie: FidesCookie = await getOrMakeFidesCookie(undefined, {
-              fidesCookieSuffix: suffix,
-            });
-            expect(cookie.consent).toEqual(SAVED_CONSENT);
-            expect(cookie.fides_meta.consentMethod).toEqual(undefined);
-            expect(cookie.fides_meta.createdAt).toEqual(CREATED_DATE);
-            expect(cookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
-            expect(cookie.identity.fides_user_device_id).toEqual(SAVED_UUID);
-            expect(cookie.tcf_consent).toEqual({});
-            expect(mockGetCookie.mock.calls).toHaveLength(1);
-            const [name] = mockGetCookie.mock.calls[0];
-            expect(name).toBe(cookieName);
-          },
-        );
+        ])("returns the saved cookie $description", async ({
+          suffix,
+          cookieName,
+        }) => {
+          mockGetCookie.mockReturnValue(JSON.stringify(V090_COOKIE_OBJECT));
+          const cookie: FidesCookie = await getOrMakeFidesCookie(undefined, {
+            fidesCookieSuffix: suffix,
+          });
+          expect(cookie.consent).toEqual(SAVED_CONSENT);
+          expect(cookie.fides_meta.consentMethod).toEqual(undefined);
+          expect(cookie.fides_meta.createdAt).toEqual(CREATED_DATE);
+          expect(cookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
+          expect(cookie.identity.fides_user_device_id).toEqual(SAVED_UUID);
+          expect(cookie.tcf_consent).toEqual({});
+          expect(mockGetCookie.mock.calls).toHaveLength(1);
+          const [name] = mockGetCookie.mock.calls[0];
+          expect(name).toBe(cookieName);
+        });
 
         it("returns the saved cookie including optional fides_meta details like consentMethod", async () => {
           // extend the cookie object with some extra details on fides_meta
@@ -311,24 +311,24 @@ describe("cookies", () => {
         url: "https://example.co.jp",
         expected: "example.co.jp",
       },
-    ])(
-      "calculates the root domain from the hostname ($url)",
-      async ({ url, expected }) => {
-        const mockUrl = new URL(url);
-        Object.defineProperty(window, "location", {
-          value: mockUrl,
-          writable: true,
-        });
-        const cookie: FidesCookie = await getOrMakeFidesCookie();
-        await saveFidesCookie(cookie);
-        const numCalls = expected.split(".").length;
-        expect(mockSetCookie.mock.calls).toHaveLength(numCalls);
-        expect(mockSetCookie.mock.calls[numCalls - 1][2]).toHaveProperty(
-          "domain",
-          expected,
-        );
-      },
-    );
+    ])("calculates the root domain from the hostname ($url)", async ({
+      url,
+      expected,
+    }) => {
+      const mockUrl = new URL(url);
+      Object.defineProperty(window, "location", {
+        value: mockUrl,
+        writable: true,
+      });
+      const cookie: FidesCookie = await getOrMakeFidesCookie();
+      await saveFidesCookie(cookie);
+      const numCalls = expected.split(".").length;
+      expect(mockSetCookie.mock.calls).toHaveLength(numCalls);
+      expect(mockSetCookie.mock.calls[numCalls - 1][2]).toHaveProperty(
+        "domain",
+        expected,
+      );
+    });
   });
 
   describe("makeConsentDefaultsLegacy", () => {
@@ -566,43 +566,37 @@ describe("cookies", () => {
           { domain: ".example.co.jp" },
         ],
       },
-    ])(
-      "should remove a list of cookies",
-      ({
+    ])("should remove a list of cookies", ({
+      cookies,
+      removeSubdomainCookies,
+      cookieDeletionBasedOnHostDomain,
+      expectedAttributes,
+    }: {
+      cookies: CookiesType[];
+      removeSubdomainCookies?: boolean;
+      cookieDeletionBasedOnHostDomain?: boolean;
+      expectedAttributes: Array<CookieAttributes | undefined>;
+    }) => {
+      removeCookiesFromBrowser(
         cookies,
+        cookieDeletionBasedOnHostDomain ?? false,
         removeSubdomainCookies,
-        cookieDeletionBasedOnHostDomain,
-        expectedAttributes,
-      }: {
-        cookies: CookiesType[];
-        removeSubdomainCookies?: boolean;
-        cookieDeletionBasedOnHostDomain?: boolean;
-        expectedAttributes: Array<CookieAttributes | undefined>;
-      }) => {
-        removeCookiesFromBrowser(
-          cookies,
-          cookieDeletionBasedOnHostDomain ?? false,
-          removeSubdomainCookies,
-        );
-        const expectedLength = removeSubdomainCookies
-          ? cookies.length * 2
-          : cookies.length;
-        expect(mockRemoveCookie.mock.calls).toHaveLength(expectedLength);
-        cookies.forEach((cookie, cookieIdx) => {
-          const calls = removeSubdomainCookies
-            ? mockRemoveCookie.mock.calls.slice(
-                cookieIdx * 2,
-                cookieIdx * 2 + 2,
-              )
-            : mockRemoveCookie.mock.calls.slice(cookieIdx, cookieIdx + 1);
-          calls.forEach((call, i) => {
-            const [name, attributes] = call;
-            expect(name).toEqual(cookie.name);
-            expect(attributes).toEqual(expectedAttributes[i]);
-          });
+      );
+      const expectedLength = removeSubdomainCookies
+        ? cookies.length * 2
+        : cookies.length;
+      expect(mockRemoveCookie.mock.calls).toHaveLength(expectedLength);
+      cookies.forEach((cookie, cookieIdx) => {
+        const calls = removeSubdomainCookies
+          ? mockRemoveCookie.mock.calls.slice(cookieIdx * 2, cookieIdx * 2 + 2)
+          : mockRemoveCookie.mock.calls.slice(cookieIdx, cookieIdx + 1);
+        calls.forEach((call, i) => {
+          const [name, attributes] = call;
+          expect(name).toEqual(cookie.name);
+          expect(attributes).toEqual(expectedAttributes[i]);
         });
-      },
-    );
+      });
+    });
 
     describe("wildcard cookies", () => {
       it("should remove cookies with provided domain", () => {
