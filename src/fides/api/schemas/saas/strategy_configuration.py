@@ -198,3 +198,29 @@ class GoogleCloudServiceAccountConfiguration(StrategyConfiguration):
             "'https://www.googleapis.com/auth/devstorage.read_write' for Cloud Storage, "
         ),
     )
+
+
+class AWSIAMAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Configuration for AWS IAM (Signature V4) authentication.
+
+    Signs HTTP requests using AWS credentials so they can be sent to
+    IAM-protected endpoints such as API Gateway with IAM authorization.
+    Supports both static credentials and STS AssumeRole.
+    """
+
+    region: Optional[str] = Field(
+        default=None,
+        description=(
+            "AWS region for signing requests (e.g. 'us-east-1'). "
+            "If not specified, the region is resolved from the connector secrets "
+            "('aws_region') or inferred from the API Gateway endpoint hostname."
+        ),
+    )
+    service: str = Field(
+        default="execute-api",
+        description=(
+            "The AWS service name used for Signature V4 signing. "
+            "Defaults to 'execute-api' for API Gateway."
+        ),
+    )
