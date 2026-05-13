@@ -35,6 +35,7 @@
     "openapi:generate": "turbo run openapi:generate"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
     "turbo": "^2.2.3"
   },
   "dependencies": {
