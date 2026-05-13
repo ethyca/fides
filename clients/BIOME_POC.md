@@ -73,6 +73,49 @@ Biome catches a strict superset of what the prior ESLint config caught. After ap
 | `a11y/noNoninteractiveTabindex` | 3 | `tabindex` on non-interactive element. |
 | Rest | ~25 | Single-digit counts. |
 
+### Why aren't these already clean?
+
+Most of these rules **were already enabled** by `airbnb`, `airbnb-typescript`, `next/core-web-vitals`, and `jsx-a11y`. The codebase wasn't clean of them; the prior setup just didn't surface them as failures. Three reasons:
+
+**1. Severity was `warn`, not `error`, in airbnb.** ESLint warnings didn't fail CI under the prior setup, so these accumulated silently:
+
+| Biome rule (now) | ESLint rule (then) | Why it was silent |
+|---|---|---|
+| `noArrayIndexKey` (17) | `react/no-array-index-key` | airbnb: warn |
+| `noDangerouslySetInnerHtml` (3) | `react/no-danger` | airbnb: warn |
+| `noUselessFragments` (6) | `react/jsx-no-useless-fragment` | airbnb: warn |
+| `noStaticElementInteractions` (14), `useSemanticElements` (9), `useKeyWithClickEvents` (2), `noNoninteractiveTabindex` (3), `useAriaPropsForRole` (2), most other a11y | `jsx-a11y/*` | jsx-a11y defaults: warn |
+
+**2. 461 inline `eslint-disable` comments in source code.** Biome ignores them. The largest categories track exactly with what we now see:
+
+| Biome rule (now) | ESLint rule disabled inline (then) |
+|---|---|
+| `useExhaustiveDependencies` (203) | `react-hooks/exhaustive-deps` |
+| `useHookAtTopLevel` (6) | `react-hooks/rules-of-hooks` |
+| `noUnusedImports` (135), `noUnusedVariables` (38), `noUnusedFunctionParameters` (115) | `@typescript-eslint/no-unused-vars` |
+
+The 461 inline disables remain as dead text under Biome (they're inert). They can be deleted in a cleanup follow-up.
+
+**3. Custom overrides in the prior config that Biome doesn't support.**
+
+| Biome rule (now) | Prior ESLint config | Why it was silent |
+|---|---|---|
+| `noImgElement` (3) | `@next/next/no-img-element: "off"` in admin-ui | Explicitly turned off |
+| `noLabelWithoutControl` (2) | `jsx-a11y/label-has-associated-control` with `depth: 25, assert: "either"` | Very permissive depth; Biome has no equivalent option |
+| Various a11y on Ant Design components | `jsx-a11y` custom component map (`AutoComplete` → input, `Button` → button, etc.) | Biome doesn't support custom component mappings either way |
+
+**Genuinely net-new** (no equivalent in the prior config, so ESLint never had a chance):
+
+- `noImplicitAnyLet` (33) — `let x;` without type
+- `noSvgWithoutTitle` (23) — a11y, no jsx-a11y equivalent
+- `noAccumulatingSpread` (15) — perf
+- `noConfusingVoidType` (10)
+- `noDescendingSpecificity` (13), `noDuplicateProperties` (4), `noImportantStyles` (3) — CSS rules
+- `useNodejsImportProtocol` (12) — `node:` protocol enforcement
+- `noExportsInTest` (2)
+
+**Implication for the remediation plan:** most of the work isn't "fix new things Biome added" — it's "stop pretending warn-level violations don't exist, and stop carrying inline-disable comments." After each follow-up remediation, the downgraded rules in `biome.json` can be re-promoted to `error`.
+
 ### Recommended remediation order
 
 1. **Trivial mechanical** (`useOptionalChain`, `noImplicitAnyLet`, `noShadowRestrictedNames`, `useTemplate`, `useNodejsImportProtocol`, `noBannedTypes`): batch-apply codemods. ~120 fixes, low risk.
