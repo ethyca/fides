@@ -29,7 +29,7 @@ export const camelToSentenceCase = (text: string) => {
 
 export const debounce = (fn: (props?: any) => void, ms = 0) => {
   let timeoutId: ReturnType<typeof setTimeout>;
-  // eslint-disable-next-line func-names
+
   return function (this: any, ...args: any[]) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply<any, any[], void>(this, args), ms);
@@ -273,7 +273,7 @@ export const truncateUrl = (url: string, limit: number): string => {
     return `${hostname}/.../${lastSegment}`;
   } catch (error) {
     // As fallback, return the original URL and log the error
-    // eslint-disable-next-line no-console
+
     console.error("Failed to parse URL in truncateUrl:", url, error);
     return url;
   }

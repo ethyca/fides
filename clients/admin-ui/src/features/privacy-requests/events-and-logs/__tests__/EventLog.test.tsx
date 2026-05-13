@@ -20,7 +20,7 @@ jest.mock("react-dnd", () => ({
 }));
 jest.mock(
   "nuqs",
-  // eslint-disable-next-line global-require
+
   () => require("../../../../../__tests__/utils/nuqs-mock").nuqsMock,
 );
 

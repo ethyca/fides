@@ -60,7 +60,6 @@ const TaxonomyDetails = ({
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 
   const removeCustomField = async (field: CustomFieldDefinitionWithId) => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { id, resource_type, field_type } = field;
     const result = await deleteMutationTrigger({
       id: id!,

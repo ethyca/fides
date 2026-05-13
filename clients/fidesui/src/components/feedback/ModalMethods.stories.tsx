@@ -26,7 +26,6 @@ const ModalMethod = ({ type, title, content, hideIcon }: ModalMethodProps) => {
     return () => ref?.destroy?.();
   }, [modalApi, type, title, content, hideIcon]);
 
-  // eslint-disable-next-line react/jsx-no-useless-fragment
   return <></>;
 };
 

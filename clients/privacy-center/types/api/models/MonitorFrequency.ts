@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * Enum representing monitor frequency. Not used in DB but needed for translating to API schema

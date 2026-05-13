@@ -13,8 +13,6 @@ import {
 import { addFrame, GPP_FRAME_NAME, locateFrame } from "../cmp-stubs";
 import { GppCallback, GppFunction } from "./types";
 
-/* eslint-disable no-underscore-dangle */
-
 interface GppEvent {
   id: number;
   callback: GppCallback;
@@ -84,7 +82,7 @@ export const makeStub = () => {
       );
     } else if (cmd === "removeEventListener") {
       let success = false;
-      // eslint-disable-next-line no-plusplus
+
       for (let i = 0; i < events.length; i++) {
         if (events[i].id === parameter) {
           events.splice(i, 1);

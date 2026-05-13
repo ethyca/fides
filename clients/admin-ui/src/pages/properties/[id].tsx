@@ -26,7 +26,7 @@ const EditPropertyPage: NextPage = () => {
   const handleSubmit = async (values: FormValues) => {
     // We do not support adding messaging templates through the property form. This ensures we do not overwrite
     // previously-configured messaging templates.
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+
     const { id, messaging_templates, ...updateValues } = values;
 
     const result = await updateProperty({ id: id!, property: updateValues });

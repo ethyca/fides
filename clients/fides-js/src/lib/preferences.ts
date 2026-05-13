@@ -132,7 +132,6 @@ export const updateConsentPreferences = async ({
   updateCookie,
 }: UpdateConsentPreferencesProps) => {
   if (!updateCookie && consentPreferencesToSave) {
-    // eslint-disable-next-line no-param-reassign
     updateCookie = (oldCookie) =>
       updateCookieFromNoticePreferences(oldCookie, consentPreferencesToSave);
   }
@@ -374,7 +373,6 @@ export const updateConsent = async (
       throw new Error(errorMessage);
     }
     if (validation === UpdateConsentValidation.WARN) {
-      // eslint-disable-next-line no-console
       console.warn(errorMessage);
     }
   };

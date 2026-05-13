@@ -1,4 +1,3 @@
-/* eslint-disable object-shorthand */
 import type { Language, Locale, Messages } from "..";
 /**
  * Statically load the default (English) locale dictionary from the ./locales directory.

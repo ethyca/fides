@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { EmbeddedVendor } from "./EmbeddedVendor";
 import type { UserConsentPreference } from "./UserConsentPreference";

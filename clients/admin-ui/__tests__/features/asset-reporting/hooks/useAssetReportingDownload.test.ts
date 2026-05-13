@@ -34,7 +34,7 @@ jest.mock("../../../../src/features/common/helpers", () => ({
 }));
 
 // Import after mocks
-// eslint-disable-next-line import/first
+
 import useAssetReportingDownload from "../../../../src/features/asset-reporting/hooks/useAssetReportingDownload";
 
 describe("useAssetReportingDownload", () => {

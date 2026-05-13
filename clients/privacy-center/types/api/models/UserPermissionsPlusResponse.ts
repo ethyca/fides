@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { RoleRegistryEnum } from "./RoleRegistryEnum";
 import type { ScopeRegistryEnum } from "./ScopeRegistryEnum";

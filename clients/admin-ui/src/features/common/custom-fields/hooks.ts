@@ -190,7 +190,7 @@ export const useCustomFields = ({
         message.error(
           `One or more custom fields have failed to save, please try again.`,
         );
-        // eslint-disable-next-line no-console
+
         console.error(e);
       }
     },

@@ -58,7 +58,7 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
   // running at http://localhost:3001
   const fidesScriptTagUrl = new URL(`${privacyCenterUrl}/fides.js`);
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+
   const { geolocation, property_id } = router.query;
 
   // If `geolocation=` or `property_id` query params exists, pass those along to the fides.js fetch

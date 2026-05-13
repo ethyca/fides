@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ClassifyParams } from "./ClassifyParams";
 import type { DatasetSchema } from "./DatasetSchema";

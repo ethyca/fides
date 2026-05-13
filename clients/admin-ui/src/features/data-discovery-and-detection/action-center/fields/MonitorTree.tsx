@@ -119,7 +119,7 @@ const mapResponseToTreeData = (
         {
           title: TREE_NODE_LOAD_MORE_TEXT,
           key: `${TREE_NODE_LOAD_MORE_KEY_PREFIX}-${data.current_page}-${key}`,
-          /* eslint-disable react/jsx-no-useless-fragment */
+
           icon: <></>,
           selectable: false,
           isLeaf: true,
@@ -677,7 +677,6 @@ const MonitorTree = forwardRef<
           multiple
           rootClassName={`h-full overflow-x-hidden ${styles["monitor-tree"]} group/monitor-tree ${selectedNodeKeys.length > 1 ? "multi-select" : ""}`}
           expandAction="doubleClick"
-          // eslint-disable-next-line react/no-unstable-nested-components
           titleRender={(node) => (
             <MonitorTreeDataTitle
               node={node}

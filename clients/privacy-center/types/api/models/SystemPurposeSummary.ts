@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * A summary of privacy declaration information for a system aggregated by TCF purpose.

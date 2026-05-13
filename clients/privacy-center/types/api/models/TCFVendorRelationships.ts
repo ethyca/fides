@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { EmbeddedLineItem } from "./EmbeddedLineItem";
 import type { EmbeddedPurpose } from "./EmbeddedPurpose";

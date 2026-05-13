@@ -290,7 +290,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
                 }
                 return { ...d };
               });
-              // eslint-disable-next-line no-param-reassign
+
               draft.items = newList;
             },
           ),

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
 import {
@@ -222,7 +221,7 @@ export const accessPoliciesHandlers = () => {
       async (req, res, ctx) => {
         const { id } = req.params;
         const body = await req.json();
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         const { insert_after_id: insertAfterId } = body;
 
         const idx = policies.findIndex((p) => p.id === id);
@@ -252,7 +251,6 @@ export const accessPoliciesHandlers = () => {
         // Reassign sequential priorities in YAML so subsequent GETs reflect the new order
         policies.forEach((policy, i) => {
           if (policy.yaml) {
-            // eslint-disable-next-line no-param-reassign
             policy.yaml = policy.yaml.replace(
               /^priority:\s*\d+/m,
               `priority: ${(i + 1) * 100}`,

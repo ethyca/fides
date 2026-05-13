@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ConsentMethod } from "./ConsentMethod";
 import type { ConsentOptionCreate } from "./ConsentOptionCreate";

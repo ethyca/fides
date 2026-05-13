@@ -37,7 +37,7 @@ const LoginWithOIDC: NextPage = () => {
       })
       .catch((error) => {
         message.error("An error occurred while logging in.");
-        // eslint-disable-next-line no-console
+
         console.error(error);
         router.push("/login");
       });

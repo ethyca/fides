@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ContactDetails } from "./ContactDetails";
 import type { OrganizationMetadata } from "./OrganizationMetadata";

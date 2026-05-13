@@ -68,7 +68,6 @@ const getFbq = (): Meta.FBQ => {
 
   window.fbq = Object.assign(shim.push, shim);
 
-  // eslint-disable-next-line no-underscore-dangle
   window._fbq = window.fbq;
 
   return window.fbq;

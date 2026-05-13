@@ -93,7 +93,7 @@ const findNodeByUrn = (
   // iterating through all remaining elements even after finding a match,
   // for loop allows immediate exit when the target is found, improving
   // performance on large trees by avoiding unnecessary iterations
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const node of treeData) {
     if (node.key === urn) {
       return node;

@@ -556,7 +556,6 @@ describe("Consent overlay", () => {
 
           it("after GPC initial save, setIdentity does not trigger PATCH; next modal save includes external_id", () => {
             cy.on("window:before:load", (win) => {
-              // eslint-disable-next-line no-param-reassign
               win.navigator.globalPrivacyControl = true;
             });
             stubConfig({
@@ -1203,7 +1202,6 @@ describe("Consent overlay", () => {
       describe("when GPC flag is found, and notices apply to GPC", () => {
         beforeEach(() => {
           cy.on("window:before:load", (win) => {
-            // eslint-disable-next-line no-param-reassign
             win.navigator.globalPrivacyControl = true;
           });
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -1305,7 +1303,6 @@ describe("Consent overlay", () => {
 
         it("sends GPC consent override from a Headless experience", () => {
           cy.on("window:before:load", (win) => {
-            // eslint-disable-next-line no-param-reassign
             win.navigator.globalPrivacyControl = true;
           });
           cy.fixture("consent/fidesjs_options_banner_modal.json").then(
@@ -1327,7 +1324,6 @@ describe("Consent overlay", () => {
       describe("when GPC flag is found, and no notices apply to GPC", () => {
         beforeEach(() => {
           cy.on("window:before:load", (win) => {
-            // eslint-disable-next-line no-param-reassign
             win.navigator.globalPrivacyControl = true;
           });
           stubConfig({
@@ -1377,7 +1373,6 @@ describe("Consent overlay", () => {
       describe("when no GPC flag is found, and notices apply to GPC", () => {
         beforeEach(() => {
           cy.on("window:before:load", (win) => {
-            // eslint-disable-next-line no-param-reassign
             win.navigator.globalPrivacyControl = undefined;
           });
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -1428,7 +1423,6 @@ describe("Consent overlay", () => {
       describe("when GPC flag is found, and notices apply to GPC and acknowledge button is used", () => {
         beforeEach(() => {
           cy.on("window:before:load", (win) => {
-            // eslint-disable-next-line no-param-reassign
             win.navigator.globalPrivacyControl = true;
           });
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -1561,7 +1555,6 @@ describe("Consent overlay", () => {
         describe("when GPC flag is true", () => {
           beforeEach(() => {
             cy.on("window:before:load", (win) => {
-              // eslint-disable-next-line no-param-reassign
               win.navigator.globalPrivacyControl = true;
             });
             cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -1604,7 +1597,6 @@ describe("Consent overlay", () => {
         describe("when GPC flag is false", () => {
           beforeEach(() => {
             cy.on("window:before:load", (win) => {
-              // eslint-disable-next-line no-param-reassign
               win.navigator.globalPrivacyControl = false;
             });
             cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -1631,7 +1623,6 @@ describe("Consent overlay", () => {
         const noticeConsentString = encodeNoticeConsentString(consent);
         beforeEach(() => {
           cy.on("window:before:load", (win) => {
-            // eslint-disable-next-line no-param-reassign
             win.navigator.globalPrivacyControl = false;
           });
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -1732,7 +1723,6 @@ describe("Consent overlay", () => {
       describe("when Notice Consent string is found and takes precedence over GPC", () => {
         beforeEach(() => {
           cy.on("window:before:load", (win) => {
-            // eslint-disable-next-line no-param-reassign
             win.navigator.globalPrivacyControl = true;
           });
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -2211,7 +2201,6 @@ describe("Consent overlay", () => {
     describe("when all notices have current user preferences set and GPC flag exists", () => {
       beforeEach(() => {
         cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
         // create cookie with matching notice key since we rely on it to determine whether to resurface consent
@@ -2323,7 +2312,6 @@ describe("Consent overlay", () => {
           () => {
             const delay = 1000;
             cy.on("window:before:load", (win: { render_delay: number }) => {
-              // eslint-disable-next-line no-param-reassign
               win.render_delay = delay;
             });
             cy.fixture("consent/fidesjs_options_banner_modal.json").then(
@@ -3096,7 +3084,6 @@ describe("Consent overlay", () => {
   describe("gpc indicators in the modal", () => {
     beforeEach(() => {
       cy.on("window:before:load", (win) => {
-        // eslint-disable-next-line no-param-reassign
         win.navigator.globalPrivacyControl = true;
       });
     });
@@ -3238,7 +3225,6 @@ describe("Consent overlay", () => {
         });
         // The patch should include the served notice ID (generated in the client and used in the notices-served request already)
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
           expect(served_notice_history_id).to.eql(servedNoticeHistoryId);
@@ -3253,7 +3239,6 @@ describe("Consent overlay", () => {
       // Test both manual consent (via UI) and automated consent (via GPC)
       // to ensure they use the same session-level served_notice_history_id
       cy.on("window:before:load", (win) => {
-        // eslint-disable-next-line no-param-reassign
         win.navigator.globalPrivacyControl = true;
       });
 
@@ -3564,7 +3549,7 @@ describe("Consent overlay", () => {
       });
       it("applies fides_disabled_notices override", () => {
         // Disable the analytics notice which is opted in by default
-        let overrides = {
+        const overrides = {
           fides_disabled_notices: "analytics_opt_out",
         };
         cy.fixture("consent/experience_banner_modal.json").then(() => {
@@ -4402,7 +4387,6 @@ describe("Consent overlay", () => {
 
       // Install a minimal TCF stub before fides.js loads
       cy.on("window:before:load", (win) => {
-        /* eslint-disable no-underscore-dangle, no-param-reassign */
         (win as any).__tcfapi = (
           command: string,
           version: number,
@@ -4426,7 +4410,6 @@ describe("Consent overlay", () => {
             });
           }
         };
-        /* eslint-enable no-underscore-dangle, no-param-reassign */
       });
 
       stubConfig({

@@ -87,7 +87,7 @@ const DraggableRow = ({
       }
 
       moveRow(dragIndex, hoverIndex);
-      // eslint-disable-next-line no-param-reassign
+
       item.index = hoverIndex;
     },
   });

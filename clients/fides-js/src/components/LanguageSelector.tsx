@@ -58,7 +58,6 @@ const LanguageSelector = ({
           setCurrentLocale(locale);
           fidesDebugger(`Fides locale updated to ${locale}`);
         } else {
-          // eslint-disable-next-line no-console
           console.error(`Unable to load GVL translation for ${locale}`);
         }
       } else {

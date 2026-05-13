@@ -21,7 +21,6 @@ export const propertySlice = createSlice({
       { payload }: PayloadAction<Property | undefined | null>,
     ) {
       if (process.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
         console.log("Loading Privacy Center property into Redux store...");
       }
       draftState.property = payload;

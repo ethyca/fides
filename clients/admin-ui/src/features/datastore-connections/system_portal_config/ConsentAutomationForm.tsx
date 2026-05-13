@@ -55,7 +55,7 @@ const ConsentableItemField = ({
   const { setValue } = helpers;
   const handleChange = (option?: string) => {
     setValue(option);
-    // eslint-disable-next-line no-param-reassign
+
     item = { ...item, notice_id: option };
     onNoticeChange(item);
   };
@@ -116,13 +116,11 @@ export const ConsentAutomationForm = ({
     return consentableItems?.reduce(
       (acc, item) => {
         if (item.notice_id) {
-          // eslint-disable-next-line no-param-reassign
           acc[`${item.external_id}-notice_id`] = item.notice_id;
         }
         if (item.children?.length) {
           item.children.forEach((child) => {
             if (child.notice_id) {
-              // eslint-disable-next-line no-param-reassign
               acc[`${child.external_id}-notice_id`] = child.notice_id;
             }
           });

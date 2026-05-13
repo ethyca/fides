@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * An external representation of a Rule's target DataCategory within a Fidesops Policy

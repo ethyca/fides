@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ComponentType } from "./ComponentType";
 import type { MinimalTCFBannerTranslation } from "./MinimalTCFBannerTranslation";

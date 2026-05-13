@@ -39,7 +39,7 @@ const pushFidesVariableToGTM = (
   const dataLayer = window.dataLayer ?? [];
   window.dataLayer = dataLayer;
   const { detail, type } = fidesEvent;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+
   const { consent, extraDetails, fides_string, timestamp } = detail;
   let consentValues: NoticeConsent = consent;
   const flagType =
@@ -140,7 +140,6 @@ export const gtm = (options?: GtmOptions) => {
 
   // If Fides was already initialized, publish a synthetic event immediately
   if (window.Fides?.initialized) {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { consent, fides_meta, identity, tcf_consent } = window.Fides;
     // Lookup the timestamp of the original FidesInitialized performance mark
     const timestamp =

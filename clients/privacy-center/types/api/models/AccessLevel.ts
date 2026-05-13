@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * Perms given to the ConnectionConfig.  For example, with "read" permissions, fidesops promises

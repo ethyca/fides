@@ -88,7 +88,6 @@ const pushConsentToShopify = (
 
 const applyOptions = (options?: ShopifyOptions) => {
   if (!window.Shopify?.customerPrivacy) {
-    // eslint-disable-next-line no-console
     console.error("Fides could not access Shopify's customerPrivacy API");
   }
   // Listen for Fides events and push them to Shopify

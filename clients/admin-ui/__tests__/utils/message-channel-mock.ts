@@ -1,5 +1,3 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable max-classes-per-file */
 /**
  * Polyfill for MessageChannel in the jsdom test environment.
  *

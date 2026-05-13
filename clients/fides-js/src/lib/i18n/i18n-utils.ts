@@ -135,7 +135,7 @@ function extractMessagesFromExperienceConfig(
  * response. Returns the first experience_config.translations' locale where the
  * translation has is_default === true.
  */
-// eslint-disable-next-line consistent-return
+
 export function extractDefaultLocaleFromExperience(
   experience: Partial<PrivacyExperience>,
 ): Locale | undefined {

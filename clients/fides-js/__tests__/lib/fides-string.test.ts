@@ -13,7 +13,7 @@ describe("fidesString", () => {
       fides_string: undefined,
     } as any;
     window.fidesDebugger = () => {};
-    // eslint-disable-next-line no-underscore-dangle
+
     window.__gpp = () => {};
   });
 

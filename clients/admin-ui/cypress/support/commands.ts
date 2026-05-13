@@ -110,9 +110,8 @@ Cypress.Commands.add("overrideFeatureFlag", (flagName, value) => {
     win.localStorage.setItem(storageKey, JSON.stringify(persistedState));
 
     // If the Redux store is available (app already loaded), also dispatch to it
-    // eslint-disable-next-line no-underscore-dangle
+
     if ((win as any).__REDUX_STORE__) {
-      // eslint-disable-next-line no-underscore-dangle
       (win as any).__REDUX_STORE__.dispatch({
         type: "features/override",
         payload: {

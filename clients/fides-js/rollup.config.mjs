@@ -1,17 +1,18 @@
 import alias from "@rollup/plugin-alias";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+import nodeResolve from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
+import strip from "@rollup/plugin-strip";
+import fs from "fs";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
 import esbuild, { minify } from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
-import json from "@rollup/plugin-json";
-import nodeResolve from "@rollup/plugin-node-resolve";
-import postcss from "rollup-plugin-postcss";
-import commonjs from "@rollup/plugin-commonjs";
-import { visualizer } from "rollup-plugin-visualizer";
-import strip from "@rollup/plugin-strip";
-import replace from "@rollup/plugin-replace";
-import fs from "fs";
 import jsxRemoveAttributes from "rollup-plugin-jsx-remove-attributes";
+import postcss from "rollup-plugin-postcss";
+import { visualizer } from "rollup-plugin-visualizer";
+
 import { importFidesPackageVersion } from "../build-utils.js";
 
 const GLOBAL_NAME = "Fides";

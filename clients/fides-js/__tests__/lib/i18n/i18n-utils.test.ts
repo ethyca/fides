@@ -126,7 +126,6 @@ describe("i18n-utils", () => {
       return mockCurrentLocale;
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     load: jest.fn((locale: Locale, messages: Messages): void => {}),
 
     t: jest.fn((idOrDescriptor: string | MessageDescriptor): string => {
@@ -1123,7 +1122,7 @@ describe("i18n module", () => {
   describe("module exports", () => {
     it("exports a valid i18n object", () => {
       // NOTE: using require() here to avoid importing i18n and accidentally using it!
-      // eslint-disable-next-line global-require
+
       const { i18n } = require("../../../src/lib/i18n");
       expect(i18n).toHaveProperty("activate");
       expect(i18n).toHaveProperty("load");
@@ -1231,7 +1230,7 @@ describe("i18n module", () => {
       it("allows getting but not setting the currently active locale", () => {
         expect(testI18n.locale).toEqual("en");
         expect(testI18n.locale).toEqual("en");
-        // eslint-disable-next-line no-return-assign
+
         expect(() => ((testI18n as any).locale = "zz")).toThrow(TypeError);
         expect(testI18n.locale).toEqual("en");
 

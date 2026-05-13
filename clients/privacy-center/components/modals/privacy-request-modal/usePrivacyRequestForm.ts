@@ -121,7 +121,6 @@ const usePrivacyRequestForm = ({
             const value = fallbackNull(values[key]);
             if (typeof field === "string") {
               if (key === "phone") {
-                // eslint-disable-next-line no-param-reassign
                 key = "phone_number";
               }
               return [key, value];

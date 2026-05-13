@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { PreferenceWithNoticeInformation } from "./PreferenceWithNoticeInformation";
 import type { TCFFeatureSave } from "./TCFFeatureSave";

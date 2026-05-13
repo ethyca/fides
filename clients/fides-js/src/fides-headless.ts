@@ -184,7 +184,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
 const initialFides = getCoreFides({});
 // The global Fides object; this is bound to window.Fides if available
-// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+
 const _Fides: FidesGlobal = {
   ...initialFides,
   init,

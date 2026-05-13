@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import {
   createColumnHelper,
   getCoreRowModel,

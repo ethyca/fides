@@ -198,7 +198,6 @@ const CORSConfigurationPage: NextPage = () => {
                 {configSettings.cors_origins!.map((origin, index) => (
                   <Input
                     data-testid={`input-config_cors_origins[${index}]`}
-                    // eslint-disable-next-line react/no-array-index-key
                     key={index}
                     className="my-3"
                     value={origin}

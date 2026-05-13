@@ -46,7 +46,6 @@ export const WithClickableCategories: Story = {
     data: sampleData,
     segments: sampleSegments,
     onCategoryClick: (category: string) => {
-      // eslint-disable-next-line no-console
       console.log("Clicked:", category);
     },
   },

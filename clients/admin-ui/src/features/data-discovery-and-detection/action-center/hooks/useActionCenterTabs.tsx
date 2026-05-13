@@ -49,7 +49,6 @@ const useActionCenterTabs = (systemId?: string) => {
     [filterTabs, activeTab],
   );
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { diff_status, system } = activeTabData.params;
 
   const actionsDisabled = useMemo(

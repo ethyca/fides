@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Utility functions and logic that is designed to exclusively run server-side to configure the environment for the app, e.g.:
  * 1) Securely loading ENV variables for the client to use
@@ -98,7 +97,7 @@ export interface PrivacyCenterEnvironment {
 /**
  * Load a config file from the given list of URLs, trying them in order until one is successfully read.
  */
-/* eslint-disable consistent-return */
+
 const loadConfigFile = async (
   urls: (string | undefined)[],
 ): Promise<string | undefined> => {
@@ -113,7 +112,7 @@ const loadConfigFile = async (
 
   // Loop through the provided URLs, testing each one in order, and return the
   // first file that loads.
-  /* eslint-disable no-restricted-syntax,no-continue,no-await-in-loop */
+
   for (const urlString of urls) {
     try {
       if (!urlString) {
@@ -147,7 +146,6 @@ const loadConfigFile = async (
       );
     }
   }
-  /* eslint-enable no-restricted-syntax,no-continue,no-await-in-loop */
 };
 
 /**

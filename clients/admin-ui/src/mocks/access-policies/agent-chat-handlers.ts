@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
 import type { AccessPolicyChatResponse } from "~/features/access-policies/agent-chat.slice";

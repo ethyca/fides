@@ -5,10 +5,7 @@ type PIIProps = {
 
 const PII = ({ data, revealPII }: PIIProps) => {
   const pii = revealPII ? data : String(data).replace(/./g, "*");
-  return (
-    // eslint-disable-next-line react/jsx-no-useless-fragment
-    <>{pii}</>
-  );
+  return <>{pii}</>;
 };
 
 export default PII;

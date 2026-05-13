@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * Deprecated: This used to be populated and sent to the server by a `config.json` in the UI

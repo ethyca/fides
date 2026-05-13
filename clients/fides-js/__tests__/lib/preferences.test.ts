@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -434,7 +433,7 @@ describe("preferences", () => {
 
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
-      // eslint-disable-next-line prefer-destructuring
+
       callArgs = updatePreferencesSpy.mock.calls[0][0];
       [essentialPref] = callArgs.consentPreferencesToSave!;
 

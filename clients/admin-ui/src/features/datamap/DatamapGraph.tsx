@@ -79,7 +79,6 @@ const DatamapGraph = ({
         reactFlowInstance.fitView({ padding: 0.2 });
       }, 150);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseNodes, reactFlowInstance]);
 
   // Pan view to keep selected node visible when drawer opens/closes

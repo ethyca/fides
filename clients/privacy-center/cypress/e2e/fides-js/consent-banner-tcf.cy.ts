@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { TCString } from "@iabtechlabtcf/core";
 import {
   CONSENT_COOKIE_NAME,
@@ -1094,7 +1093,7 @@ describe("Fides-js TCF", () => {
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience = payload.items[0];
           // Add a vendor legitimate interest which is the same as vendor consent
-          // eslint-disable-next-line @typescript-eslint/naming-convention
+
           const tcf_vendor_legitimate_interests = [
             {
               ...experience.tcf_vendor_consents[0],
@@ -2281,7 +2280,6 @@ describe("Fides-js TCF", () => {
         () => {
           const delay = 1000;
           cy.on("window:before:load", (win: { render_delay: number }) => {
-            // eslint-disable-next-line no-param-reassign
             win.render_delay = delay;
             cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
             stubTCFExperience({ stubOptions: { fidesEmbed: true } });

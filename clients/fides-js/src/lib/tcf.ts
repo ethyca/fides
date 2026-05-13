@@ -214,7 +214,6 @@ export const generateFidesString = async ({
             // external data sources include it. Type 3 is not a valid RestrictionType
             // enum value in the IAB TCF library.
             if (restriction.restriction_type === 3) {
-              // eslint-disable-next-line no-console
               console.warn(
                 "Skipping TCF publisher restriction with type 3 (undefined/not used)",
                 restriction,
@@ -265,7 +264,6 @@ export const generateFidesString = async ({
       // GPP string portion is handled by the GPP extension
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error("Unable to instantiate GVL: ", e);
     return Promise.resolve("");
   }

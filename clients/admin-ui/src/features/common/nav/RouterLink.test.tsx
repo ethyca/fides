@@ -237,7 +237,7 @@ describe("RouterLink", () => {
     it("falls through to text mode when a Button is wrapped in a fragment", () => {
       render(
         <RouterLink href="/details">
-          {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
+          {}
           <>
             <Button>Go</Button>
           </>

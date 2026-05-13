@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { defineConfig } from "@hey-api/openapi-ts";
 
 export default defineConfig({

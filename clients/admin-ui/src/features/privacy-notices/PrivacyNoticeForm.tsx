@@ -23,8 +23,8 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { RouterLink } from "~/features/common/nav/RouterLink";
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import * as routes from "~/features/common/nav/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   selectEnabledDataUseOptions,
@@ -187,7 +187,7 @@ const PrivacyNoticeForm = ({
 
   const isDirty = useMemo(
     () => (!allValues ? false : !isEqual(allValues, initialValues)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- allValues triggers re-eval
+
     [allValues, initialValues],
   );
 

@@ -18,7 +18,7 @@ jest.mock("react-dnd", () => ({
 }));
 
 // Mock nuqs
-// eslint-disable-next-line global-require
+
 jest.mock("nuqs", () => require("../../utils/nuqs-mock").nuqsMock);
 
 // Mock the hooks

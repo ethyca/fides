@@ -257,7 +257,7 @@ export const useConnectorForm = ({
             ? createPlusSaasConnectionConfig
             : createSassConnectionConfig,
         );
-        // eslint-disable-next-line no-param-reassign
+
         connectionConfig = response.connection;
       } else {
         const payload = await patchConnectionConfig(
@@ -276,7 +276,7 @@ export const useConnectorForm = ({
           /*
           The connectionConfig is required for patching the datasetConfig
            */
-          // eslint-disable-next-line prefer-destructuring,no-param-reassign
+
           connectionConfig = payload.succeeded[0];
         }
 
@@ -337,7 +337,7 @@ export const useConnectorForm = ({
           systemFidesKey,
           createSassConnectionConfig,
         );
-        // eslint-disable-next-line no-param-reassign
+
         connectionConfig = response.connection;
       } else {
         await upsertConnectionConfigSecrets(

@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { AdvancedSettings } from "./AdvancedSettings";
 import type { FidesDatasetReference } from "./FidesDatasetReference";

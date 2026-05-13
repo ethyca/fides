@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { Location } from "./Location";
 import type { LocationGroup } from "./LocationGroup";

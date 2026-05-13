@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 export enum DATAMAP_LOCAL_STORAGE_KEYS {
   COLUMN_EXPANSION_STATE = "datamap-column-expansion-state",
   COLUMN_NAMES = "datamap-column-names",

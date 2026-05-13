@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ClassificationStatus } from "./ClassificationStatus";
 import type { ClassifyDataFlow } from "./ClassifyDataFlow";

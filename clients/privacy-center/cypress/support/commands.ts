@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import "cypress-wait-until";
 
 import type { FidesConfig, FidesEventType } from "fides-js";

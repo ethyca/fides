@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { SaaSConfig } from "./SaaSConfig";
 import type { SaaSConfigValidationDetails } from "./SaaSConfigValidationDetails";

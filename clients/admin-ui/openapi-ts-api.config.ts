@@ -1,5 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-param-reassign */
 import { defineConfig } from "@hey-api/openapi-ts";
 
 export default defineConfig({
@@ -17,7 +15,6 @@ export default defineConfig({
         ScopeRegistryEnum: (schema) => {
           // Add x-enum-varnames to replace colons with underscores in enum keys
           if (schema.enum && Array.isArray(schema.enum)) {
-            // eslint-disable-next-line no-param-reassign
             schema["x-enum-varnames"] = schema.enum.map((value: string) =>
               value.toUpperCase().replace(/:/g, "_").replace(/-/g, "_"),
             );
@@ -26,7 +23,6 @@ export default defineConfig({
         DATAMAP_GROUPING: (schema) => {
           // Replace commas and spaces in enum values to produce valid identifier keys
           if (schema.enum && Array.isArray(schema.enum)) {
-            // eslint-disable-next-line no-param-reassign
             schema["x-enum-varnames"] = schema.enum.map((value: string) =>
               value
                 .toUpperCase()
@@ -39,14 +35,12 @@ export default defineConfig({
         MySQLSSLMode: (schema) => {
           // Remove the empty string enum value — Babel cannot use "" as an enum key name
           if (schema.enum && Array.isArray(schema.enum)) {
-            // eslint-disable-next-line no-param-reassign
             schema.enum = schema.enum.filter((v: string) => v !== "");
           }
         },
         AllowedTypes: (schema) => {
           // Assign distinct enum key names since both values would map to STRING
           if (schema.enum && Array.isArray(schema.enum)) {
-            // eslint-disable-next-line no-param-reassign
             schema["x-enum-varnames"] = schema.enum.map((value: string) => {
               if (value === "string") {
                 return "STRING";

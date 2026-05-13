@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { BulkUpdateFailed } from "./BulkUpdateFailed";
 import type { PrivacyRequestResponse } from "./PrivacyRequestResponse";

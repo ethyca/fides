@@ -7,8 +7,6 @@ import { Dict } from "@chakra-ui/utils";
 
 import { palette } from "./palette/palette";
 
-// eslint-disable-next-line import/prefer-default-export
-
 const subtleBadge = defineStyle((props) => ({
   bg: props.colorScheme
     ? `${props.colorScheme}.100`
@@ -266,9 +264,7 @@ export const theme: Dict = extendChakraTheme({
 // extends our base theme already, so that if a consumer wants to extend their
 // theme they won't lose the pre-existing Fides-specific customizations
 export const extendTheme: (
-  // eslint-disable-next-line no-unused-vars
   ...extensions: (Dict<any> | ((extendedTheme: Dict<any>) => Dict<any>))[]
 ) => Dict<any> = (
-  // eslint-disable-next-line no-unused-vars
   ...extensions: (Dict<any> | ((extendedTheme: Dict<any>) => Dict<any>))[]
 ) => extendChakraTheme(theme, ...extensions);

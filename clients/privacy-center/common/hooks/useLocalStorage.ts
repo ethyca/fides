@@ -4,7 +4,6 @@ import { useState } from "react";
 Design taken from: https://usehooks.com/useLocalStorage/
 */
 
-// eslint-disable-next-line import/prefer-default-export
 export function useLocalStorage(key: string, initialValue: string) {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
@@ -19,7 +18,7 @@ export function useLocalStorage(key: string, initialValue: string) {
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       // If error also return initialValue
-      // eslint-disable-next-line no-console
+
       console.error(error);
       return initialValue;
     }
@@ -39,7 +38,7 @@ export function useLocalStorage(key: string, initialValue: string) {
       }
     } catch (error) {
       // A more advanced implementation would handle the error case
-      // eslint-disable-next-line no-console
+
       console.error(error);
     }
   };

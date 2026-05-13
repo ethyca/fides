@@ -155,7 +155,7 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
     cookie_max_age_seconds: cookieMaxAgeSeconds,
     cookie_refresh: cookieRefresh,
   } = vendor;
-  /* eslint-disable prefer-template */
+
   let disclosure = "";
   if (usesCookies) {
     const days = cookieMaxAgeSeconds
@@ -174,7 +174,6 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
   } else if (usesNonCookieAccess) {
     disclosure += " " + i18n.t("static.tcf.cookie_disclosure.non_cookie");
   }
-  /* eslint-enable prefer-template */
 
   if (disclosure === "") {
     return null;

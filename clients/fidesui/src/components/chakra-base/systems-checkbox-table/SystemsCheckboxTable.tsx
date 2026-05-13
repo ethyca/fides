@@ -22,7 +22,7 @@ export interface ColumnMetadata<T> {
 
 // This component is used within a Chakra Td element. Chakra requires a
 // JSX.Element in that context, so all returns in this component need to be wrapped in a fragment.
-/* eslint-disable react/jsx-no-useless-fragment */
+
 const SystemTableCell = ({
   system,
   attribute,

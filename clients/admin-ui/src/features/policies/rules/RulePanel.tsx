@@ -65,7 +65,7 @@ export const RulePanel = ({ rule }: RulePanelProps) => {
       </Form.Item>
 
       <Form.Item label="Action">
-        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+        {}
         <Select
           value={rule.action_type}
           options={actionTypeOptions}
@@ -107,7 +107,7 @@ export const RulePanel = ({ rule }: RulePanelProps) => {
             </Flex>
           }
         >
-          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+          {}
           <Select
             value={rule.masking_strategy?.strategy}
             options={maskingStrategyOptions}

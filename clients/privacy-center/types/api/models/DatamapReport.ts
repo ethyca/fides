@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 export type DatamapReport = {
   administrating_department?: string | null;

@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ResponseFormat } from "./ResponseFormat";
 import type { StorageType } from "./StorageType";

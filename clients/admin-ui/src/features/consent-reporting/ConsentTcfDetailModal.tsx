@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
 import { Modal } from "fidesui";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";

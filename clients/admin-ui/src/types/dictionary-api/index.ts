@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 export type { Cookie } from "./models/Cookie";
 export type { Cookies } from "./models/Cookies";

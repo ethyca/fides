@@ -98,7 +98,6 @@ const ErrorPage = ({
           showActions && (
             <Flex gap="small" justify="center">
               {actions?.map((action, index) => (
-                // eslint-disable-next-line react/no-array-index-key
                 <Button key={index} {...action}>
                   {action.label}
                 </Button>

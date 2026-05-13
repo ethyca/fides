@@ -2,8 +2,6 @@
 
 import { addFrame, locateFrame, TCF_FRAME_NAME } from "../cmp-stubs";
 
-/* eslint-disable no-underscore-dangle */
-
 interface MessageData {
   __tcfapiCall: {
     command: string;
@@ -50,7 +48,6 @@ export const makeStub = ({
         parseInt(args[1], 10) === 2 &&
         typeof args[3] === "boolean"
       ) {
-        // eslint-disable-next-line prefer-destructuring
         gdprApplies = args[3];
 
         if (typeof args[2] === "function") {

@@ -25,7 +25,7 @@ const importFidesPackageVersion = (path = "../version.json") => {
       versionJson.version.trim() === ""
     ) {
       console.warn(
-        `WARNING: Importing Fides package version failed! Invalid version file format or missing version in ${path}`
+        `WARNING: Importing Fides package version failed! Invalid version file format or missing version in ${path}`,
       );
       return errorVersion;
     }
@@ -34,7 +34,7 @@ const importFidesPackageVersion = (path = "../version.json") => {
   } catch (error) {
     console.warn(
       `WARNING: Importing Fides package version failed! Error when importing version file from ${path}:`,
-      error
+      error,
     );
     return errorVersion;
   }

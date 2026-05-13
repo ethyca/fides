@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ConsentOptionCreate } from "./ConsentOptionCreate";
 import type { TCFFeatureSave } from "./TCFFeatureSave";

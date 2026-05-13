@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * Pydantic Schema used to represent a datastore staged resource children, used only for API responses.

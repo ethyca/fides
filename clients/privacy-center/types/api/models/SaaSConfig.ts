@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ClientConfig } from "./ClientConfig";
 import type { ConnectorParam } from "./ConnectorParam";

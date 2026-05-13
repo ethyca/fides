@@ -6,7 +6,6 @@ import { FlatNavItem } from "~/features/common/nav/useNavSearchItems";
 // Mock fidesui to avoid jsdom incompatibilities with Ant Design components.
 // NavSearch imports: AutoComplete, Icons, Input, InputRef, Modal
 jest.mock("fidesui", () => {
-  // eslint-disable-next-line global-require
   const MockReact = require("react");
   return {
     __esModule: true,
@@ -59,7 +58,6 @@ jest.mock("fidesui", () => {
       );
     },
     Input: MockReact.forwardRef((props: any, ref: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { prefix, suffix, allowClear, autoFocus, ...rest } = props;
       return MockReact.createElement("input", { ...rest, ref });
     }),
@@ -98,7 +96,6 @@ jest.mock("fidesui", () => {
 
 // Mock react-hotkeys-hook so fireEvent.keyDown works in tests
 jest.mock("react-hotkeys-hook", () => {
-  // eslint-disable-next-line global-require
   const MockReact = require("react");
   return {
     useHotkeys: (
@@ -133,7 +130,6 @@ jest.mock("react-hotkeys-hook", () => {
         globalThis.document.addEventListener("keydown", handler);
         return () =>
           globalThis.document.removeEventListener("keydown", handler);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
     },
   };
@@ -182,7 +178,7 @@ jest.mock("next/router", () => ({
 }));
 
 // Must import NavSearch after mocks are set up
-// eslint-disable-next-line global-require
+
 const getNavSearch = () => require("~/features/common/nav/NavSearch").default;
 
 const MOCK_GROUPS: NavGroup[] = [

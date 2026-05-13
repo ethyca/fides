@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { MessagingTemplateWithPropertiesSummary } from "./MessagingTemplateWithPropertiesSummary";
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import {
   Button,
   ChakraFlex as Flex,
@@ -111,7 +110,6 @@ const SystemHistoryTable = ({ system }: Props) => {
             if (description) {
               return (
                 <Tr
-                  // eslint-disable-next-line react/no-array-index-key
                   key={index}
                   onClick={() => openModal(history)}
                   style={{ cursor: "pointer" }}

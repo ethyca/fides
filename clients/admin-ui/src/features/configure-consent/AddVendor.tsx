@@ -134,7 +134,7 @@ const AddVendor = ({
         // shape. If the dictionary populated full cookie objects, keep the
         // match so domain/path survive; for user-typed names, default
         // `path: "/"`.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         const { consent_use, cookieNames, cookies, ...rest } = dec;
         const cookiesByName = new Map((cookies ?? []).map((c) => [c.name, c]));
         const transformedCookies = (cookieNames ?? []).map(

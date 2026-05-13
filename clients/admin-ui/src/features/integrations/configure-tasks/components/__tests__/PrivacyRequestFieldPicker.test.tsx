@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { render, screen } from "../../../../../../__tests__/utils/test-utils";
 import { PrivacyRequestFieldPicker } from "../PrivacyRequestFieldPicker";
 

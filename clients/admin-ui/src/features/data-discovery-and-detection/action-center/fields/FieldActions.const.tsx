@@ -186,11 +186,10 @@ export const FIELD_ACTION_HOTKEYS = {
 } as const;
 
 export const FIELD_ACTION_CONFIRMATION_MESSAGE = {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   "assign-categories": (_targetItemCount: number) => null,
   "promote-removals": (targetItemCount: number) =>
     `Are you sure you want to remove ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}?`,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   "un-review": (_targetItemCount: number) => null,
   "un-mute": (targetItemCount: number) =>
     `Are you sure you want to restore ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}?`,

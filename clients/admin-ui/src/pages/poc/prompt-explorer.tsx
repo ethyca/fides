@@ -202,7 +202,6 @@ const PromptExplorer: NextPage = () => {
 
       setRenderedPrompt(result.rendered_prompt);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error("Failed to render prompt:", error);
     }
   }, [
@@ -241,7 +240,6 @@ const PromptExplorer: NextPage = () => {
 
       setLlmResponse(result.response_text);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error("Failed to execute prompt:", error);
     }
   }, [

@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ExperienceTranslation } from "./ExperienceTranslation";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";

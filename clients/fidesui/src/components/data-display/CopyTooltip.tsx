@@ -56,7 +56,6 @@ export const CopyTooltip = ({
       await navigator.clipboard.writeText(contentToCopy);
       setHasCopied(true);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("Failed to copy to clipboard:", err);
     }
   };

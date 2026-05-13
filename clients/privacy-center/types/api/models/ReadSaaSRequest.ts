@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { AsyncConfig } from "./AsyncConfig";
 import type { ClientConfig } from "./ClientConfig";

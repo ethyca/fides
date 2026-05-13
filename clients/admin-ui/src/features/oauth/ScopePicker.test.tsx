@@ -20,7 +20,6 @@ const MockCheckbox = ({
       checked={checked ?? false}
       ref={(el) => {
         if (el) {
-          // eslint-disable-next-line no-param-reassign
           el.indeterminate = !!indeterminate;
         }
       }}

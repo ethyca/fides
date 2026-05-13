@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 export type fides__api__schemas__privacy_center_config__CustomPrivacyRequestField =
   {

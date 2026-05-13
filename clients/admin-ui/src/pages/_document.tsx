@@ -21,7 +21,7 @@ const MyDocument = () => (
 MyDocument.getInitialProps = async (ctx: DocumentContext) => {
   const cache = createCache();
   const originalRenderPage = ctx.renderPage;
-  // eslint-disable-next-line no-param-reassign
+
   ctx.renderPage = () =>
     originalRenderPage({
       enhanceApp: (App) => (props) => (
@@ -38,7 +38,7 @@ MyDocument.getInitialProps = async (ctx: DocumentContext) => {
     styles: (
       <>
         {initialProps.styles}
-        {/* eslint-disable-next-line react/no-danger */}
+        {}
         <style dangerouslySetInnerHTML={{ __html: style }} />
       </>
     ),

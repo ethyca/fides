@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { DatasetCollection } from "./DatasetCollection";
 import type { DatasetMetadata } from "./DatasetMetadata";

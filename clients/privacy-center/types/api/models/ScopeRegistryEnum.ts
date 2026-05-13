@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 export enum ScopeRegistryEnum {
   ALLOW_LIST_CREATE = "allow_list:create",

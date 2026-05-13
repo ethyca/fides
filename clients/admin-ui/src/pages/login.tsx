@@ -74,7 +74,6 @@ const Animation = () => {
       <motion.svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 64 64"
-        // eslint-disable-next-line tailwindcss/no-custom-classname
         className="item"
         width={46}
         height={46}
@@ -168,7 +167,7 @@ const useLogin = () => {
       dispatch(login(user));
     } catch (error) {
       setShowAnimation(false);
-      // eslint-disable-next-line no-console
+
       console.error(error);
       let errorMsg: string;
       if (isFromInvite) {

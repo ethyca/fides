@@ -153,7 +153,6 @@ const HomePage: NextPage = () => {
   actions.forEach((action, index) => {
     content.push(
       <PrivacyCard
-        // eslint-disable-next-line react/no-array-index-key
         key={index}
         title={action.title}
         iconPath={action.icon_path}
@@ -220,7 +219,6 @@ const HomePage: NextPage = () => {
               color="gray.800"
               data-testid={`description-${index}`}
               allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
-              // eslint-disable-next-line react/no-array-index-key
               key={`description-${index}`}
             >
               {paragraph}
@@ -239,7 +237,6 @@ const HomePage: NextPage = () => {
             color="gray.800"
             data-testid={`addendum-${index}`}
             allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
-            // eslint-disable-next-line react/no-array-index-key
             key={`addendum-${index}`}
           >
             {paragraph}

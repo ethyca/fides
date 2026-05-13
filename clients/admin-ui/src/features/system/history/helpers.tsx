@@ -108,7 +108,6 @@ const categorizeFieldModifications = (
 
 /** Creates a description of the given system history entry in the style of a commit message */
 export const describeSystemChange = (history: SystemHistoryResponse) => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { edited_by, created_at } = history;
   const before = history.before as SystemHistoryData;
   const after = history.after as SystemHistoryData;
@@ -155,7 +154,6 @@ export const describeSystemChange = (history: SystemHistoryResponse) => {
     changeDescriptions.length > 0 ? (
       <>
         {changeDescriptions.map((desc, i) => (
-          // eslint-disable-next-line react/no-array-index-key
           <React.Fragment key={i}>
             {desc}
             {i < changeDescriptions.length - 1 ? ", " : ""}

@@ -101,21 +101,19 @@ export const nuqsMock = {
 
         // If value is undefined, use the parser's default
         if (currentValue === undefined && parser?.default !== undefined) {
-          // eslint-disable-next-line no-param-reassign
           acc[key] = parser.default;
         } else if (currentValue !== undefined && parser?.parse) {
           // If parser has a parse function (custom parser), use it to validate
           try {
             const parsedValue = parser.parse(String(currentValue));
-            // eslint-disable-next-line no-param-reassign
+
             acc[key] = parsedValue !== null ? parsedValue : parser.default;
           } catch {
             // If parsing fails, use default
-            // eslint-disable-next-line no-param-reassign
+
             acc[key] = parser.default;
           }
         } else {
-          // eslint-disable-next-line no-param-reassign
           acc[key] = currentValue;
         }
         return acc;

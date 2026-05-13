@@ -85,7 +85,7 @@ const ProtectedRoute = ({
   }
 
   // Silly type error: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/18051
-  // eslint-disable-next-line react/jsx-no-useless-fragment
+
   return authenticated ? <>{children}</> : null;
 };
 

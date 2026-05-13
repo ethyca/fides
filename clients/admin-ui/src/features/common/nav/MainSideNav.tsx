@@ -119,7 +119,6 @@ export const UnconnectedMainSideNav = ({
       try {
         openedKeys = JSON.parse(openedKeysString);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error("Error parsing local storage key", e);
       }
     }

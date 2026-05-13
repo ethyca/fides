@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";

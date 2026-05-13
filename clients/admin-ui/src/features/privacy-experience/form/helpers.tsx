@@ -73,7 +73,6 @@ export const findLanguageDisplayName = (
 export const transformTranslationResponseToCreate = (
   response: ExperienceTranslationResponse,
 ): ExperienceTranslationCreate => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { language, is_default, accept_button_label, reject_button_label } =
     response;
   // replace "null"s from the backend with "undefined"s

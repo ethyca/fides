@@ -21,7 +21,6 @@ export const settingsSlice = createSlice({
       { payload }: PayloadAction<PrivacyCenterClientSettings | undefined>,
     ) {
       if (process.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
         console.log("Loading Privacy Center settings into Redux store...");
       }
       draftState.settings = payload;

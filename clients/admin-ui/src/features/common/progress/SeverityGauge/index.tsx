@@ -26,7 +26,6 @@ export const SeverityGauge = ({
   <Progress
     {...SEVERITY_PROPS}
     {...statusDynamicProps(severity)}
-    // eslint-disable-next-line react/no-unstable-nested-components
     format={() => (
       <Text size="sm" type="secondary" className="font-normal">
         {labels[severity]}

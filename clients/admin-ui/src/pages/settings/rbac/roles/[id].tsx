@@ -175,7 +175,6 @@ const RoleDetailPage: NextPage = () => {
       .reduce<Record<string, RBACPermission[]>>((acc, perm) => {
         const resourceType = perm.resource_type || "general";
         if (!acc[resourceType]) {
-          // eslint-disable-next-line no-param-reassign
           acc[resourceType] = [];
         }
         acc[resourceType].push(perm);

@@ -18,7 +18,6 @@ import { Config } from "~/types/config";
 // layout primitives used by Error.tsx; behavior under test (message
 // selection, logo gating, reset handler wiring) is unaffected.
 jest.mock("fidesui", () => {
-  // eslint-disable-next-line global-require
   const ReactMod = require("react") as typeof import("react");
   const makeBox = (tag: string) => {
     const Stub = ({ children, ...rest }: { children?: React.ReactNode }) =>

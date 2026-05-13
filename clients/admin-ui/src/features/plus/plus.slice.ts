@@ -107,7 +107,6 @@ const plusApi = baseApi.injectEndpoints({
       ClassifyStatusUpdatePayload & { resource_type?: GenerateTypes }
     >({
       query: (payload) => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { resource_type = GenerateTypes.DATASETS, ...body } = payload;
         return {
           url: `plus/classify`,

@@ -323,7 +323,6 @@ export const ConfigureIntegrationForm = ({
           },
         }).unwrap();
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error("Failed to reconcile system link:", error);
         messageApi.error(
           isEditing

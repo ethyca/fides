@@ -2,14 +2,13 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { renderHook } from "@testing-library/react";
 
 // Mock nuqs using shared mock implementation
-// eslint-disable-next-line global-require
+
 jest.mock("nuqs", () => require("../../utils/nuqs-mock").nuqsMock);
 
 // Import after mocks so the mocked nuqs is used by the hook
-// eslint-disable-next-line import/first
+
 import { useAntPagination } from "../../../src/features/common/pagination/useAntPagination";
 // Import the test helpers type and access from the mocked module
-// eslint-disable-next-line import/first
 import type { NuqsTestHelpers } from "../../utils/nuqs-mock";
 
 const { nuqsTestHelpers } = jest.requireMock("nuqs") as {

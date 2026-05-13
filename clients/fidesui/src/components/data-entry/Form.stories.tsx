@@ -38,7 +38,7 @@ export const Primary: Story = {
         <Input placeholder="Name" />
       </Form.Item>
       <Form.Item label="Select">
-        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+        {}
         <Select placeholder="Select Option" />
       </Form.Item>
       <Form.Item label="Location">
@@ -72,7 +72,7 @@ export const Validation: Story = {
         <Input placeholder="Name" />
       </Form.Item>
       <Form.Item label="Select" validateStatus="success">
-        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+        {}
         <Select placeholder="Select Option" />
       </Form.Item>
       <Form.Item label="Location" validateStatus="validating">

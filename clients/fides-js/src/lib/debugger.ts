@@ -5,7 +5,6 @@
 export const initializeDebugger = (isDebugMode: boolean) => {
   if (typeof window !== "undefined") {
     if (!window.fidesDebugger) {
-      // eslint-disable-next-line no-console
       window.fidesDebugger = isDebugMode ? console.log : () => {};
     }
   } else {

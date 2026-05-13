@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 
 // Mock nuqs using shared mock implementation
-// eslint-disable-next-line global-require
+
 jest.mock("nuqs", () => require("../../../utils/nuqs-mock").nuqsMock);
 
 // Mock the RTK Query hooks
@@ -87,9 +87,8 @@ jest.mock("../../../../src/features/common/hooks/useTaxonomies", () => ({
 }));
 
 // Import after mocks so the mocked modules are used
-// eslint-disable-next-line import/first
+
 import { useAssetReportingTable } from "../../../../src/features/asset-reporting/hooks/useAssetReportingTable";
-// eslint-disable-next-line import/first
 import type { NuqsTestHelpers } from "../../../utils/nuqs-mock";
 
 const { nuqsTestHelpers } = jest.requireMock("nuqs") as {

@@ -152,7 +152,6 @@ const useConsentRequestForm = ({
           setCurrentView(ModalViews.IdentityVerification);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error(error);
         handleError({ title: "An unhandled exception occurred." });
       }

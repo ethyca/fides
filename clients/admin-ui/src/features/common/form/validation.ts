@@ -32,7 +32,6 @@ export const isValidURL = (value: string | undefined): boolean => {
     return false;
   }
   try {
-    // eslint-disable-next-line no-new
     new URL(value);
   } catch {
     return false;

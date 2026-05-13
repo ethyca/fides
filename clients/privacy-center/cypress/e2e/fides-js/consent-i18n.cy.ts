@@ -1,4 +1,3 @@
-/* eslint-disable spaced-comment */
 import {
   ComponentType,
   ExperienceConfigTranslation,
@@ -513,7 +512,6 @@ describe("Consent i18n", () => {
             globalPrivacyControl: true,
             fixture,
             overrideExperience: (experience: any) => {
-              /* eslint-disable no-param-reassign */
               const translations =
                 experience.experience_config.translations.find(
                   (e: any) => e.language === locale,
@@ -523,7 +521,6 @@ describe("Consent i18n", () => {
               translations.privacy_policy_link_label = null;
               translations.privacy_policy_url = null;
               return experience;
-              /* eslint-enable no-param-reassign */
             },
           });
 
@@ -587,7 +584,6 @@ describe("Consent i18n", () => {
             globalPrivacyControl: true,
             fixture,
             overrideExperience: (experience: any) => {
-              /* eslint-disable no-param-reassign */
               // Modify the first notice (Advertising) to set the GPC flag
               const testNotices: PrivacyNotice[] = experience.privacy_notices;
               const adsNotice = testNotices[0];
@@ -598,7 +594,6 @@ describe("Consent i18n", () => {
               );
               adsNotice.has_gpc_flag = true;
               return experience;
-              /* eslint-enable no-param-reassign */
             },
           });
 
@@ -651,7 +646,6 @@ describe("Consent i18n", () => {
           globalPrivacyControl: true,
           fixture,
           overrideExperience: (experience) => {
-            /* eslint-disable-next-line no-param-reassign */
             experience.experience_config!.auto_detect_language = false;
             return experience;
           },
@@ -669,14 +663,12 @@ describe("Consent i18n", () => {
             globalPrivacyControl: true,
             fixture,
             overrideExperience: (experience) => {
-              /* eslint-disable no-param-reassign */
               // Override the test data to specify Spanish as the default translation for the experience.
               experience.experience_config!.translations[0].is_default = false;
               experience.experience_config!.translations[1].is_default = true;
               // Disable auto-detection
               experience.experience_config!.auto_detect_language = false;
               return experience;
-              /* eslint-enable no-param-reassign */
             },
           });
           testBannerLocalization(SPANISH_BANNER);
@@ -754,7 +746,6 @@ describe("Consent i18n", () => {
             globalPrivacyControl: true,
             fixture: "experience_banner_modal.json",
             overrideExperience: (experience: any) => {
-              /* eslint-disable no-param-reassign */
               // Modify the first notice (Advertising) and remove the Spanish translations
               const testNotices: PrivacyNotice[] = experience.privacy_notices;
               const adsNotice = testNotices[0];
@@ -768,7 +759,6 @@ describe("Consent i18n", () => {
                 (e) => e.language !== SPANISH_LOCALE,
               );
               return experience;
-              /* eslint-enable no-param-reassign */
             },
           });
         });
@@ -783,7 +773,6 @@ describe("Consent i18n", () => {
           ]);
         });
 
-        /* eslint-disable @typescript-eslint/naming-convention */
         it(`reports notices served and preferences saved using the correct privacy_notice_history_id for the default locale (${ENGLISH_LOCALE})`, () => {
           /**
            * Expect the notice history IDs used should be a mixture of English and Spanish notices:
@@ -872,7 +861,6 @@ describe("Consent i18n", () => {
 
           // TODO (PROD-1598): test that correct history ID used after user changes language
         });
-        /* eslint-enable @typescript-eslint/naming-convention */
       });
 
       describe(`when an alternate default locale is specified in the experience (${SPANISH_LOCALE})`, () => {
@@ -884,7 +872,6 @@ describe("Consent i18n", () => {
               globalPrivacyControl: true,
               fixture: "experience_banner_modal.json",
               overrideExperience: (experience: any) => {
-                /* eslint-disable no-param-reassign */
                 // Override the test data to specify Spanish as the default translation for the experience.
                 experience.experience_config!.translations[0].is_default = false;
                 experience.experience_config!.translations[1].is_default = true;
@@ -901,7 +888,6 @@ describe("Consent i18n", () => {
                   (e) => e.language !== FRENCH_LOCALE,
                 );
                 return experience;
-                /* eslint-enable no-param-reassign */
               },
             });
           });
@@ -1392,7 +1378,6 @@ describe("Consent i18n", () => {
 
       // Enable GPC
       cy.on("window:before:load", (win) => {
-        // eslint-disable-next-line no-param-reassign
         win.navigator.globalPrivacyControl = true;
       });
 

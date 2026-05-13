@@ -265,7 +265,7 @@ export const initialize = async ({
     } else if (!isPrivacyExperience(fides.experience)) {
       fetchedClientSideExperience = true;
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
-      // eslint-disable-next-line no-param-reassign
+
       fides.experience = await fetchExperience({
         userLocationString: fidesRegionString,
         fidesApiUrl: options.fidesApiUrl,
@@ -302,7 +302,7 @@ export const initialize = async ({
        */
       if (automatedApplied && fides.experience.privacy_notices) {
         // Update experience privacy_notices with calculated automated consent
-        // eslint-disable-next-line no-param-reassign
+
         fides.experience.privacy_notices = fides.experience.privacy_notices.map(
           (notice) => {
             const automatedValue = automatedNoticeConsent[notice.notice_key];
@@ -324,7 +324,7 @@ export const initialize = async ({
         Object.assign(fides.cookie.fides_meta, {
           consentMethod: automatedMethod,
         });
-        // eslint-disable-next-line no-param-reassign
+
         fides.cookie = {
           ...fides.cookie,
           consent: automatedNoticeConsent,
@@ -349,7 +349,7 @@ export const initialize = async ({
           cookie: fides.cookie!,
           experience: fides.experience,
         });
-        // eslint-disable-next-line no-param-reassign
+
         fides.experience = { ...fides.experience, ...updatedExperience };
         fidesDebugger(
           "Updated experience from saved preferences",
@@ -361,7 +361,6 @@ export const initialize = async ({
        * If the config has a property_id, we add it to the experience to indicate
        */
       if (fides.config?.propertyId) {
-        // eslint-disable-next-line no-param-reassign
         fides.experience.property_id = fides.config.propertyId;
       }
 
@@ -389,14 +388,13 @@ export const initialize = async ({
         "Updated current cookie state from experience",
         updatedCookie,
       );
-      // eslint-disable-next-line no-param-reassign
+
       fides.cookie = updatedCookie;
 
       // Initialize the i18n singleton before we render the overlay
       const i18n = setupI18n();
       initializeI18n(i18n, window?.navigator, fides.experience, options);
 
-      // eslint-disable-next-line no-param-reassign
       fides.locale = i18n.locale || DEFAULT_LOCALE;
 
       // Provide the modal link label function to the client based on the current locale unless specified via props.
@@ -477,7 +475,6 @@ export const initialize = async ({
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { fides_meta, identity, fides_string, tcf_consent } = fides.cookie;
 
   // used to set Fides.consent

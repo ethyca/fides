@@ -36,7 +36,6 @@ const SubmitPrivacyRequestModal = ({
   const message = useMessage();
 
   const handleSubmit = async (values: PrivacyRequestSubmitFormValues) => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { is_verified, ...rest } = values;
     const customFields = rest.custom_privacy_request_fields
       ? Object.entries(rest.custom_privacy_request_fields)

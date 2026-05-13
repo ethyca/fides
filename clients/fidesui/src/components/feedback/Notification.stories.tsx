@@ -16,7 +16,6 @@ const Notification = ({ type, ...args }: NotificationProps) => {
     notification[type](args);
   }, []);
 
-  // eslint-disable-next-line react/jsx-no-useless-fragment
   return <></>;
 };
 

@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { Identity } from "./Identity";
 import type { ServingComponent } from "./ServingComponent";

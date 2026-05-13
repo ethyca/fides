@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 /**
  * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
  *
@@ -128,7 +127,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     optionsOverrides,
     consentPrefsOverrides,
   };
-  // eslint-disable-next-line no-param-reassign
+
   config = {
     ...config,
     options: {
@@ -242,7 +241,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
 const initialFides = getCoreFides({ tcfEnabled: true });
 // The global Fides object; this is bound to window.Fides if available
-// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+
 const _Fides: FidesGlobal = {
   ...initialFides,
   init,

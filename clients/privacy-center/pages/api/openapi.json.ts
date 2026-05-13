@@ -1,6 +1,9 @@
 import { withSwagger } from "next-swagger-doc";
 
 // Only include API docs in development builds
+/**
+ *
+ */
 export const getServerSideProps = () => {
   if (process.env.NODE_ENV !== "development") {
     return {
@@ -33,4 +36,7 @@ const swaggerHandler = withSwagger({
   apiFolder: "pages/api",
 });
 
+/**
+ *
+ */
 export default swaggerHandler();

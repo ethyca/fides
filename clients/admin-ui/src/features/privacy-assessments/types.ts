@@ -48,7 +48,7 @@ export interface PrivacyAssessmentResponse extends Omit<
 }
 
 // Override Page type with our strongly-typed assessment
-// eslint-disable-next-line @typescript-eslint/naming-convention
+
 export interface Page_PrivacyAssessmentResponse_ extends Omit<
   Page_AssessmentTaskResponse_,
   "items"

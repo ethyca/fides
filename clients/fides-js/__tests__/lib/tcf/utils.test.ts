@@ -24,13 +24,11 @@ jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 // Setup mock js-cookie
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
 const mockSetCookie = jest.fn(
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, value: string, attributes: object) =>
     `mock setCookie return (value=${value})`,
 );
 
 const mockRemoveCookie = jest.fn(
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, attributes?: CookieAttributes) => undefined,
 );
 

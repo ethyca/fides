@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { find } from "lodash";
 import { Fragment, ReactNode } from "react";
 

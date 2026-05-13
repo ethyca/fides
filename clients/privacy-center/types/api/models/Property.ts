@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { MinimalMessagingTemplate } from "./MinimalMessagingTemplate";
 import type { MinimalPrivacyExperienceConfig } from "./MinimalPrivacyExperienceConfig";

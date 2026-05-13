@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { DynamoDBMonitorParams } from "./DynamoDBMonitorParams";
 import type { MonitorClassifyParams } from "./MonitorClassifyParams";

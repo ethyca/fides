@@ -16,7 +16,6 @@
 // Import commands.js using ES2015 syntax:
 import "./commands";
 import "./ant-support";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import "cypress-real-events";
 import "cypress-file-upload";
 

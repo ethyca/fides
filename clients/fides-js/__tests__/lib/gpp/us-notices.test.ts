@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-
 import {
   CmpApi,
   InvalidFieldError,
@@ -1228,7 +1226,6 @@ describe("GPP section support", () => {
        * sections (or extra sections) in our code!
        */
 
-      /* eslint-disable @typescript-eslint/no-unused-vars */
       // Get all US sections from the @iabgpp/cmpapi library
       const allSections = Array.from(Sections.SECTION_ID_NAME_MAP.entries());
 
@@ -1258,7 +1255,6 @@ describe("GPP section support", () => {
           !usSections.some(([_id, name]) => name === sectionName),
       );
       expect(extraNames).toEqual([]);
-      /* eslint-enable @typescript-eslint/no-unused-vars */
     });
   });
 });

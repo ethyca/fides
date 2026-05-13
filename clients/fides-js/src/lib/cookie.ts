@@ -424,7 +424,6 @@ export const getOrMakeFidesCookie = async (
     );
     return parsedCookie;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error(`Unable to read consent cookie: invalid JSON.`, err);
     return defaultCookie;
   }
@@ -459,7 +458,7 @@ export const saveFidesCookie = async (
   // Record the last update time for the cookie
   const now = new Date();
   const updatedAt = now.toISOString();
-  // eslint-disable-next-line no-param-reassign
+
   cookie.fides_meta.updatedAt = updatedAt;
 
   // Validate compression option and fallback to "none" if invalid
@@ -496,7 +495,6 @@ export const saveFidesCookie = async (
       },
     );
     if (c) {
-      // eslint-disable-next-line no-await-in-loop
       const savedCookie = await getFidesConsentCookie(fidesCookieSuffix);
       // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
       if (

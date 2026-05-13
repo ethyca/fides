@@ -170,7 +170,7 @@ describe("Privacy notice driven consent", () => {
               analytics_opt_out: true,
               essential: true,
             };
-            // eslint-disable-next-line @typescript-eslint/naming-convention
+
             const { consent, fides_meta } = cookie;
             expect(consent).to.eql(expectedConsent);
             expect(fides_meta).to.have.property("createdAt");
@@ -388,7 +388,6 @@ describe("Privacy notice driven consent", () => {
         ]);
         cy.getByTestId("save-btn").click();
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
           const expected = interception.response?.body.served_notice_history_id;

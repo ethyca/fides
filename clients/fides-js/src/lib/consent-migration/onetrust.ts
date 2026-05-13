@@ -48,7 +48,6 @@ export class OneTrustProvider implements ConsentMigrationProvider {
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
   private parseCookieValue(
     cookieValue: string,
     mapping: OtToFidesConsentMapping,

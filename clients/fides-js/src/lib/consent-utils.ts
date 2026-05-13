@@ -131,9 +131,8 @@ export const validateOptions = (options: FidesInitOptions): boolean => {
   }
 
   try {
-    // eslint-disable-next-line no-new
     new URL(options.privacyCenterUrl);
-    // eslint-disable-next-line no-new
+
     new URL(options.fidesApiUrl);
   } catch (e) {
     fidesDebugger(
@@ -149,7 +148,6 @@ export const validateOptions = (options: FidesInitOptions): boolean => {
 export const getOverrideValidatorMapByType = (
   overrideType: OverrideType,
 ): FidesOverrideValidatorMap[] | null => {
-  // eslint-disable-next-line default-case
   switch (overrideType) {
     case OverrideType.OPTIONS:
       return FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP;

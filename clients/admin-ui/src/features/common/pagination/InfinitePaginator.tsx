@@ -35,7 +35,6 @@ export const InfinitePaginator = ({
           label: option,
           value: option,
         }))}
-        // eslint-disable-next-line react/no-unstable-nested-components
         labelRender={({ value }) => <span>{value} / page</span>}
         aria-label="Select page size"
       />

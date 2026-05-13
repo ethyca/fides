@@ -16,7 +16,6 @@ const VersionLogger = ({ version }: VersionLoggerProps) => {
      * so we don't want to log the version.
      */
     if (version && version !== "unknown") {
-      // eslint-disable-next-line no-console
       console.info(`Fides Privacy Center version: ${version}`);
     }
   }, [version]);

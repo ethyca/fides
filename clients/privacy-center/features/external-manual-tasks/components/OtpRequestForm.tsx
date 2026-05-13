@@ -13,7 +13,6 @@ import { OtpRequestFormProps } from "../types";
  * Now purely presentational - authentication logic is handled by parent.
  */
 const OtpRequestForm = ({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emailToken: _,
   onRequestOtp,
   initialEmail = "",

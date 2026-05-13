@@ -60,7 +60,6 @@ export default async function handler(
 ) {
   // Ensure we have a request ID header for consistent logging
   if (!req.headers[REQUEST_ID_HEADER]) {
-    // eslint-disable-next-line no-param-reassign
     req.headers[REQUEST_ID_HEADER] =
       `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }

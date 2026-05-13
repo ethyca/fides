@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
 import type { ManualFieldListItem } from "~/types/api";

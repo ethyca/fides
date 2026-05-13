@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 export enum CurrentStep {
   PRE_WEBHOOKS = "pre_webhooks",

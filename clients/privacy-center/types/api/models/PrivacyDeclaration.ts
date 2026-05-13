@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { Cookies } from "./Cookies";
 import type { LegalBasisForProcessingEnum } from "./LegalBasisForProcessingEnum";

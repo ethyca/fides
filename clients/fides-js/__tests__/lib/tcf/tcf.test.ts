@@ -183,7 +183,6 @@ describe("generateFidesString", () => {
     gvlSpecificationVersion: 3,
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const mockFeatures: TCFFeatureRecord[] = [
     {
       id: 1,

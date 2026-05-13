@@ -213,7 +213,6 @@ export const generateMockManualTasks = (): ManualFieldListItem[] => {
           created_at: updatedDate.toISOString(),
           attachments: [],
           comment_text:
-            // eslint-disable-next-line no-nested-ternary
             status === ManualFieldStatus.COMPLETED
               ? "Task completed successfully"
               : status === ManualFieldStatus.SKIPPED

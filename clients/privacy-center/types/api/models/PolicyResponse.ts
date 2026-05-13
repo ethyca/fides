@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { DrpAction } from "./DrpAction";
 import type { RuleResponse } from "./RuleResponse";

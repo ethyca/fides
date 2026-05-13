@@ -16,14 +16,13 @@ jest.mock("react-dnd", () => ({
 }));
 
 // Mock nuqs
-// eslint-disable-next-line global-require
+
 jest.mock("nuqs", () => require("../../utils/nuqs-mock").nuqsMock);
 
 // Mock the AssetReportingTable component to avoid jsdom/Ant Design Table
 // incompatibility (NodeList.includes / parentElement.querySelectorAll).
 // Tests verify search input behavior via mocked DebouncedSearchInput.
 jest.mock("../../../src/features/asset-reporting/AssetReportingTable", () => {
-  // eslint-disable-next-line global-require
   const ReactMock = require("react");
   return {
     __esModule: true,

@@ -20,7 +20,6 @@ export const createLogger = (options?: LoggerOptions) => {
       isNextEdgeRuntime && {
         browser: {
           write: {
-            /* eslint-disable no-console */
             critical: (o: unknown) => console.error(JSON.stringify(o)),
             debug: (o: unknown) => console.log(JSON.stringify(o)),
             error: (o: unknown) => console.error(JSON.stringify(o)),
@@ -28,7 +27,6 @@ export const createLogger = (options?: LoggerOptions) => {
             info: (o: unknown) => console.log(JSON.stringify(o)),
             trace: (o: unknown) => console.log(JSON.stringify(o)),
             warn: (o: unknown) => console.warn(JSON.stringify(o)),
-            /* eslint-enable no-console */
           },
         },
       }),

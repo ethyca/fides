@@ -13,7 +13,6 @@ import { OtpVerificationFormProps } from "../types";
  * Now purely presentational - authentication logic is handled by parent.
  */
 const OtpVerificationForm = ({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emailToken: _,
   enteredEmail,
   onVerifyOtp,

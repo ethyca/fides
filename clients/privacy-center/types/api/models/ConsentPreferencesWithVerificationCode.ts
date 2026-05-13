@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { Consent } from "./Consent";
 import type { ConsentWithExecutableStatus } from "./ConsentWithExecutableStatus";

@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { AccessLevel } from "./AccessLevel";
 import type { ActionType } from "./ActionType";

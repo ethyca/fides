@@ -148,7 +148,6 @@ export const PurposeRestrictionsTable = () => {
       <Flex justify="flex-end">
         <Tooltip
           title={
-            // eslint-disable-next-line no-nested-ternary
             hasRestrictAllVendors
               ? 'Each vendor must have a unique restriction type. When "Restrict all vendors" is active for any restriction type, no other restrictions can be added.'
               : hasAllRestrictTypes

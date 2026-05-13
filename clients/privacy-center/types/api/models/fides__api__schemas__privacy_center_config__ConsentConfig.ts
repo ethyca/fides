@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { ConsentConfigButton } from "./ConsentConfigButton";
 import type { ConsentConfigPage } from "./ConsentConfigPage";

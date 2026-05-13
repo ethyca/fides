@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import {
   Button,
   ChakraAccordion as Accordion,

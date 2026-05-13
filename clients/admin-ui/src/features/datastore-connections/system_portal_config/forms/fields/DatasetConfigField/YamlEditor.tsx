@@ -94,7 +94,6 @@ const YamlEditor = ({
     onCancel?.();
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleMount = (editor: any, _monaco: any) => {
     monacoRef.current = editor;
     (monacoRef.current as any).focus();

@@ -14,7 +14,6 @@ const useElementById = <T extends HTMLElement = HTMLElement>(
 ): T | null => {
   const [element, setElement] = useState<T | null>(null);
 
-  // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (isDisabled) {
       return () => {};

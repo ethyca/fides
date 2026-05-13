@@ -40,7 +40,7 @@ describe("GPP cookie handling", () => {
       gppData: { gppString: string },
       success: boolean,
     ) => void;
-    // eslint-disable-next-line no-underscore-dangle
+
     (window as any).__gpp = jest
       .fn()
       .mockImplementation((command: string, callback: GppCallback) => {
@@ -89,7 +89,7 @@ describe("GPP cookie handling", () => {
 
   afterEach(() => {
     jest.clearAllMocks();
-    // eslint-disable-next-line no-underscore-dangle
+
     delete (window as any).__gpp;
     // Clean up event listeners
     const handlers = (window as any).testEventHandlers;

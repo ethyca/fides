@@ -5,7 +5,6 @@ import { selectApplicationConfig } from "~/features/config-settings/config-setti
 import { ErrorNotificationMode } from "~/types/api";
 
 const printReduxError = (action: unknown) =>
-  // eslint-disable-next-line no-console
   console.error("Admin UI encountered the following error: ", action);
 
 const errorLoggingFunctions: Record<

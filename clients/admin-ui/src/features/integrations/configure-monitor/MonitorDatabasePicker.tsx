@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
-
 import {
   ColumnDef,
   createColumnHelper,

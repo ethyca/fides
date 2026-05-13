@@ -106,7 +106,6 @@ describe("System integrations", () => {
       cy.getByTestId("save-consent-automation").click();
       cy.wait("@putConsentableItems").then((interception) => {
         cy.fixture("connectors/consentable_items.json").then((expected) => {
-          // eslint-disable-next-line no-param-reassign
           expected[0].notice_id = "pri_b1244715-2adb-499f-abb2-e86b6c0040c2";
           expect(interception.request.body).to.deep.equal(expected);
         });

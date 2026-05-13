@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/control-has-associated-label */
 import {
   Button,
   Flex,
@@ -129,7 +128,7 @@ const CustomFieldForm = ({
     if (!initialField) {
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+
     const { id, resource_type, field_type } = initialField;
     const result = await deleteCustomField({
       id: id!,

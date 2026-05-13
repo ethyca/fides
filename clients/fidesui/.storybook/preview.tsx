@@ -1,13 +1,12 @@
-import React from "react";
-import type { Preview } from "@storybook/react-vite";
-
-import { darkAntTheme, defaultAntTheme } from "../src/ant-theme";
-import { FidesUIProvider } from "../src/FidesUIProvider";
-
 import "../src/ant-theme/global.scss";
 import "../src/tailwind.css";
 
-import { withAntTheme, DEFAULT_THEME } from "./withAntTheme";
+import type { Preview } from "@storybook/react-vite";
+import React from "react";
+
+import { darkAntTheme, defaultAntTheme } from "../src/ant-theme";
+import { FidesUIProvider } from "../src/FidesUIProvider";
+import { DEFAULT_THEME, withAntTheme } from "./withAntTheme";
 
 const preview: Preview = {
   initialGlobals: {

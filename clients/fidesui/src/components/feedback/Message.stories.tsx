@@ -16,7 +16,6 @@ const Message = ({ type, content }: MessageProps) => {
     notification[type](content);
   }, []);
 
-  // eslint-disable-next-line react/jsx-no-useless-fragment
   return <></>;
 };
 

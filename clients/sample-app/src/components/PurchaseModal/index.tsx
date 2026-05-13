@@ -54,7 +54,6 @@ const Modal = ({ isOpen, onRequestClose, onSubmit }: Props) => {
         aria-modal="true"
         role="dialog"
         className={css.modal}
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onSubmit={handleSubmit(onSubmit)}
       >
         <h2>Submit Your Order</h2>

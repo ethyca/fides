@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import "./fides.css";
 
 import { FunctionComponent, VNode } from "preact";

@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 export type Body_acquire_access_token_api_v1_oauth_token_post = {
   grant_type?: string;

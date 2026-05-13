@@ -95,7 +95,7 @@ const TaxonomyCustomFieldsForm = ({
                     label={name}
                     tooltip={description}
                   >
-                    {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                    {}
                     <Select
                       mode={
                         fieldType !== LegacyAllowedTypes.STRING

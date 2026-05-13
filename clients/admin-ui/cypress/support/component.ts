@@ -24,7 +24,6 @@ import "fidesui/src/ant-theme/global.scss";
 import { EnhancedStore } from "@reduxjs/toolkit";
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { mount, MountOptions, MountReturn } from "cypress/react";
 import { FidesUIProvider } from "fidesui";
 import * as React from "react";

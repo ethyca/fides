@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { AccessToken } from "./AccessToken";
 import type { UserResponse } from "./UserResponse";

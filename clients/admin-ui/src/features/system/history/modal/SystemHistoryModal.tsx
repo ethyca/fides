@@ -57,12 +57,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
         {selectedHistory &&
           getBadges(selectedHistory.before, selectedHistory.after).map(
             (badge, index) => (
-              <Tag
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                color="minos"
-                className="ml-2"
-              >
+              <Tag key={index} color="minos" className="ml-2">
                 {badge}
               </Tag>
             ),

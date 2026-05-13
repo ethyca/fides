@@ -29,7 +29,6 @@ import LoginWithOIDC from "./login/[provider]";
 dayjs.extend(utc);
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   import("../mocks").then(({ initMocks }) => initMocks());
 }
 
@@ -43,7 +42,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   // Expose Redux store to window for Cypress testing
   React.useEffect(() => {
     if (typeof window !== "undefined" && window.Cypress) {
-      // eslint-disable-next-line no-underscore-dangle
       window.__REDUX_STORE__ = store;
     }
   }, []);

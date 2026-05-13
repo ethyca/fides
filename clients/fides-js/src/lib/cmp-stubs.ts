@@ -62,7 +62,7 @@ export const updateTcfStubGdprApplies = () => {
   if (typeof window === "undefined") {
     return;
   }
-  // eslint-disable-next-line no-underscore-dangle
+
   const tcfApi = window.__tcfapi;
   if (typeof tcfApi === "function") {
     try {

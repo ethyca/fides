@@ -37,7 +37,6 @@ const PurposeDetails = ({
 }) => {
   const { i18n } = useI18n();
   if (isCustomPurpose) {
-    // eslint-disable-next-line no-param-reassign
     purpose = purpose as PrivacyNoticeWithBestTranslation;
     // Custom purposes already have translation details
     return (
@@ -48,7 +47,7 @@ const PurposeDetails = ({
       </div>
     );
   }
-  // eslint-disable-next-line no-param-reassign
+
   purpose = purpose as PurposeRecord | TCFSpecialPurposeRecord;
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (

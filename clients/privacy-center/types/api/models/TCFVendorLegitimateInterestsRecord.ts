@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { EmbeddedPurpose } from "./EmbeddedPurpose";
 import type { UserConsentPreference } from "./UserConsentPreference";

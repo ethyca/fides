@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 export enum GCSAuthMethod {
   ADC = "adc", // Application Default Credentials

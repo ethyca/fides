@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle

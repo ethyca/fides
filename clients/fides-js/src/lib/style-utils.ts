@@ -17,7 +17,7 @@ const hexToHSL = (hex: string): Hsl | null => {
     let r = parseInt(result[1], 16);
     let g = parseInt(result[2], 16);
     let b = parseInt(result[3], 16);
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions,no-sequences
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     ((r /= 255), (g /= 255), (b /= 255));
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
@@ -25,7 +25,6 @@ const hexToHSL = (hex: string): Hsl | null => {
     let s;
     const l = (max + min) / 2;
     if (max === min) {
-      // eslint-disable-next-line no-multi-assign
       h = s = 0; // achromatic
     } else {
       const d = max - min;

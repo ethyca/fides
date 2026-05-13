@@ -395,7 +395,7 @@ export const { Text, Title, Paragraph, Link } = CustomTypography;
  * Icons whose names conflict with Chakra's included icons must be explicitly listed. This makes
  * typescript happy, but eslint doesn't understand.
  */
-/* eslint-disable import/export */
+
 export * from "./icons";
 export {
   CarryOutOutlined,
@@ -405,7 +405,6 @@ export {
   PlusOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
-/* eslint-enable import/export */
 
 /**
  * prefixed icons from Carbon Icons

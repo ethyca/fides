@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { DynamicErasureEmailDocsSchema } from "./DynamicErasureEmailDocsSchema";

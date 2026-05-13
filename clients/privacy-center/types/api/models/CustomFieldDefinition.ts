@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 import type { AllowedTypes } from "./AllowedTypes";
 import type { ResourceTypes } from "./ResourceTypes";

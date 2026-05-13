@@ -98,7 +98,6 @@ const SystemAssetsDataUseCell = ({
       )}
       {isAdding && (
         <Box
-          // eslint-disable-next-line tailwindcss/no-custom-classname
           className="select-wrapper"
           position="absolute"
           zIndex={10}

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
 import { IdentityProviderMonitorResultFilters } from "~/features/data-discovery-and-detection/discovery-detection.slice";

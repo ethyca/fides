@@ -557,7 +557,6 @@ export const TcfOverlay = () => {
           ]),
         };
       } else {
-        // eslint-disable-next-line no-param-reassign
         exp = experienceMinimal as PrivacyExperienceMinimal;
         allIds = {
           purposesConsent:

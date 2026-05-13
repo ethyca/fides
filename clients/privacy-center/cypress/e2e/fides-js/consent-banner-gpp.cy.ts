@@ -4,7 +4,6 @@
  * the source file while also running tests.
  */
 
-/* eslint-disable no-underscore-dangle */
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
@@ -770,7 +769,6 @@ describe("Fides-js GPP extension", () => {
       beforeEach(() => {
         visitDemoWithGPP({
           overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
             experience.region = "us_nc";
             return experience;
           },
@@ -839,7 +837,6 @@ describe("Fides-js GPP extension", () => {
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
         visitDemoWithGPP({
           overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
             experience.region = "us_nc";
             return experience;
           },
@@ -868,7 +865,6 @@ describe("Fides-js GPP extension", () => {
     describe("when visiting from a state with an applicable section and GPC enabled", () => {
       it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
         cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
         visitDemoWithGPP({});
@@ -917,7 +913,6 @@ describe("Fides-js GPP extension", () => {
     ) => {
       visitDemoWithGPP({
         overrideExperience: (experience: any) => {
-          /* eslint-disable no-param-reassign */
           experience.experience_config.component = ComponentType.HEADLESS;
           experience.region = props.region;
           return experience;
@@ -1059,7 +1054,6 @@ describe("Fides-js GPP extension", () => {
     describe("when visiting from a state with an applicable section and GPC enabled", () => {
       it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
         cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
         visitDemoWithGPPHeadless();

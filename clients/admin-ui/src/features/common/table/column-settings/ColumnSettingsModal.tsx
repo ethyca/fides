@@ -61,7 +61,6 @@ export const ColumnSettingsModal = ({
     ];
     const newColumnVisibility = columnEditor.columns.reduce(
       (acc: Record<string, boolean>, current: DraggableColumn) => {
-        // eslint-disable-next-line no-param-reassign
         acc[current.id] = current.isVisible;
         return acc;
       },

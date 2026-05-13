@@ -57,7 +57,6 @@ export const transformPrivacyNoticeResponseToCreation = (
   internal_description: notice.internal_description,
   translations: notice.translations
     ? notice.translations.map((t) => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { privacy_notice_history_id, ...rest } = t;
         return {
           ...rest,

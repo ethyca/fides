@@ -5,7 +5,6 @@ import React, { useEffect, useRef } from "react";
 import SparkleIcon from "../icons/Sparkle";
 import styles from "./CustomTag.module.scss";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export enum CUSTOM_TAG_COLOR {
   DEFAULT = "default",
   CORINTH = "corinth",
@@ -123,7 +122,6 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         variant: retainDefaultBorder || !brandColor ? "outlined" : "filled",
         ...props,
         closeIcon:
-          // eslint-disable-next-line no-nested-ternary
           (props.closable ?? props.onClose) ? (
             // Ant's own close icon doesn't currently use a button element,
             // so we need to use our own for accessibility.

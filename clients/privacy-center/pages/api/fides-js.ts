@@ -58,9 +58,15 @@ const missingExperienceBehaviors: Record<
   MissingExperienceBehaviors,
   (error: unknown) => Record<string, never>
 > = {
+  /**
+   *
+   */
   throw: (error) => {
     throw error;
   },
+  /**
+   *
+   */
   empty_experience: () => {
     return {};
   },
@@ -306,6 +312,9 @@ export default async function handler(
             retries: PREFETCH_MAX_RETRIES,
             factor: PREFETCH_BACKOFF_FACTOR,
             minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
+            /**
+             *
+             */
             onFailedAttempt: (error) => {
               log.debug(
                 error,
@@ -458,7 +467,6 @@ export default async function handler(
     }
   }
 
-  /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
   // Check if the client wants to skip initialization of fides.js to allow for manual initialization
@@ -524,6 +532,9 @@ export default async function handler(
     .send(script);
 }
 
+/**
+ *
+ */
 async function fetchCustomFidesCss(
   req: NextApiRequest,
 ): Promise<string | null> {
@@ -579,6 +590,9 @@ async function fetchCustomFidesCss(
           retries: CUSTOM_CSS_MAX_RETRIES,
           factor: CUSTOM_CSS_BACKOFF_FACTOR,
           minTimeout: CUSTOM_CSS_RETRY_MIN_TIMEOUT_MS,
+          /**
+           *
+           */
           onFailedAttempt: (error) => {
             log.debug(
               error,

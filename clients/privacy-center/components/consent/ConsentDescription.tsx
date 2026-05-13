@@ -29,11 +29,7 @@ const ConsentDescription = () => {
           {config.consent?.page.description}
         </Text>
         {config.consent?.page.description_subtext?.map((paragraph, index) => (
-          <Text
-            {...TEXT_PROPS}
-            // eslint-disable-next-line react/no-array-index-key
-            key={`description-subtext${index}`}
-          >
+          <Text {...TEXT_PROPS} key={`description-subtext${index}`}>
             {paragraph}
           </Text>
         ))}

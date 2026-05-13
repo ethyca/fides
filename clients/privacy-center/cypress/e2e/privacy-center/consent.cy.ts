@@ -373,7 +373,6 @@ describe("Consent settings", () => {
       cy.window().then((win) => {
         // make sure the overlay is disabled before initializing Fides
         if (win.Fides.config?.options?.isOverlayEnabled) {
-          // eslint-disable-next-line no-param-reassign
           win.Fides.config.options.isOverlayEnabled = false;
         }
         win.Fides.init();
@@ -430,7 +429,6 @@ describe("Consent settings", () => {
     describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
         cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");

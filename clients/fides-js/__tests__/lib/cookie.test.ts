@@ -42,7 +42,6 @@ const mockGetCookie = jest.fn(
   (name: string): string | undefined => `mockGetCookie return ${name}`,
 );
 const mockSetCookie = jest.fn(
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, value: string, attributes: object) => {
     // Simulate that browsers will not write cookies to known top-level public domains like "com" or "co.uk"
     if (
@@ -56,7 +55,6 @@ const mockSetCookie = jest.fn(
   },
 );
 const mockRemoveCookie = jest.fn(
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, attributes?: CookieAttributes) => undefined,
 );
 

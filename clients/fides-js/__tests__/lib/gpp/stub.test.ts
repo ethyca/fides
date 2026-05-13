@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { EventData, PingData } from "@iabgpp/cmpapi";
 
 import { makeStub } from "~/lib/gpp/stub";

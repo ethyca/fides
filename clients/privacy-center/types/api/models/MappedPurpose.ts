@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
 
 /**
  * Extension of the base GVL purpose model to include properties related to fideslang mappings.

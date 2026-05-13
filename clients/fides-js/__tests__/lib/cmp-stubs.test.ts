@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { updateTcfStubGdprApplies } from "~/lib/cmp-stubs";
 
 describe("updateTcfStubGdprApplies", () => {

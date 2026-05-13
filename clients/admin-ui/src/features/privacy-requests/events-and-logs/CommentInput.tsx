@@ -40,7 +40,6 @@ export const CommentInput = ({
         setCommentText("");
         onCancel();
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error("Failed to add comment:", error);
         message.error({
           content: "Failed to add comment",

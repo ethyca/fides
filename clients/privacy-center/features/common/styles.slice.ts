@@ -18,7 +18,6 @@ export const stylesSlice = createSlice({
      */
     loadStyles(draftState, { payload }: PayloadAction<Styles | undefined>) {
       if (process.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
         console.log("Loading Privacy Center styles into Redux store...");
       }
       draftState.styles = payload;
