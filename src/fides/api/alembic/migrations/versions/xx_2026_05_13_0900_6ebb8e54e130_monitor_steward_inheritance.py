@@ -66,7 +66,11 @@ def upgrade():
         "ctl_systems",
         ["source_system_id"],
         ["id"],
-        ondelete="SET NULL",
+        # CASCADE (not SET NULL) because inherited rows are derived state:
+        # when the source system goes away, the derivation is meaningless.
+        # SET NULL would also violate ck_monitorsteward_inherited_has_system,
+        # blocking the parent delete entirely.
+        ondelete="CASCADE",
     )
 
     # --- monitorsteward: replace unique constraint ---

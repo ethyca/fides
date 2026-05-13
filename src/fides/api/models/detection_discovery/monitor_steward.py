@@ -53,7 +53,11 @@ class MonitorSteward(Base):
     )
     source_system_id = Column(
         String,
-        ForeignKey("ctl_systems.id", ondelete="SET NULL"),
+        # CASCADE (not SET NULL) because inherited rows are derived state:
+        # when the source system goes away, the derivation is meaningless.
+        # SET NULL would also violate ck_monitorsteward_inherited_has_system,
+        # blocking the parent system delete entirely.
+        ForeignKey("ctl_systems.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
     )
