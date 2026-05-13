@@ -1,0 +1,4 @@
+type: Removed
+description: Removed the retired Data Catalog beta feature
+pr: 8149
+labels: []
