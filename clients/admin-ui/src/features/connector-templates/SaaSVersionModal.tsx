@@ -14,7 +14,6 @@ interface SaaSVersionContentProps {
   version: string;
 }
 
-
 const SaaSVersionContent = ({
   connectorType,
   version,
@@ -43,6 +42,13 @@ const SaaSVersionContent = ({
       return (
         <Text type="danger" className="text-sm">
           Could not load version config.
+        </Text>
+      );
+    }
+    if (!configYaml) {
+      return (
+        <Text type="secondary" className="text-sm">
+          No config available for this version.
         </Text>
       );
     }
