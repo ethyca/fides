@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import Field
 
@@ -21,25 +21,29 @@ class ActionStatus(str, Enum):
 
 class FieldDetail(FidesSchema):
     name: str
-    data_categories: List[str] = Field(default_factory=list)
+    data_categories: list[str] = Field(default_factory=list)
     is_identity: bool = False
 
 
 class CollectionDetail(FidesSchema):
     name: str
-    skipped: bool = False
-    fields: List[FieldDetail] = Field(default_factory=list)
+    skipped: bool = Field(
+        default=False,
+        description="Always False in preview — skip_processing collections "
+        "are excluded during graph construction",
+    )
+    fields: list[FieldDetail] = Field(default_factory=list)
 
 
 class DatasetDetail(FidesSchema):
     fides_key: str
-    collections: List[CollectionDetail] = Field(default_factory=list)
+    collections: list[CollectionDetail] = Field(default_factory=list)
 
 
 class SystemRef(FidesSchema):
     fides_key: str
     name: str
-    data_use: Optional[str] = None
+    data_use: str | None = None
 
 
 class CollectionCount(FidesSchema):
@@ -51,13 +55,13 @@ class IntegrationNode(FidesSchema):
     id: str  # "integration:<connection_key>"
     connection_key: str
     connector_type: str
-    saas_type: Optional[str] = None
-    system: Optional[SystemRef] = None
+    saas_type: str | None = None
+    system: SystemRef | None = None
     reachability: Reachability
     action_status: ActionStatus
     collection_count: CollectionCount
-    data_categories: List[str] = Field(default_factory=list)
-    datasets: List[DatasetDetail] = Field(default_factory=list)
+    data_categories: list[str] = Field(default_factory=list)
+    datasets: list[DatasetDetail] = Field(default_factory=list)
 
 
 class Assignee(FidesSchema):
@@ -68,8 +72,8 @@ class Assignee(FidesSchema):
 class ManualTaskField(FidesSchema):
     name: str
     type: str
-    label: Optional[str] = None
-    help_text: Optional[str] = None
+    label: str | None = None
+    help_text: str | None = None
     required: bool = False
 
 
@@ -81,10 +85,10 @@ class ManualTaskCondition(FidesSchema):
 class ManualTaskNode(FidesSchema):
     id: str  # "manual:<task_key>"
     name: str
-    assignees: List[Assignee] = Field(default_factory=list)
-    fields: List[ManualTaskField] = Field(default_factory=list)
-    conditions: List[ManualTaskCondition] = Field(default_factory=list)
-    gates: List[str] = Field(default_factory=list)
+    assignees: list[Assignee] = Field(default_factory=list)
+    fields: list[ManualTaskField] = Field(default_factory=list)
+    conditions: list[ManualTaskCondition] = Field(default_factory=list)
+    gates: list[str] = Field(default_factory=list)
 
 
 class PrivacyCenterFormRef(FidesSchema):
@@ -95,15 +99,15 @@ class PrivacyCenterFormRef(FidesSchema):
 
 class IdentityRoot(FidesSchema):
     id: Literal["identity-root"] = "identity-root"
-    identity_types: List[str] = Field(default_factory=list)
-    privacy_center_forms: List[PrivacyCenterFormRef] = Field(default_factory=list)
+    identity_types: list[str] = Field(default_factory=list)
+    privacy_center_forms: list[PrivacyCenterFormRef] = Field(default_factory=list)
 
 
 class PreviewEdge(FidesSchema):
     source: str
     target: str
     kind: Literal["depends_on", "gates"]
-    dep_count: Optional[int] = None  # only set for "depends_on"
+    dep_count: int | None = None  # only set for "depends_on"
 
 
 class TraversalPreview(FidesSchema):
@@ -111,7 +115,7 @@ class TraversalPreview(FidesSchema):
 
     action_type: Literal["access", "erasure"]
     identity_root: IdentityRoot
-    integrations: List[IntegrationNode] = Field(default_factory=list)
-    manual_tasks: List[ManualTaskNode] = Field(default_factory=list)
-    edges: List[PreviewEdge] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
+    integrations: list[IntegrationNode] = Field(default_factory=list)
+    manual_tasks: list[ManualTaskNode] = Field(default_factory=list)
+    edges: list[PreviewEdge] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
