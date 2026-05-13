@@ -10,10 +10,10 @@ from fides.config.secrets import get_secret_provider
 from fides.config.secrets.aws_secrets_manager_provider import (
     AWSSecretsManagerProvider,
 )
-from fides.config.secrets.base import SecretProviderError
+from fides.config.secrets.base import SecretProviderError, SecretValue
 from fides.config.secrets.factory import create_secret_provider
 from fides.config.secrets.static_provider import StaticSecretProvider
-from fides.config.secrets_settings import SecretsSettings
+from fides.config.secrets_settings import AWSSecretsManagerSettings, SecretsSettings
 
 
 class TestSecretsSettings:
@@ -43,10 +43,7 @@ class TestSecretsSettings:
 
     def test_aws_config_requires_region(self):
         with pytest.raises(ValidationError, match="region"):
-            SecretsSettings(
-                provider="aws_secrets_manager",
-                aws_secrets_manager={},
-            )
+            AWSSecretsManagerSettings()
 
     def test_static_provider_without_aws_config_passes(self):
         settings = SecretsSettings(provider="static")
@@ -71,6 +68,16 @@ class TestCreateSecretProvider:
         provider = create_secret_provider(settings)
         assert isinstance(provider, AWSSecretsManagerProvider)
         assert provider._cache_ttl == 120.0
+
+    def test_aws_provider_with_missing_aws_config_raises_in_factory(self):
+        """Bypass Pydantic validation to test the factory's own guard."""
+        settings = SecretsSettings()
+        settings.provider = "aws_secrets_manager"  # type: ignore[assignment]
+        settings.aws_secrets_manager = None
+        with pytest.raises(
+            SecretProviderError, match="aws_secrets_manager is not configured"
+        ):
+            create_secret_provider(settings)
 
     def test_unknown_provider_raises_at_validation(self):
         with pytest.raises(ValidationError, match="literal_error"):

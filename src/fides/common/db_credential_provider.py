@@ -62,12 +62,18 @@ class DBCredentialProvider:
         For static provider: uses the well-known default keys.
         """
         if self.is_dynamic:
+            credential_secret_id = CONFIG.database.credential_secret_id
+            if credential_secret_id is None:
+                raise ValueError(
+                    "secrets.provider is not 'static' but "
+                    "database.credential_secret_id is not set."
+                )
             if readonly:
                 return (
                     CONFIG.database.readonly_credential_secret_id
-                    or CONFIG.database.credential_secret_id
+                    or credential_secret_id
                 )
-            return CONFIG.database.credential_secret_id
+            return credential_secret_id
         else:
             if readonly and CONFIG.database.readonly_server:
                 return DATABASE_READONLY_CREDENTIALS_KEY

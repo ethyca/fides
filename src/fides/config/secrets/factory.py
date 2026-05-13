@@ -32,6 +32,11 @@ def create_secret_provider(
 
     if provider_type == "aws_secrets_manager":
         aws = secrets_settings.aws_secrets_manager
+        if aws is None:
+            raise SecretProviderError(
+                "secrets.provider is 'aws_secrets_manager' but "
+                "secrets.aws_secrets_manager is not configured."
+            )
         log.info(
             "Using AWS Secrets Manager provider (region={})",
             aws.region,
