@@ -9,7 +9,10 @@
     "postdev": "docker compose down",
     "predev": "docker compose up -d --wait postgres-test",
     "start": "next start",
-    "test": "tsc --noemit"
+    "test": "tsc --noemit",
+    "lint": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check --write . && npm run typecheck"
   },
   "dependencies": {
     "balajs": "^2.0.2",

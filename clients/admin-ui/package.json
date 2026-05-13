@@ -26,7 +26,10 @@
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check --write . && npm run lint:antd && npm run typecheck"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^2.1.2",

@@ -10,7 +10,10 @@
     "clean": "rm -rf node_modules",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "chromatic --exit-zero-on-changes"
+    "chromatic": "chromatic --exit-zero-on-changes",
+    "lint": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check --write . && npm run lint:antd && npm run typecheck"
   },
   "dependencies": {
     "@ant-design/x": "^2.5.0",

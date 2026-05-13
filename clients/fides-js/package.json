@@ -42,7 +42,10 @@
     "docs:generate": "typedoc --tsconfig ./tsconfig.json --out docs src/docs/ ",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check --write . && npm run typecheck"
   },
   "repository": {
     "type": "git",
