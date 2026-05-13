@@ -74,6 +74,7 @@ def build_field_documentation(field_name: str, field_info: Dict) -> Optional[str
                 if "$ref" in type_annotation:
                     continue
                 if type_annotation.get("type") != "null":
+                    # Getting first non-null
                     field_type = type_annotation["type"]
                     break
 
