@@ -2298,7 +2298,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
-<span class="normal">630</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2631,6 +2637,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># Minutes between polling Jira for ticket status updates.</span>
 <span class="n">jira_polling_interval_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Minutes between polling the IMAP mailbox for DSR reply messages.</span>
+<span class="n">reply_polling_interval_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Minutes between processing pending DSR lifecycle notifications.</span>
+<span class="n">notification_interval_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1">#-------------#</span>
 <span class="c1">#-- LOGGING --#</span>

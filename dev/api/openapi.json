@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.85.1b1.dev11+ga1fc5a64f"
+    "version": "2.85.1b1.dev12+gce5eedce9"
   },
   "paths": {
     "/api/v1/data_category": {

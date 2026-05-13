@@ -332,6 +332,12 @@ task_soft_time_limit_seconds = 0 # integer
 # Minutes between polling Jira for ticket status updates.
 jira_polling_interval_minutes = 3 # integer
 
+# Minutes between polling the IMAP mailbox for DSR reply messages.
+reply_polling_interval_minutes = 3 # integer
+
+# Minutes between processing pending DSR lifecycle notifications.
+notification_interval_minutes = 5 # integer
+
 #-------------#
 #-- LOGGING --#
 #--------------------------------------------------------------------#
