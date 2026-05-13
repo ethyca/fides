@@ -4,11 +4,11 @@ This branch replaces ESLint 8 + Prettier 3 with [Biome](https://biomejs.dev) 2.4
 
 ## TL;DR
 
-- **CI is green.** `npm run check:ci` exits 0. No errors, 771 warnings (latent issues Biome surfaced that ESLint missed).
+- **CI is green.** `npm run check:ci` exits 0. No errors, 688 warnings (latent issues Biome surfaced that ESLint missed).
 - **Massive simplification.** 19 config files → 1. ~75 devDeps removed. Lint + format are now one tool, run once at the repo root.
 - **Lint runtime: 0.5s for 2,766 files** (Biome) vs minutes for ESLint + Prettier across the turbo fan-out.
 - **No rule porting.** We use stock Biome `recommended` + the `react`, `next`, and `test` domains. The only rule edits are off/warn toggles for rules where the codebase has a documented historical opt-out (`noExplicitAny`, `noNonNullAssertion`) or where Biome surfaces enough net-new findings that a remediation pass is needed before they can block CI.
-- **Decision asked:** ship, ship with follow-up tickets for the 795 warnings, or abandon and pursue ESLint v9.
+- **Decision asked:** ship, ship with follow-up tickets for the 688 warnings, or abandon and pursue ESLint v9.
 
 ## What changed
 
@@ -116,27 +116,53 @@ The 461 inline disables remain as dead text under Biome (they're inert). They ca
 
 **Implication for the remediation plan:** most of the work isn't "fix new things Biome added" — it's "stop pretending warn-level violations don't exist, and stop carrying inline-disable comments." After each follow-up remediation, the downgraded rules in `biome.json` can be re-promoted to `error`.
 
-### Surgical `eslint-disable` → `biome-ignore` conversion (24 sites)
+### Surgical `eslint-disable` → `biome-ignore` conversion (54 sites)
 
-After the rule tuning, a separate pass converted `// eslint-disable-next-line <rule>` comments to `// biome-ignore lint/<biome-rule>: migrated from eslint-disable` — but **only** where the targeted ESLint rule maps 1:1 to a Biome rule **and** Biome is actually flagging at the line below. This avoids creating "unused suppression" diagnostics (which Biome itself treats as warnings).
+Two passes converted `// eslint-disable-next-line <rule>` and `// eslint-disable-line <rule>` comments to `// biome-ignore lint/<biome-rule>: migrated from eslint-disable` — **only** where the targeted ESLint rule maps 1:1 to a Biome rule **and** Biome is actually flagging the matching diagnostic. This avoids "unused suppression" warnings (Biome treats them as diagnostics themselves).
+
+**Pass 1 (24 sites): generic next-line.** For each disable, check the line immediately below for a matching Biome warning.
+
+**Pass 2 (30 sites): react-hooks/exhaustive-deps.** Different placement: the disable comment sits inside the hook callback body (before the deps array), but Biome flags the `useEffect`/`useMemo`/`useCallback` call several lines above. The script scans up from each disable for the nearest hook call, confirms Biome is warning there, and rewrites the file in a single forward pass: emit `// biome-ignore` immediately before the hook call line, skip the original disable line.
 
 Results:
 
 | Biome rule | Warnings before | After | Re-promoted to error? |
 |---|---:|---:|---|
-| `useJsxKeyInIterable` | 3 | 0 | Yes (removed from `warn` overrides) |
-| `noArrayIndexKey` | 17 | 1 | No (1 non-disabled site remains) |
+| `useExhaustiveDependencies` | 203 | 120 | No (mostly Biome-stricter findings remain — see next section) |
+| `useJsxKeyInIterable` | 3 | 0 | Yes |
+| `noArrayIndexKey` | 17 | 1 | No |
 | `noDangerouslySetInnerHtml` | 3 | 1 | No |
 | `noImgElement` | 3 | 2 | No |
 | `useHookAtTopLevel` | 6 | 5 | No |
 | `noNoninteractiveTabindex` | 3 | 2 | No |
 
-24 conversions across 19 files. Of the 329 inline `eslint-disable-next-line` comments in source:
-- **24** had a 1:1 mappable rule **and** a matching Biome warning at the line below — converted.
-- **145** had a 1:1 mappable rule but **no matching Biome warning** at the line below — left untouched (Biome's implementation of the same rule doesn't agree the line is a violation, or the disable was protecting against a different ESLint plugin's interpretation).
-- **160** target rules Biome has no equivalent for (`global-require`, `cypress/no-unnecessary-waiting`, `tailwindcss/no-custom-classname`, `import/*`, `no-underscore-dangle`, `@typescript-eslint/naming-convention`, etc.) — left as dead text. Can be deleted in a cleanup follow-up.
+54 conversions total. Warnings: 795 → 688.
 
-The conversion script is at `/tmp/convert-disables2.py` if we want to re-run it after each remediation pass. Multi-rule disables and block-form `/* eslint-disable foo */ ... /* eslint-enable */` were skipped; both would need a more elaborate mapping (Biome has no block-form ignore — block disables would expand to per-line `biome-ignore` on every line that triggers within the block).
+Conversion scripts are at `/tmp/convert-disables2.py` (generic) and `/tmp/convert-hooks-fixed.py` (hooks). Both can be re-run after each remediation pass. Multi-rule disables and block-form `/* eslint-disable foo */ ... /* eslint-enable */` were skipped; both would need a more elaborate mapping (Biome has no block-form ignore — block disables would expand to per-line `biome-ignore` on every line that triggers within the block).
+
+### Why are 120 `useExhaustiveDependencies` warnings still there?
+
+Validated by running ESLint v8.57 + `eslint-plugin-react-hooks@4.6.2` on a worktree of `main`, then categorizing the remaining warnings:
+
+| Warning kind | Count | Did ESLint check for this? |
+|---|---:|---|
+| `This hook specifies more dependencies than necessary: X` | **95** | **No.** ESLint's `react-hooks/exhaustive-deps` only flags missing deps, not extras. |
+| `This hook does not specify its dependency on X` | 23 | Yes (same check). See below for breakdown. |
+| `X changes on every re-render and should not be used as a hook dependency` | 2 | **No.** Biome-specific render-instability check. |
+
+So **97 of 120 (81%) are categorically things ESLint v4.x of the plugin never checked for.** Conversion can't help with those.
+
+The 23 remaining "missing dep" warnings split by package:
+
+| Package | Missing-dep warnings | Reason |
+|---|---:|---|
+| `fidesui` | 8 | `fidesui` never had the rule enabled (only extended `plugin:storybook/recommended`). Pure coverage gain. |
+| `admin-ui` | 8 | Investigated — these are sites where Biome tracks **property-level dep paths** (e.g. `tableInstance.getState`) while ESLint v4.6.2 only tracked the root object. Stricter analysis. |
+| `fides-js` | 7 | Same pattern (Biome property-level tracking) plus possibly some preact-specific cases. |
+
+I validated this by running the prior ESLint config in a `main` worktree: ESLint reports zero exhaustive-deps warnings on the affected files, while my synthetic single-file test (a hand-crafted missing-dep bug in `admin-ui/src/__test-hooks.tsx`) **did** get caught. So the rule was functioning; Biome just analyzes deeper.
+
+**None** of the remaining 120 `useExhaustiveDependencies` warnings are "ESLint would have caught these but devs ignored the warnings." That theory was wrong. Every site Biome flags that has a corresponding ESLint disable has been suppressed; every site without a disable is a Biome-specific finding (either a stricter analysis or a package that wasn't running the rule).
 
 ### Recommended remediation order
 
