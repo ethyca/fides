@@ -103,7 +103,20 @@ def test_multi_dataset_connection_reachable_wins(
                 {
                     "name": "audit_entries",
                     "fields": [
-                        {"name": "id", "data_categories": ["system.operations"]}
+                        {"name": "id", "data_categories": ["system.operations"]},
+                        {
+                            "name": "user_id",
+                            "data_categories": ["user.unique_id"],
+                            "fides_meta": {
+                                "references": [
+                                    {
+                                        "dataset": "postgres_users",
+                                        "field": "users.user_id",
+                                        "direction": "from",
+                                    }
+                                ],
+                            },
+                        },
                     ],
                 }
             ],
