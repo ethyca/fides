@@ -3270,6 +3270,8 @@ dataset:
       data_categories: [system]
     - name: shared_config_id
       data_categories: [system]
+    - name: inherit_system_stewards
+      data_categories: [system]
   - name: shared_monitor_config
     fields:
     - name: created_at
@@ -4120,6 +4122,10 @@ dataset:
       - name: user_id
         data_categories: [system.operations]
       - name: monitor_config_id
+        data_categories: [system.operations]
+      - name: source
+        data_categories: [system.operations]
+      - name: source_system_id
         data_categories: [system.operations]
   - name: questionnaire
     description: 'SME questionnaire sessions linked to privacy assessments'
