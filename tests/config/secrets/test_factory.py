@@ -1,3 +1,6 @@
+import os
+from unittest.mock import patch
+
 import pytest
 from moto import mock_aws
 from pydantic import ValidationError
@@ -27,6 +30,23 @@ class TestSecretsSettings:
         )
         assert settings.aws_secrets_manager is not None
         assert settings.aws_secrets_manager.region == "us-east-1"
+
+    def test_aws_provider_from_env_vars(self):
+        with patch.dict(
+            os.environ,
+            {
+                "FIDES__SECRETS__AWS_SECRETS_MANAGER__REGION": "eu-west-1",
+            },
+        ):
+            settings = SecretsSettings(provider="aws_secrets_manager")
+            assert settings.aws_secrets_manager.region == "eu-west-1"
+
+    def test_aws_config_requires_region(self):
+        with pytest.raises(ValidationError, match="region"):
+            SecretsSettings(
+                provider="aws_secrets_manager",
+                aws_secrets_manager={},
+            )
 
     def test_static_provider_without_aws_config_passes(self):
         settings = SecretsSettings(provider="static")

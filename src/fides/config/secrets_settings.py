@@ -14,7 +14,6 @@ class AWSSecretsManagerSettings(FidesSettings):
     """Configuration for the AWS Secrets Manager provider."""
 
     region: str = Field(
-        default="us-east-1",
         description="AWS region for Secrets Manager.",
     )
     cache_ttl_seconds: float = Field(
@@ -53,12 +52,20 @@ class SecretsSettings(FidesSettings):
 
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
 
-    @model_validator(mode="after")
-    def _validate_aws_config(self) -> "SecretsSettings":
-        """Require aws_secrets_manager settings when provider is 'aws_secrets_manager'."""
-        if self.provider == "aws_secrets_manager" and not self.aws_secrets_manager:
-            raise ValueError(
-                "secrets.provider is 'aws_secrets_manager' but "
-                "secrets.aws_secrets_manager is not configured."
-            )
-        return self
+    @model_validator(mode="before")
+    @classmethod
+    def _build_aws_settings_if_needed(cls, values: dict) -> dict:
+        """Construct AWS settings from env vars when provider is aws but no config was provided."""
+        if values.get("provider") == "aws_secrets_manager" and not values.get(
+            "aws_secrets_manager"
+        ):
+            try:
+                values["aws_secrets_manager"] = AWSSecretsManagerSettings()
+            except Exception:
+                raise ValueError(
+                    "secrets.provider is 'aws_secrets_manager' but "
+                    "secrets.aws_secrets_manager is not configured. "
+                    "Provide the configuration via TOML or environment variables "
+                    "(e.g. FIDES__SECRETS__AWS_SECRETS_MANAGER__REGION)."
+                )
+        return values
