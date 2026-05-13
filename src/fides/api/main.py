@@ -62,7 +62,9 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.rate_limit import safe_rate_limit_key
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+from fides.service.correspondence.reply_polling_task import initiate_reply_polling
 from fides.service.jira.polling_task import initiate_jira_ticket_polling
+from fides.service.notifications.notification_task import initiate_notification_task
 
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
 # Turbopack (Next.js 16+) chunk filenames can embed ".." anywhere, e.g.
@@ -107,6 +109,8 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_interrupted_task_requeue_poll()
     initiate_polling_task_requeue()
     initiate_jira_ticket_polling()
+    initiate_reply_polling()
+    initiate_notification_task()
     initiate_bcrypt_migration_task()
     initiate_post_upgrade_index_creation()
     initiate_post_upgrade_backfill()
