@@ -75,4 +75,20 @@ describe("Feature Flags", () => {
     cy.overrideFeatureFlag("webMonitor", true);
     cy.get("#flag-webMonitor").should("have.attr", "aria-checked", "true");
   });
+
+  it("Set flags before visiting any page for feature-specific tests", () => {
+    stubOpenIdProviders();
+    stubPlusAuth();
+    cy.login();
+    stubPlus(true);
+
+    // This pattern is useful when testing features behind flags
+    // Set the flag before navigating to verify the flag-gated nav link is hidden
+    cy.overrideFeatureFlag("policies", false);
+
+    // Now visit a page where the side nav is rendered
+    cy.visit("/");
+    // The flag-gated nav link should not appear when the flag is off
+    cy.get('[data-testid="DSR policies-nav-link"]').should("not.exist");
+  });
 });

@@ -317,6 +317,24 @@ describe("configureNavGroups", () => {
         { title: "Action center", path: routes.ACTION_CENTER_ROUTE },
       ]);
     });
+
+    it("includes feature flagged routes when enabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: {
+          alphaPurposeBasedAccessControl: true,
+        },
+        hasPlus: true,
+      });
+
+      expect(
+        findGroup(navGroups, "Detection & Discovery").children,
+      ).toMatchObject([
+        { title: "Action center", path: routes.ACTION_CENTER_ROUTE },
+        { title: "Access control", path: routes.ACCESS_CONTROL_ROUTE },
+      ]);
+    });
   });
 });
 
