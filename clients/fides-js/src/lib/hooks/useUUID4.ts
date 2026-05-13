@@ -1,9 +1,9 @@
 import { useState } from "preact/hooks";
 
 /**
- * Custom hook that generates a UUIDv4.
+ * Custom hook that generates a UUID.
  * The returned value stays the same for the lifetime of the component.
- * @returns The generated UUIDv4.
+ * @returns The generated UUID.
  */
 const useUUID4 = () => {
   const [uuid] = useState<string>(() => crypto.randomUUID());
