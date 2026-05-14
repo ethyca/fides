@@ -15,8 +15,10 @@ import { RTKErrorResult } from "~/types/errors/api";
 const SNOOZE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const SNOOZE_KEY_PREFIX = "fides:email-verification-banner-snooze";
 
-const buildSnoozeKey = (userId: string, emailAddress: string | null | undefined) =>
-  `${SNOOZE_KEY_PREFIX}:${userId}:${emailAddress ?? "none"}`;
+const buildSnoozeKey = (
+  userId: string,
+  emailAddress: string | null | undefined,
+) => `${SNOOZE_KEY_PREFIX}:${userId}:${emailAddress ?? "none"}`;
 
 const isSnoozeActive = (key: string): boolean => {
   if (typeof window === "undefined") {

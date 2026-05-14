@@ -25,8 +25,12 @@ const writeAuthState = (user: CypressUser) => {
   });
 };
 
+// `id` is intentionally not prefixed with "fid_" so the user is treated as a
+// root user by `isRootUserId`, matching the convention in cypress/fixtures/login.json.
+// Without this, `useNav` returns no active route for the synthetic user and
+// `ProtectedRoute` renders null, so `cy.getByTestId("Home")` would time out.
 const baseUser: CypressUser = {
-  id: "fid_123",
+  id: "123",
   username: "cypress-user",
   created_at: "2026-01-01T00:00:00.000Z",
   email_address: "cypress-user@ethyca.com",
@@ -92,7 +96,10 @@ describe("Email verification banner", () => {
       body: { enabled: true },
     }).as("getEmailInviteStatus");
     cy.intercept("POST", "/api/v1/user/request-email-verification", {
-      body: { detail: "If your account is eligible, a verification email has been sent." },
+      body: {
+        detail:
+          "If your account is eligible, a verification email has been sent.",
+      },
     }).as("requestEmailVerification");
 
     cy.visit("/", {

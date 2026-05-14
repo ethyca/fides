@@ -138,16 +138,12 @@ class TestRequestEmailVerification:
                 "fides.service.user.user_service.dispatch_message"
             ) as mock_dispatch,
         ):
-            response = api_client.post(
-                REQUEST_EMAIL_VERIFICATION_URL, headers=headers
-            )
+            response = api_client.post(REQUEST_EMAIL_VERIFICATION_URL, headers=headers)
         assert response.status_code == HTTP_200_OK
         assert "verification email" in response.json()["detail"]
         mock_dispatch.assert_called_once()
         call_kwargs = mock_dispatch.call_args
-        assert (
-            call_kwargs[1]["action_type"] == MessagingActionType.EMAIL_VERIFICATION
-        )
+        assert call_kwargs[1]["action_type"] == MessagingActionType.EMAIL_VERIFICATION
 
     def test_request_email_verification_skipped_for_already_verified(
         self, db, api_client: TestClient, verified_user
@@ -163,9 +159,7 @@ class TestRequestEmailVerification:
                 "fides.service.user.user_service.dispatch_message"
             ) as mock_dispatch,
         ):
-            response = api_client.post(
-                REQUEST_EMAIL_VERIFICATION_URL, headers=headers
-            )
+            response = api_client.post(REQUEST_EMAIL_VERIFICATION_URL, headers=headers)
         assert response.status_code == HTTP_200_OK
         mock_dispatch.assert_not_called()
 
@@ -183,9 +177,7 @@ class TestRequestEmailVerification:
                 "fides.service.user.user_service.dispatch_message"
             ) as mock_dispatch,
         ):
-            response = api_client.post(
-                REQUEST_EMAIL_VERIFICATION_URL, headers=headers
-            )
+            response = api_client.post(REQUEST_EMAIL_VERIFICATION_URL, headers=headers)
         assert response.status_code == HTTP_200_OK
         mock_dispatch.assert_not_called()
 
@@ -203,9 +195,7 @@ class TestRequestEmailVerification:
                 "fides.service.user.user_service.dispatch_message"
             ) as mock_dispatch,
         ):
-            response = api_client.post(
-                REQUEST_EMAIL_VERIFICATION_URL, headers=headers
-            )
+            response = api_client.post(REQUEST_EMAIL_VERIFICATION_URL, headers=headers)
         assert response.status_code == HTTP_200_OK
         mock_dispatch.assert_not_called()
 
@@ -307,9 +297,7 @@ class TestVerifyEmailWithToken:
         assert user.email_verified_at is not None
 
         # Single-use: token deleted
-        record = FidesUserEmailVerification.get_by(
-            db, field="user_id", value=user.id
-        )
+        record = FidesUserEmailVerification.get_by(db, field="user_id", value=user.id)
         assert record is None
 
         # Completion audit event recorded
@@ -338,9 +326,7 @@ class TestVerifyEmailWithToken:
         """An expired token returns a generic 400 and writes an audit event."""
         user, token = user_with_verification_token
 
-        record = FidesUserEmailVerification.get_by(
-            db, field="user_id", value=user.id
-        )
+        record = FidesUserEmailVerification.get_by(db, field="user_id", value=user.id)
         record.created_at = datetime.now(timezone.utc) - timedelta(hours=24)
         record.save(db)
 

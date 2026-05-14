@@ -312,18 +312,12 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                         emailVerifiedAt,
                       ).toLocaleDateString()}`}
                     >
-                      <Tag
-                        color="success"
-                        data-testid="email-verified-tag"
-                      >
+                      <Tag color="success" data-testid="email-verified-tag">
                         Verified
                       </Tag>
                     </Tooltip>
                   ) : (
-                    <Tag
-                      color="warning"
-                      data-testid="email-not-verified-tag"
-                    >
+                    <Tag color="warning" data-testid="email-not-verified-tag">
                       Not verified
                     </Tag>
                   ))}

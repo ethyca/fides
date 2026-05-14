@@ -32,12 +32,12 @@ const VerifyEmail: NextPage = () => {
 
   useEffect(() => {
     if (!router.isReady) {
-      return;
+      return undefined;
     }
     const { username, token: verificationToken } = parseQuery(router.query);
     if (!username || !verificationToken) {
       setState("missing-params");
-      return;
+      return undefined;
     }
     // Fire the verification once on mount. We intentionally don't depend on
     // verifyEmailWithToken in the deps array — RTK Query hook tuples are
