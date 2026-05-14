@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.85.1b1.dev17+g49f45db29"
+    "version": "2.85.1b1.dev18+g78fd8e09d"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -37331,6 +37331,7 @@
           "messaging:delete",
           "messaging:read",
           "notification:read",
+          "notification:update",
           "organization:create",
           "organization:read",
           "organization:delete",
