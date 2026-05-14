@@ -93,6 +93,7 @@ class MessagingActionType(StrEnum):
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
     USER_INVITE = "user_invite"
     PASSWORD_RESET = "password_reset"
+    EMAIL_VERIFICATION = "email_verification"
     EXTERNAL_USER_WELCOME = "external_user_welcome"
     MANUAL_TASK_DIGEST = "manual_task_digest"
     TEST_MESSAGE = "test_message"
@@ -226,6 +227,14 @@ class PasswordResetBodyParams(BaseModel):
     ttl_minutes: int
 
 
+class EmailVerificationBodyParams(BaseModel):
+    """Body params required to send an email verification email"""
+
+    username: str
+    verification_token: str
+    ttl_minutes: int
+
+
 class ExternalUserWelcomeBodyParams(BaseModel):
     """Body params required to send a welcome email to external users"""
 
@@ -266,6 +275,7 @@ class FidesopsMessage(
             ErrorNotificationBodyParams,
             UserInviteBodyParams,
             PasswordResetBodyParams,
+            EmailVerificationBodyParams,
             ExternalUserWelcomeBodyParams,
         ]
     ] = None
@@ -286,6 +296,7 @@ class FidesopsMessage(
             MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
             MessagingActionType.USER_INVITE: UserInviteBodyParams,
             MessagingActionType.PASSWORD_RESET: PasswordResetBodyParams,
+            MessagingActionType.EMAIL_VERIFICATION: EmailVerificationBodyParams,
             MessagingActionType.EXTERNAL_USER_WELCOME: ExternalUserWelcomeBodyParams,
             MessagingActionType.MANUAL_TASK_DIGEST: ManualTaskDigestBodyParams,
         }

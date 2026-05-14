@@ -180,6 +180,13 @@ class SecuritySettings(FidesSettings):
         le=60,
     )
 
+    email_verification_token_ttl_minutes: int = Field(
+        default=30,
+        description="The time in minutes for which a self-service email verification token is valid. Must be between 15 and 60.",
+        ge=15,
+        le=60,
+    )
+
     bastion_server_host: Optional[str] = Field(
         default=None, description="An optional field to store the bastion server host"
     )

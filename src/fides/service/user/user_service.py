@@ -10,9 +10,13 @@ from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.models.client import ClientDetail
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_email_verification import (
+    FidesUserEmailVerification,
+)
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_password_reset import FidesUserPasswordReset
 from fides.api.schemas.messaging.messaging import (
+    EmailVerificationBodyParams,
     MessagingActionType,
     PasswordResetBodyParams,
     UserInviteBodyParams,
@@ -331,6 +335,155 @@ class UserService:
                 "resource_type": "user",
                 "resource_identifier": user.id,
                 "description": "Password changed via self-service reset",
+                "status": EventAuditStatus.succeeded,
+            },
+        )
+
+        # Perform login
+        client = self.perform_login(
+            self.config.security.oauth_client_id_length_bytes,
+            self.config.security.oauth_client_secret_length_bytes,
+            user,
+        )
+
+        logger.info("Creating login access token")
+        access_code = client.create_access_code_jwe(
+            get_encryption_key(),
+            token_expire_minutes=self.config.security.oauth_access_token_expire_minutes,
+        )
+
+        return user, access_code
+
+    def request_email_verification(self, user: FidesUser) -> None:
+        """
+        Initiates a self-service email verification flow for the given user.
+
+        Silently no-ops if the user has no email, is already verified, is
+        disabled, or messaging is not configured. This endpoint is called by
+        an authenticated user, so we do not need to obscure user existence,
+        but we do still want to avoid leaking configuration state.
+        """
+        if not user.email_address:
+            logger.debug("Email verification requested for user without email address")
+            return
+
+        if user.email_verified_at:
+            logger.debug("Email verification requested for already-verified user")
+            return
+
+        if user.disabled:
+            logger.debug("Email verification requested for disabled user")
+            return
+
+        if not self.messaging_service.is_email_invite_enabled():
+            logger.debug(
+                "Email verification requested but email messaging is not configured"
+            )
+            return
+
+        verification_token = str(uuid.uuid4())
+        FidesUserEmailVerification.create_or_replace(
+            self.db, user_id=user.id, token=verification_token
+        )
+
+        ttl_minutes = self.config.security.email_verification_token_ttl_minutes
+
+        try:
+            dispatch_message(
+                self.db,
+                action_type=MessagingActionType.EMAIL_VERIFICATION,
+                to_identity=Identity(email=user.email_address),
+                service_type=self.config_proxy.notifications.notification_service_type,
+                message_body_params=EmailVerificationBodyParams(
+                    username=user.username,
+                    verification_token=verification_token,
+                    ttl_minutes=ttl_minutes,
+                ),
+            )
+            EventAudit.create(
+                self.db,
+                data={
+                    "event_type": EventAuditType.email_verification_requested,
+                    "user_id": user.id,
+                    "resource_type": "user",
+                    "resource_identifier": user.id,
+                    "description": "Email verification requested",
+                    "status": EventAuditStatus.succeeded,
+                },
+            )
+        except Exception:
+            logger.exception("Failed to dispatch email verification email")
+            EventAudit.create(
+                self.db,
+                data={
+                    "event_type": EventAuditType.email_verification_requested,
+                    "user_id": user.id,
+                    "resource_type": "user",
+                    "resource_identifier": user.id,
+                    "description": "Email verification email dispatch failed",
+                    "status": EventAuditStatus.failed,
+                },
+            )
+            # Don't raise — surface a generic success to the caller
+
+        logger.info("Email verification flow initiated")
+
+    def verify_email_with_token(
+        self, username: str, token: str
+    ) -> Tuple[FidesUser, str]:
+        """
+        Validates an email verification token and marks the user's email as verified.
+
+        Returns a tuple of (user, access_code) on success — the user is auto-logged-in.
+
+        Raises:
+            FidesError: If the token is invalid, expired, or the user is not found.
+        """
+        user = FidesUser.get_by(self.db, field="username", value=username)
+        if not user:
+            raise FidesError("Invalid or expired verification token.")
+
+        matching_verification = FidesUserEmailVerification.get_by(
+            self.db, field="user_id", value=user.id
+        )
+        if not matching_verification:
+            raise FidesError("Invalid or expired verification token.")
+
+        # Check expiry before token_valid (O(1) vs hash computation)
+        if matching_verification.is_expired():
+            EventAudit.create(
+                self.db,
+                data={
+                    "event_type": EventAuditType.email_verification_token_expired,
+                    "user_id": user.id,
+                    "resource_type": "user",
+                    "resource_identifier": user.id,
+                    "description": "Email verification token expired",
+                    "status": EventAuditStatus.failed,
+                },
+            )
+            matching_verification.delete(self.db)
+            raise FidesError("Invalid or expired verification token.")
+
+        if not matching_verification.token_valid(token):
+            raise FidesError("Invalid or expired verification token.")
+
+        user.update(
+            self.db,
+            data={"email_verified_at": datetime.now(timezone.utc)},
+        )
+
+        # Delete the verification token (single-use)
+        matching_verification.delete(self.db)
+
+        EventAudit.create(
+            self.db,
+            data={
+                "event_type": EventAuditType.email_verification_completed,
+                "user_id": user.id,
+                "resource_type": "user",
+                "resource_identifier": user.id,
+                "description": "Email verified via self-service verification",
                 "status": EventAuditStatus.succeeded,
             },
         )

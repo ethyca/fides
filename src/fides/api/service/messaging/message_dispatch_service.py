@@ -20,6 +20,7 @@ from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
+    EmailVerificationBodyParams,
     ErasureRequestBodyParams,
     ErrorNotificationBodyParams,
     ExternalUserWelcomeBodyParams,
@@ -224,6 +225,7 @@ def dispatch_message(
             ErasureRequestBodyParams,
             UserInviteBodyParams,
             PasswordResetBodyParams,
+            EmailVerificationBodyParams,
             ErrorNotificationBodyParams,
             ExternalUserWelcomeBodyParams,
             ManualTaskDigestBodyParams,
@@ -541,6 +543,19 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
                     "admin_ui_url": config_proxy.admin_ui.url,
                     "username": body_params.username,
                     "reset_token": body_params.reset_token,
+                    "ttl_minutes": body_params.ttl_minutes,
+                }
+            ),
+        )
+    if action_type == MessagingActionType.EMAIL_VERIFICATION:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Verify your Fides email address",
+            body=base_template.render(
+                {
+                    "admin_ui_url": config_proxy.admin_ui.url,
+                    "username": body_params.username,
+                    "verification_token": body_params.verification_token,
                     "ttl_minutes": body_params.ttl_minutes,
                 }
             ),

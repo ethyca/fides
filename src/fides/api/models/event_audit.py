@@ -72,6 +72,11 @@ class EventAuditType(str, EnumType):
     password_reset_completed = "password_reset.completed"
     password_reset_token_expired = "password_reset.token_expired"
 
+    # Email Verification
+    email_verification_requested = "email_verification.requested"
+    email_verification_completed = "email_verification.completed"
+    email_verification_token_expired = "email_verification.token_expired"
+
     # Correspondence
     correspondence_sent = "correspondence.sent"
     correspondence_delivered = "correspondence.delivered"

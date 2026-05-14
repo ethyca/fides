@@ -6,13 +6,15 @@ import {
   Form,
   Icons,
   Input,
+  InputRef,
   Switch,
   Tag,
+  Tooltip,
   Typography,
   useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DeleteUserModal from "user-management/DeleteUserModal";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -81,6 +83,44 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
   const [form] = Form.useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const emailWrapperRef = useRef<HTMLDivElement>(null);
+  const emailInputRef = useRef<InputRef>(null);
+  const [emailHighlight, setEmailHighlight] = useState(false);
+
+  // Deep-link support: when navigated to with `#email_address`, scroll the
+  // email field into view, focus it, and visually accent it briefly. Lets
+  // the email-verification banner CTA point users straight at the field.
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    if (window.location.hash !== "#email_address") {
+      return undefined;
+    }
+    emailWrapperRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    // Slight delay so the scroll finishes before we steal focus.
+    const focusTimer = window.setTimeout(() => {
+      emailInputRef.current?.focus();
+    }, 300);
+    setEmailHighlight(true);
+    // Strip the hash so reloads don't re-trigger the accent.
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + window.location.search,
+    );
+    const highlightTimer = window.setTimeout(
+      () => setEmailHighlight(false),
+      3000,
+    );
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.clearTimeout(highlightTimer);
+    };
+  }, []);
 
   // Watch form fields for reactive UI
   Form.useWatch([], form);
@@ -130,6 +170,17 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
     allowUsernameAndPassword,
     passwordLoginEnabled,
   );
+
+  // Email verification status tag visibility:
+  // - Verified → always show; pure status info, no action implied.
+  // - Not verified + messaging enabled → show; the banner provides the CTA
+  //   elsewhere, so the tag is informational and actionable in context.
+  // - Not verified + messaging disabled → hide; otherwise the user sees a
+  //   status they can't act on (no verification flow is available), which
+  //   sends them looking for a button that doesn't exist.
+  const emailVerifiedAt = activeUser?.email_verified_at ?? null;
+  const showEmailVerificationTag =
+    !isNewUser && (Boolean(emailVerifiedAt) || inviteUsersViaEmail);
 
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
@@ -240,19 +291,56 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
             data-testid="input-username"
           />
         </Form.Item>
-        <Form.Item
-          name="email_address"
-          label="Email address"
-          rules={[
-            { required: true, message: "Email address is required" },
-            { type: "email", message: "Please enter a valid email address" },
-          ]}
+        <div
+          ref={emailWrapperRef}
+          className={
+            emailHighlight
+              ? "rounded-sm ring-2 ring-blue-500 ring-offset-2 transition-shadow"
+              : "transition-shadow"
+          }
+          data-highlight={emailHighlight || undefined}
         >
-          <Input
-            placeholder="Enter email of user"
-            data-testid="input-email_address"
-          />
-        </Form.Item>
+          <Form.Item
+            name="email_address"
+            label={
+              <Flex align="center" gap={8}>
+                Email address
+                {showEmailVerificationTag &&
+                  (emailVerifiedAt ? (
+                    <Tooltip
+                      title={`Verified on ${new Date(
+                        emailVerifiedAt,
+                      ).toLocaleDateString()}`}
+                    >
+                      <Tag
+                        color="success"
+                        data-testid="email-verified-tag"
+                      >
+                        Verified
+                      </Tag>
+                    </Tooltip>
+                  ) : (
+                    <Tag
+                      color="warning"
+                      data-testid="email-not-verified-tag"
+                    >
+                      Not verified
+                    </Tag>
+                  ))}
+              </Flex>
+            }
+            rules={[
+              { required: true, message: "Email address is required" },
+              { type: "email", message: "Please enter a valid email address" },
+            ]}
+          >
+            <Input
+              ref={emailInputRef}
+              placeholder="Enter email of user"
+              data-testid="input-email_address"
+            />
+          </Form.Item>
+        </div>
         <Form.Item name="first_name" label="First name">
           <Input
             placeholder="Enter first name of user"

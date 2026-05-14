@@ -141,6 +141,22 @@ const authApi = baseApi.injectEndpoints({
         body: { username, token, new_password },
       }),
     }),
+    requestEmailVerification: build.mutation<{ detail: string }, void>({
+      query: () => ({
+        url: "user/request-email-verification",
+        method: "POST",
+      }),
+    }),
+    verifyEmailWithToken: build.mutation<
+      LoginResponse,
+      { username: string; token: string }
+    >({
+      query: ({ username, token }) => ({
+        url: "user/verify-email-with-token",
+        method: "POST",
+        body: { username, token },
+      }),
+    }),
   }),
 });
 
@@ -153,5 +169,7 @@ export const {
   useGetAuthenticationMethodsQuery,
   useForgotPasswordMutation,
   useResetPasswordWithTokenMutation,
+  useRequestEmailVerificationMutation,
+  useVerifyEmailWithTokenMutation,
 } = authApi;
 export const { reducer } = authSlice;

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verify Your Email</title>
+  </head>
+  <body>
+    <main>
+      <p>Please <a href="{{admin_ui_url}}/verify-email?token={{verification_token}}&amp;username={{username | urlencode}}">verify your Fides account email address</a> to enable account recovery features such as self-service password reset.</p>
+      <p>This link will expire in {{ttl_minutes}} minutes. If you did not request this verification, you can safely ignore this email.</p>
+    </main>
+  </body>
+</html>

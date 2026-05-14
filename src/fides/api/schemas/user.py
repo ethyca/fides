@@ -192,6 +192,13 @@ class UserResetPasswordWithToken(FidesSchema):
         return UserCreate.validate_password(decoded_password)
 
 
+class EmailVerificationConfirm(FidesSchema):
+    """Request body for confirming an email verification with a token"""
+
+    username: str
+    token: str
+
+
 class DisabledReason(Enum):
     """Reasons for why a user is disabled"""
 

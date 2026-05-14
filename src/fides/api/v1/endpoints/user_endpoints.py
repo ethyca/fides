@@ -53,6 +53,7 @@ from fides.api.oauth.utils import (
 from fides.api.schemas.oauth import AccessToken
 from fides.api.schemas.user import (
     DisabledReason,
+    EmailVerificationConfirm,
     UserCreate,
     UserCreateResponse,
     UserForcePasswordReset,
@@ -980,6 +981,68 @@ def reset_password_with_token(
     try:
         user, access_code = user_service.reset_password_with_token(
             data.username, data.token, data.new_password
+        )
+    except FidesError as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    expire_minutes = config.security.oauth_access_token_expire_minutes
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(
+            access_token=access_code,
+            expires_in=expire_minutes * 60,
+            expires_at=expires_at.isoformat(),
+        ),
+    )
+
+
+@router.post(
+    urls.USER_REQUEST_EMAIL_VERIFICATION,
+    dependencies=[Security(verify_oauth_client)],
+    status_code=HTTP_200_OK,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def request_email_verification(
+    *,
+    request: Request,
+    current_user: FidesUser = Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
+) -> Dict:
+    """
+    Initiates a self-service email verification flow for the authenticated user.
+    Always returns 200; an email is only dispatched if the user is eligible and
+    messaging is configured.
+    """
+    user_service.request_email_verification(current_user)
+    return {
+        "detail": "If your account is eligible, a verification email has been sent."
+    }
+
+
+@router.post(
+    urls.USER_VERIFY_EMAIL_WITH_TOKEN,
+    status_code=HTTP_200_OK,
+    response_model=UserLoginResponse,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def verify_email_with_token(
+    *,
+    request: Request,
+    config: FidesConfig = Depends(get_config),
+    data: EmailVerificationConfirm,
+    user_service: UserService = Depends(get_user_service),
+) -> UserLoginResponse:
+    """
+    Verifies a user's email using a valid, single-use verification token.
+    Auto-logs the user in on success and returns login credentials.
+    """
+    try:
+        user, access_code = user_service.verify_email_with_token(
+            data.username, data.token
         )
     except FidesError as exc:
         raise HTTPException(
