@@ -36,7 +36,10 @@ import {
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
-import ConditionNode, { ConditionNodeType } from "./MatchNode";
+import ConditionNode, {
+  ConditionNodeData,
+  ConditionNodeType,
+} from "./MatchNode";
 import {
   buildUnionGraph,
   deriveLayoutEdges,
@@ -52,7 +55,6 @@ import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
   ConditionOperator,
-  ConditionProperty,
   ConsentRequirement,
   ConstraintType,
   DataFlowDirection,
@@ -742,6 +744,10 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           };
         }
         if (node.type === "conditionNode") {
+          const disabledProperties = layoutedNodes
+            .filter((n) => n.type === "conditionNode" && n.id !== node.id)
+            .map((n) => (n.data as ConditionNodeData).property)
+            .filter((p): p is string => !!p);
           return {
             ...node,
             data: {
@@ -752,7 +758,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConditionNode(node.id),
               hasChildren: constraintsExist,
-              onPropertyChange: (value: ConditionProperty) =>
+              disabledProperties,
+              onPropertyChange: (value: string) =>
                 updateNodeData(node.id, { property: value, values: [] }),
               onValuesChange: (values: string[]) =>
                 updateNodeData(node.id, { values }),
