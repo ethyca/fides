@@ -17,12 +17,12 @@
 }
 
 .chatWrapper {
-  width: 350px;
+  width: 400px;
   flex-shrink: 0;
   position: relative;
   z-index: 100;
 
   @media (max-width: 1280px) {
-    width: 300px;
+    width: 350px;
   }
 }

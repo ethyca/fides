@@ -49,7 +49,7 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(react-hotkeys-hook)/)",
+    "/node_modules/(?!(react-hotkeys-hook|@ant-design/x-markdown)/)",
     "^.+\\.module\\.(css|sass|scss)$",
   ],
   watchPathIgnorePatterns: ["node_modules"],
