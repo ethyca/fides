@@ -107,6 +107,7 @@ interface PolicyCanvasPanelProps {
   initialYaml?: string;
   syncKey?: number;
   pendingTransition?: PendingTransition | null;
+  agentEditEpoch?: number;
 }
 
 const DEFAULT_ZOOM = 1;
@@ -248,6 +249,66 @@ const findFirstOfType = (
   );
 };
 
+/**
+ * Re-fit the canvas after an agent edit that didn't trigger the diff
+ * transition (empty added/changed/removed). When there IS a diff,
+ * DiffViewportController already handles fitView at ghost-hold and settling.
+ */
+const AgentEditFitController = ({
+  agentEditEpoch,
+  pendingTransition,
+  layoutedNodes,
+}: {
+  agentEditEpoch: number;
+  pendingTransition: PendingTransition | null | undefined;
+  layoutedNodes: Node[];
+}) => {
+  const { fitView } = useReactFlow();
+  const lastSeenRef = useRef<number>(agentEditEpoch);
+  // Timer lives in a ref so subsequent effect re-runs (from onNodesChange
+  // bursts during React Flow's measurement) don't clobber it via the
+  // useEffect cleanup. We only clear it on unmount.
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (agentEditEpoch === lastSeenRef.current) {
+      return;
+    }
+    // Diff transitions are handled by DiffViewportController. Mark this epoch
+    // as seen so we don't double-fit when the transition ends.
+    if (pendingTransition) {
+      lastSeenRef.current = agentEditEpoch;
+      return;
+    }
+    const allMeasured =
+      layoutedNodes.length > 0 &&
+      layoutedNodes.every(
+        (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
+      );
+    if (!allMeasured) {
+      return;
+    }
+    lastSeenRef.current = agentEditEpoch;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      fitView({ duration: DIFF_FIT_DURATION_MS, padding: 0.3 });
+      timerRef.current = null;
+    }, 150);
+  }, [agentEditEpoch, pendingTransition, layoutedNodes, fitView]);
+
+  return null;
+};
+
 const DiffViewportController = ({
   pendingTransition,
   layoutedNodes,
@@ -257,18 +318,28 @@ const DiffViewportController = ({
 }) => {
   const { fitView } = useReactFlow();
   const lastSeenRef = useRef<{ phase: string; epoch: number } | null>(null);
+  // See AgentEditFitController for why the timer lives in a ref.
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!pendingTransition) {
       lastSeenRef.current = null;
-      return undefined;
+      return;
     }
     const { phase, epoch } = pendingTransition;
     if (
       lastSeenRef.current?.phase === phase &&
       lastSeenRef.current?.epoch === epoch
     ) {
-      return undefined;
+      return;
     }
     const allMeasured =
       layoutedNodes.length > 0 &&
@@ -276,13 +347,16 @@ const DiffViewportController = ({
         (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
       );
     if (!allMeasured) {
-      return undefined;
+      return;
     }
     lastSeenRef.current = { phase, epoch };
-    const timer = setTimeout(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
       fitView({ duration: DIFF_FIT_DURATION_MS, padding: 0.3 });
+      timerRef.current = null;
     }, 150);
-    return () => clearTimeout(timer);
   }, [pendingTransition, layoutedNodes, fitView]);
 
   return null;
@@ -297,6 +371,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     initialYaml,
     syncKey,
     pendingTransition,
+    agentEditEpoch = 0,
   } = props;
 
   const initialResult = useMemo(
@@ -870,6 +945,11 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           pendingTransition={pendingTransition}
           layoutedNodes={layoutedNodes}
         />
+        <AgentEditFitController
+          agentEditEpoch={agentEditEpoch}
+          pendingTransition={pendingTransition}
+          layoutedNodes={layoutedNodes}
+        />
         {pendingTransition && (
           <Panel position="top-center">
             <PolicyAgentWorking />
@@ -908,6 +988,7 @@ const AccessPolicyEditor = ({
     initialValues?.control ?? null,
   );
   const [syncKey, setSyncKey] = useState(0);
+  const [agentEditEpoch, setAgentEditEpoch] = useState(0);
   const [pendingTransition, setPendingTransition] =
     useState<PendingTransition | null>(null);
   const transitionEpochRef = useRef(0);
@@ -979,6 +1060,11 @@ const AccessPolicyEditor = ({
       // Cancel any in-flight transition before starting a new one.
       clearTransitionTimers();
 
+      // Always bump the agent-edit epoch so the canvas re-fits, even when
+      // there's no diff to animate (AgentEditFitController handles this case;
+      // DiffViewportController handles the with-diff case).
+      setAgentEditEpoch((e) => e + 1);
+
       const hasHighlights =
         update.added.length > 0 ||
         update.changed.length > 0 ||
@@ -1039,6 +1125,7 @@ const AccessPolicyEditor = ({
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
       pendingTransition={pendingTransition}
+      agentEditEpoch={agentEditEpoch}
     />
   );
 
