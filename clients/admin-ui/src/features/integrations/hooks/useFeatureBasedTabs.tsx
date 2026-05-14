@@ -24,6 +24,7 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
+import IntegrationPrivacyRequests from "~/features/integrations/IntegrationPrivacyRequests";
 import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 import {
   ConnectionConfigurationResponse,
@@ -46,6 +47,7 @@ interface UseFeatureBasedTabsProps {
   instructions?: React.ReactNode;
   supportsConnectionTest: boolean;
   supportsSystemLinking: boolean;
+  supportsPrivacyRequests: boolean;
 }
 
 export const useFeatureBasedTabs = ({
@@ -62,6 +64,7 @@ export const useFeatureBasedTabs = ({
   instructions,
   supportsConnectionTest,
   supportsSystemLinking,
+  supportsPrivacyRequests,
 }: UseFeatureBasedTabsProps) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const tabs = useMemo(() => {
@@ -196,6 +199,21 @@ export const useFeatureBasedTabs = ({
       });
     }
 
+    // "Privacy requests" is positioned after Data discovery — discovery
+    // surfaces the data; privacy requests act on it.
+    if (supportsPrivacyRequests) {
+      tabItems.push({
+        label: "Privacy requests",
+        key: "privacy-requests",
+        children: (
+          <IntegrationPrivacyRequests
+            connection={connection!}
+            integrationOption={integrationOption}
+          />
+        ),
+      });
+    }
+
     if (enabledFeatures?.includes("QUERY_LOGGING" as IntegrationFeature)) {
       tabItems.push({
         label: "Query logging",
@@ -278,6 +296,7 @@ export const useFeatureBasedTabs = ({
   }, [
     enabledFeatures,
     supportsSystemLinking,
+    supportsPrivacyRequests,
     onOpen,
     isOpen,
     onClose,

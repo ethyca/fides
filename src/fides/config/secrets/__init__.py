@@ -25,6 +25,15 @@ def get_secret_provider() -> SecretProvider:
     return _provider
 
 
+def reset_secret_provider() -> None:
+    """Reset the singleton to ``None``, forcing re-creation on next access.
+
+    Intended for testing only.
+    """
+    global _provider
+    _provider = None
+
+
 __all__ = [
     "AWSSecretsManagerProvider",
     "SecretProvider",
@@ -33,4 +42,5 @@ __all__ = [
     "StaticSecretProvider",
     "create_secret_provider",
     "get_secret_provider",
+    "reset_secret_provider",
 ]

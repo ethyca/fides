@@ -1,5 +1,11 @@
 import { PrivacyDeclaration } from "~/types/api";
 
+export interface MinimalCookie {
+  name: string;
+  path?: string | null;
+  domain?: string | null;
+}
+
 export interface MinimalPrivacyDeclaration {
   name: string;
   consent_use?: string;
@@ -11,6 +17,8 @@ export interface MinimalPrivacyDeclaration {
    * object because the dictionary could potentially give us more than just the names
    * and we want a place to keep that information.
    */
+  cookieNames?: string[];
+  cookies?: MinimalCookie[];
 }
 
 export interface FormValues {
@@ -25,6 +33,8 @@ export const EMPTY_DECLARATION: MinimalPrivacyDeclaration = {
   data_use: "",
   // TODO(fides#4059): data categories will eventually be optional
   data_categories: ["user"],
+  cookieNames: [],
+  cookies: [],
 };
 
 export const CONSENT_USE_OPTIONS = [

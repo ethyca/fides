@@ -17,7 +17,7 @@ class AWSSecretsManagerSettings(FidesSettings):
         description="AWS region for Secrets Manager.",
     )
     cache_ttl_seconds: float = Field(
-        default=300.0,
+        default=900.0,
         description="TTL for cached secret values.",
     )
     cache_stale_ttl_seconds: float = Field(
@@ -61,11 +61,11 @@ class SecretsSettings(FidesSettings):
         ):
             try:
                 values["aws_secrets_manager"] = AWSSecretsManagerSettings()
-            except Exception:
+            except Exception as exc:
                 raise ValueError(
                     "secrets.provider is 'aws_secrets_manager' but "
                     "secrets.aws_secrets_manager is not configured. "
                     "Provide the configuration via TOML or environment variables "
                     "(e.g. FIDES__SECRETS__AWS_SECRETS_MANAGER__REGION)."
-                )
+                ) from exc
         return values

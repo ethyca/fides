@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from email import policy as email_policy
+from email.message import EmailMessage
 from typing import ClassVar
 
 from loguru import logger
@@ -78,8 +80,55 @@ class BaseMessageProviderService(ABC):
 class BaseEmailProviderService(BaseMessageProviderService):
     """Base class for email provider services."""
 
+    HEADER_REPLY_TO = "Reply-To"
+    HEADER_MESSAGE_ID = "Message-ID"
+    HEADER_IN_REPLY_TO = "In-Reply-To"
+    HEADER_REFERENCES = "References"
+
     @abstractmethod
     def send_email(self, to: str, message: EmailForActionType) -> None: ...
+
+    @staticmethod
+    def get_threading_headers(
+        message: EmailForActionType, header_prefix: str = ""
+    ) -> dict[str, str]:
+        """Return non-None threading headers from the message."""
+        candidates = {
+            BaseEmailProviderService.HEADER_REPLY_TO: message.reply_to,
+            BaseEmailProviderService.HEADER_MESSAGE_ID: message.message_id,
+            BaseEmailProviderService.HEADER_IN_REPLY_TO: message.in_reply_to,
+            BaseEmailProviderService.HEADER_REFERENCES: message.references,
+        }
+        return {f"{header_prefix}{k}": v for k, v in candidates.items() if v}
+
+    @staticmethod
+    def build_mime(
+        from_address: str, to: str, message: EmailForActionType
+    ) -> EmailMessage:
+        """Build a MIME EmailMessage with optional threading headers.
+
+        Reusable by any provider that sends raw MIME (e.g., SES, SMTP).
+        """
+        msg = EmailMessage(policy=email_policy.SMTP)
+        msg["From"] = from_address
+        msg["To"] = to
+        msg["Subject"] = message.subject
+
+        for header, value in BaseEmailProviderService.get_threading_headers(
+            message
+        ).items():
+            msg[header] = value
+
+        if message.body_text:
+            # The RFC 2046 multipart/alternative spec says parts should be
+            # ordered from simplest to richest. The email client picks the
+            # richest part it can render successfully.
+            msg.set_content(message.body_text)
+            msg.add_alternative(message.body, subtype="html")
+        else:
+            msg.set_content(message.body, subtype="html")
+
+        return msg
 
 
 class BaseSMSProviderService(BaseMessageProviderService):

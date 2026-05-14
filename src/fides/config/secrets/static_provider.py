@@ -1,6 +1,6 @@
 """Static secret provider — caches credentials from config at construction time."""
 
-from typing import Any, Dict
+from typing import Dict
 
 from loguru import logger as log
 

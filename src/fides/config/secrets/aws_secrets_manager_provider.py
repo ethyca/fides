@@ -147,7 +147,7 @@ class AWSSecretsManagerProvider(SecretProvider):
 
     def _fetch(self, secret_id: str) -> SecretValue:
         """Call AWS Secrets Manager and parse the response."""
-        log.info("Fetching secret {!r} from AWS Secrets Manager", secret_id)
+        log.debug("Fetching secret {!r} from AWS Secrets Manager", secret_id)
         response = self._client.get_secret_value(
             SecretId=secret_id,
             VersionStage="AWSCURRENT",
