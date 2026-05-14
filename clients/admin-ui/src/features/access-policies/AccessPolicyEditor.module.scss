@@ -54,7 +54,8 @@
     box-shadow: 0 0 0 0 transparent;
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(250, 173, 20, 0.35);
+    box-shadow: 0 0 0 6px
+      color-mix(in srgb, var(--fidesui-color-warning) 35%, transparent);
   }
 }
 
@@ -78,7 +79,7 @@
 }
 
 :global(.react-flow__node.diffStatus-modified) > div {
-  outline: 2px solid #faad14;
+  outline: 2px solid var(--fidesui-color-warning);
   outline-offset: 2px;
   border-radius: var(--fidesui-border-radius-lg);
   animation: diffModifiedPulse 900ms ease-in-out 3;
