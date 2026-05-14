@@ -18,7 +18,9 @@ import {
 
 import styles from "./AssessmentStatusCard.module.scss";
 
-const SEGMENTS: readonly StackedBarSegment[] = [
+type SegmentConfig = StackedBarSegment & { key: AssessmentSummarySegment };
+
+const SEGMENTS: readonly SegmentConfig[] = [
   { key: "completed", color: "colorSuccess", label: "Completed" },
   { key: "pending", color: "colorInfo", label: "Pending" },
   { key: "open", color: "colorWarning", label: "Open" },
@@ -75,32 +77,36 @@ export const AssessmentStatusCard = () => {
             <StackedBarChart data={{ "": bySegment }} segments={SEGMENTS} />
           )}
           <Flex gap="large" wrap="wrap">
-            {SEGMENTS.map(({ key, color, label }) => (
-              <RouterLink
-                key={key}
-                unstyled
-                href={PRIVACY_ASSESSMENTS_ROUTE}
-                className={styles.segmentLegend}
-              >
-                <span
-                  className={styles.segmentDot}
-                  style={{ backgroundColor: token[color] }}
-                />
-                <Text strong className="text-sm">
-                  {bySegment?.[key as AssessmentSummarySegment] ?? 0}
-                </Text>
-                <Text type="secondary" className="text-sm">
-                  {label}
-                </Text>
-              </RouterLink>
-            ))}
+            {SEGMENTS.map(({ key, color, label }) => {
+              const count = bySegment?.[key] ?? 0;
+              return (
+                <RouterLink
+                  key={key}
+                  unstyled
+                  href={PRIVACY_ASSESSMENTS_ROUTE}
+                  className={styles.segmentLegend}
+                  aria-label={`${count} ${label} assessments`}
+                >
+                  <span
+                    className={styles.segmentDot}
+                    style={{ backgroundColor: token[color] }}
+                  />
+                  <Text strong className="text-sm">
+                    {count}
+                  </Text>
+                  <Text type="secondary" className="text-sm">
+                    {label}
+                  </Text>
+                </RouterLink>
+              );
+            })}
           </Flex>
         </Flex>
 
         <div className={styles.attentionGrid}>
           <div className={styles.attentionColumn}>
             <Text strong className="mb-2 block text-xs">
-              Purposes
+              Purposes needing attention
             </Text>
             {blockedGroups.length === 0 ? (
               <Text type="secondary" className="text-sm">

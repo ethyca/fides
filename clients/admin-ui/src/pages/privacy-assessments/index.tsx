@@ -1,7 +1,7 @@
 import { Button, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
@@ -12,12 +12,10 @@ import {
   AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
-  RiskLevel,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
 const VALID_STATUSES = new Set<string>(Object.values(AssessmentStatus));
-const VALID_RISK_LEVELS = new Set<string>(Object.values(RiskLevel));
 
 function readQueryParam(
   value: string | string[] | undefined,
@@ -36,12 +34,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
       ? (statusParam as AssessmentStatus)
       : undefined;
 
-  const riskLevelParam = readQueryParam(router.query.risk_level);
-  const riskLevelFilter =
-    riskLevelParam && VALID_RISK_LEVELS.has(riskLevelParam)
-      ? (riskLevelParam as RiskLevel)
-      : undefined;
-
   const {
     data: assessmentsData,
     isLoading,
@@ -51,21 +43,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
     statusFilter ? { status: statusFilter } : undefined,
   );
 
-  const groups = useMemo(() => {
-    const all = assessmentsData?.items ?? [];
-    if (!riskLevelFilter) {
-      return all;
-    }
-    return all
-      .map((group) => ({
-        ...group,
-        assessments: group.assessments?.filter(
-          (a) => a.risk_level === riskLevelFilter,
-        ),
-      }))
-      .filter((group) => (group.assessments?.length ?? 0) > 0);
-  }, [assessmentsData?.items, riskLevelFilter]);
-
+  const groups = assessmentsData?.items ?? [];
   const hasAssessments = groups.length > 0;
 
   if (isLoading) {
