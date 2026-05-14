@@ -12,6 +12,7 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname, ".."),
   transpilePackages: [
     "fidesui",
+    "@ant-design/x-markdown",
     "@rc-component/util",
     "react-phone-number-input",
   ],
