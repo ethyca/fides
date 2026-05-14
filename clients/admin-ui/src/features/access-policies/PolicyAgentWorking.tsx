@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Flex, Typography } from "fidesui";
 
 import styles from "./PolicyAgentWorking.module.scss";
@@ -11,7 +12,9 @@ const PolicyAgentWorking = ({ size = "default" }: PolicyAgentWorkingProps) => (
     align="center"
     gap="small"
     role="status"
-    className={`${styles.container} ${size === "small" ? styles.small : ""}`}
+    className={classNames(styles.container, {
+      [styles.small]: size === "small",
+    })}
     data-testid="policy-agent-working"
   >
     <span className={styles.square} aria-hidden />
