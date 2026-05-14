@@ -7,6 +7,7 @@ import {
   Sender,
   Typography,
   useMessage,
+  XMarkdown,
 } from "fidesui";
 import { useCallback, useMemo, useRef, useState } from "react";
 
@@ -45,6 +46,12 @@ const AgentAvatar = () => (
     className={styles.agentAvatar}
     icon={<AgentLogoMark size={15} />}
   />
+);
+
+const renderAgentMarkdown = (content: string) => (
+  <Typography>
+    <XMarkdown escapeRawHtml openLinksInNewTab content={content} />
+  </Typography>
 );
 
 const AgentChatPanel = ({
@@ -157,6 +164,7 @@ const AgentChatPanel = ({
         placement: "start" as const,
         variant: "outlined" as const,
         avatar: <AgentAvatar />,
+        contentRender: renderAgentMarkdown,
       },
     }),
     [],

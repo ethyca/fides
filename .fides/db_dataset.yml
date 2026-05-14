@@ -97,6 +97,28 @@ dataset:
     - name: client_id
       data_categories:
         - system.operations
+  - name: attachment_user_provided
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: field_name
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: object_key
+      data_categories: [system.operations]
+    - name: policy_key
+      data_categories: [system.operations]
+    - name: promoted_at
+      data_categories: [system.operations]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: storage_key
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: answer_version
     description: 'Immutable history of assessment answer versions'
     fields:
@@ -3270,6 +3292,8 @@ dataset:
       data_categories: [system]
     - name: shared_config_id
       data_categories: [system]
+    - name: inherit_system_stewards
+      data_categories: [system]
   - name: shared_monitor_config
     fields:
     - name: created_at
@@ -4120,6 +4144,10 @@ dataset:
       - name: user_id
         data_categories: [system.operations]
       - name: monitor_config_id
+        data_categories: [system.operations]
+      - name: source
+        data_categories: [system.operations]
+      - name: source_system_id
         data_categories: [system.operations]
   - name: questionnaire
     description: 'SME questionnaire sessions linked to privacy assessments'
