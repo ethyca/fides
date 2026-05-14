@@ -449,6 +449,10 @@ export { theme as antTheme } from "antd/lib";
 export type { BubbleItemType } from "@ant-design/x/lib/bubble";
 export { default as Bubble } from "@ant-design/x/lib/bubble";
 export { default as Sender } from "@ant-design/x/lib/sender";
+// Use the ESM entry (es/) — Turbopack's CJS path errors on the package's
+// deep `require("./*.css")` calls with "module factory is not available".
+// Jest's transformIgnorePatterns must allow this package through babel-jest.
+export { default as XMarkdown } from "@ant-design/x-markdown/es";
 
 /**
  * Custom ChakraUI Components (deprecated)
