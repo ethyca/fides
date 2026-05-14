@@ -194,9 +194,7 @@ def validate_path_of_http_url_no_slash(value: AnyHttpUrl) -> str:
 AnyHttpUrlStringRemovesSlash = Annotated[
     AnyHttpUrl,
     AfterValidator(validate_path_of_http_url_no_slash),
-    PlainSerializer(
-        lambda v: str(v).rstrip("/"), return_type=str, when_used="always"
-    ),
+    PlainSerializer(str, return_type=str),
 ]
 
 
