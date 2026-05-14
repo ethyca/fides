@@ -8,6 +8,6 @@ declare module globalThis {
 interface Window {
   // Cypress is available on window when running in Cypress tests
   Cypress?: any;
-  // Redux store is exposed for Cypress testing
-  __REDUX_STORE__?: any;
+  // Redux store is exposed for Cypress testing only
+  __REDUX_STORE__?: process.env.NODE_ENV === 'test' ? any : never;
 }
