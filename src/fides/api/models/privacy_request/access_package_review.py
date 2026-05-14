@@ -2,7 +2,6 @@ from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 
