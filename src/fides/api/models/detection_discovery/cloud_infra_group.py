@@ -9,6 +9,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
@@ -25,7 +26,9 @@ class CloudInfraGroup(Base):
     Resources are linked via CloudInfraGroupAssignment (many-to-many).
     """
 
-    __tablename__ = "cloud_infra_group"
+    @declared_attr
+    def __tablename__(self) -> str:  # type: ignore[override]
+        return "cloud_infra_group"
 
     monitor_config_id = Column(String, nullable=False, index=True)
     draft_system_name = Column(String, nullable=True)
@@ -66,7 +69,9 @@ class CloudInfraGroupAssignment(Base):
     resource can be promoted in one group but not yet in another.
     """
 
-    __tablename__ = "cloud_infra_group_assignment"
+    @declared_attr
+    def __tablename__(self) -> str:  # type: ignore[override]
+        return "cloud_infra_group_assignment"
 
     resource_id = Column(
         String(255),

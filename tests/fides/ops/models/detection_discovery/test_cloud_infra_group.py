@@ -177,10 +177,7 @@ class TestCloudInfraGroupAssignmentModel:
             },
         )
         yield assignment
-        # May already be deleted by cascade; guard against that
-        if db.query(CloudInfraGroupAssignment).filter_by(id=assignment.id).first():
-            db.delete(assignment)
-            db.commit()
+        # No cleanup needed — cascades from group or resource deletion
 
     def test_create_assignment(
         self, db: Session, assignment: CloudInfraGroupAssignment, group, resource
@@ -218,8 +215,10 @@ class TestCloudInfraGroupAssignmentModel:
         db.delete(group)
         db.commit()
 
-        result = db.query(CloudInfraGroupAssignment).filter_by(id=assignment_id).first()
-        assert result is None
+        assert (
+            db.query(CloudInfraGroupAssignment).filter_by(id=assignment_id).first()
+            is None
+        )
 
     def test_cascade_delete_on_resource(
         self,
@@ -232,8 +231,10 @@ class TestCloudInfraGroupAssignmentModel:
         db.delete(resource)
         db.commit()
 
-        result = db.query(CloudInfraGroupAssignment).filter_by(id=assignment_id).first()
-        assert result is None
+        assert (
+            db.query(CloudInfraGroupAssignment).filter_by(id=assignment_id).first()
+            is None
+        )
 
     def test_resource_in_multiple_groups(
         self,
