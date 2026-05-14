@@ -83,13 +83,37 @@ export const updateYamlField = (
   }
 };
 
-const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
+export const POLICY_NODE_ID = "policy";
+
+/**
+ * Canonical render order for built-in taxonomies — independent of YAML key
+ * order. Custom taxonomy keys (anything not in this list) follow, in YAML
+ * insertion order.
+ */
+const BUILT_IN_RENDER_ORDER: string[] = [
   ConditionProperty.DATA_CATEGORIES,
   ConditionProperty.DATA_USE,
   ConditionProperty.DATA_SUBJECTS,
+  ConditionProperty.SYSTEM_GROUP,
 ];
 
-export const POLICY_NODE_ID = "policy";
+/**
+ * Extract taxonomy keys from a match block. Built-in keys come first in the
+ * canonical render order; anything else (custom taxonomies) follows in YAML
+ * insertion order.
+ */
+const extractMatchKeys = (matchBlock: MatchBlock): string[] => {
+  const hasDimension = (k: string) => {
+    const dim = matchBlock[k];
+    return !!dim && (Array.isArray(dim.all) || Array.isArray(dim.any));
+  };
+  const builtIns = BUILT_IN_RENDER_ORDER.filter(hasDimension);
+  const builtInSet = new Set(builtIns);
+  const custom = Object.keys(matchBlock).filter(
+    (k) => !builtInSet.has(k) && hasDimension(k),
+  );
+  return [...builtIns, ...custom];
+};
 
 /**
  * Build display edges using a chain topology:
@@ -166,10 +190,10 @@ export const yamlToNodesAndEdges = (
     type: "labeledEdge",
   });
 
-  // Condition nodes — chain: first from action ("when"), rest vertical ("and")
-  const presentProperties = CONDITION_PROPERTY_KEYS.filter(
-    (p) => !!matchBlock[p],
-  );
+  // Condition nodes — chain: first from action ("when"), rest vertical ("and").
+  // Iterate the match block in YAML insertion order so any taxonomy key
+  // (built-in or custom) is supported.
+  const presentProperties = extractMatchKeys(matchBlock);
 
   presentProperties.forEach((property, idx) => {
     const dimension = matchBlock[property] as MatchDimension;
