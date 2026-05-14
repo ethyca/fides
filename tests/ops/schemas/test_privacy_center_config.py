@@ -86,7 +86,7 @@ class TestPrivacyCenterConfig:
         location_field = LocationCustomPrivacyRequestField(label="Location")
         assert location_field.label == "Location"
         assert location_field.field_type == "location"
-        assert location_field.required is None  # Default from parent
+        assert location_field.required is True  # Default from parent
         assert location_field.ip_geolocation_hint is False  # Default
         assert location_field.default_value is None  # Default from parent
         assert location_field.hidden is False  # Default from parent
@@ -765,7 +765,7 @@ class TestFileUploadCustomPrivacyRequestField:
     def test_defaults(self):
         field = FileUploadCustomPrivacyRequestField(label="Receipt")
         assert field.field_type == "file"
-        assert field.required is None
+        assert field.required is True
         assert field.max_size_bytes == DEFAULT_FILE_MAX_SIZE_BYTES
         assert field.allowed_file_types == sorted(_default_allowed_file_types())
 
