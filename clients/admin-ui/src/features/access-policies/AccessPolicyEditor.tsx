@@ -15,6 +15,7 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
+import classNames from "classnames";
 import { Flex, SelectProps, Switch, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -917,9 +918,9 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
 
   return (
     <div
-      className={`${styles.canvasContainer}${
-        pendingTransition ? ` ${styles.transitioning}` : ""
-      }`}
+      className={classNames(styles.canvasContainer, {
+        [styles.transitioning]: pendingTransition,
+      })}
     >
       <ReactFlow
         nodes={nodesWithCallbacks}
@@ -950,7 +951,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           pendingTransition={pendingTransition}
           layoutedNodes={layoutedNodes}
         />
-        {pendingTransition && (
+        {true && (
           <Panel position="top-center">
             <PolicyAgentWorking />
           </Panel>
