@@ -1,8 +1,12 @@
 from typing import Optional
 
+from fastapi import BackgroundTasks
 from loguru import logger
 from sqlalchemy.orm import Session
 
+from fides.api.system_connection_config_link_change_hooks import (
+    notify_system_connection_config_link_changed,
+)
 from fides.common.session_management import (
     with_optional_sync_readonly_session,
     with_optional_sync_session,
@@ -51,11 +55,16 @@ class SystemIntegrationLinkService:
         links: list[SystemLinkInput],
         *,
         session: Session,
+        background_tasks: Optional[BackgroundTasks] = None,
     ) -> list[SystemIntegrationLinkEntity]:
         """Idempotent replace: the provided list becomes the complete set of links
         for this connection. Any existing links not in the new set are removed.
 
         Currently limited to MAX_LINKS_PER_CONNECTION total links per integration.
+
+        When ``background_tasks`` is provided and a write actually happened,
+        fires the system-connection-config-link-change hooks so consumers
+        (e.g. fidesplus's inheritance propagation) can react.
         """
         connection_config = self._repo.resolve_connection_config(
             connection_key, session=session
@@ -94,6 +103,11 @@ class SystemIntegrationLinkService:
             len(results),
             connection_key,
         )
+
+        if background_tasks is not None:
+            notify_system_connection_config_link_changed(
+                background_tasks, connection_config.id
+            )
         return results
 
     @with_optional_sync_session
@@ -103,7 +117,13 @@ class SystemIntegrationLinkService:
         system_fides_key: str,
         *,
         session: Session,
+        background_tasks: Optional[BackgroundTasks] = None,
     ) -> None:
+        """Delete a single system↔connection-config link.
+
+        When ``background_tasks`` is provided and the link existed (i.e. the
+        delete actually removed a row), fires the link-change hooks.
+        """
         connection_config = self._repo.resolve_connection_config(
             connection_key, session=session
         )
@@ -127,3 +147,8 @@ class SystemIntegrationLinkService:
             connection_key,
             system_fides_key,
         )
+
+        if background_tasks is not None:
+            notify_system_connection_config_link_changed(
+                background_tasks, connection_config.id
+            )
