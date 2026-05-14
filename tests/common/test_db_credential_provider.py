@@ -243,6 +243,54 @@ class TestGetCredentials:
         mock_secret_provider.get_secret.assert_called_once_with("db-creds")
 
 
+# --- Database URL construction ---
+
+
+class TestGetDatabaseUrl:
+    def test_returns_valid_url(self, static_provider):
+        url = static_provider.get_database_url()
+        assert url.startswith("postgresql+psycopg2://")
+        assert CONFIG.database.server in url
+
+    @pytest.mark.parametrize(
+        "user,password",
+        [
+            ("user@domain", "p@ss"),
+            ("user", "pass%word"),
+            ("user", "pass/word"),
+            ("user", "pass#word"),
+            ("user", "p@ss#w%rd/123"),
+        ],
+        ids=["at-sign", "percent", "slash", "hash", "mixed-special"],
+    )
+    def test_special_characters_are_url_encoded(self, user, password):
+        """Credentials with special characters must be URL-encoded so the
+        resulting URL is parseable by SQLAlchemy / libpq."""
+        with (
+            patch("fides.config.secrets.static_provider.CONFIG") as mock_sp_config,
+            patch("fides.common.db_credential_provider.CONFIG") as mock_dcp_config,
+            patch(
+                "fides.common.db_credential_provider.get_secret_provider"
+            ) as mock_get,
+        ):
+            mock_sp_config.database = DatabaseSettings(user=user, password=password)
+            mock_dcp_config.database = mock_sp_config.database
+            mock_dcp_config.test_mode = False
+            mock_get.return_value = StaticSecretProvider()
+
+            provider = DBCredentialProvider()
+            url = provider.get_database_url()
+
+            # Raw special chars should not appear unescaped in the URL
+            # (the user:password section is between :// and @)
+            user_pass_section = url.split("://")[1].split("@")[0]
+            assert (
+                "@" not in user_pass_section.split(":")[0] or "%40" in user_pass_section
+            )
+            assert "#" not in user_pass_section
+            assert "/" not in user_pass_section
+
+
 # --- Connection retry ---
 
 

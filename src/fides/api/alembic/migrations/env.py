@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, pool, text
 
 from fides.api.db.database import include_object
 from fides.api.util.logger import setup as setup_fidesapi_logger
-from fides.common.engine_creators import SYNC_DIALECT_URL, _db_cred_provider, make_sync_creator
+from fides.common.engine_creators import SYNC_DIALECT_URL, db_cred_provider, make_sync_creator
 from fides.config import CONFIG
 
 # this is the Alembic Config object, which provides
@@ -45,7 +45,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = _db_cred_provider.get_database_url()
+    url = db_cred_provider.get_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,

@@ -1,9 +1,14 @@
 """Tests for engine creator factories and helpers."""
 
+import datetime
 import ssl
 from unittest.mock import MagicMock, patch
 
 import pytest
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -17,6 +22,28 @@ from fides.common.engine_creators import (
 )
 from fides.config import CONFIG
 from fides.config.database_settings import DatabaseSettings
+
+
+@pytest.fixture()
+def self_signed_cert(tmp_path):
+    """Generate a self-signed CA cert and return the file path."""
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    subject = issuer = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "test-ca")])
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(issuer)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+        .not_valid_after(
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1)
+        )
+        .sign(key, hashes.SHA256())
+    )
+    cert_file = tmp_path / "ca.pem"
+    cert_file.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+    return str(cert_file)
 
 
 class TestRawPassword:
@@ -95,39 +122,9 @@ class TestBuildSslContext:
         assert _build_ssl_context({}) is None
         assert _build_ssl_context({"sslmode": "require"}) is None
 
-    def test_returns_context_with_valid_sslrootcert(self, tmp_path) -> None:
+    def test_returns_context_with_valid_sslrootcert(self, self_signed_cert) -> None:
         """Success path: a valid CA cert produces a usable SSLContext."""
-        # Generate a self-signed cert for testing
-        import datetime
-
-        from cryptography import x509
-        from cryptography.hazmat.primitives import hashes, serialization
-        from cryptography.hazmat.primitives.asymmetric import rsa
-        from cryptography.x509.oid import NameOID
-
-        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        subject = issuer = x509.Name(
-            [
-                x509.NameAttribute(NameOID.COMMON_NAME, "test-ca"),
-            ]
-        )
-        cert = (
-            x509.CertificateBuilder()
-            .subject_name(subject)
-            .issuer_name(issuer)
-            .public_key(key.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
-            .not_valid_after(
-                datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(days=1)
-            )
-            .sign(key, hashes.SHA256())
-        )
-        cert_file = tmp_path / "ca.pem"
-        cert_file.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
-
-        ctx = _build_ssl_context({"sslrootcert": str(cert_file)})
+        ctx = _build_ssl_context({"sslrootcert": self_signed_cert})
         assert isinstance(ctx, ssl.SSLContext)
         assert ctx.verify_mode == ssl.CERT_REQUIRED
 
@@ -199,41 +196,14 @@ class TestMakeAsyncCreator:
     @patch("fides.common.engine_creators.await_only", side_effect=lambda coro: coro)
     @patch("fides.common.engine_creators.asyncpg")
     def test_ssl_context_not_overwritten_by_async_params(
-        self, mock_asyncpg, mock_await, mock_adapt_conn, tmp_path
+        self, mock_asyncpg, mock_await, mock_adapt_conn, self_signed_cert
     ) -> None:
         """When both sslrootcert and sslmode are configured, the SSLContext
         must not be overwritten by the raw ssl string from async_params."""
-        import datetime
-
-        from cryptography import x509
-        from cryptography.hazmat.primitives import hashes, serialization
-        from cryptography.hazmat.primitives.asymmetric import rsa
-        from cryptography.x509.oid import NameOID
-
-        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        subject = issuer = x509.Name(
-            [x509.NameAttribute(NameOID.COMMON_NAME, "test-ca")]
-        )
-        cert = (
-            x509.CertificateBuilder()
-            .subject_name(subject)
-            .issuer_name(issuer)
-            .public_key(key.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
-            .not_valid_after(
-                datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(days=1)
-            )
-            .sign(key, hashes.SHA256())
-        )
-        cert_file = tmp_path / "ca.pem"
-        cert_file.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
-
         with patch.object(
             CONFIG.database,
             "params",
-            {"sslmode": "verify-full", "sslrootcert": str(cert_file)},
+            {"sslmode": "verify-full", "sslrootcert": self_signed_cert},
         ):
             creator = make_async_creator()
             creator()

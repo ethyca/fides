@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import time
 from typing import Any, Callable, Dict, Optional, TypeVar
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus, urlencode
 
 from loguru import logger as log
 
@@ -107,11 +107,20 @@ class DBCredentialProvider:
     def get_database_url(
         self, driver: str = "postgresql+psycopg2", readonly: bool = False
     ) -> str:
-        """Build a SQLAlchemy database URL with credentials from the provider."""
+        """Build a SQLAlchemy database URL with credentials from the provider.
+
+        Includes connection params (SSL, keepalives, etc.) from CONFIG.database.params
+        as query parameters, matching the old sync_database_uri behavior.
+        """
         creds = self.get_credentials(readonly=readonly)
         user = quote_plus(creds["user"])
         password = quote_plus(creds["password"])
-        return f"{driver}://{user}:{password}@{creds['host']}:{creds['port']}/{creds['dbname']}"
+        url = f"{driver}://{user}:{password}@{creds['host']}:{creds['port']}/{creds['dbname']}"
+
+        params = CONFIG.database.params
+        if params:
+            url += "?" + urlencode(params, quote_via=quote, safe="/")
+        return url
 
     # ------------------------------------------------------------------
     # Connection with retry

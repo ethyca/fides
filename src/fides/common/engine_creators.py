@@ -39,7 +39,7 @@ ASYNC_DIALECT_URL = "postgresql+asyncpg://"
 _asyncpg_dbapi = AsyncAdapt_asyncpg_dbapi(asyncpg)
 
 # Module-level provider — all engines share one instance (and one secret cache).
-_db_cred_provider = DBCredentialProvider()
+db_cred_provider = DBCredentialProvider()
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ def make_sync_creator(
     extra_kwargs = dict(connect_args) if connect_args else {}
 
     def creator() -> Any:
-        return _db_cred_provider.connect_with_retry(
+        return db_cred_provider.connect_with_retry(
             connect_fn=psycopg2.connect,
             connect_kwargs=extra_kwargs,
             readonly=readonly,
@@ -126,7 +126,7 @@ def make_async_creator(
         return AsyncAdapt_asyncpg_connection(_asyncpg_dbapi, raw_conn)
 
     def creator() -> Any:
-        return _db_cred_provider.connect_with_retry(
+        return db_cred_provider.connect_with_retry(
             connect_fn=_connect_asyncpg,
             connect_kwargs=extra_kwargs,
             readonly=readonly,
