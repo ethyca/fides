@@ -100,11 +100,17 @@ class AttachmentUserProvidedRepository:
         self,
         cutoff: datetime,
         *,
+        limit: int = 1000,
         session: Session,
     ) -> list[AttachmentUserProvided]:
-        """Return every ``uploaded`` row created before ``cutoff`` (exclusive)."""
-        query = select(AttachmentUserProvided).where(
-            AttachmentUserProvided.status == AttachmentUserProvidedStatus.uploaded,
-            AttachmentUserProvided.created_at < cutoff,
+        """Return ``uploaded`` rows created before ``cutoff`` (exclusive), oldest first, capped at ``limit``."""
+        query = (
+            select(AttachmentUserProvided)
+            .where(
+                AttachmentUserProvided.status == AttachmentUserProvidedStatus.uploaded,
+                AttachmentUserProvided.created_at < cutoff,
+            )
+            .order_by(AttachmentUserProvided.created_at.asc())
+            .limit(limit)
         )
         return list(session.execute(query).scalars().all())
