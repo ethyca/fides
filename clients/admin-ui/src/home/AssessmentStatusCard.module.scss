@@ -127,18 +127,3 @@
   }
 }
 
-.attentionOverflow {
-  display: inline-block;
-  padding: 4px 8px;
-  margin: 4px -8px 0;
-  border-radius: var(--ant-border-radius);
-  text-decoration: none;
-
-  &:hover {
-    background: var(--ant-color-fill-quaternary);
-  }
-
-  &:focus-visible {
-    outline: auto;
-  }
-}

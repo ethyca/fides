@@ -9,6 +9,7 @@ import type {
 import {
   AssessmentEvidenceResponse,
   AssessmentStatus,
+  AssessmentSummaryResponse,
   AssessmentTaskPage,
   AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
@@ -47,6 +48,13 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       query: (params) => ({
         url: "plus/privacy-assessments",
         params: params ?? undefined,
+      }),
+      providesTags: ["Privacy Assessment"],
+    }),
+
+    getPrivacyAssessmentSummary: build.query<AssessmentSummaryResponse, void>({
+      query: () => ({
+        url: "plus/privacy-assessments/summary",
       }),
       providesTags: ["Privacy Assessment"],
     }),
@@ -377,6 +385,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 
 export const {
   useGetPrivacyAssessmentsQuery,
+  useGetPrivacyAssessmentSummaryQuery,
   useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
