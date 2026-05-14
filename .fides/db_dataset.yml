@@ -23,6 +23,23 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: access_package_review
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: privacy_request_id
+      data_categories: [system.operations]
+    - name: redactions
+      data_categories: [system.operations]
+    - name: approved_at
+      data_categories: [system.operations]
+    - name: approved_by
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: alembic_version
     fields:
     - name: version_num
