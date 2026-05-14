@@ -2,14 +2,14 @@
   0%,
   100% {
     box-shadow:
-      0 0 32px color-mix(in srgb, var(--fidesui-brand-minos) 45%, transparent),
-      0 0 80px color-mix(in srgb, var(--fidesui-brand-minos) 25%, transparent);
+      0 0 32px color-mix(in srgb, var(--fidesui-brand-terracotta) 45%, transparent),
+      0 0 80px color-mix(in srgb, var(--fidesui-brand-terracotta) 25%, transparent);
     transform: scale(1);
   }
   50% {
     box-shadow:
-      0 0 48px color-mix(in srgb, var(--fidesui-brand-minos) 65%, transparent),
-      0 0 120px color-mix(in srgb, var(--fidesui-brand-minos) 35%, transparent);
+      0 0 48px color-mix(in srgb, var(--fidesui-brand-terracotta) 65%, transparent),
+      0 0 120px color-mix(in srgb, var(--fidesui-brand-terracotta) 35%, transparent);
     transform: scale(1.15);
   }
 }
@@ -28,7 +28,7 @@
   display: inline-block;
   width: 12px;
   height: 12px;
-  background: var(--fidesui-brand-minos);
+  background: var(--fidesui-brand-terracotta);
   animation: agentPulse 1.8s var(--ease-instrument) infinite;
 }
 
