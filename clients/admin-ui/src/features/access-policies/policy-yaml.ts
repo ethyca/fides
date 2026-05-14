@@ -616,6 +616,10 @@ export const buildUnionGraph = (
     (n) => n.type === "conditionNode",
   );
 
+  // First pass: create all ghost nodes so the edge pass can resolve parents
+  // that are themselves removed (the `removed` array isn't guaranteed to be
+  // ordered ancestor-first).
+  const ghostByOldId = new Map<string, Node>();
   removed.forEach((contentId) => {
     const oldNode = oldGraph.nodes.find((n) => nodeContentId(n) === contentId);
     if (
@@ -626,34 +630,110 @@ export const buildUnionGraph = (
     }
     const sanitized = contentId.replace(/[^a-zA-Z0-9_-]/g, "_");
     const ghostId = `removed-${sanitized}`;
-    ghostNodes.push({
+    const ghostNode: Node = {
       ...oldNode,
       id: ghostId,
       position: { x: 0, y: 0 },
       selectable: false,
       draggable: false,
-    });
-    if (oldNode.type === "conditionNode" && newActionNode) {
-      ghostEdges.push({
-        id: `e-ghost-${newActionNode.id}-${ghostId}`,
-        source: newActionNode.id,
-        target: ghostId,
-        type: "labeledEdge",
-        data: { label: "when" },
-      });
-    } else if (oldNode.type === "constraintNode") {
-      const sourceId =
-        newFirstCondition?.id ??
-        ghostNodes.find((n) => n.type === "conditionNode")?.id;
-      if (sourceId) {
-        ghostEdges.push({
-          id: `e-ghost-${sourceId}-${ghostId}`,
-          source: sourceId,
-          target: ghostId,
-          type: "labeledEdge",
-          data: { label: "unless" },
-        });
+    };
+    ghostNodes.push(ghostNode);
+    ghostByOldId.set(oldNode.id, ghostNode);
+  });
+
+  // Second pass: wire ghost edges, mirroring the live edge conventions from
+  // yamlToNodesAndEdges:
+  //   action → condition  : default L/R handles, label "when"
+  //   condition → condition: bottom→top handles, label "and"
+  //   condition → constraint: default L/R handles, label "unless"
+  //   constraint → constraint: bottom→top handles, label "and"
+  ghostNodes.forEach((ghostNode) => {
+    const oldNode = oldGraph.nodes.find(
+      (n) =>
+        `removed-${nodeContentId(n)?.replace(/[^a-zA-Z0-9_-]/g, "_")}` ===
+        ghostNode.id,
+    );
+    if (!oldNode) {
+      return;
+    }
+    const parentEdge = oldGraph.edges.find((e) => e.target === oldNode.id);
+    const oldParent = parentEdge
+      ? oldGraph.nodes.find((n) => n.id === parentEdge.source)
+      : undefined;
+
+    // Resolve the parent in the new graph: prefer the same-content surviving
+    // node, then a sibling ghost (parent was also removed), then degrade.
+    const oldParentContentId = oldParent ? nodeContentId(oldParent) : null;
+    const matchingNewParent = oldParentContentId
+      ? newGraph.nodes.find((n) => nodeContentId(n) === oldParentContentId)
+      : undefined;
+    const matchingGhostParent = oldParent
+      ? ghostByOldId.get(oldParent.id)
+      : undefined;
+    const resolvedParent = matchingNewParent ?? matchingGhostParent;
+
+    if (ghostNode.type === "conditionNode") {
+      // Removed conditions always hang off the action via "when". The action
+      // node is never removed, so fall back to newActionNode directly.
+      const parentIsSiblingCondition = resolvedParent?.type === "conditionNode";
+      const sourceId = parentIsSiblingCondition
+        ? resolvedParent.id
+        : newActionNode?.id;
+      if (!sourceId) {
+        return;
       }
+      ghostEdges.push({
+        id: `e-ghost-${sourceId}-${ghostNode.id}`,
+        source: sourceId,
+        target: ghostNode.id,
+        ...(parentIsSiblingCondition
+          ? { sourceHandle: "bottom", targetHandle: "top" }
+          : {}),
+        type: "labeledEdge",
+        data: { label: parentIsSiblingCondition ? "and" : "when" },
+      });
+      return;
+    }
+
+    // constraintNode
+    if (resolvedParent?.type === "constraintNode") {
+      // sibling chain: vertical "and"
+      ghostEdges.push({
+        id: `e-ghost-${resolvedParent.id}-${ghostNode.id}`,
+        source: resolvedParent.id,
+        target: ghostNode.id,
+        sourceHandle: "bottom",
+        targetHandle: "top",
+        type: "labeledEdge",
+        data: { label: "and" },
+      });
+      return;
+    }
+    if (resolvedParent?.type === "conditionNode") {
+      // first-constraint anchor: horizontal "unless"
+      ghostEdges.push({
+        id: `e-ghost-${resolvedParent.id}-${ghostNode.id}`,
+        source: resolvedParent.id,
+        target: ghostNode.id,
+        type: "labeledEdge",
+        data: { label: "unless" },
+      });
+      return;
+    }
+    // Final fallback: parent chain is gone entirely. Anchor to the first
+    // condition in the new graph (or any surviving ghost condition) so the
+    // ghost still reads as a constraint instead of floating.
+    const fallbackSourceId =
+      newFirstCondition?.id ??
+      ghostNodes.find((n) => n.type === "conditionNode")?.id;
+    if (fallbackSourceId) {
+      ghostEdges.push({
+        id: `e-ghost-${fallbackSourceId}-${ghostNode.id}`,
+        source: fallbackSourceId,
+        target: ghostNode.id,
+        type: "labeledEdge",
+        data: { label: "unless" },
+      });
     }
   });
 
