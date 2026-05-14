@@ -461,11 +461,6 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         scopes: [],
       },
       {
-        title: "Fides JS docs",
-        path: routes.FIDES_JS_DOCS,
-        scopes: [],
-      },
-      {
         title: "Forms POC",
         path: routes.FORMS_POC_ROUTE,
         scopes: [],

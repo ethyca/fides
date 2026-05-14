@@ -64,7 +64,6 @@
     "motion": "^12.23.26",
     "narrow-minded": "^1.2.1",
     "next": "^16.2.0",
-    "next-swagger-doc": "^0.4.0",
     "nuqs": "^2.8.8",
     "papaparse": "^5.5.3",
     "query-string": "^9.0.0",
@@ -76,7 +75,6 @@
     "react-hotkeys-hook": "^5.2.1",
     "react-redux": "^9.1.2",
     "redux-persist": "^6.0.0",
-    "swagger-ui-react": "^5.19.0",
     "valibot": "^1.2.0",
     "yup": "^1.4.0"
   },
@@ -97,7 +95,6 @@
     "@types/node": "18.15.10",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@types/swagger-ui-react": "^5.18.0",
     "@ant-design/cli": "^6.3.7",
     "@typescript-eslint/eslint-plugin": "^8.57.0",
     "@typescript-eslint/parser": "^8.57.0",
