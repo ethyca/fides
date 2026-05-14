@@ -9,27 +9,7 @@ from fides.api.schemas.privacy_center_config import (
     CustomPrivacyRequestField,
     LocationCustomPrivacyRequestField,
 )
-from fides.api.schemas.privacy_request import PrivacyRequestCreate
-from fides.api.schemas.redis_cache import Identity
-from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
-
-
-def _make_action(custom_fields):
-    a = MagicMock()
-    a.custom_privacy_request_fields = custom_fields
-    return a
-
-
-def _svc() -> PrivacyRequestService:
-    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock())
-
-
-def _req(**kw) -> PrivacyRequestCreate:
-    return PrivacyRequestCreate(
-        identity=Identity(email="jane@example.com"),
-        policy_key="default_access_policy",
-        **kw,
-    )
+from tests.service.privacy_request._helpers import _make_action, _req, _svc
 
 
 @pytest.mark.unit

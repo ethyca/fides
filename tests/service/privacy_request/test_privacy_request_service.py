@@ -32,6 +32,7 @@ from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 from tests.conftest import wait_for_tasks_to_complete
+from tests.service.privacy_request._helpers import _make_action, _req, _svc
 
 
 @pytest.mark.integration
@@ -1480,25 +1481,6 @@ class TestPrivacyRequestService:
             expected_batch = request_ids[start_idx : start_idx + len(batch)]
             assert batch == expected_batch
             start_idx += len(batch)
-
-
-def _make_action(custom_fields):
-    a = MagicMock()
-    a.custom_privacy_request_fields = custom_fields
-    return a
-
-
-def _svc():
-    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock())
-
-
-def _req(custom_fields=None, **kw):
-    return PrivacyRequestCreate(
-        identity=Identity(email="jane@example.com"),
-        policy_key="default_access_policy",
-        custom_privacy_request_fields=custom_fields,
-        **kw,
-    )
 
 
 @pytest.mark.unit

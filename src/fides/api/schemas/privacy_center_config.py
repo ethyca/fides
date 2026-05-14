@@ -16,6 +16,7 @@ from fides.api.schemas.custom_field_display_validator import (
     DisplayConditionValidator,
 )
 from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
+from fides.api.service.storage.util import DEFAULT_FILE_MAX_SIZE_BYTES, AllowedFileType
 
 RequiredType = Literal["optional", "required"]
 
@@ -107,15 +108,10 @@ class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
 
 
 def _default_file_max_size_bytes() -> int:
-    # Local import: avoid pulling storage modules at schema import time.
-    from fides.api.service.storage.util import DEFAULT_FILE_MAX_SIZE_BYTES
-
     return DEFAULT_FILE_MAX_SIZE_BYTES
 
 
 def _default_allowed_file_types() -> list[str]:
-    from fides.api.service.storage.util import AllowedFileType
-
     return sorted(AllowedFileType.default_public_upload_allowed_file_types())
 
 
@@ -137,8 +133,6 @@ class FileUploadCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     @field_validator("allowed_file_types")
     @classmethod
     def validate_allowed_file_types(cls, v: list[str]) -> list[str]:
-        from fides.api.service.storage.util import AllowedFileType
-
         AllowedFileType.validate_allowed_extensions(v)
         return v
 
