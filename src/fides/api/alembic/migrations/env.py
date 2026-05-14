@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, pool, text
 
 from fides.api.db.database import include_object
 from fides.api.util.logger import setup as setup_fidesapi_logger
-from fides.common.engine_creators import _db_cred_provider, make_sync_creator
+from fides.common.engine_creators import SYNC_DIALECT_URL, _db_cred_provider, make_sync_creator
 from fides.config import CONFIG
 
 # this is the Alembic Config object, which provides
@@ -73,7 +73,7 @@ def run_migrations_online():
 
     """
     connectable = create_engine(
-        "postgresql+psycopg2://",
+        SYNC_DIALECT_URL,
         creator=make_sync_creator(),
         poolclass=pool.NullPool,
     )

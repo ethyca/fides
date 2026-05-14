@@ -8,6 +8,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from fides.common.engine_creators import (
+    ASYNC_DIALECT_URL,
+    SYNC_DIALECT_URL,
     _build_ssl_context,
     _convert_asyncpg_params,
     make_async_creator,
@@ -168,7 +170,7 @@ class TestMakeSyncCreator:
     def test_engine_with_sync_creator(self) -> None:
         """A full engine using the sync creator can execute queries."""
         creator = make_sync_creator()
-        engine = create_engine("postgresql+psycopg2://", creator=creator, pool_size=1)
+        engine = create_engine(SYNC_DIALECT_URL, creator=creator, pool_size=1)
         try:
             with engine.connect() as conn:
                 result = conn.execute(text("SELECT 1"))
@@ -185,9 +187,7 @@ class TestMakeAsyncCreator:
     async def test_engine_with_async_creator(self) -> None:
         """A full async engine using the async creator can execute queries."""
         creator = make_async_creator()
-        engine = create_async_engine(
-            "postgresql+asyncpg://", creator=creator, pool_size=1
-        )
+        engine = create_async_engine(ASYNC_DIALECT_URL, creator=creator, pool_size=1)
         try:
             async with engine.connect() as conn:
                 result = await conn.execute(text("SELECT 1"))

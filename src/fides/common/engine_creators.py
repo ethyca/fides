@@ -31,6 +31,10 @@ from sqlalchemy.util.concurrency import await_only  # type: ignore[import-untype
 from fides.common.db_credential_provider import DBCredentialProvider
 from fides.config import CONFIG
 
+# Dialect-only URLs for the creator pattern — no credentials, just driver selection.
+SYNC_DIALECT_URL = "postgresql+psycopg2://"
+ASYNC_DIALECT_URL = "postgresql+asyncpg://"
+
 # Shared dbapi instance for async creators — reused across connections.
 _asyncpg_dbapi = AsyncAdapt_asyncpg_dbapi(asyncpg)
 

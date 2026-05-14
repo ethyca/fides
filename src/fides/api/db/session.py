@@ -11,7 +11,7 @@ from sqlalchemy.pool import NullPool
 
 from fides.api.common_exceptions import MissingConfig
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
-from fides.common.engine_creators import make_sync_creator
+from fides.common.engine_creators import SYNC_DIALECT_URL, make_sync_creator
 from fides.config import FidesConfig
 
 
@@ -59,7 +59,7 @@ def get_db_engine(
                 "pass them as connect_args to the creator instead"
             )
         engine_args["creator"] = creator
-        database_uri = "postgresql+psycopg2://"
+        database_uri = SYNC_DIALECT_URL
     else:
         # URI-based path.
         if not config and not database_uri:
