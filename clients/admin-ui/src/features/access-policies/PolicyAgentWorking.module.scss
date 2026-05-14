@@ -1,24 +1,22 @@
-@keyframes squarePulse {
+@keyframes agentPulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(43, 46, 53, 0.5);
+    box-shadow:
+      0 0 32px color-mix(in srgb, var(--fidesui-brand-terracotta) 45%, transparent),
+      0 0 80px color-mix(in srgb, var(--fidesui-brand-terracotta) 25%, transparent);
+    transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(43, 46, 53, 0);
-  }
-}
-
-@keyframes squarePulseSmall {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(43, 46, 53, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 4px rgba(43, 46, 53, 0);
+    box-shadow:
+      0 0 48px color-mix(in srgb, var(--fidesui-brand-terracotta) 65%, transparent),
+      0 0 120px color-mix(in srgb, var(--fidesui-brand-terracotta) 35%, transparent);
+    transform: scale(1.15);
   }
 }
 
 .container {
+  --ease-instrument: cubic-bezier(0.22, 1, 0.36, 1);
+
   padding: 6px 12px;
   background: var(--fidesui-color-bg-container);
   border: 1px solid var(--fidesui-color-border);
@@ -30,9 +28,8 @@
   display: inline-block;
   width: 12px;
   height: 12px;
-  background: var(--fidesui-color-primary);
-  border-radius: 2px;
-  animation: squarePulse 1.2s ease-in-out infinite;
+  background: var(--fidesui-brand-terracotta);
+  animation: agentPulse 1.8s var(--ease-instrument) infinite;
 }
 
 .small {
@@ -44,7 +41,6 @@
   .square {
     width: 8px;
     height: 8px;
-    animation: squarePulseSmall 1.2s ease-in-out infinite;
   }
 
   .label {
