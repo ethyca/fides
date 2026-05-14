@@ -62,10 +62,8 @@
     "@rollup/plugin-replace": "^6.0.2",
     "a11y-dialog": "^7.5.3",
     "astring": "^1.9.0",
-    "base-64": "^1.0.0",
     "js-cookie": "^3.0.5",
-    "preact": "~10.22.0",
-    "uuid": "^9.0.0"
+    "preact": "~10.22.0"
   },
   "devDependencies": {
     "@iabtechlabtcf/stub": "1.5.21",
@@ -74,11 +72,9 @@
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-strip": "^3.0.4",
-    "@types/base-64": "^1.0.2",
     "@types/jest": "^29.5.12",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^18.16.3",
-    "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
     "@typescript-eslint/parser": "^7.17.0",
     "eslint": "^8.57.0",

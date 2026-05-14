@@ -103,4 +103,14 @@ class ExecutionSettings(FidesSettings):
         default=3,
         description="Minutes between polling Jira for ticket status updates.",
     )
+    reply_polling_interval_minutes: int = Field(
+        default=3,
+        ge=1,
+        description="Minutes between polling the IMAP mailbox for DSR reply messages.",
+    )
+    notification_interval_minutes: int = Field(
+        default=5,
+        ge=1,
+        description="Minutes between processing pending DSR lifecycle notifications.",
+    )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

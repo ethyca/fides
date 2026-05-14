@@ -118,6 +118,15 @@ class DatabaseSettings(FidesSettings):
         description="Additional connection parameters for read-only database connections. If not provided and readonly_server is set, uses 'params'.",
     )
 
+    credential_secret_id: Optional[str] = Field(
+        default=None,
+        description="Secrets Manager secret name or ARN containing DB credentials (JSON with 'username' and 'password' keys). Used when secrets.provider is 'aws_secrets_manager'.",
+    )
+    readonly_credential_secret_id: Optional[str] = Field(
+        default=None,
+        description="Secrets Manager secret name or ARN for read-only DB credentials. Falls back to credential_secret_id if not set.",
+    )
+
     task_engine_pool_size: int = Field(
         default=50,
         description="Number of concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",

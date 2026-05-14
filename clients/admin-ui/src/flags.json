@@ -7,13 +7,6 @@
     "production": false,
     "userCannotModify": true
   },
-  "dataCatalog": {
-    "label": "Data catalog",
-    "description": "Data catalog view",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "webMonitor": {
     "label": "Web monitor",
     "description": "Monitor websites for activity",
