@@ -15,6 +15,7 @@ from typing import Any, Callable, Dict, Optional, TypeVar
 from urllib.parse import quote, quote_plus, urlencode
 
 from loguru import logger as log
+from psycopg2 import OperationalError as Psycopg2OperationalError
 
 from fides.config import CONFIG
 from fides.config.secrets import StaticSecretProvider, get_secret_provider
@@ -170,7 +171,8 @@ class DBCredentialProvider:
         secret_id = self._get_secret_id(readonly)
 
         log.warning(
-            "Auth failure (SQLSTATE {}), invalidating secret {!r} and retrying",
+            "Connection failure ({}: SQLSTATE {}), invalidating secret {!r} and retrying",
+            type(original_exc).__name__,
             self._extract_sqlstate(original_exc),
             secret_id,
         )
@@ -199,17 +201,27 @@ class DBCredentialProvider:
 
     @staticmethod
     def _is_auth_error(exc: Exception) -> bool:
-        """Detect PostgreSQL authentication errors.
+        """Detect connection failures that may indicate credential rotation.
 
         Checks SQLSTATE codes first (asyncpg always provides these).
         Falls back to message matching for psycopg2, which does not
         populate pgcode on connection-time errors.  The fallback string
         comes from PostgreSQL's auth handshake, which is always English
         (sent before any locale is configured).
+
+        Also matches any psycopg2 OperationalError as a broad fallback,
+        because RDS Proxy and other managed PostgreSQL services may return
+        non-standard error messages on auth failure that don't match the
+        specific patterns above. The cost of retrying
+        on a non-auth OperationalError is one extra Secrets Manager call
+        and a 1.5s delay, which is acceptable given the alternative is
+        15 minutes of 500s.
         """
         if DBCredentialProvider._extract_sqlstate(exc) in _AUTH_SQLSTATES:
             return True
-        return "password authentication failed" in str(exc).lower()
+        if "password authentication failed" in str(exc).lower():
+            return True
+        return isinstance(exc, Psycopg2OperationalError)
 
     @staticmethod
     def _extract_sqlstate(exc: Exception) -> Optional[str]:

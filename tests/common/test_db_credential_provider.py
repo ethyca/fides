@@ -98,17 +98,6 @@ class TestIsAuthError:
         assert DBCredentialProvider._is_auth_error(exc)
 
     @pytest.mark.parametrize(
-        "exc",
-        [
-            _make_auth_error(pgcode="42P01"),
-            Exception("generic error"),
-        ],
-        ids=["non-auth-pgcode", "no-code-attributes"],
-    )
-    def test_rejects_non_auth_errors(self, exc):
-        assert not DBCredentialProvider._is_auth_error(exc)
-
-    @pytest.mark.parametrize(
         "message",
         [
             'FATAL:  password authentication failed for user "postgres"',
@@ -133,6 +122,22 @@ class TestIsAuthError:
     )
     def test_string_fallback_rejects_non_auth_messages(self, message):
         exc = Exception(message)
+        assert not DBCredentialProvider._is_auth_error(exc)
+
+    def test_detects_psycopg2_operational_error(self):
+        """OperationalError from RDS Proxy may not have a standard auth message."""
+        exc = psycopg2.OperationalError("proxy connection error")
+        assert DBCredentialProvider._is_auth_error(exc)
+
+    @pytest.mark.parametrize(
+        "exc",
+        [
+            _make_auth_error(pgcode="42P01"),
+            Exception("generic error"),
+        ],
+        ids=["non-auth-pgcode", "no-code-attributes"],
+    )
+    def test_rejects_non_auth_errors(self, exc):
         assert not DBCredentialProvider._is_auth_error(exc)
 
 
