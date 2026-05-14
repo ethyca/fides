@@ -15,9 +15,7 @@ const PolicyAgentWorking = ({ size = "default" }: PolicyAgentWorkingProps) => (
     data-testid="policy-agent-working"
   >
     <span className={styles.square} aria-hidden />
-    <Typography.Text type="secondary" className={styles.label}>
-      Policy agent is working
-    </Typography.Text>
+    <Typography.Text type="secondary">Policy agent is working</Typography.Text>
   </Flex>
 );
 
