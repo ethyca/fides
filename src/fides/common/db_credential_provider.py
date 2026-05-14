@@ -15,8 +15,8 @@ from typing import Any, Callable, Dict, Optional, TypeVar
 from urllib.parse import quote, quote_plus, urlencode
 
 from loguru import logger as log
-from psycopg2 import (
-    OperationalError as Psycopg2OperationalError,  # type: ignore[import-untyped]
+from psycopg2 import (  # type: ignore[import-untyped]
+    OperationalError as Psycopg2OperationalError,
 )
 
 from fides.config import CONFIG
