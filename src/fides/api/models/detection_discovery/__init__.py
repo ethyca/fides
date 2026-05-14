@@ -1,5 +1,6 @@
 from .classification_benchmark import ClassificationBenchmark
 from .cloud_infra import CloudInfraStagedResource
+from .cloud_infra_group import CloudInfraGroup, CloudInfraGroupAssignment
 from .core import (
     DiffStatus,
     MonitorConfig,
@@ -23,6 +24,8 @@ from .staged_resource_error import StagedResourceError
 
 __all__ = [
     "ClassificationBenchmark",
+    "CloudInfraGroup",
+    "CloudInfraGroupAssignment",
     "CloudInfraStagedResource",
     "DiffStatus",
     "MonitorConfig",
