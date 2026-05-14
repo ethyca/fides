@@ -83,13 +83,37 @@ export const updateYamlField = (
   }
 };
 
-const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
+export const POLICY_NODE_ID = "policy";
+
+/**
+ * Canonical render order for built-in taxonomies — independent of YAML key
+ * order. Custom taxonomy keys (anything not in this list) follow, in YAML
+ * insertion order.
+ */
+const BUILT_IN_RENDER_ORDER: string[] = [
   ConditionProperty.DATA_CATEGORIES,
   ConditionProperty.DATA_USE,
   ConditionProperty.DATA_SUBJECTS,
+  ConditionProperty.SYSTEM_GROUP,
 ];
 
-export const POLICY_NODE_ID = "policy";
+/**
+ * Extract taxonomy keys from a match block. Built-in keys come first in the
+ * canonical render order; anything else (custom taxonomies) follows in YAML
+ * insertion order.
+ */
+const extractMatchKeys = (matchBlock: MatchBlock): string[] => {
+  const hasDimension = (k: string) => {
+    const dim = matchBlock[k];
+    return !!dim && (Array.isArray(dim.all) || Array.isArray(dim.any));
+  };
+  const builtIns = BUILT_IN_RENDER_ORDER.filter(hasDimension);
+  const builtInSet = new Set(builtIns);
+  const custom = Object.keys(matchBlock).filter(
+    (k) => !builtInSet.has(k) && hasDimension(k),
+  );
+  return [...builtIns, ...custom];
+};
 
 /**
  * Build display edges using a chain topology:
@@ -124,7 +148,7 @@ export const yamlToNodesAndEdges = (
       fidesKey: policy.fides_key ?? "",
       enabled: policy.enabled ?? true,
       priority: policy.priority ?? 0,
-      controls: policy.controls ?? [],
+      control: policy.control ?? null,
       controlOptions: [],
       actionMessage: policy.action?.message ?? "",
       onNameChange: () => {},
@@ -132,7 +156,7 @@ export const yamlToNodesAndEdges = (
       onFidesKeyChange: () => {},
       onEnabledChange: () => {},
       onPriorityChange: () => {},
-      onControlsChange: () => {},
+      onControlChange: () => {},
       onActionMessageChange: () => {},
     },
   };
@@ -166,10 +190,10 @@ export const yamlToNodesAndEdges = (
     type: "labeledEdge",
   });
 
-  // Condition nodes — chain: first from action ("when"), rest vertical ("and")
-  const presentProperties = CONDITION_PROPERTY_KEYS.filter(
-    (p) => !!matchBlock[p],
-  );
+  // Condition nodes — chain: first from action ("when"), rest vertical ("and").
+  // Iterate the match block in YAML insertion order so any taxonomy key
+  // (built-in or custom) is supported.
+  const presentProperties = extractMatchKeys(matchBlock);
 
   presentProperties.forEach((property, idx) => {
     const dimension = matchBlock[property] as MatchDimension;
@@ -394,7 +418,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     return "";
   }
 
-  const { name, description, fidesKey, enabled, priority, controls } =
+  const { name, description, fidesKey, enabled, priority, control } =
     policyNode.data as PolicyNodeData;
 
   // Find action node (connected from policy)
@@ -421,8 +445,8 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   if (priority !== undefined && priority !== 0) {
     policyYaml.priority = priority;
   }
-  if (controls && controls.length > 0) {
-    policyYaml.controls = controls;
+  if (control) {
+    policyYaml.control = control;
   }
 
   if (!actionNode) {

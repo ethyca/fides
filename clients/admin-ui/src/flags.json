@@ -7,13 +7,6 @@
     "production": false,
     "userCannotModify": true
   },
-  "dataCatalog": {
-    "label": "Data catalog",
-    "description": "Data catalog view",
-    "development": true,
-    "test": true,
-    "production": true
-  },
   "webMonitor": {
     "label": "Web monitor",
     "description": "Monitor websites for activity",
@@ -41,13 +34,6 @@
     "development": true,
     "test": true,
     "production": false
-  },
-  "newIntegrationManagement": {
-    "label": "New integration management",
-    "description": "Shows all integrations (including SaaS) in the integrations page",
-    "development": true,
-    "test": true,
-    "production": true
   },
   "alphaPrivacyNoticesSandbox": {
     "label": "Alpha privacy notices sandbox",

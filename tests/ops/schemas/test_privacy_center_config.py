@@ -4,16 +4,20 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
-    BaseCustomPrivacyRequestField,
     ConsentConfigPage,
     CustomPrivacyRequestField,
+    FileUploadCustomPrivacyRequestField,
     IdentityInputs,
     LocationCustomPrivacyRequestField,
+    MetricsConfig,
     PrivacyCenterConfig,
     PrivacyRequestOption,
+    _default_allowed_file_types,
     get_field_type_discriminator,
     reorder_custom_privacy_request_fields,
 )
+from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
+from fides.api.service.storage.util import DEFAULT_FILE_MAX_SIZE_BYTES
 from fides.api.util.saas_util import load_as_string
 
 
@@ -336,6 +340,169 @@ class TestPrivacyCenterConfig:
             exc_info.value
         )
 
+    @pytest.mark.parametrize(
+        "kwargs,expected",
+        [
+            (
+                {"label": "Confirm", "field_type": "checkbox", "required": True},
+                {"field_type": "checkbox", "required": True, "options": None},
+            ),
+            (
+                {"label": "Subscribe", "field_type": "checkbox", "required": False},
+                {"required": False},
+            ),
+            (
+                {"label": "Agree", "field_type": "checkbox", "default_value": "true"},
+                {"default_value": "true"},
+            ),
+            (
+                {
+                    "label": "Flag",
+                    "field_type": "checkbox",
+                    "hidden": True,
+                    "default_value": "false",
+                },
+                {"hidden": True, "default_value": "false"},
+            ),
+            (
+                {
+                    "label": "Pick",
+                    "field_type": "checkbox_group",
+                    "options": ["Profile", "Purchase history", "Email preferences"],
+                },
+                {
+                    "field_type": "checkbox_group",
+                    "options": ["Profile", "Purchase history", "Email preferences"],
+                },
+            ),
+            (
+                {"label": "Describe", "field_type": "textarea"},
+                {"field_type": "textarea", "options": None},
+            ),
+            (
+                {
+                    "label": "Context",
+                    "field_type": "textarea",
+                    "default_value": "N/A",
+                    "required": False,
+                },
+                {"default_value": "N/A", "required": False},
+            ),
+        ],
+    )
+    def test_custom_field_valid(self, kwargs, expected):
+        field = CustomPrivacyRequestField(**kwargs)
+        for attr, val in expected.items():
+            assert getattr(field, attr) == val
+
+    @pytest.mark.parametrize(
+        "kwargs,error_msg",
+        [
+            (
+                {"label": "x", "field_type": "checkbox_group"},
+                "checkbox_group fields require at least one option",
+            ),
+            (
+                {"label": "x", "field_type": "checkbox_group", "options": []},
+                "checkbox_group fields require at least one option",
+            ),
+            (
+                {"label": "x", "field_type": "textarea", "hidden": True},
+                "default_value or query_param_key are required when hidden is True",
+            ),
+            (
+                {
+                    "label": "x",
+                    "field_type": "checkbox_group",
+                    "options": ["A", "B"],
+                    "hidden": True,
+                    "default_value": "A",
+                },
+                "checkbox_group fields cannot be hidden",
+            ),
+            (
+                {
+                    "label": "x",
+                    "field_type": "multiselect",
+                    "options": ["A", "B"],
+                    "hidden": True,
+                    "default_value": "A",
+                },
+                "multiselect fields cannot be hidden",
+            ),
+            (
+                {"label": "x", "field_type": "checkbox", "options": ["A"]},
+                "checkbox fields do not support options",
+            ),
+            (
+                {"label": "x", "field_type": "textarea", "options": ["A"]},
+                "textarea fields do not support options",
+            ),
+        ],
+    )
+    def test_custom_field_invalid(self, kwargs, error_msg):
+        with pytest.raises(ValidationError, match=error_msg):
+            CustomPrivacyRequestField(**kwargs)
+
+    def test_privacy_center_config_with_new_field_types(self):
+        """All three new field types round-trip through PrivacyCenterConfig."""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "agree": {
+                "label": "I confirm this is my own data",
+                "field_type": "checkbox",
+                "required": True,
+            },
+            "data_types": {
+                "label": "Which data should we delete?",
+                "field_type": "checkbox_group",
+                "options": ["Profile", "Orders", "Preferences"],
+            },
+            "context": {
+                "label": "Additional context",
+                "field_type": "textarea",
+                "required": False,
+            },
+        }
+        config = PrivacyCenterConfig(**config_data)
+        fields = config.actions[0].custom_privacy_request_fields
+
+        assert isinstance(fields["agree"], CustomPrivacyRequestField)
+        assert fields["agree"].field_type == "checkbox"
+
+        assert isinstance(fields["data_types"], CustomPrivacyRequestField)
+        assert fields["data_types"].field_type == "checkbox_group"
+        assert fields["data_types"].options == ["Profile", "Orders", "Preferences"]
+
+        assert isinstance(fields["context"], CustomPrivacyRequestField)
+        assert fields["context"].field_type == "textarea"
+
+    def test_new_field_types_serialization(self):
+        """New field types serialize correctly (no location-specific fields leak)."""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "agree": {"label": "I agree", "field_type": "checkbox"},
+            "reasons": {
+                "label": "Reasons",
+                "field_type": "checkbox_group",
+                "options": ["A", "B"],
+            },
+            "notes": {"label": "Notes", "field_type": "textarea"},
+        }
+        config = PrivacyCenterConfig(**config_data)
+        serialized = config.model_dump(mode="json")
+        fields = serialized["actions"][0]["custom_privacy_request_fields"]
+
+        for name, data in fields.items():
+            assert "ip_geolocation_hint" not in data, (
+                f"Field '{name}' should not have ip_geolocation_hint"
+            )
+            assert data["field_type"] in ("checkbox", "checkbox_group", "textarea")
+
     def test_valid_url_fields(self, privacy_center_config: PrivacyCenterConfig):
         config_data = json.loads(
             load_as_string("tests/ops/resources/privacy_center_config.json")
@@ -377,6 +544,26 @@ class TestPrivacyCenterConfig:
         config = PrivacyCenterConfig(**config_data)
         assert config.server_url_development is None
         assert config.logo_url is None
+
+    def test_error_message_defaults_to_none_when_omitted(self):
+        config = PrivacyCenterConfig(
+            **json.loads(
+                load_as_string("tests/ops/resources/privacy_center_config.json")
+            )
+        )
+        assert config.error_message is None
+
+    def test_error_message_round_trips_when_provided(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["error_message"] = "Our team is on it, please hold."
+        config = PrivacyCenterConfig(**config_data)
+        assert config.error_message == "Our team is on it, please hold."
+        assert (
+            config.model_dump(mode="json")["error_message"]
+            == "Our team is on it, please hold."
+        )
 
     def test_empty_actions(self):
         config_data = json.loads(
@@ -602,3 +789,137 @@ def test_privacy_request_option_preserves_unknown_extras() -> None:
         "elements": {},
     }
     assert dumped["_form_builder_spec"]["updated_by"] == "user-123"
+
+
+class TestFileUploadCustomPrivacyRequestField:
+    def test_defaults(self):
+        field = FileUploadCustomPrivacyRequestField(label="Receipt")
+        assert field.field_type == "file"
+        assert field.required is True
+        assert field.max_size_bytes == DEFAULT_FILE_MAX_SIZE_BYTES
+        assert field.allowed_file_types == sorted(_default_allowed_file_types())
+
+    def test_explicit_allowed_file_types(self):
+        field = FileUploadCustomPrivacyRequestField(
+            label="Receipt", allowed_file_types=["pdf"]
+        )
+        assert field.allowed_file_types == ["pdf"]
+
+    def test_rejects_options(self):
+        with pytest.raises(ValidationError, match="do not support options"):
+            FileUploadCustomPrivacyRequestField(label="Receipt", options=["a"])
+
+    def test_rejects_empty_allowed_file_types(self):
+        with pytest.raises(ValidationError, match="must not be empty"):
+            FileUploadCustomPrivacyRequestField(label="Receipt", allowed_file_types=[])
+
+    def test_rejects_unsupported_file_type(self):
+        with pytest.raises(ValidationError, match="Unsupported file types"):
+            FileUploadCustomPrivacyRequestField(
+                label="Receipt", allowed_file_types=["exe"]
+            )
+
+    def test_rejects_zero_max_size(self):
+        with pytest.raises(ValidationError):
+            FileUploadCustomPrivacyRequestField(label="Receipt", max_size_bytes=0)
+
+    def test_rejects_negative_max_size(self):
+        with pytest.raises(ValidationError):
+            FileUploadCustomPrivacyRequestField(label="Receipt", max_size_bytes=-1)
+
+
+class TestFieldTypeDiscriminator:
+    def test_dispatches_file(self):
+        assert get_field_type_discriminator({"field_type": "file"}) == "file"
+
+    def test_dispatches_location(self):
+        assert get_field_type_discriminator({"field_type": "location"}) == "location"
+
+    def test_dispatches_custom_default(self):
+        assert get_field_type_discriminator({"field_type": "text"}) == "custom"
+
+    def test_dispatches_from_model_instance(self):
+        field = FileUploadCustomPrivacyRequestField(label="Receipt")
+        assert get_field_type_discriminator(field) == "file"
+
+    def test_privacy_center_config_parses_file_field(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "receipt": {"label": "Receipt", "field_type": "file"},
+        }
+        config = PrivacyCenterConfig(**config_data)
+        field = config.actions[0].custom_privacy_request_fields["receipt"]
+        assert isinstance(field, FileUploadCustomPrivacyRequestField)
+
+
+class TestMetricsConfig:
+    def test_all_fields_default_to_none(self):
+        cfg = MetricsConfig()
+        assert cfg.title is None
+        assert cfg.description is None
+        assert cfg.link_text is None
+
+    def test_accepts_string_values(self):
+        cfg = MetricsConfig(title="Metrics", description="Desc", link_text="View")
+        assert cfg.title == "Metrics"
+        assert cfg.description == "Desc"
+        assert cfg.link_text == "View"
+
+
+class TestPrivacyRequestOptionNewFields:
+    def _base_kwargs(self):
+        return {
+            "icon_path": "/icon.svg",
+            "title": "Access",
+            "description": "Request your data",
+        }
+
+    def test_verification_and_success_fields_default_to_none(self):
+        opt = PrivacyRequestOption(**self._base_kwargs())
+        assert opt.verification_title is None
+        assert opt.verification_description is None
+        assert opt.verification_submit_button_text is None
+        assert opt.verification_resend_button_text is None
+        assert opt.success_title is None
+        assert opt.success_description is None
+        assert opt.success_button_text is None
+
+    def test_verification_and_success_fields_accept_values(self):
+        opt = PrivacyRequestOption(
+            **self._base_kwargs(),
+            verification_title="Verify",
+            verification_description="Check your email",
+            verification_submit_button_text="Submit",
+            verification_resend_button_text="Resend",
+            success_title="Done",
+            success_description="Request submitted",
+            success_button_text="Close",
+        )
+        assert opt.verification_title == "Verify"
+        assert opt.verification_description == "Check your email"
+        assert opt.verification_submit_button_text == "Submit"
+        assert opt.verification_resend_button_text == "Resend"
+        assert opt.success_title == "Done"
+        assert opt.success_description == "Request submitted"
+        assert opt.success_button_text == "Close"
+
+
+class TestPrivacyCenterConfigMetrics:
+    def test_metrics_defaults_to_none(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config = PrivacyCenterConfig(**config_data)
+        assert config.metrics is None
+
+    def test_metrics_accepts_metrics_config(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["metrics"] = {"title": "Metrics", "link_text": "View"}
+        config = PrivacyCenterConfig(**config_data)
+        assert isinstance(config.metrics, MetricsConfig)
+        assert config.metrics.title == "Metrics"
+        assert config.metrics.link_text == "View"

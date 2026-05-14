@@ -14,5 +14,8 @@ export const getMonitorType = (connectionType: ConnectionType) => {
   ) {
     return APIMonitorType.INFRASTRUCTURE;
   }
+  if (connectionType === ConnectionType.AWS) {
+    return APIMonitorType.CLOUD_INFRASTRUCTURE;
+  }
   return APIMonitorType.DATASTORE;
 };

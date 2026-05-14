@@ -45,6 +45,10 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Allows custom privacy request fields to be used in request execution.",
     )
+    allow_custom_privacy_request_file_upload: bool = Field(
+        default=False,
+        description="Allows file uploads to be attached to incoming privacy requests.",
+    )
     request_task_ttl: int = Field(
         default=604800,
         description="The number of seconds a request task should live.",
@@ -93,8 +97,24 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="When enabled, falls back to the legacy traversal algorithm. Intended as a temporary safety net in case of regressions with the optimized traversal.",
     )
+    task_soft_time_limit_seconds: int = Field(
+        default=0,
+        description="Soft time limit in seconds for privacy request Celery tasks. "
+        "When exceeded, SoftTimeLimitExceeded is raised and the full stack trace is logged. "
+        "Set to 0 to disable (default).",
+    )
     jira_polling_interval_minutes: int = Field(
-        default=10,
+        default=3,
         description="Minutes between polling Jira for ticket status updates.",
+    )
+    reply_polling_interval_minutes: int = Field(
+        default=3,
+        ge=1,
+        description="Minutes between polling the IMAP mailbox for DSR reply messages.",
+    )
+    notification_interval_minutes: int = Field(
+        default=5,
+        ge=1,
+        description="Minutes between processing pending DSR lifecycle notifications.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

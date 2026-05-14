@@ -103,6 +103,24 @@ class TestSecuritySettings:
         with pytest.raises(ValueError):
             SecuritySettings(request_rate_limit="X-Forwarded-For")
 
+    def test_validate_privacy_request_attachment_rate_limit_invalid(self, monkeypatch):
+        monkeypatch.delenv(
+            "FIDES__SECURITY__PRIVACY_REQUEST_ATTACHMENT_RATE_LIMIT", raising=False
+        )
+        with pytest.raises(ValueError):
+            SecuritySettings(privacy_request_attachment_rate_limit="invalid")
+
+    def test_validate_privacy_request_attachment_rate_limit_valid(self, monkeypatch):
+        monkeypatch.delenv(
+            "FIDES__SECURITY__PRIVACY_REQUEST_ATTACHMENT_RATE_LIMIT", raising=False
+        )
+        settings = SecuritySettings(privacy_request_attachment_rate_limit="20/minute")
+        assert settings.privacy_request_attachment_rate_limit == "20/minute"
+
+    def test_privacy_request_attachment_rate_limit_default(self):
+        settings = SecuritySettings()
+        assert settings.privacy_request_attachment_rate_limit == "30/minute"
+
     def test_security_settings_env_default_to_prod(self):
         settings = SecuritySettings()
         assert settings.env == "prod"

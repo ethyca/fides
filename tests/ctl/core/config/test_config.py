@@ -7,7 +7,11 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.db.database import get_alembic_config
-from fides.config import check_required_webserver_config_values, get_config
+from fides.config import (
+    build_config,
+    check_required_webserver_config_values,
+    get_config,
+)
 from fides.config.database_settings import DatabaseSettings
 from fides.config.redis_settings import RedisSettings
 from fides.config.security_settings import SecuritySettings
@@ -778,3 +782,69 @@ class TestReadOnlyDatabaseConfig:
         assert "ssl=" in parsed.query
         # sslrootcert should be removed from query params
         assert "sslrootcert" not in parsed.query
+
+
+@pytest.mark.unit
+class TestDatabaseCredentialSecretIdValidation:
+    """Validate cross-section coherence between secrets.provider and database.credential_secret_id."""
+
+    def test_static_provider_with_credential_secret_id_raises(self) -> None:
+        with pytest.raises(ValidationError) as exc:
+            build_config(
+                {
+                    "secrets": {"provider": "static"},
+                    "database": {
+                        "credential_secret_id": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+                    },
+                }
+            )
+        assert "credential_secret_id" in str(exc.value)
+        assert "static" in str(exc.value)
+
+    def test_static_provider_with_readonly_credential_secret_id_raises(self) -> None:
+        with pytest.raises(ValidationError) as exc:
+            build_config(
+                {
+                    "secrets": {"provider": "static"},
+                    "database": {
+                        "readonly_credential_secret_id": "arn:aws:secretsmanager:us-east-1:123:secret:ro-creds"
+                    },
+                }
+            )
+        assert "readonly_credential_secret_id" in str(exc.value)
+        assert "static" in str(exc.value)
+
+    def test_aws_provider_without_credential_secret_id_raises(self) -> None:
+        with pytest.raises(ValidationError) as exc:
+            build_config(
+                {
+                    "secrets": {
+                        "provider": "aws_secrets_manager",
+                        "aws_secrets_manager": {"region": "us-east-1"},
+                    },
+                }
+            )
+        assert "credential_secret_id is not set" in str(exc.value)
+
+    def test_aws_provider_with_credential_secret_id_passes(self) -> None:
+        config = build_config(
+            {
+                "secrets": {
+                    "provider": "aws_secrets_manager",
+                    "aws_secrets_manager": {"region": "us-east-1"},
+                },
+                "database": {
+                    "credential_secret_id": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+                },
+            }
+        )
+        assert (
+            config.database.credential_secret_id
+            == "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+        )
+        assert config.database.readonly_credential_secret_id is None
+
+    def test_static_provider_without_secret_ids_passes(self) -> None:
+        config = build_config({})
+        assert config.database.credential_secret_id is None
+        assert config.database.readonly_credential_secret_id is None

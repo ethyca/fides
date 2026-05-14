@@ -10,7 +10,10 @@ import {
 import { useMemo } from "react";
 
 import IdentityResolutionTab from "~/features/integrations/configure-identity-resolution/IdentityResolutionTab";
-import { JiraConfigTab } from "~/features/integrations/configure-jira";
+import {
+  JiraConfigTab,
+  JiraCredentialsTab,
+} from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import QueryLogConfigTab from "~/features/integrations/configure-query-log/QueryLogConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
@@ -21,6 +24,7 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
+import IntegrationPrivacyRequests from "~/features/integrations/IntegrationPrivacyRequests";
 import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 import {
   ConnectionConfigurationResponse,
@@ -43,6 +47,7 @@ interface UseFeatureBasedTabsProps {
   instructions?: React.ReactNode;
   supportsConnectionTest: boolean;
   supportsSystemLinking: boolean;
+  supportsPrivacyRequests: boolean;
 }
 
 export const useFeatureBasedTabs = ({
@@ -59,6 +64,7 @@ export const useFeatureBasedTabs = ({
   instructions,
   supportsConnectionTest,
   supportsSystemLinking,
+  supportsPrivacyRequests,
 }: UseFeatureBasedTabsProps) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const tabs = useMemo(() => {
@@ -105,6 +111,7 @@ export const useFeatureBasedTabs = ({
                     testData={testData}
                     connectionOption={integrationOption}
                     connectionType={connection?.connection_type}
+                    isTestingConnection={testIsLoading}
                   />
                   <Spacer />
                   <Flex gap="medium">
@@ -120,13 +127,27 @@ export const useFeatureBasedTabs = ({
                       </Button>
                     )}
                     {!needsAuthorization && (
-                      <Button
-                        onClick={testConnection}
-                        loading={testIsLoading}
-                        data-testid="test-connection-btn"
-                      >
-                        Test connection
-                      </Button>
+                      <>
+                        <Button
+                          onClick={testConnection}
+                          loading={testIsLoading}
+                          data-testid="test-connection-btn"
+                        >
+                          Test connection
+                        </Button>
+                        {connection?.connection_type ===
+                          ConnectionType.JIRA_TICKET &&
+                          testData.authorized &&
+                          testData.succeeded === false &&
+                          testData.timestamp && (
+                            <Button
+                              onClick={handleAuthorize}
+                              data-testid="reauthorize-integration-btn"
+                            >
+                              Re-authorize
+                            </Button>
+                          )}
+                      </>
                     )}
                     <Button onClick={onOpen} data-testid="manage-btn">
                       Manage
@@ -172,6 +193,21 @@ export const useFeatureBasedTabs = ({
         children: (
           <MonitorConfigTab
             integration={connection!}
+            integrationOption={integrationOption}
+          />
+        ),
+      });
+    }
+
+    // "Privacy requests" is positioned after Data discovery — discovery
+    // surfaces the data; privacy requests act on it.
+    if (supportsPrivacyRequests) {
+      tabItems.push({
+        label: "Privacy requests",
+        key: "privacy-requests",
+        children: (
+          <IntegrationPrivacyRequests
+            connection={connection!}
             integrationOption={integrationOption}
           />
         ),
@@ -229,9 +265,21 @@ export const useFeatureBasedTabs = ({
       connection?.connection_type === ConnectionType.JIRA_TICKET
     ) {
       tabItems.push({
+        label: "Credentials",
+        key: "credentials",
+        children: (
+          <JiraCredentialsTab connection={connection!} testData={testData} />
+        ),
+      });
+      tabItems.push({
         label: "Ticket setup",
         key: "configuration",
-        children: <JiraConfigTab connection={connection!} />,
+        children: (
+          <JiraConfigTab
+            connection={connection!}
+            onReauthorize={handleAuthorize}
+          />
+        ),
       });
     }
 
@@ -248,6 +296,7 @@ export const useFeatureBasedTabs = ({
   }, [
     enabledFeatures,
     supportsSystemLinking,
+    supportsPrivacyRequests,
     onOpen,
     isOpen,
     onClose,

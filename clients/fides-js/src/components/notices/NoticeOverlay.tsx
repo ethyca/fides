@@ -14,6 +14,7 @@ import {
   AssetType,
   ConsentMechanism,
   ConsentMethod,
+  FidesAttStatus,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyExperience,
@@ -26,7 +27,6 @@ import {
   isConsentOverride,
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
 import {
   FidesEventDetailsPreference,
   FidesEventDetailsServingComponent,
@@ -128,7 +128,10 @@ const NoticeOverlay = () => {
           notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
             false) ||
-          notice.disabled;
+          notice.disabled ||
+          ((options.fidesAttStatus === FidesAttStatus.DENIED ||
+            options.fidesAttStatus === FidesAttStatus.RESTRICTED) &&
+            !notice.att_exempt);
         const bestTranslation = selectBestNoticeTranslation(
           currentLocale,
           i18n.getDefaultLocale(),
@@ -368,7 +371,17 @@ const NoticeOverlay = () => {
   );
 
   const handleDismiss = useCallback(() => {
-    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
+    // Skip the dismiss-update only when every currently-applicable notice
+    // already has a recorded preference in the saved cookie. Otherwise a
+    // newly-applicable notice (e.g. one that was non-applicable in a prior
+    // region and is now served) would never get written to the consent map
+    // on dismiss, causing the banner to resurface on every reload until the
+    // user explicitly saves their preferences.
+    const allApplicableNoticesHavePreference =
+      experience.privacy_notices?.every(
+        (notice) => parsedCookie?.consent?.[notice.notice_key] !== undefined,
+      ) ?? true;
+    if (!allApplicableNoticesHavePreference) {
       handleUpdatePreferences(
         ConsentMethod.DISMISS,
         getEnabledNoticeKeys(cookie?.consent),
@@ -377,6 +390,7 @@ const NoticeOverlay = () => {
   }, [
     handleUpdatePreferences,
     getEnabledNoticeKeys,
+    experience.privacy_notices,
     parsedCookie?.consent,
     cookie?.consent,
   ]);

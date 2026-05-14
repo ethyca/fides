@@ -84,6 +84,7 @@ PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
 PRIVACY_REQUEST_BATCH_EMAIL_SEND = (
     "/privacy-request/administrate/process-awaiting-email-send"
 )
+PRIVACY_REQUEST_ATTACHMENT = "/privacy-request/attachment"
 PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_FINALIZE = "/privacy-request/bulk/finalize"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
@@ -184,6 +185,7 @@ DATASET_BY_KEY = CONNECTION_BY_KEY + DATASETS + "/{dataset_key}"
 DATASET_CONFIG_BY_KEY = CONNECTION_BY_KEY + DATASET_CONFIG + "/{dataset_key}"
 DATASET_INPUTS = DATASET_BY_KEY + "/inputs"
 DATASET_REACHABILITY = DATASET_BY_KEY + "/reachability"
+DATASET_PROTECTED_FIELDS = CONNECTION_BY_KEY + "/protected-fields"
 TEST_DATASET = DATASET_BY_KEY + "/test"
 DATASETS_CLEAN = DATASETS + "/clean"
 

@@ -22,6 +22,7 @@ import { DatastoreConnectionStatus } from "src/features/datastore-connections/ty
 
 import { useFeatures } from "~/features/common/features";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
+import { parseSecretsFieldErrors } from "~/features/common/form/parseSecretsFieldErrors";
 import {
   FIDES_DATASET_REFERENCE,
   useFormFieldsFromSchema,
@@ -57,9 +58,13 @@ type ConnectorParametersFormProps = {
    */
   onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
-   * Parent callback when Test Dataset is clicked
+   * Parent callback when Edit Dataset is clicked
    */
   onTestDatasetsClick: () => void;
+  /**
+   * Parent callback when Test Datasets is clicked (DB only)
+   */
+  onTestDatasetsRunClick?: () => void;
   /**
    * Text for the test button. Defaults to "Test connection"
    */
@@ -85,6 +90,7 @@ export const ConnectorParametersForm = ({
   onSaveClick,
   onTestConnectionClick,
   onTestDatasetsClick,
+  onTestDatasetsRunClick,
   onAuthorizeConnectionClick,
   testButtonLabel = "Test integration",
   connectionOption,
@@ -122,7 +128,7 @@ export const ConnectorParametersForm = ({
   const initialFormValues = useMemo(() => {
     const values = { ...defaultValues };
     if (connectionConfig?.key) {
-      values.name = connectionConfig.name ?? "";
+      values.name = connectionConfig.name || connectionConfig.key;
       values.description = connectionConfig.description as string;
       values.instance_key =
         connectionConfig.connection_type === ConnectionType.SAAS
@@ -187,7 +193,22 @@ export const ConnectorParametersForm = ({
 
   const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
-    await onSaveClick(processedValues);
+    try {
+      await onSaveClick(processedValues);
+    } catch (error) {
+      const fieldErrors = parseSecretsFieldErrors(error, {
+        knownFields: Object.keys(secretsSchema?.properties ?? {}),
+      });
+      if (fieldErrors) {
+        // antd's typed form narrows NamePath to the form's value shape; our
+        // nested ["secrets", fieldName] paths work at runtime but don't match
+        // the narrowed tuple type, so we cast here.
+        form.setFields(
+          fieldErrors as unknown as Parameters<typeof form.setFields>[0],
+        );
+      }
+      return;
+    }
 
     // After a successful create, mask secrets immediately so the user sees
     // stars instead of blank fields while waiting for the refetch.
@@ -279,19 +300,21 @@ export const ConnectorParametersForm = ({
       {contextHolder}
       <Form
         form={form}
-        layout="horizontal"
+        layout="vertical"
         initialValues={initialFormValues}
         onFinish={handleFinish}
         key={connectionConfig?.key ?? "create"}
         validateTrigger="onBlur"
-        labelCol={{ flex: "180px" }}
-        labelAlign="left"
       >
-        <Flex vertical>
-          {/* Hidden fields to preserve values in form submission */}
-          <Form.Item name="name" hidden noStyle>
-            <Input />
+        <Flex vertical className="[&_.ant-form-item]:mb-4">
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Name is required" }]}
+          >
+            <Input data-testid="input-name" />
           </Form.Item>
+          {/* Hidden field to preserve description in form submission */}
           <Form.Item name="description" hidden noStyle>
             <Input />
           </Form.Item>
@@ -341,7 +364,6 @@ export const ConnectorParametersForm = ({
                     isRequired={secretsSchema.required?.includes(key)}
                     secretsSchema={secretsSchema}
                     validate={getFieldValidation(key, item)}
-                    layout="inline"
                   />
                 );
               })
@@ -417,9 +439,18 @@ export const ConnectorParametersForm = ({
                 </Button>
               ) : null}
               {isPlusEnabled &&
-                SystemType.DATABASE === connectionOption.type &&
+                (SystemType.DATABASE === connectionOption.type ||
+                  SystemType.SAAS === connectionOption.type) &&
                 !_.isEmpty(initialDatasets) && (
                   <Button onClick={() => onTestDatasetsClick()}>
+                    Edit dataset
+                  </Button>
+                )}
+              {isPlusEnabled &&
+                SystemType.DATABASE === connectionOption.type &&
+                !_.isEmpty(initialDatasets) &&
+                onTestDatasetsRunClick && (
+                  <Button onClick={() => onTestDatasetsRunClick()}>
                     Test datasets
                   </Button>
                 )}

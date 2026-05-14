@@ -81,6 +81,7 @@ typings/
 
 # Next.js build output
 .next
+next-env.d.ts
 
 # Fix conflict with root .gitignore Python rule.
 !lib

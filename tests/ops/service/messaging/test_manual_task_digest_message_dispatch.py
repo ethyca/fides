@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 from sqlalchemy.orm import Session
+from tests.fixtures.messaging_fixtures import mailgun_post_body
 from tests.ops.test_helpers.email_test_utils import assert_url_hostname_present
 
 from fides.api.models.messaging_template import MessagingTemplate
@@ -19,14 +20,11 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 class TestManualTaskDigestMessageDispatch:
     """Test manual task digest message dispatch functionality."""
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     def test_manual_task_digest_email_dispatch_mailgun_success(
         self,
-        mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
         """Test successful dispatch of manual task digest email via Mailgun."""
         dispatch_message(
@@ -45,49 +43,27 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        # Verify mailgun dispatcher was called with correct parameters
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
 
-        messaging_config_arg = call_args[0][0]
-        email_for_action_type = call_args[0][1]
-        recipient_email = call_args[0][2]
-
-        assert messaging_config_arg == messaging_config
-        assert recipient_email == "vendor@example.com"
+        assert body["to"] == ["vendor@example.com"]
 
         # Check email content
-        assert email_for_action_type.subject == "Weekly DSR Summary from Acme Corp"
-        assert "Hi Jane Doe," in email_for_action_type.body
-        assert "Acme Corp" in email_for_action_type.body
-        assert (
-            "You have 10 requests coming due" in email_for_action_type.body
-        )  # total tasks
-        assert (
-            "3 within the next 7 days" in email_for_action_type.body
-        )  # imminent tasks
-        assert (
-            "7 due in the next period" in email_for_action_type.body
-        )  # upcoming tasks
+        assert body["subject"] == ["Weekly DSR Summary from Acme Corp"]
+        html = body["html"][0]
+        assert "Hi Jane Doe," in html
+        assert "Acme Corp" in html
+        assert "You have 10 requests coming due" in html  # total tasks
+        assert "3 within the next 7 days" in html  # imminent tasks
+        assert "7 due in the next period" in html  # upcoming tasks
         # Validate that URLs with the expected hostname are present in the email
-        assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
+        assert_url_hostname_present(html, "privacy.example.com")
 
-        # Check template variables
-        template_vars = email_for_action_type.template_variables
-        assert template_vars["vendor_contact_name"] == "Jane Doe"
-        assert template_vars["organization_name"] == "Acme Corp"
-        assert template_vars["imminent_task_count"] == 3
-        assert template_vars["upcoming_task_count"] == 7
-        assert template_vars["total_task_count"] == 10
-
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     def test_manual_task_digest_email_dispatch_with_logo(
         self,
-        mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
         """Test manual task digest email dispatch with company logo URL in template variables."""
         dispatch_message(
@@ -106,39 +82,30 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        mock_mailgun_dispatcher.assert_called_once()
-        email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        html = body["html"][0]
 
         # Check that the HTML template is used with logo functionality
-        assert "Test Organization" in email_for_action_type.body
-        assert "John Smith" in email_for_action_type.body
-        assert (
-            "You have 5 requests coming due" in email_for_action_type.body
-        )  # total tasks
-        assert (
-            "2 within the next 7 days" in email_for_action_type.body
-        )  # imminent tasks
-        assert (
-            "3 due in the next period" in email_for_action_type.body
-        )  # upcoming tasks
+        assert "Test Organization" in html
+        assert "John Smith" in html
+        assert "You have 5 requests coming due" in html  # total tasks
+        assert "2 within the next 7 days" in html  # imminent tasks
+        assert "3 due in the next period" in html  # upcoming tasks
 
         # Should contain HTML tags (since it's the HTML template)
-        assert "<div" in email_for_action_type.body
-        assert "<html" in email_for_action_type.body
-        assert "email-container" in email_for_action_type.body
+        assert "<div" in html
+        assert "<html" in html
+        assert "email-container" in html
 
-        # Check template variables include logo URL (even though not used in text template)
-        template_vars = email_for_action_type.template_variables
-        assert template_vars["company_logo_url"] == "https://example.com/logo.png"
+        # Check logo URL is present in the HTML
+        assert "https://example.com/logo.png" in html
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     def test_manual_task_digest_email_dispatch_zero_tasks(
         self,
-        mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
         """Test manual task digest email dispatch with zero tasks."""
         dispatch_message(
@@ -157,24 +124,21 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        mock_mailgun_dispatcher.assert_called_once()
-        email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        html = body["html"][0]
 
         # Check that zero counts are handled correctly (HTML template format)
-        assert (
-            "You have 0 request" in email_for_action_type.body
-        )  # HTML template handles pluralization
+        assert "You have 0 request" in html  # HTML template handles pluralization
 
         # Should contain HTML tags (since it's the HTML template)
-        assert "<div" in email_for_action_type.body
-        assert "<html" in email_for_action_type.body
-        assert "email-container" in email_for_action_type.body
+        assert "<div" in html
+        assert "<html" in html
+        assert "email-container" in html
 
-        # Check template variables
-        template_vars = email_for_action_type.template_variables
-        assert template_vars["imminent_task_count"] == 0
-        assert template_vars["upcoming_task_count"] == 0
-        assert template_vars["total_task_count"] == 0
+        # Check that zero counts appear in the HTML
+        assert "0 within the next 7 days" in html
+        assert "0 due in the next period" in html
 
     def test_manual_task_digest_body_params_validation(self) -> None:
         """Test that ManualTaskDigestBodyParams validates correctly."""
@@ -210,14 +174,11 @@ class TestManualTaskDigestMessageDispatch:
 
         assert params_no_logo.company_logo_url is None
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     def test_manual_task_digest_email_dispatch_special_characters(
         self,
-        mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
         """Test manual task digest email dispatch with special characters in names."""
         dispatch_message(
@@ -236,34 +197,27 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        mock_mailgun_dispatcher.assert_called_once()
-        email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        html = body["html"][0]
 
         # Check that special characters are handled correctly
-        assert "María José García-López" in email_for_action_type.body
+        assert "María José García-López" in html
         # HTML template should escape HTML entities
-        assert "Acme Corp &amp; Associates, LLC" in email_for_action_type.body
+        assert "Acme Corp &amp; Associates, LLC" in html
 
         # Should contain HTML tags (since it's the HTML template)
-        assert "<div" in email_for_action_type.body
-        assert "<html" in email_for_action_type.body
-        assert "email-container" in email_for_action_type.body
+        assert "<div" in html
+        assert "<html" in html
+        assert "email-container" in html
         # Validate that URLs with the expected hostname are present in the email
-        assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
+        assert_url_hostname_present(html, "privacy.example.com")
 
-        # Check template variables
-        template_vars = email_for_action_type.template_variables
-        assert template_vars["vendor_contact_name"] == "María José García-López"
-        assert template_vars["organization_name"] == "Acme Corp & Associates, LLC"
-
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     def test_manual_task_digest_email_dispatch_with_custom_template(
         self,
-        mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
         """Test manual task digest email dispatch using custom template from UI."""
         custom_template = MessagingTemplate.create(
@@ -296,38 +250,30 @@ class TestManualTaskDigestMessageDispatch:
         )
 
         # Verify custom template was used
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
-        email_for_action_type = call_args[0][1]
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        html = body["html"][0]
 
         # Check that custom template content was used within HTML template
-        assert email_for_action_type.subject == "Custom Digest: Custom Corp Tasks"
-        assert "Hello John Smith" in email_for_action_type.body  # Custom intro text
-        assert (
-            "you have 2 urgent tasks and 5 upcoming tasks" in email_for_action_type.body
-        )
-        assert "Custom Corp" in email_for_action_type.body
-        assert (
-            "Please visit our portal to review these tasks"
-            in email_for_action_type.body
-        )  # Custom content
+        assert body["subject"] == ["Custom Digest: Custom Corp Tasks"]
+        assert "Hello John Smith" in html  # Custom intro text
+        assert "you have 2 urgent tasks and 5 upcoming tasks" in html
+        assert "Custom Corp" in html
+        assert "Please visit our portal to review these tasks" in html  # Custom content
 
         # Should contain HTML tags (since it uses HTML template with custom content)
-        assert "<div" in email_for_action_type.body
-        assert "<html" in email_for_action_type.body
-        assert "email-container" in email_for_action_type.body
+        assert "<div" in html
+        assert "<html" in html
+        assert "email-container" in html
 
         # Clean up
         custom_template.delete(db)
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     def test_manual_task_digest_email_dispatch_uses_default_template(
         self,
-        mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
         """Test manual task digest uses default template when no custom template exists in DB."""
         existing_templates = (
@@ -357,44 +303,35 @@ class TestManualTaskDigestMessageDispatch:
         )
 
         # Verify default template was used
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
-        email_for_action_type = call_args[0][1]
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        html = body["html"][0]
 
         # Check that HTML template with default content is used
-        assert email_for_action_type.subject == "Weekly DSR Summary from Fallback Corp"
-        assert "Hi Jane Doe," in email_for_action_type.body
-        assert (
-            "This is your weekly summary" in email_for_action_type.body
-        )  # Default intro text from template
-        assert "4 requests coming due" in email_for_action_type.body  # Total count
-        assert (
-            "1 within the next 7 days" in email_for_action_type.body
-        )  # Imminent count
-        assert (
-            "3 due in the next period" in email_for_action_type.body
-        )  # Upcoming count
+        assert body["subject"] == ["Weekly DSR Summary from Fallback Corp"]
+        assert "Hi Jane Doe," in html
+        assert "This is your weekly summary" in html  # Default intro text from template
+        assert "4 requests coming due" in html  # Total count
+        assert "1 within the next 7 days" in html  # Imminent count
+        assert "3 due in the next period" in html  # Upcoming count
 
         # Should contain HTML tags (since it's the HTML template)
-        assert "<div" in email_for_action_type.body
-        assert "<html" in email_for_action_type.body
-        assert "email-container" in email_for_action_type.body
+        assert "<div" in html
+        assert "<html" in html
+        assert "email-container" in html
 
         # Validate that URLs with the expected hostname are present in the email
-        assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
+        assert_url_hostname_present(html, "privacy.example.com")
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service.get_basic_messaging_template_by_type_or_default"
     )
     def test_manual_task_digest_email_dispatch_fallback_to_html_template(
         self,
         mock_get_template: Mock,
-        mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
+        mock_mailgun_http,
     ) -> None:
         """Test manual task digest falls back to HTML template when no template is available."""
         # Mock the template retrieval to return None (simulating no template available)
@@ -417,18 +354,18 @@ class TestManualTaskDigestMessageDispatch:
         )
 
         # Verify HTML template was used as fallback
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
-        email_for_action_type = call_args[0][1]
+        assert mock_mailgun_http.called
+        body = mailgun_post_body(mock_mailgun_http.request_history)
+        html = body["html"][0]
 
         # Check that HTML template content was used
-        assert email_for_action_type.subject == "Weekly DSR Summary from Fallback Corp"
-        assert "Hi Jane Doe," in email_for_action_type.body
+        assert body["subject"] == ["Weekly DSR Summary from Fallback Corp"]
+        assert "Hi Jane Doe," in html
 
         # Should contain HTML tags (since it's the HTML template)
-        assert "<div" in email_for_action_type.body
-        assert "<html" in email_for_action_type.body
-        assert "email-container" in email_for_action_type.body
+        assert "<div" in html
+        assert "<html" in html
+        assert "email-container" in html
 
         # Validate that URLs with the expected hostname are present in the email
-        assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
+        assert_url_hostname_present(html, "privacy.example.com")

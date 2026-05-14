@@ -280,7 +280,7 @@ const SubmitPrivacyRequestForm = ({
           <Select
             aria-label="Request type"
             options={
-              config?.actions.map((action: PrivacyRequestOption) => ({
+              config?.actions?.map((action: PrivacyRequestOption) => ({
                 label: action.title,
                 value: action.policy_key,
               })) ?? []

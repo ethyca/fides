@@ -62,12 +62,17 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.rate_limit import safe_rate_limit_key
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+from fides.service.correspondence.reply_polling_task import initiate_reply_polling
 from fides.service.jira.polling_task import initiate_jira_ticket_polling
+from fides.service.notifications.notification_task import initiate_notification_task
 
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
-# Turbopack (Next.js 16+) chunk filenames can embed ".." before the extension,
-# e.g. "0y3j4e~tvxaz..js". These are benign static assets, not traversal.
-TURBOPACK_CHUNK_RE = re.compile(r"^[\w~-]+\.\.[a-z]+$")
+# Turbopack (Next.js 16+) chunk filenames can embed ".." anywhere, e.g.
+# "0y3j4e~tvxaz..js" or "0~9kfdw7..yey.js". Match the turbopack chunk
+# alphabet (word chars, "~", ".", "-") with the first char restricted to
+# non-dot ([\w~-]) so dot-prefixed tokens (".", "..", "...foo") fall
+# through to the traversal guard.
+TURBOPACK_CHUNK_RE = re.compile(r"^[\w~-][\w~.-]*\.\.[\w~.-]+$")
 
 VERSION = fides.__version__
 
@@ -104,6 +109,8 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_interrupted_task_requeue_poll()
     initiate_polling_task_requeue()
     initiate_jira_ticket_polling()
+    initiate_reply_polling()
+    initiate_notification_task()
     initiate_bcrypt_migration_task()
     initiate_post_upgrade_index_creation()
     initiate_post_upgrade_backfill()
@@ -141,7 +148,7 @@ def sanitise_url_path(path: str) -> str:
     for token in path.split("/"):
         if ".." in token and not (
             re.search(NEXT_JS_CATCH_ALL_SEGMENTS_RE, token)
-            or TURBOPACK_CHUNK_RE.match(token)
+            or TURBOPACK_CHUNK_RE.fullmatch(token)
         ):
             logger.warning(
                 f"Potentially dangerous use of URL hierarchy in path: {path}"

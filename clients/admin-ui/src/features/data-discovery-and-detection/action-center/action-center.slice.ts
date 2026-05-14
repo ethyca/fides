@@ -54,6 +54,15 @@ interface DiscoveredAssetsFilterValues {
   consent_aggregated?: string[];
 }
 
+export interface WildcardPromotionMatch {
+  urn: string;
+  name?: string | null;
+}
+
+export interface WildcardPromotionImpact {
+  matched_resources: WildcardPromotionMatch[];
+}
+
 const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAggregateMonitorResults: build.query<
@@ -307,6 +316,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    getWildcardPromotionImpact: build.query<
+      WildcardPromotionImpact,
+      { urnList: string[] }
+    >({
+      query: ({ urnList }) => ({
+        method: "POST",
+        url: "/plus/discovery-monitor/promotion-impact",
+        body: { staged_resource_urns: urnList },
+      }),
+    }),
     ignoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
         return {
@@ -552,14 +571,17 @@ const actionCenterApi = baseApi.injectEndpoints({
         steward_user_id?: string[];
       }
     >({
-      query: ({ monitor_type, ...params }) => {
-        return {
-          url: `/plus/discovery-monitor/aggregate-results/summary/${monitor_type}/refresh`,
-          method: "POST",
-          params,
-        };
-      },
-      invalidatesTags: ["Monitor Statistics"],
+      query: ({ monitor_type, ...params }) => ({
+        url: `/plus/discovery-monitor/aggregate-results/summary/${monitor_type}/refresh`,
+        method: "POST",
+        params,
+      }),
+      invalidatesTags: [
+        "Monitor Statistics",
+        "Discovery Monitor Results",
+        "Identity Provider Monitor Results",
+        "Monitor Field Results",
+      ],
     }),
 
     retryMonitorTask: build.mutation<
@@ -642,6 +664,7 @@ export const {
   useAddMonitorResultSystemsMutation,
   useIgnoreMonitorResultSystemsMutation,
   useAddMonitorResultAssetsMutation,
+  useLazyGetWildcardPromotionImpactQuery,
   useIgnoreMonitorResultAssetsMutation,
   useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,

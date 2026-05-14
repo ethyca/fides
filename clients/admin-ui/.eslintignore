@@ -7,6 +7,7 @@ jest.config.js
 cypress.config.ts
 cypress/screenshots
 .eslintrc*
+__mocks__
 postcss.config.js
 tailwind.config.js
 src/types/api

@@ -222,7 +222,6 @@ declare global {
        * without needing to modify the UI.
        *
        * @example cy.overrideFeatureFlag("webMonitor", false)
-       * @example cy.overrideFeatureFlag("dataCatalog", true)
        */
       overrideFeatureFlag(
         flagName: string,
