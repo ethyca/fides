@@ -65,12 +65,14 @@ export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
 
 const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
   <div className={styles.node} data-testid="constraint-node">
-    <Handle
-      type="target"
-      position={Position.Left}
-      id="left"
-      className={styles.handle}
-    />
+    {data.isFirstOfType && (
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className={styles.handle}
+      />
+    )}
     {!data.isFirstOfType && (
       <Handle
         type="target"
@@ -235,12 +237,14 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         showAddAction={false}
       />
     )}
-    <Handle
-      type="source"
-      position={Position.Right}
-      id="right"
-      className={styles.handle}
-    />
+    {data.isFirstOfType && (
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right"
+        className={styles.handle}
+      />
+    )}
     <Handle
       type="source"
       position={Position.Bottom}

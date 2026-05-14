@@ -20,8 +20,6 @@ export const baseApi = createApi({
     "Allow List",
     "Asset Reporting",
     "Auth",
-    "Catalog Systems",
-    "Catalog Projects",
     "Classify Instances Datasets",
     "Classify Instances Systems",
     "Connection Type",

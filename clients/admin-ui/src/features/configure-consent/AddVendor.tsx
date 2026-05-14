@@ -1,19 +1,17 @@
 import {
   Button,
   ButtonProps,
-  ChakraBox as Box,
-  ChakraVStack as VStack,
+  Flex,
+  Form,
+  FormRule,
+  Input,
   Modal,
-  useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
-import { useMemo, useRef } from "react";
-import * as Yup from "yup";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   selectAllDictEntries,
@@ -31,7 +29,7 @@ import {
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
-import VendorSelector from "~/features/system/VendorSelector";
+import VendorSelectorAnt from "~/features/system/VendorSelectorAnt";
 import { System } from "~/types/api";
 
 import {
@@ -59,35 +57,11 @@ const AddVendor = ({
   buttonProps?: ButtonProps;
 }) => {
   const message = useMessage();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [form] = Form.useForm<FormValues>();
   const dispatch = useAppDispatch();
 
   const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
-
-  const ValidationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        name: Yup.string()
-          .required()
-          .label("Vendor name")
-          .test("is-unique", "", async (value, context) => {
-            const { data } = await getSystemQueryTrigger({
-              page: 1,
-              size: 10,
-              search: value,
-            });
-            const similarSystemNames = data?.items || [];
-            if (similarSystemNames.some((s) => s.name === value)) {
-              return context.createError({
-                message: `You already have a vendor called "${value}". Please specify a unique name for this vendor.`,
-              });
-            }
-            return true;
-          }),
-      }),
-    [getSystemQueryTrigger],
-  );
 
   // Subscribe and get dictionary values
   const { tcf, dictionaryService } = useFeatures();
@@ -100,27 +74,73 @@ const AddVendor = ({
   const [createSystemMutationTrigger] = useCreateSystemMutation();
   const suggestionsState = useAppSelector(selectSuggestions);
 
+  // Track form state for the Save button enable/disable.
+  const watchedValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, watchedValues, isOpen]);
+
+  const watchedVendorId = Form.useWatch<string | undefined>("vendor_id", form);
+  const dictEntry = useAppSelector(selectDictEntry(watchedVendorId || ""));
+
+  const nameRules: FormRule[] = useMemo(
+    () => [
+      { required: true, message: "Vendor name is a required field" },
+      {
+        async validator(_, value: string) {
+          if (!value) {
+            return;
+          }
+          const { data } = await getSystemQueryTrigger({
+            page: 1,
+            size: 10,
+            search: value,
+          });
+          const similarSystemNames = data?.items || [];
+          if (similarSystemNames.some((s) => s.name === value)) {
+            throw new Error(
+              `You already have a vendor called "${value}". Please specify a unique name for this vendor.`,
+            );
+          }
+        },
+      },
+    ],
+    [getSystemQueryTrigger],
+  );
+
   const handleCloseModal = () => {
-    onClose();
+    setIsOpen(false);
+    form.resetFields();
     dispatch(setSuggestions("initial"));
     dispatch(setLockedForGVL(false));
   };
 
-  const formRef = useRef(null);
-  const selectedVendorId = formRef.current
-    ? (formRef.current as { values: FormValues }).values.vendor_id
-    : undefined;
-  const dictEntry = useAppSelector(selectDictEntry(selectedVendorId || ""));
-
-  const handleSubmit = async (
-    values: FormValues,
-    helpers: FormikHelpers<FormValues>,
-  ) => {
+  const handleSubmit = async () => {
+    // Read the full form store, not just registered Form.Item fields. Each
+    // privacy declaration carries `name` and `data_categories` that aren't
+    // bound to a visible Form.Item but are required by the backend.
+    const values = form.getFieldsValue(true) as FormValues;
     const transformedDeclarations = values.privacy_declarations
       .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)
       .flatMap((dec) => {
+        // Convert the UI's cookieNames (string[]) into the API's cookies
+        // shape. If the dictionary populated full cookie objects, keep the
+        // match so domain/path survive; for user-typed names, default
+        // `path: "/"`.
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { consent_use, ...rest } = dec;
+        const { consent_use, cookieNames, cookies, ...rest } = dec;
+        const cookiesByName = new Map((cookies ?? []).map((c) => [c.name, c]));
+        const transformedCookies = (cookieNames ?? []).map(
+          (name) => cookiesByName.get(name) ?? { name, path: "/" },
+        );
+        const base = { ...rest, cookies: transformedCookies };
 
         // for "marketing", we create two data uses on the backend
         if (dec.consent_use === "marketing" && !dec.data_use) {
@@ -128,12 +148,12 @@ const AddVendor = ({
             "marketing.advertising.first_party.targeted",
             "marketing.advertising.third_party.targeted",
           ].map((dataUse) => ({
-            ...rest,
+            ...base,
             data_use: dataUse,
           }));
         }
         return {
-          ...rest,
+          ...base,
           data_use: dec.data_use ? dec.data_use : dec.consent_use!,
         };
       });
@@ -153,7 +173,6 @@ const AddVendor = ({
       return;
     }
     message.success("Vendor successfully created!");
-    helpers.resetForm();
     handleCloseModal();
   };
 
@@ -178,7 +197,7 @@ const AddVendor = ({
     if (onButtonClick) {
       onButtonClick();
     } else {
-      onOpen();
+      setIsOpen(true);
     }
   };
 
@@ -191,75 +210,67 @@ const AddVendor = ({
       >
         {buttonLabel}
       </Button>
-      <Formik
-        initialValues={defaultInitialValues}
-        enableReinitialize
-        onSubmit={handleSubmit}
-        validationSchema={ValidationSchema}
-        innerRef={formRef}
+      <Modal
+        open={isOpen}
+        onCancel={handleCloseModal}
+        centered
+        destroyOnHidden
+        title="Add a vendor"
+        footer={
+          <Flex justify="space-between">
+            <Button onClick={handleCloseModal}>Cancel</Button>
+            <Button
+              type="primary"
+              onClick={() => form.submit()}
+              disabled={isLoading || !submittable}
+              loading={isLoading}
+              data-testid="save-btn"
+            >
+              Save vendor
+            </Button>
+          </Flex>
+        }
       >
-        {({ dirty, isValid, resetForm }) => (
-          <Modal
-            open={isOpen}
-            onCancel={handleCloseModal}
-            centered
-            destroyOnHidden
-            title="Add a vendor"
-            footer={null}
+        <div data-testid="add-vendor-modal-content">
+          {lockedForGVL ? <GVLNotice /> : null}
+          <Form<FormValues>
+            form={form}
+            initialValues={defaultInitialValues}
+            layout="vertical"
+            onFinish={handleSubmit}
           >
-            <Box data-testid="add-vendor-modal-content" my={4}>
-              {lockedForGVL ? <GVLNotice /> : null}
-              <Form>
-                <VStack alignItems="start" spacing={6}>
-                  {dictionaryService ? (
-                    <VendorSelector
-                      label="Vendor name"
-                      options={dictionaryOptions}
-                      isLoading={isLoading}
-                      onVendorSelected={handleVendorSelected}
-                      isCreate
-                      lockedForGVL={lockedForGVL}
-                    />
-                  ) : (
-                    <CustomTextInput
-                      id="name"
-                      name="name"
-                      isRequired
-                      label="Vendor name"
-                      tooltip='Give the system a unique, and relevant name for reporting purposes. e.g. "Email Data Warehouse"'
-                      variant="stacked"
-                    />
-                  )}
-                  <DataUsesForm
-                    showSuggestions={suggestionsState === "showing"}
-                    isCreate
-                    disabled={lockedForGVL}
-                  />
-                  <div className="flex w-full justify-between">
-                    <Button
-                      onClick={() => {
-                        handleCloseModal();
-                        resetForm();
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      disabled={isLoading || !dirty || !isValid}
-                      loading={isLoading}
-                      data-testid="save-btn"
-                    >
-                      Save vendor
-                    </Button>
-                  </div>
-                </VStack>
-              </Form>
-            </Box>
-          </Modal>
-        )}
-      </Formik>
+            <Flex vertical gap="middle" align="stretch">
+              {dictionaryService ? (
+                <VendorSelectorAnt
+                  label="Vendor name"
+                  options={dictionaryOptions}
+                  isLoading={isLoading}
+                  onVendorSelected={handleVendorSelected}
+                  isCreate
+                  lockedForGVL={lockedForGVL}
+                  nameRules={nameRules}
+                />
+              ) : (
+                <Form.Item
+                  name="name"
+                  label="Vendor name"
+                  required
+                  tooltip='Give the system a unique, and relevant name for reporting purposes. e.g. "Email Data Warehouse"'
+                  rules={nameRules}
+                  className="mb-0"
+                >
+                  <Input data-testid="input-name" />
+                </Form.Item>
+              )}
+              <DataUsesForm
+                showSuggestions={suggestionsState === "showing"}
+                isCreate
+                disabled={lockedForGVL}
+              />
+            </Flex>
+          </Form>
+        </div>
+      </Modal>
     </>
   );
 };

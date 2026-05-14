@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Restored the dev-only `/docs` Swagger UI page in the Privacy Center now that `swagger-ui-react` supports React 19, and removed the duplicate Swagger setup from the admin UI.
+pr: 8190
+labels: []

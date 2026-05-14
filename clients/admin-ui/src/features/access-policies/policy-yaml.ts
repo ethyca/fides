@@ -83,13 +83,37 @@ export const updateYamlField = (
   }
 };
 
-const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
+export const POLICY_NODE_ID = "policy";
+
+/**
+ * Canonical render order for built-in taxonomies — independent of YAML key
+ * order. Custom taxonomy keys (anything not in this list) follow, in YAML
+ * insertion order.
+ */
+const BUILT_IN_RENDER_ORDER: string[] = [
   ConditionProperty.DATA_CATEGORIES,
   ConditionProperty.DATA_USE,
   ConditionProperty.DATA_SUBJECTS,
+  ConditionProperty.SYSTEM_GROUP,
 ];
 
-export const POLICY_NODE_ID = "policy";
+/**
+ * Extract taxonomy keys from a match block. Built-in keys come first in the
+ * canonical render order; anything else (custom taxonomies) follows in YAML
+ * insertion order.
+ */
+const extractMatchKeys = (matchBlock: MatchBlock): string[] => {
+  const hasDimension = (k: string) => {
+    const dim = matchBlock[k];
+    return !!dim && (Array.isArray(dim.all) || Array.isArray(dim.any));
+  };
+  const builtIns = BUILT_IN_RENDER_ORDER.filter(hasDimension);
+  const builtInSet = new Set(builtIns);
+  const custom = Object.keys(matchBlock).filter(
+    (k) => !builtInSet.has(k) && hasDimension(k),
+  );
+  return [...builtIns, ...custom];
+};
 
 /**
  * Build display edges using a chain topology:
@@ -166,10 +190,10 @@ export const yamlToNodesAndEdges = (
     type: "labeledEdge",
   });
 
-  // Condition nodes — chain: first from action ("when"), rest vertical ("and")
-  const presentProperties = CONDITION_PROPERTY_KEYS.filter(
-    (p) => !!matchBlock[p],
-  );
+  // Condition nodes — chain: first from action ("when"), rest vertical ("and").
+  // Iterate the match block in YAML insertion order so any taxonomy key
+  // (built-in or custom) is supported.
+  const presentProperties = extractMatchKeys(matchBlock);
 
   presentProperties.forEach((property, idx) => {
     const dimension = matchBlock[property] as MatchDimension;
@@ -468,6 +492,279 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   }
 
   return yaml.dump(policyYaml, { lineWidth: 120 });
+};
+
+// ---------------------------------------------------------------------------
+// Agent-update transition helpers.
+//
+// The agent reports its edits as three buckets of node ids (added/changed/
+// removed) — see PolicyUpdate in agent-chat.slice.ts. The frontend just maps
+// each id to the corresponding React Flow node (by content, not by positional
+// id) and applies a className the SCSS animations key off.
+// ---------------------------------------------------------------------------
+
+type ChangeStatus = "added" | "modified" | "removed";
+
+/**
+ * Compute the content-based id for a node, matching the format the LLM is
+ * taught in the system prompt:
+ *   "policy" | "action" | "condition:<dim>" | "constraint:<type>:<key>"
+ *
+ * Returns null when the node doesn't have enough data to identify (e.g. a
+ * blank constraintNode the user just dragged in).
+ */
+export const nodeContentId = (node: Node): string | null => {
+  if (node.id === POLICY_NODE_ID || node.type === "policyNode") {
+    return "policy";
+  }
+  if (node.type === "actionNode") {
+    return "action";
+  }
+  if (node.type === "conditionNode") {
+    const { property } = node.data as ConditionNodeData;
+    return property ? `condition:${property}` : null;
+  }
+  if (node.type === "constraintNode") {
+    const data = node.data as ConstraintNodeData;
+    if (data.constraintType === ConstraintType.CONSENT) {
+      return `constraint:consent:${data.privacyNoticeKey ?? ""}`;
+    }
+    if (data.constraintType === ConstraintType.GEO_LOCATION) {
+      return `constraint:geo_location:${data.geoField ?? ""}`;
+    }
+    if (data.constraintType === ConstraintType.DATA_FLOW) {
+      return `constraint:data_flow:${data.dataFlowDirection ?? ""}`;
+    }
+  }
+  return null;
+};
+
+/**
+ * Tag each node and edge with a className driving the CSS animation. Bumping
+ * `diffKey` on a fresh transition restarts the animation even if the status
+ * is unchanged.
+ */
+export const tagNodesWithDiff = (
+  nodes: Node[],
+  edges: Edge[],
+  added: readonly string[],
+  changed: readonly string[],
+  diffKey: number,
+): { nodes: Node[]; edges: Edge[] } => {
+  const addedSet = new Set(added);
+  const changedSet = new Set(changed);
+  const statusById = new Map<string, ChangeStatus>();
+
+  const taggedNodes = nodes.map((node) => {
+    let status: ChangeStatus | undefined;
+    if (node.id.startsWith("removed-")) {
+      status = "removed";
+    } else {
+      const contentId = nodeContentId(node);
+      if (contentId) {
+        if (addedSet.has(contentId)) {
+          status = "added";
+        } else if (changedSet.has(contentId)) {
+          status = "modified";
+        }
+      }
+    }
+    if (!status) {
+      return node;
+    }
+    statusById.set(node.id, status);
+    const className = [
+      node.className,
+      `diffStatus-${status}`,
+      `diffKey-${diffKey}`,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return { ...node, className };
+  });
+
+  const taggedEdges = edges.map((edge) => {
+    const sourceStatus = statusById.get(edge.source);
+    const targetStatus = statusById.get(edge.target);
+    let edgeStatus: ChangeStatus | undefined;
+    if (sourceStatus === "removed" || targetStatus === "removed") {
+      edgeStatus = "removed";
+    } else if (sourceStatus === "added" || targetStatus === "added") {
+      edgeStatus = "added";
+    }
+    if (!edgeStatus) {
+      return edge;
+    }
+    const className = [edge.className, `diffStatus-${edgeStatus}`]
+      .filter(Boolean)
+      .join(" ");
+    return { ...edge, className };
+  });
+
+  return { nodes: taggedNodes, edges: taggedEdges };
+};
+
+/**
+ * Build a transient graph that overlays the new YAML's nodes with ghost
+ * copies of the conditions/constraints the agent reported as removed.
+ *
+ * Ghost ids are prefixed with `removed-` so they (a) won't collide with the
+ * positional id counter regex in PolicyCanvasPanel.syncCounters, and (b) are
+ * easy for tagNodesWithDiff to recognize as ghosts.
+ *
+ * Policy and action ids are intentionally not ghostable — they're always
+ * present in any non-empty graph.
+ */
+export const buildUnionGraph = (
+  oldYaml: string | undefined,
+  newYaml: string,
+  removed: readonly string[],
+): { nodes: Node[]; edges: Edge[] } => {
+  const newGraph = yamlToNodesAndEdges(newYaml);
+  if (!newGraph) {
+    return { nodes: [], edges: [] };
+  }
+  if (!oldYaml || removed.length === 0) {
+    return newGraph;
+  }
+  const oldGraph = yamlToNodesAndEdges(oldYaml);
+  if (!oldGraph) {
+    return newGraph;
+  }
+
+  const ghostNodes: Node[] = [];
+  const ghostEdges: Edge[] = [];
+
+  const newActionNode = newGraph.nodes.find((n) => n.type === "actionNode");
+  const newFirstCondition = newGraph.nodes.find(
+    (n) => n.type === "conditionNode",
+  );
+
+  // First pass: create all ghost nodes so the edge pass can resolve parents
+  // that are themselves removed (the `removed` array isn't guaranteed to be
+  // ordered ancestor-first).
+  const ghostByOldId = new Map<string, Node>();
+  removed.forEach((contentId) => {
+    const oldNode = oldGraph.nodes.find((n) => nodeContentId(n) === contentId);
+    if (
+      !oldNode ||
+      (oldNode.type !== "conditionNode" && oldNode.type !== "constraintNode")
+    ) {
+      return;
+    }
+    const sanitized = contentId.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const ghostId = `removed-${sanitized}`;
+    const ghostNode: Node = {
+      ...oldNode,
+      id: ghostId,
+      position: { x: 0, y: 0 },
+      selectable: false,
+      draggable: false,
+    };
+    ghostNodes.push(ghostNode);
+    ghostByOldId.set(oldNode.id, ghostNode);
+  });
+
+  // Second pass: wire ghost edges, mirroring the live edge conventions from
+  // yamlToNodesAndEdges:
+  //   action → condition  : default L/R handles, label "when"
+  //   condition → condition: bottom→top handles, label "and"
+  //   condition → constraint: default L/R handles, label "unless"
+  //   constraint → constraint: bottom→top handles, label "and"
+  ghostNodes.forEach((ghostNode) => {
+    const oldNode = oldGraph.nodes.find(
+      (n) =>
+        `removed-${nodeContentId(n)?.replace(/[^a-zA-Z0-9_-]/g, "_")}` ===
+        ghostNode.id,
+    );
+    if (!oldNode) {
+      return;
+    }
+    const parentEdge = oldGraph.edges.find((e) => e.target === oldNode.id);
+    const oldParent = parentEdge
+      ? oldGraph.nodes.find((n) => n.id === parentEdge.source)
+      : undefined;
+
+    // Resolve the parent in the new graph: prefer the same-content surviving
+    // node, then a sibling ghost (parent was also removed), then degrade.
+    const oldParentContentId = oldParent ? nodeContentId(oldParent) : null;
+    const matchingNewParent = oldParentContentId
+      ? newGraph.nodes.find((n) => nodeContentId(n) === oldParentContentId)
+      : undefined;
+    const matchingGhostParent = oldParent
+      ? ghostByOldId.get(oldParent.id)
+      : undefined;
+    const resolvedParent = matchingNewParent ?? matchingGhostParent;
+
+    if (ghostNode.type === "conditionNode") {
+      // Removed conditions always hang off the action via "when". The action
+      // node is never removed, so fall back to newActionNode directly.
+      const parentIsSiblingCondition = resolvedParent?.type === "conditionNode";
+      const sourceId = parentIsSiblingCondition
+        ? resolvedParent.id
+        : newActionNode?.id;
+      if (!sourceId) {
+        return;
+      }
+      ghostEdges.push({
+        id: `e-ghost-${sourceId}-${ghostNode.id}`,
+        source: sourceId,
+        target: ghostNode.id,
+        ...(parentIsSiblingCondition
+          ? { sourceHandle: "bottom", targetHandle: "top" }
+          : {}),
+        type: "labeledEdge",
+        data: { label: parentIsSiblingCondition ? "and" : "when" },
+      });
+      return;
+    }
+
+    // constraintNode
+    if (resolvedParent?.type === "constraintNode") {
+      // sibling chain: vertical "and"
+      ghostEdges.push({
+        id: `e-ghost-${resolvedParent.id}-${ghostNode.id}`,
+        source: resolvedParent.id,
+        target: ghostNode.id,
+        sourceHandle: "bottom",
+        targetHandle: "top",
+        type: "labeledEdge",
+        data: { label: "and" },
+      });
+      return;
+    }
+    if (resolvedParent?.type === "conditionNode") {
+      // first-constraint anchor: horizontal "unless"
+      ghostEdges.push({
+        id: `e-ghost-${resolvedParent.id}-${ghostNode.id}`,
+        source: resolvedParent.id,
+        target: ghostNode.id,
+        type: "labeledEdge",
+        data: { label: "unless" },
+      });
+      return;
+    }
+    // Final fallback: parent chain is gone entirely. Anchor to the first
+    // condition in the new graph (or any surviving ghost condition) so the
+    // ghost still reads as a constraint instead of floating.
+    const fallbackSourceId =
+      newFirstCondition?.id ??
+      ghostNodes.find((n) => n.type === "conditionNode")?.id;
+    if (fallbackSourceId) {
+      ghostEdges.push({
+        id: `e-ghost-${fallbackSourceId}-${ghostNode.id}`,
+        source: fallbackSourceId,
+        target: ghostNode.id,
+        type: "labeledEdge",
+        data: { label: "unless" },
+      });
+    }
+  });
+
+  return {
+    nodes: [...newGraph.nodes, ...ghostNodes],
+    edges: [...newGraph.edges, ...ghostEdges],
+  };
 };
 
 /**
