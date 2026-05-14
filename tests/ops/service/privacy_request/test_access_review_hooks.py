@@ -72,7 +72,33 @@ class TestCheckAccessReviewGate:
         set_review_approved_callback(lambda pr_id, session: True)
         assert _run_gate(db, policy, privacy_request) is False
 
-    def test_pauses_request_when_review_required(
+    def test_continues_when_approved_callback_returns_false(
+        self, db: Session, policy: Policy, privacy_request: PrivacyRequest
+    ):
+        """Gate fires even when an approved callback is registered but returns False."""
+        set_access_review_required(True)
+        set_review_approved_callback(lambda pr_id, session: False)
+
+        assert _run_gate(db, policy, privacy_request) is True
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
+
+    def test_pauses_without_gate_callback(
+        self,
+        db: Session,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+    ):
+        """Gate pauses the request even when no gate callback is registered."""
+        set_access_review_required(True)
+
+        assert _run_gate(db, policy, privacy_request) is True
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
+
+    def test_pauses_request_with_gate_callback(
         self,
         db: Session,
         policy: Policy,
