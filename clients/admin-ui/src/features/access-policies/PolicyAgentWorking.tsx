@@ -10,6 +10,7 @@ const PolicyAgentWorking = ({ size = "default" }: PolicyAgentWorkingProps) => (
   <Flex
     align="center"
     gap="small"
+    role="status"
     className={`${styles.container} ${size === "small" ? styles.small : ""}`}
     data-testid="policy-agent-working"
   >
