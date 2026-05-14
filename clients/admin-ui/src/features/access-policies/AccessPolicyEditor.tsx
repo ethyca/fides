@@ -951,7 +951,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           pendingTransition={pendingTransition}
           layoutedNodes={layoutedNodes}
         />
-        {true && (
+        {pendingTransition && (
           <Panel position="top-center">
             <PolicyAgentWorking />
           </Panel>
