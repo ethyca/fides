@@ -146,5 +146,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "accessPackages": {
+    "label": "Access packages",
+    "description": "Data-use-organized access packages with review workflow",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
