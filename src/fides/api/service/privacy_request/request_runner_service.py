@@ -69,6 +69,9 @@ from fides.api.service.messaging.message_dispatch_service import (
     dispatch_message,
     message_send_enabled,
 )
+from fides.api.service.privacy_request.access_review_hooks import (
+    check_access_review_gate,
+)
 from fides.api.service.privacy_request.attachment_handling import (
     get_attachments_content,
     process_attachments_for_upload,
@@ -674,6 +677,20 @@ def run_privacy_request(
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
                     )
+
+                    # Access review gate: save results for preview, then pause
+                    if check_access_review_gate(
+                        session,
+                        policy,
+                        filtered_access_results,
+                        dataset_graph,
+                        privacy_request,
+                        manual_webhook_access_results.manual_data_for_storage,
+                        fides_connector_datasets,
+                        save_access_results,
+                    ):
+                        return
+
                     access_result_urls = upload_and_save_access_results(
                         session,
                         policy,
