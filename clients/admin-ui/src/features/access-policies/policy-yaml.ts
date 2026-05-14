@@ -10,6 +10,7 @@ import {
   ActionBlock,
   ActionType,
   ConditionOperator,
+  ConditionProperty,
   ConsentRequirement,
   ConstraintType,
   DataFlowDirection,
@@ -84,12 +85,35 @@ export const updateYamlField = (
 
 export const POLICY_NODE_ID = "policy";
 
-/** Extract taxonomy keys from a match block, preserving YAML insertion order. */
-const extractMatchKeys = (matchBlock: MatchBlock): string[] =>
-  Object.keys(matchBlock).filter((k) => {
+/**
+ * Canonical render order for built-in taxonomies — independent of YAML key
+ * order. Custom taxonomy keys (anything not in this list) follow, in YAML
+ * insertion order.
+ */
+const BUILT_IN_RENDER_ORDER: string[] = [
+  ConditionProperty.DATA_CATEGORIES,
+  ConditionProperty.DATA_USE,
+  ConditionProperty.DATA_SUBJECTS,
+  ConditionProperty.SYSTEM_GROUP,
+];
+
+/**
+ * Extract taxonomy keys from a match block. Built-in keys come first in the
+ * canonical render order; anything else (custom taxonomies) follows in YAML
+ * insertion order.
+ */
+const extractMatchKeys = (matchBlock: MatchBlock): string[] => {
+  const hasDimension = (k: string) => {
     const dim = matchBlock[k];
     return !!dim && (Array.isArray(dim.all) || Array.isArray(dim.any));
-  });
+  };
+  const builtIns = BUILT_IN_RENDER_ORDER.filter(hasDimension);
+  const builtInSet = new Set(builtIns);
+  const custom = Object.keys(matchBlock).filter(
+    (k) => !builtInSet.has(k) && hasDimension(k),
+  );
+  return [...builtIns, ...custom];
+};
 
 /**
  * Build display edges using a chain topology:
