@@ -1,0 +1,4 @@
+type: Added
+description: Added self-service email verification flow for admin users via a new "verify your email" CTA banner.
+pr: 8180
+labels: ["db-migration"]
