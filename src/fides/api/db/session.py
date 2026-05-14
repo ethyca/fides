@@ -95,7 +95,7 @@ def get_db_engine(
 
 
 def get_db_session(
-    config: FidesConfig,
+    config: FidesConfig,  # TODO: remove — no longer used, all callers pass CONFIG
     autocommit: bool = False,
     autoflush: bool = False,
     engine: Engine | None = None,
