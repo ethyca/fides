@@ -21,9 +21,9 @@ from fides.api.db.ctl_session import (
 )
 from fides.api.db.database import get_db_health
 from fides.api.deps import get_db
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
-from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
 from fides.common.engine_creators import db_cred_provider

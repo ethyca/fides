@@ -35,6 +35,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.models.property import Property
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.messaging.messaging import MessagingMethod
 from fides.api.schemas.privacy_request import (
@@ -50,7 +51,6 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.redis_cache import Identity
-from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,

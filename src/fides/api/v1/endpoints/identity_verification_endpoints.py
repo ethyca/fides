@@ -4,8 +4,8 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from fides.api import deps
-from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.models.messaging import MessagingConfig
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.schemas.identity_verification import IdentityVerificationConfigResponse
 from fides.api.util.api_router import APIRouter
 from fides.common import urn_registry as urls

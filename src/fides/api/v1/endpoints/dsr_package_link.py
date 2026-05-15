@@ -13,10 +13,10 @@ from starlette.status import (
 )
 
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
-from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.deps import get_db
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import get_active_default_storage_config
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.oauth.utils import validate_download_token
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.storage.storage import StorageType

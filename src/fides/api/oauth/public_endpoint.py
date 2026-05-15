@@ -125,4 +125,6 @@ def validate_endpoint_auth_policy(app) -> None:
             "#public-internet----fides-webserver"
         )
 
-    logger.info("Endpoint auth policy validated: all endpoints are protected or explicitly public")
+    logger.info(
+        "Endpoint auth policy validated: all endpoints are protected or explicitly public"
+    )

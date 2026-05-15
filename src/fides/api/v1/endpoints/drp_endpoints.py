@@ -16,6 +16,7 @@ from starlette.status import (
 from fides.api import common_exceptions, deps
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.drp_privacy_request import (
     DRP_VERSION,
@@ -35,7 +36,6 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
