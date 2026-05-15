@@ -46,7 +46,7 @@ export const SubjectRequestActionTypeOptions = [
 
 // Dataset Test is intentionally omitted — those are system-internal test runs,
 // not user-facing DSRs, and should not be filterable from the Request Manager UI.
-// The backend still accepts `dataset_test` as a filter value for programmatic API use.
+// The backend still accepts the Dataset Test source for programmatic API use.
 export const SubjectRequestSourceMap = new Map<PrivacyRequestSource, string>([
   [PrivacyRequestSource.PRIVACY_CENTER, "Privacy Center"],
   [PrivacyRequestSource.REQUEST_MANAGER, "Request Manager"],
