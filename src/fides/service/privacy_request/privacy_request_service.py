@@ -1313,9 +1313,10 @@ def _process_privacy_request_restart(
         )
 
     # Clean up any access review state so the request enters review fresh
-    cleanup = get_pre_restart_cleanup()
-    if cleanup:
-        cleanup(privacy_request.id, db)
+    if privacy_request.status == PrivacyRequestStatus.awaiting_access_review:
+        cleanup = get_pre_restart_cleanup()
+        if cleanup:
+            cleanup(privacy_request.id, db)
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)

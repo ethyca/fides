@@ -19,6 +19,7 @@ from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
+    DSRReportBuilderProtocol,
     get_dsr_report_builder,
 )
 from fides.api.service.storage.streaming.dsr_storage import (
@@ -329,7 +330,7 @@ class SmartOpenStreamingStorage:
         return validated_attachments
 
     def _collect_and_validate_attachments_from_dsr_builder(
-        self, data: dict, dsr_builder: Any
+        self, data: dict, dsr_builder: "DSRReportBuilderProtocol"
     ) -> list[AttachmentProcessingInfo]:
         """Collect and validate attachments using the DSR report builder's processed attachments.
 

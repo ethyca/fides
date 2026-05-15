@@ -69,6 +69,9 @@ def write_to_in_memory_buffer(
                 )
             if resp_format == ResponseFormat.csv.value:
                 return builder.generate_csv()
+            raise ValueError(
+                f"Unsupported response format '{resp_format}' for custom builder"
+            )
 
         # Default DSRReportBuilder path
         if resp_format == ResponseFormat.html.value:

@@ -20,9 +20,6 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry i
     set_review_approved_callback,
     set_review_gate_callback,
 )
-from fides.api.service.privacy_request.request_runner_service import (
-    save_access_results,
-)
 
 
 @pytest.fixture(autouse=True)
@@ -31,9 +28,9 @@ def _reset_registry():
     yield
     set_dsr_report_builder(DSRReportBuilder)
     set_access_review_required(False)
-    set_review_approved_callback(None)  # type: ignore[arg-type]
-    set_pre_restart_cleanup(None)  # type: ignore[arg-type]
-    set_review_gate_callback(None)  # type: ignore[arg-type]
+    set_review_approved_callback(None)
+    set_pre_restart_cleanup(None)
+    set_review_gate_callback(None)
 
 
 def _run_gate(db: Session, policy: Policy, privacy_request: PrivacyRequest) -> bool:
@@ -46,7 +43,6 @@ def _run_gate(db: Session, policy: Policy, privacy_request: PrivacyRequest) -> b
         privacy_request=privacy_request,
         manual_data_for_storage={},
         fides_connector_datasets=set(),
-        save_access_results=save_access_results,
     )
 
 

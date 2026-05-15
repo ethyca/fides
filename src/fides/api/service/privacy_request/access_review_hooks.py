@@ -5,7 +5,7 @@ Fidesplus registers callbacks via the dsr_report_builder_registry that
 create the review row and check approval status.
 """
 
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -23,17 +23,6 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry i
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.util.collection_util import Row
 
-# Type alias for the save function injected from request_runner_service
-SaveAccessResultsFn = Callable[
-    [
-        Session,
-        PrivacyRequest,
-        list[str],
-        dict[str, dict[str, list[dict[str, Optional[Any]]]]],
-    ],
-    None,
-]
-
 
 def _save_filtered_results_for_review(
     session: Session,
@@ -43,7 +32,6 @@ def _save_filtered_results_for_review(
     privacy_request: PrivacyRequest,
     manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]],
     fides_connector_datasets: set[str],
-    save_access_results: SaveAccessResultsFn,
 ) -> None:
     """Save filtered access results for admin review without uploading.
 
@@ -67,7 +55,7 @@ def _save_filtered_results_for_review(
         filtered_results.update(manual_data_for_storage)
         rule_filtered_results[rule.key] = filtered_results
 
-    save_access_results(session, privacy_request, [], rule_filtered_results)
+    privacy_request.save_filtered_access_results(session, rule_filtered_results)
 
 
 def check_access_review_gate(
@@ -78,7 +66,6 @@ def check_access_review_gate(
     privacy_request: PrivacyRequest,
     manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]],
     fides_connector_datasets: set[str],
-    save_access_results: SaveAccessResultsFn,
 ) -> bool:
     """Check whether this request should pause for access package review.
 
@@ -106,7 +93,6 @@ def check_access_review_gate(
         privacy_request,
         manual_data_for_storage,
         fides_connector_datasets,
-        save_access_results,
     )
 
     # Create the review row via fidesplus callback

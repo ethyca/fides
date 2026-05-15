@@ -25,9 +25,9 @@ def _reset_registry():
     yield
     set_dsr_report_builder(DSRReportBuilder)
     set_access_review_required(False)
-    set_review_approved_callback(None)  # type: ignore[arg-type]
-    set_pre_restart_cleanup(None)  # type: ignore[arg-type]
-    set_review_gate_callback(None)  # type: ignore[arg-type]
+    set_review_approved_callback(None)
+    set_pre_restart_cleanup(None)
+    set_review_gate_callback(None)
 
 
 class TestBuilderRegistry:

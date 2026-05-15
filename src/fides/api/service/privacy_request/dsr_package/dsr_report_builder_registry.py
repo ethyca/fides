@@ -5,13 +5,32 @@ with a custom implementation (e.g. AccessPackageReportBuilder) at startup,
 and to register callbacks for the access review workflow.
 """
 
-from typing import Callable, Optional
+from io import BytesIO
+from typing import Callable, Optional, Protocol, runtime_checkable
 
 from sqlalchemy.orm import Session
 
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
 )
+
+
+@runtime_checkable
+class DSRReportBuilderProtocol(Protocol):
+    """Contract for DSR report builders registered via this registry.
+
+    The default DSRReportBuilder only implements generate() (HTML).
+    Custom builders (e.g. AccessPackageReportBuilder) must implement
+    all three format methods.
+    """
+
+    used_filenames_per_dataset: dict[str, set[str]]
+    processed_attachments: dict[tuple[str, str], str]
+
+    def generate(self) -> BytesIO: ...
+    def generate_json(self) -> BytesIO: ...
+    def generate_csv(self) -> BytesIO: ...
+
 
 _dsr_report_builder_cls: type = DSRReportBuilder
 _review_required: bool = False
@@ -26,7 +45,13 @@ def get_dsr_report_builder() -> type:
 
 
 def set_dsr_report_builder(cls: type) -> None:
-    """Replace the DSR report builder class used for package generation."""
+    """Replace the DSR report builder class used for package generation.
+
+    Custom builders must satisfy DSRReportBuilderProtocol (generate,
+    generate_json, generate_csv). The default DSRReportBuilder only
+    implements generate() and is exempt — it never enters the custom
+    builder branch in storage.py.
+    """
     global _dsr_report_builder_cls
     _dsr_report_builder_cls = cls
 
@@ -51,8 +76,10 @@ def get_review_approved_callback() -> Optional[Callable[[str, Session], bool]]:
     return _review_approved_callback
 
 
-def set_review_approved_callback(callback: Callable[[str, Session], bool]) -> None:
-    """Register a callback to check whether a review has been approved."""
+def set_review_approved_callback(
+    callback: Callable[[str, Session], bool] | None,
+) -> None:
+    """Register (or clear) a callback to check whether a review has been approved."""
     global _review_approved_callback
     _review_approved_callback = callback
 
@@ -66,8 +93,8 @@ def get_pre_restart_cleanup() -> Optional[Callable[[str, Session], None]]:
     return _pre_restart_cleanup
 
 
-def set_pre_restart_cleanup(callback: Callable[[str, Session], None]) -> None:
-    """Register a cleanup callback for access review state on restart."""
+def set_pre_restart_cleanup(callback: Callable[[str, Session], None] | None) -> None:
+    """Register (or clear) a cleanup callback for access review state on restart."""
     global _pre_restart_cleanup
     _pre_restart_cleanup = callback
 
@@ -81,7 +108,7 @@ def get_review_gate_callback() -> Optional[Callable[[str, Session], None]]:
     return _review_gate_callback
 
 
-def set_review_gate_callback(callback: Callable[[str, Session], None]) -> None:
-    """Register the callback that creates the review row when the gate fires."""
+def set_review_gate_callback(callback: Callable[[str, Session], None] | None) -> None:
+    """Register (or clear) the callback that creates the review row when the gate fires."""
     global _review_gate_callback
     _review_gate_callback = callback

@@ -687,7 +687,6 @@ def run_privacy_request(
                         privacy_request,
                         manual_webhook_access_results.manual_data_for_storage,
                         fides_connector_datasets,
-                        save_access_results,
                     ):
                         return
 
