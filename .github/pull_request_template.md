@@ -1,38 +1,34 @@
-Ticket [<issue>] <!-- simply paste the ticket number between the brackets and it will auto-convert to a link -->
+<!--
+👋 Thanks for contributing to fides! Please fill in the template below.
+See CONTRIBUTING.md for the full contribution guide.
+-->
 
-### Description Of Changes
+## Summary
 
-<!-- Write some things about the changes and any potential caveats -->
+<!-- One or two sentences: what does this PR do and why? -->
 
-### Code Changes
+## Linked issue
 
-* <!-- list your code changes -->
+<!-- "Fixes #123" auto-closes the issue on merge. "Refs #123" for related context. -->
+Fixes #
 
-### Steps to Confirm
+## Type of change
 
-1. <!-- list any manual steps for reviewers to confirm the changes -->
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation
+- [ ] Other:
 
-### Pre-Merge Checklist
+## How to test
 
-* [ ] Issue requirements met
-* [ ] All CI pipelines succeeded
-* [ ] `CHANGELOG.md` updated
-  * [ ] Add a https://github.com/ethyca/fides/labels/db-migration label to the entry if your change includes a DB migration
-  * [ ] Add a https://github.com/ethyca/fides/labels/high-risk label to the entry if your change includes a high-risk change (i.e. potential for performance impact or unexpected regression) that should be flagged
-  * [ ] Updates unreleased work already in Changelog, no new entry necessary
-* UX feedback:
-  * [ ] All UX related changes have been reviewed by a designer
-  * [ ] No UX review needed
-* Followup issues:
-  * [ ] Followup issues created
-  * [ ] No followup issues
-* Database migrations:
-  * [ ] Ensure that your downrev is up to date with the latest revision on `main`
-  * [ ] Ensure that your `downgrade()` migration is correct and works
-    * [ ] If a downgrade migration is not possible for this change, please call this out in the PR description!
-  * [ ] No migrations
-* Documentation:
-  * [ ] Documentation complete, [PR opened in fidesdocs](https://github.com/ethyca/fidesdocs/pulls)
-  * [ ] Documentation [issue created in fidesdocs](https://github.com/ethyca/fidesdocs/issues/new/choose)
-  * [ ] If there are any new client scopes created as part of the pull request, remember to update public-facing documentation that references our scope registry
-  * [ ] No documentation updates required
+<!-- Steps a reviewer can follow to verify your change. -->
+
+1.
+2.
+3.
+
+## Checklist
+
+- [ ] I've read [CONTRIBUTING.md](../CONTRIBUTING.md) and the [Code of Conduct](../CODE_OF_CONDUCT.md)
+- [ ] Tests added for new code (or an explanation in the PR description if not)
+- [ ] Changelog entry added under [`changelog/`](../changelog/README.md) (CI will fail without one)
