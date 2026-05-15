@@ -136,7 +136,7 @@ describe("Email verification banner", () => {
     cy.visit("/");
     cy.getByTestId("Home");
     cy.getByTestId("email-verification-banner-unverified")
-      .find("[aria-label='Close']")
+      .find(".ant-alert-close-icon")
       .click();
     cy.get("[data-testid^='email-verification-banner-']").should("not.exist");
 
@@ -168,7 +168,7 @@ describe("Email verification banner", () => {
     cy.visit("/");
     cy.getByTestId("Home");
     cy.getByTestId("email-verification-banner-unverified")
-      .find("[aria-label='Close']")
+      .find(".ant-alert-close-icon")
       .click();
     cy.get("[data-testid^='email-verification-banner-']").should("not.exist");
 
