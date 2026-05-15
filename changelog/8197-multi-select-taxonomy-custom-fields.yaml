@@ -1,0 +1,4 @@
+type: Added
+description: Support multi-select taxonomy custom fields via the "taxonomy_key[]" field_type convention — frontend now renders a multi-select dropdown for [] fields on taxonomy detail pages
+pr: 8197
+labels: []
