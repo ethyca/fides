@@ -3380,6 +3380,20 @@ dataset:
         data_categories: [system.operations]
       - name: username
         data_categories: [user.account.username]
+  - name: fides_user_email_verification
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: hashed_token
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: salt
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: user_id
+        data_categories: [user.unique_id]
   - name: fides_user_password_reset
     fields:
       - name: created_at

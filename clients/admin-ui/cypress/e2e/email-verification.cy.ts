@@ -1,52 +1,45 @@
+import { stubPlus } from "cypress/support/stubs";
+
 import { STORAGE_ROOT_KEY } from "~/constants";
 
-type CypressUser = {
-  id: string;
-  username: string;
-  created_at: string;
+type UserOverrides = {
   email_address?: string | null;
-  first_name?: string | null;
-  last_name?: string | null;
   email_verified_at?: string | null;
   password_login_enabled?: boolean | null;
 };
 
-const writeAuthState = (user: CypressUser) => {
-  cy.window().then((win) => {
-    win.localStorage.setItem(
-      STORAGE_ROOT_KEY,
-      JSON.stringify({
-        auth: JSON.stringify({
-          user,
-          token: "super_secret",
-        }),
-      }),
-    );
+// Mirrors the canonical `cy.login()` pattern from cypress/support/commands.ts:
+// writes the persisted redux auth state to localStorage via the cypress command
+// queue (not via `onBeforeLoad`) and stubs the user-permission endpoint, then
+// allows test-by-test overrides on the user fields the banner cares about.
+const loginAs = (overrides: UserOverrides = {}) => {
+  cy.fixture("login.json").then((body) => {
+    const authState = {
+      user: { ...body.user_data, ...overrides },
+      token: body.token_data.access_token,
+    };
+    cy.window().then((win) => {
+      win.localStorage.setItem(
+        STORAGE_ROOT_KEY,
+        JSON.stringify({ auth: JSON.stringify(authState) }),
+      );
+    });
   });
-};
-
-// `id` is intentionally not prefixed with "fid_" so the user is treated as a
-// root user by `isRootUserId`, matching the convention in cypress/fixtures/login.json.
-// Without this, `useNav` returns no active route for the synthetic user and
-// `ProtectedRoute` renders null, so `cy.getByTestId("Home")` would time out.
-const baseUser: CypressUser = {
-  id: "123",
-  username: "cypress-user",
-  created_at: "2026-01-01T00:00:00.000Z",
-  email_address: "cypress-user@ethyca.com",
-  email_verified_at: null,
-  password_login_enabled: true,
-};
-
-const stubLoggedInRequests = () => {
   cy.intercept("/api/v1/user/*/permission", {
     fixture: "user-management/permissions.json",
   }).as("getUserPermission");
+};
+
+const baseLoginUserId = "123"; // matches login.json fixture
+const baseLoginEmail = "cypress-user@ethyca.com";
+
+const stubLoggedInRequests = () => {
+  stubPlus(true);
   cy.intercept("GET", "/api/v1/system", { body: [] });
 };
 
-const snoozeKeyFor = (user: CypressUser) =>
-  `fides:email-verification-banner-snooze:${user.id}:${user.email_address ?? "none"}`;
+const snoozeKeyFor = (email: string | null) =>
+  `fides:email-verification-banner-snooze:${baseLoginUserId}:${email ?? "none"}`;
 
 describe("Email verification banner", () => {
   beforeEach(() => {
@@ -57,13 +50,11 @@ describe("Email verification banner", () => {
     cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
       body: { enabled: true },
     }).as("getEmailInviteStatus");
-    cy.visit("/", {
-      onBeforeLoad: () =>
-        writeAuthState({
-          ...baseUser,
-          email_verified_at: "2026-01-02T00:00:00.000Z",
-        }),
+    loginAs({
+      email_address: baseLoginEmail,
+      email_verified_at: "2026-01-02T00:00:00.000Z",
     });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.get("[data-testid^='email-verification-banner-']").should("not.exist");
   });
@@ -72,9 +63,8 @@ describe("Email verification banner", () => {
     cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
       body: { enabled: false },
     }).as("getEmailInviteStatus");
-    cy.visit("/", {
-      onBeforeLoad: () => writeAuthState(baseUser),
-    });
+    loginAs({ email_address: baseLoginEmail, email_verified_at: null });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.get("[data-testid^='email-verification-banner-']").should("not.exist");
   });
@@ -83,10 +73,12 @@ describe("Email verification banner", () => {
     cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
       body: { enabled: true },
     }).as("getEmailInviteStatus");
-    cy.visit("/", {
-      onBeforeLoad: () =>
-        writeAuthState({ ...baseUser, password_login_enabled: false }),
+    loginAs({
+      email_address: baseLoginEmail,
+      email_verified_at: null,
+      password_login_enabled: false,
     });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.get("[data-testid^='email-verification-banner-']").should("not.exist");
   });
@@ -102,9 +94,8 @@ describe("Email verification banner", () => {
       },
     }).as("requestEmailVerification");
 
-    cy.visit("/", {
-      onBeforeLoad: () => writeAuthState(baseUser),
-    });
+    loginAs({ email_address: baseLoginEmail, email_verified_at: null });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.getByTestId("email-verification-banner-unverified").should("be.visible");
     cy.getByTestId("email-verification-banner-send-btn").click();
@@ -117,19 +108,17 @@ describe("Email verification banner", () => {
       body: { enabled: true },
     }).as("getEmailInviteStatus");
     cy.intercept("/api/v1/user/*", {
-      body: { ...baseUser, email_address: null },
+      fixture: "user-management/user.json",
     }).as("getUser");
 
-    const noEmailUser = { ...baseUser, email_address: null };
-    cy.visit("/", {
-      onBeforeLoad: () => writeAuthState(noEmailUser),
-    });
+    loginAs({ email_address: null, email_verified_at: null });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.getByTestId("email-verification-banner-no-email").should("be.visible");
     cy.getByTestId("email-verification-banner-add-email-btn").click();
     cy.location("pathname").should(
       "eq",
-      `/user-management/profile/${noEmailUser.id}`,
+      `/user-management/profile/${baseLoginUserId}`,
     );
     cy.location("hash").should("eq", "#email_address");
     // The form should auto-focus the email field; we don't strictly need to
@@ -143,9 +132,8 @@ describe("Email verification banner", () => {
       body: { enabled: true },
     }).as("getEmailInviteStatus");
 
-    cy.visit("/", {
-      onBeforeLoad: () => writeAuthState(baseUser),
-    });
+    loginAs({ email_address: baseLoginEmail, email_verified_at: null });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.getByTestId("email-verification-banner-unverified")
       .find("[aria-label='Close']")
@@ -160,7 +148,10 @@ describe("Email verification banner", () => {
     // Fast-forward the snooze timestamp to 8 days ago and reload.
     cy.window().then((win) => {
       const eightDaysAgo = Date.now() - 8 * 24 * 60 * 60 * 1000;
-      win.localStorage.setItem(snoozeKeyFor(baseUser), String(eightDaysAgo));
+      win.localStorage.setItem(
+        snoozeKeyFor(baseLoginEmail),
+        String(eightDaysAgo),
+      );
     });
     cy.reload();
     cy.getByTestId("Home");
@@ -172,12 +163,9 @@ describe("Email verification banner", () => {
       body: { enabled: true },
     }).as("getEmailInviteStatus");
 
-    // Snooze the banner for the current email.
-    cy.visit("/", {
-      onBeforeLoad: () => {
-        writeAuthState(baseUser);
-      },
-    });
+    // Snooze the banner for the original email.
+    loginAs({ email_address: baseLoginEmail, email_verified_at: null });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.getByTestId("email-verification-banner-unverified")
       .find("[aria-label='Close']")
@@ -186,13 +174,11 @@ describe("Email verification banner", () => {
 
     // Now simulate the user editing their email — banner should reappear
     // because the snooze key is keyed on (userId, email_address).
-    cy.visit("/", {
-      onBeforeLoad: () =>
-        writeAuthState({
-          ...baseUser,
-          email_address: "new-email@ethyca.com",
-        }),
+    loginAs({
+      email_address: "new-email@ethyca.com",
+      email_verified_at: null,
     });
+    cy.visit("/");
     cy.getByTestId("Home");
     cy.getByTestId("email-verification-banner-unverified").should("be.visible");
   });
