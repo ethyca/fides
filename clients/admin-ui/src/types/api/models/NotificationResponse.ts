@@ -48,6 +48,12 @@ export type NotificationResponse = {
    */
   is_read?: boolean;
   /**
+   * Read At
+   *
+   * When the notification was read
+   */
+  read_at?: string | null;
+  /**
    * Created At
    *
    * When the notification was created
