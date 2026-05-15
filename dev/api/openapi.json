@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.85.1b1.dev36+gef44370d3"
+    "version": "2.85.1b1.dev37+g0e5129e1f"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13649,6 +13649,25 @@
                 }
               ],
               "title": "Action Type"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrivacyRequestSource"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
             }
           },
           {
@@ -33217,6 +33236,23 @@
               }
             ],
             "title": "Action Type"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyRequestSource"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
           },
           "verbose": {
             "anyOf": [
