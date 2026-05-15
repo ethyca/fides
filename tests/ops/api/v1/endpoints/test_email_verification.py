@@ -219,6 +219,56 @@ class TestRequestEmailVerification:
         assert record is not None
         record.delete(db)
 
+    def test_request_email_verification_skipped_for_disabled_user(
+        self, db, api_client: TestClient, unverified_user
+    ):
+        """Disabled user gets a 200 but no email dispatched."""
+        unverified_user.disabled = True
+        unverified_user.save(db)
+        headers = _auth_header_for(unverified_user, db)
+        with (
+            mock.patch(
+                "fides.service.messaging.messaging_service.MessagingService.is_email_invite_enabled",
+                return_value=True,
+            ),
+            mock.patch(
+                "fides.service.user.user_service.dispatch_message"
+            ) as mock_dispatch,
+        ):
+            response = api_client.post(REQUEST_EMAIL_VERIFICATION_URL, headers=headers)
+        assert response.status_code == HTTP_200_OK
+        mock_dispatch.assert_not_called()
+
+    def test_request_email_verification_audits_failure_on_dispatch_exception(
+        self, db, api_client: TestClient, unverified_user
+    ):
+        """A dispatch exception is swallowed; endpoint still returns 200 and a
+        failed audit event is written."""
+        headers = _auth_header_for(unverified_user, db)
+        with (
+            mock.patch(
+                "fides.service.messaging.messaging_service.MessagingService.is_email_invite_enabled",
+                return_value=True,
+            ),
+            mock.patch(
+                "fides.service.user.user_service.dispatch_message",
+                side_effect=Exception("boom"),
+            ),
+        ):
+            response = api_client.post(REQUEST_EMAIL_VERIFICATION_URL, headers=headers)
+        assert response.status_code == HTTP_200_OK
+
+        failed = (
+            db.query(EventAudit)
+            .filter_by(
+                event_type=EventAuditType.email_verification_requested.value,
+                user_id=unverified_user.id,
+                status="failed",
+            )
+            .first()
+        )
+        assert failed is not None
+
     def test_request_email_verification_replaces_existing_token(
         self, db, api_client: TestClient, unverified_user
     ):
@@ -316,6 +366,44 @@ class TestVerifyEmailWithToken:
         response = api_client.post(
             VERIFY_EMAIL_WITH_TOKEN_URL,
             json={"username": "nonexistent_user", "token": "invalid-token"},
+        )
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert "Invalid or expired" in response.json()["detail"]
+
+    def test_verify_email_with_no_verification_record(self, db, api_client: TestClient):
+        """User exists but has no verification record → generic 400 (no enumeration)."""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "no_record_user",
+                "email_address": "no_record@example.com",
+                "password": "Testpassword1!",
+                "disabled": False,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        try:
+            response = api_client.post(
+                VERIFY_EMAIL_WITH_TOKEN_URL,
+                json={"username": "no_record_user", "token": "anything"},
+            )
+            assert response.status_code == HTTP_400_BAD_REQUEST
+            assert "Invalid or expired" in response.json()["detail"]
+        finally:
+            user.delete(db)
+
+    def test_verify_email_with_wrong_plaintext_token(
+        self, db, api_client: TestClient, user_with_verification_token
+    ):
+        """User and verification record exist, but the plaintext token doesn't
+        match the stored hash → generic 400."""
+        _user, _real_token = user_with_verification_token
+        response = api_client.post(
+            VERIFY_EMAIL_WITH_TOKEN_URL,
+            json={"username": "verify_target", "token": "completely-wrong-token"},
         )
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert "Invalid or expired" in response.json()["detail"]
