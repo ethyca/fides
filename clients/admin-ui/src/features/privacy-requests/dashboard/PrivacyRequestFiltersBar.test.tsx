@@ -132,7 +132,6 @@ describe("PrivacyRequestFiltersBar", () => {
       action_type: null,
       source: null,
       location: null,
-      include_consent_webhook_requests: null,
       custom_privacy_request_fields: null,
     },
     setFilters: mockSetFilters,
@@ -178,7 +177,6 @@ describe("PrivacyRequestFiltersBar", () => {
             action_type: [ActionType.ACCESS],
             source: null,
             location: "US",
-            include_consent_webhook_requests: null,
             custom_privacy_request_fields: null,
           }}
         />,
@@ -249,7 +247,6 @@ describe("PrivacyRequestFiltersBar", () => {
             action_type: [ActionType.ACCESS],
             source: null,
             location: "US",
-            include_consent_webhook_requests: null,
             custom_privacy_request_fields: null,
           }}
         />,
