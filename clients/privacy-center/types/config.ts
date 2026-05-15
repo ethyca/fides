@@ -17,11 +17,28 @@ export type CustomIdentityFields = Record<
 
 export type IdentityInputs = DefaultIdentities & CustomIdentityFields;
 
+export type VisibilityOperator = "eq" | "ne" | "set" | "empty" | "contains";
+
+export interface VisibilityCondition {
+  /** Sibling field key (snake_case `name`) whose value drives this condition. */
+  source_field: string;
+  operator: VisibilityOperator;
+  /** Omitted for `set` / `empty`. */
+  value?: string | number;
+}
+
 export interface ICustomField {
   label: string;
   required?: boolean;
   query_param_key?: string | null;
   hidden?: boolean;
+  placeholder?: string;
+  /**
+   * AND-combined conditions. Absent or empty ⇒ field is always visible.
+   * When evaluated against the current form values, all conditions must pass
+   * for the field to render (and be included in submission).
+   */
+  visible_when?: VisibilityCondition[];
 }
 
 export interface CustomTextField extends ICustomField {
@@ -32,6 +49,12 @@ export interface CustomTextField extends ICustomField {
 export interface CustomSelectField extends ICustomField {
   default_value?: string | null;
   field_type: "select";
+  options?: string[];
+}
+
+export interface CustomRadioField extends ICustomField {
+  default_value?: string | null;
+  field_type: "radio";
   options?: string[];
 }
 
@@ -51,11 +74,13 @@ export interface CustomLocationField extends ICustomField {
 export type CustomConfigField =
   | CustomTextField
   | CustomSelectField
+  | CustomRadioField
   | CustomMultiSelectField
   | CustomLocationField;
 export type CustomIdentityField =
   | CustomTextField
   | CustomSelectField
+  | CustomRadioField
   | (CustomLocationField & {
       required: true;
     });
@@ -73,12 +98,6 @@ export type LegacyConfig = {
   actions?: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: LegacyConsentConfig | ConsentConfig;
-};
-
-export type MetricsConfig = {
-  title?: string;
-  description?: string;
-  link_text?: string;
 };
 
 export type Config = {
@@ -100,8 +119,6 @@ export type Config = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string;
   links?: PrivacyCenterLink[];
-  metrics?: MetricsConfig;
-  error_message?: string | null;
 };
 
 export type PrivacyCenterLink = {
@@ -149,13 +166,11 @@ export type PrivacyRequestOption = {
   cancelButtonText?: string | null;
   identity_inputs?: IdentityInputs | null;
   custom_privacy_request_fields?: CustomPrivacyRequestFields | null;
-  verification_title?: string | null;
-  verification_description?: string | null;
-  verification_submit_button_text?: string | null;
-  verification_resend_button_text?: string | null;
-  success_title?: string | null;
-  success_description?: string | null;
-  success_button_text?: string | null;
+  // Unified render order across identity_inputs and custom_privacy_request_fields.
+  // When set, the renderer iterates this list strictly and looks each key up in
+  // either bucket. Absent on legacy configs — those fall back to the hardcoded
+  // name → email → phone → other identities → customs sequence.
+  field_order?: string[] | null;
 };
 
 export enum ConsentNonApplicableFlagMode {
