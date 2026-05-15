@@ -786,35 +786,35 @@ class TestReadOnlyDatabaseConfig:
 
 @pytest.mark.unit
 class TestDatabaseCredentialSecretIdValidation:
-    """Validate cross-section coherence between secrets.provider and database.credential_secret_id."""
+    """Validate cross-section coherence between secrets.provider and database.credential_secret_name."""
 
-    def test_static_provider_with_credential_secret_id_raises(self) -> None:
+    def test_static_provider_with_credential_secret_name_raises(self) -> None:
         with pytest.raises(ValidationError) as exc:
             build_config(
                 {
                     "secrets": {"provider": "static"},
                     "database": {
-                        "credential_secret_id": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+                        "credential_secret_name": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
                     },
                 }
             )
-        assert "credential_secret_id" in str(exc.value)
+        assert "credential_secret_name" in str(exc.value)
         assert "static" in str(exc.value)
 
-    def test_static_provider_with_readonly_credential_secret_id_raises(self) -> None:
+    def test_static_provider_with_readonly_credential_secret_name_raises(self) -> None:
         with pytest.raises(ValidationError) as exc:
             build_config(
                 {
                     "secrets": {"provider": "static"},
                     "database": {
-                        "readonly_credential_secret_id": "arn:aws:secretsmanager:us-east-1:123:secret:ro-creds"
+                        "readonly_credential_secret_name": "arn:aws:secretsmanager:us-east-1:123:secret:ro-creds"
                     },
                 }
             )
-        assert "readonly_credential_secret_id" in str(exc.value)
+        assert "readonly_credential_secret_name" in str(exc.value)
         assert "static" in str(exc.value)
 
-    def test_aws_provider_without_credential_secret_id_raises(self) -> None:
+    def test_aws_provider_without_credential_secret_name_raises(self) -> None:
         with pytest.raises(ValidationError) as exc:
             build_config(
                 {
@@ -824,9 +824,9 @@ class TestDatabaseCredentialSecretIdValidation:
                     },
                 }
             )
-        assert "credential_secret_id is not set" in str(exc.value)
+        assert "credential_secret_name is not set" in str(exc.value)
 
-    def test_aws_provider_with_credential_secret_id_passes(self) -> None:
+    def test_aws_provider_with_credential_secret_name_passes(self) -> None:
         config = build_config(
             {
                 "secrets": {
@@ -834,17 +834,17 @@ class TestDatabaseCredentialSecretIdValidation:
                     "aws_secrets_manager": {"region": "us-east-1"},
                 },
                 "database": {
-                    "credential_secret_id": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+                    "credential_secret_name": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
                 },
             }
         )
         assert (
-            config.database.credential_secret_id
+            config.database.credential_secret_name
             == "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
         )
-        assert config.database.readonly_credential_secret_id is None
+        assert config.database.readonly_credential_secret_name is None
 
     def test_static_provider_without_secret_ids_passes(self) -> None:
         config = build_config({})
-        assert config.database.credential_secret_id is None
-        assert config.database.readonly_credential_secret_id is None
+        assert config.database.credential_secret_name is None
+        assert config.database.readonly_credential_secret_name is None

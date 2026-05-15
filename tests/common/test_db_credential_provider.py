@@ -74,8 +74,8 @@ def dynamic_provider():
         )
         mock_get.return_value = mock_secret_provider
         mock_config.database = CONFIG.database
-        mock_config.database.credential_secret_id = "db-creds"
-        mock_config.database.readonly_credential_secret_id = None
+        mock_config.database.credential_secret_name = "db-creds"
+        mock_config.database.readonly_credential_secret_name = None
         mock_config.test_mode = CONFIG.test_mode
         yield DBCredentialProvider(), mock_config, mock_secret_provider, mock_time
 
@@ -236,10 +236,10 @@ class TestGetCredentials:
         assert creds["host"] == CONFIG.database.server
         mock_secret_provider.get_secret.assert_called_once_with("db-creds")
 
-    def test_dynamic_without_credential_secret_id_raises(self, dynamic_provider):
+    def test_dynamic_without_credential_secret_name_raises(self, dynamic_provider):
         provider, mock_config, _, _ = dynamic_provider
-        mock_config.database.credential_secret_id = None
-        with pytest.raises(ValueError, match="credential_secret_id is not set"):
+        mock_config.database.credential_secret_name = None
+        with pytest.raises(ValueError, match="credential_secret_name is not set"):
             provider.get_credentials()
 
     def test_dynamic_readonly_falls_back_to_primary_secret_id(self, dynamic_provider):

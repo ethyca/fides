@@ -16,11 +16,12 @@ from fides.config.secrets_settings import AWSSecretsManagerSettings, SecretsSett
 
 
 class TestSecretsSettings:
-    def test_aws_provider_without_aws_config_raises(self):
-        with pytest.raises(
-            ValidationError, match="aws_secrets_manager is not configured"
-        ):
-            SecretsSettings(provider="aws_secrets_manager")
+    def test_aws_provider_without_explicit_config_uses_defaults(self):
+        """When provider is aws but no config section provided,
+        settings are constructed with defaults (region from boto3 chain)."""
+        settings = SecretsSettings(provider="aws_secrets_manager")
+        assert settings.aws_secrets_manager is not None
+        assert settings.aws_secrets_manager.region is None
 
     def test_aws_provider_with_aws_config_passes(self):
         settings = SecretsSettings(
@@ -40,9 +41,9 @@ class TestSecretsSettings:
             settings = SecretsSettings(provider="aws_secrets_manager")
             assert settings.aws_secrets_manager.region == "eu-west-1"
 
-    def test_aws_config_requires_region(self):
-        with pytest.raises(ValidationError, match="region"):
-            AWSSecretsManagerSettings()
+    def test_aws_config_region_defaults_to_none(self):
+        settings = AWSSecretsManagerSettings()
+        assert settings.region is None
 
     def test_static_provider_without_aws_config_passes(self):
         settings = SecretsSettings(provider="static")
