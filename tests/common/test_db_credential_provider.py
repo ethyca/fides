@@ -74,8 +74,8 @@ def dynamic_provider():
         )
         mock_get.return_value = mock_secret_provider
         mock_config.database = CONFIG.database
-        mock_config.database.credential_secret_id = "db-creds"
-        mock_config.database.readonly_credential_secret_id = None
+        mock_config.database.credential_secret_name = "db-creds"
+        mock_config.database.readonly_credential_secret_name = None
         mock_config.test_mode = CONFIG.test_mode
         yield DBCredentialProvider(), mock_config, mock_secret_provider, mock_time
 
@@ -96,17 +96,6 @@ class TestIsAuthError:
     )
     def test_detects_auth_sqlstates(self, exc):
         assert DBCredentialProvider._is_auth_error(exc)
-
-    @pytest.mark.parametrize(
-        "exc",
-        [
-            _make_auth_error(pgcode="42P01"),
-            Exception("generic error"),
-        ],
-        ids=["non-auth-pgcode", "no-code-attributes"],
-    )
-    def test_rejects_non_auth_errors(self, exc):
-        assert not DBCredentialProvider._is_auth_error(exc)
 
     @pytest.mark.parametrize(
         "message",
@@ -133,6 +122,22 @@ class TestIsAuthError:
     )
     def test_string_fallback_rejects_non_auth_messages(self, message):
         exc = Exception(message)
+        assert not DBCredentialProvider._is_auth_error(exc)
+
+    def test_detects_psycopg2_operational_error(self):
+        """OperationalError from RDS Proxy may not have a standard auth message."""
+        exc = psycopg2.OperationalError("proxy connection error")
+        assert DBCredentialProvider._is_auth_error(exc)
+
+    @pytest.mark.parametrize(
+        "exc",
+        [
+            _make_auth_error(pgcode="42P01"),
+            Exception("generic error"),
+        ],
+        ids=["non-auth-pgcode", "no-code-attributes"],
+    )
+    def test_rejects_non_auth_errors(self, exc):
         assert not DBCredentialProvider._is_auth_error(exc)
 
 
@@ -231,16 +236,85 @@ class TestGetCredentials:
         assert creds["host"] == CONFIG.database.server
         mock_secret_provider.get_secret.assert_called_once_with("db-creds")
 
-    def test_dynamic_without_credential_secret_id_raises(self, dynamic_provider):
+    def test_dynamic_without_credential_secret_name_raises(self, dynamic_provider):
         provider, mock_config, _, _ = dynamic_provider
-        mock_config.database.credential_secret_id = None
-        with pytest.raises(ValueError, match="credential_secret_id is not set"):
+        mock_config.database.credential_secret_name = None
+        with pytest.raises(ValueError, match="credential_secret_name is not set"):
             provider.get_credentials()
 
     def test_dynamic_readonly_falls_back_to_primary_secret_id(self, dynamic_provider):
         provider, _, mock_secret_provider, _ = dynamic_provider
         provider.get_credentials(readonly=True)
         mock_secret_provider.get_secret.assert_called_once_with("db-creds")
+
+
+# --- Database URL construction ---
+
+
+class TestGetDatabaseUrl:
+    def test_returns_valid_url(self, static_provider):
+        url = static_provider.get_database_url()
+        assert url.startswith("postgresql+psycopg2://")
+        assert CONFIG.database.server in url
+
+    def test_includes_connection_params(self):
+        """SSL and other params from CONFIG.database.params are appended as query params."""
+        with (
+            patch("fides.config.secrets.static_provider.CONFIG") as mock_sp_config,
+            patch("fides.common.db_credential_provider.CONFIG") as mock_dcp_config,
+            patch(
+                "fides.common.db_credential_provider.get_secret_provider"
+            ) as mock_get,
+        ):
+            mock_sp_config.database = DatabaseSettings(
+                params={"sslmode": "require", "sslrootcert": "/path/to/cert"},
+            )
+            mock_dcp_config.database = mock_sp_config.database
+            mock_dcp_config.test_mode = False
+            mock_get.return_value = StaticSecretProvider()
+
+            provider = DBCredentialProvider()
+            url = provider.get_database_url()
+            assert "sslmode=require" in url
+            assert "sslrootcert=/path/to/cert" in url
+
+    @pytest.mark.parametrize(
+        "user,password",
+        [
+            ("user@domain", "p@ss"),
+            ("user", "pass%word"),
+            ("user", "pass/word"),
+            ("user", "pass#word"),
+            ("user", "p@ss#w%rd/123"),
+        ],
+        ids=["at-sign", "percent", "slash", "hash", "mixed-special"],
+    )
+    def test_special_characters_are_url_encoded(self, user, password):
+        """Credentials with special characters must be URL-encoded so the
+        resulting URL is parseable by SQLAlchemy / libpq."""
+        with (
+            patch("fides.config.secrets.static_provider.CONFIG") as mock_sp_config,
+            patch("fides.common.db_credential_provider.CONFIG") as mock_dcp_config,
+            patch(
+                "fides.common.db_credential_provider.get_secret_provider"
+            ) as mock_get,
+        ):
+            mock_sp_config.database = DatabaseSettings(user=user, password=password)
+            mock_dcp_config.database = mock_sp_config.database
+            mock_dcp_config.test_mode = False
+            mock_get.return_value = StaticSecretProvider()
+
+            provider = DBCredentialProvider()
+            url = provider.get_database_url()
+
+            # Raw special chars should not appear unescaped in the URL
+            # (the user:password section is between :// and @)
+            user_pass_section = url.split("://")[1].split("@")[0]
+            assert (
+                "@" not in user_pass_section.split(":")[0] or "%40" in user_pass_section
+            )
+            assert "#" not in user_pass_section
+            assert "/" not in user_pass_section
 
 
 # --- Connection retry ---
