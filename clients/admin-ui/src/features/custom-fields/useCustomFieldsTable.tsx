@@ -81,8 +81,11 @@ const useCustomFieldsTable = () => {
         dataIndex: "field_type",
         key: "field_type",
         render: (_, record) => {
+          const baseFieldType = record.field_type.endsWith("[]")
+            ? record.field_type.slice(0, -2)
+            : record.field_type;
           const customTaxonomy = customTaxonomies?.find(
-            (taxonomy) => taxonomy.fides_key === record.field_type,
+            (taxonomy) => taxonomy.fides_key === baseFieldType,
           );
           const label = customTaxonomy?.name ?? getCustomFieldTypeLabel(record);
           return <TagCell value={label} />;
