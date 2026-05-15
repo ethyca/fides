@@ -1,4 +1,4 @@
 type: Fixed
 description: Fixed stuck DSRs when async task ConnectionConfig is deleted or disabled
-pr: 8210
+pr: 8211
 labels: []
