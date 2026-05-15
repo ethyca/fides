@@ -44,12 +44,14 @@ export const SubjectRequestActionTypeOptions = [
   value: key,
 }));
 
+// Dataset Test is intentionally omitted — those are system-internal test runs,
+// not user-facing DSRs, and should not be filterable from the Request Manager UI.
+// The backend still accepts `dataset_test` as a filter value for programmatic API use.
 export const SubjectRequestSourceMap = new Map<PrivacyRequestSource, string>([
   [PrivacyRequestSource.PRIVACY_CENTER, "Privacy Center"],
   [PrivacyRequestSource.REQUEST_MANAGER, "Request Manager"],
   [PrivacyRequestSource.CONSENT_WEBHOOK, "Consent Webhook"],
   [PrivacyRequestSource.FIDES_JS, "Fides.js"],
-  [PrivacyRequestSource.DATASET_TEST, "Dataset Test"],
   [PrivacyRequestSource.JANUS_SDK, "Janus SDK"],
 ]);
 

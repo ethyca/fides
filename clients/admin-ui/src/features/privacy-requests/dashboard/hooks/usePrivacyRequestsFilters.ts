@@ -16,7 +16,10 @@ import {
   PrivacyRequestStatus,
 } from "~/types/api";
 
-import { SubjectRequestStatusMap } from "../../constants";
+import {
+  SubjectRequestSourceMap,
+  SubjectRequestStatusMap,
+} from "../../constants";
 import { filterNullCustomFields, parseAsCustomFields } from "../utils";
 
 export interface FilterQueryParams {
@@ -60,7 +63,7 @@ const usePrivacyRequestsFilters = ({
       status: parseAsArrayOf(parseAsStringEnum(allowedStatusFilterOptions)),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
       source: parseAsArrayOf(
-        parseAsStringEnum(Object.values(PrivacyRequestSource)),
+        parseAsStringEnum([...SubjectRequestSourceMap.keys()]),
       ),
       is_overdue: parseAsBoolean,
       location: parseAsString,
