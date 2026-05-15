@@ -5,7 +5,10 @@ import pytest
 from pytest import param
 
 from fides.api.service.storage.util import (
+    DEFAULT_FILE_MAX_SIZE_BYTES,
     AllowedFileType,
+    FilesMagicBytes,
+    FileUploadConstraints,
     get_allowed_file_type_or_raise,
     get_local_filename,
     get_unique_filename,
@@ -431,3 +434,88 @@ class TestResolvePathFromContext:
         attachment = {"_context": None}
         result = resolve_path_from_context(attachment, "default")
         assert result == "default"
+
+
+class TestFilesMagicBytes:
+    @pytest.mark.parametrize(
+        "data, expected",
+        [
+            param(b"%PDF-1.4 body", {"pdf"}, id="pdf"),
+            param(b"\xff\xd8\xff\xe0 body", {"jpg", "jpeg"}, id="jpeg"),
+            param(b"\x89PNG\r\n\x1a\n body", {"png"}, id="png"),
+            param(
+                b"PK\x03\x04 body",
+                {"docx", "xlsx", "zip"},
+                id="zip_family_returns_all_matches",
+            ),
+            param(
+                b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1 ole",
+                {"doc", "xls"},
+                id="ole_family_returns_all_matches",
+            ),
+        ],
+    )
+    def test_candidates_matches_known_signatures(self, data, expected):
+        assert FilesMagicBytes.candidates(data) == expected
+
+    def test_candidates_returns_empty_set_for_unknown(self):
+        assert FilesMagicBytes.candidates(b"not a real file") == set()
+
+    def test_candidates_data_shorter_than_magic_does_not_raise(self):
+        # Truncated data must not raise; Python slice never exceeds the
+        # buffer so a partial match cannot fire.
+        assert FilesMagicBytes.candidates(b"%PD") == set()
+        assert FilesMagicBytes.candidates(b"") == set()
+
+    def test_default_public_upload_allowed_file_types(self):
+        assert AllowedFileType.default_public_upload_allowed_file_types() == {
+            "pdf",
+            "jpg",
+            "png",
+        }
+
+    def test_supported_file_types(self):
+        assert AllowedFileType.supported_file_types() == set(
+            AllowedFileType.__members__.keys()
+        )
+
+
+def test_files_magic_bytes_extensions_without_magic():
+    # csv + txt are the only supported types without a magic signature.
+    assert FilesMagicBytes.extensions_without_magic() == {"csv", "txt"}
+
+
+def test_files_magic_bytes_max_prefix_length():
+    # Header peek must cover the longest signature; auto-tracks
+    # SIGNATURES so adding a longer one doesn't silently truncate reads.
+    expected = max(len(m) for m in FilesMagicBytes.SIGNATURES.values())
+    assert FilesMagicBytes.max_prefix_length() == expected
+
+
+class TestFileUploadConstraints:
+    def test_defaults_and_subset(self):
+        defaults = FileUploadConstraints.defaults()
+        assert defaults.max_size_bytes == DEFAULT_FILE_MAX_SIZE_BYTES
+        assert defaults.allowed_file_types == frozenset(
+            AllowedFileType.default_public_upload_allowed_file_types()
+        )
+        # Explicit subset is also accepted.
+        custom = FileUploadConstraints(
+            max_size_bytes=1024, allowed_file_types=frozenset({"pdf"})
+        )
+        assert custom.allowed_file_types == frozenset({"pdf"})
+
+    @pytest.mark.parametrize(
+        "max_size, allowed, error",
+        [
+            param(0, {"pdf"}, "max_size_bytes must be greater than 0", id="zero"),
+            param(-1, {"pdf"}, "max_size_bytes must be greater than 0", id="negative"),
+            param(1024, set(), "allowed_file_types must not be empty", id="empty"),
+            param(1024, {"pdf", "exe"}, "Unsupported file types", id="unsupported"),
+        ],
+    )
+    def test_rejects_invalid(self, max_size, allowed, error):
+        with pytest.raises(ValueError, match=error):
+            FileUploadConstraints(
+                max_size_bytes=max_size, allowed_file_types=frozenset(allowed)
+            )

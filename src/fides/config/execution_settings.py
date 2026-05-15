@@ -45,6 +45,10 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Allows custom privacy request fields to be used in request execution.",
     )
+    allow_custom_privacy_request_file_upload: bool = Field(
+        default=False,
+        description="Allows file uploads to be attached to incoming privacy requests.",
+    )
     request_task_ttl: int = Field(
         default=604800,
         description="The number of seconds a request task should live.",
@@ -105,10 +109,12 @@ class ExecutionSettings(FidesSettings):
     )
     reply_polling_interval_minutes: int = Field(
         default=3,
+        ge=1,
         description="Minutes between polling the IMAP mailbox for DSR reply messages.",
     )
     notification_interval_minutes: int = Field(
         default=5,
+        ge=1,
         description="Minutes between processing pending DSR lifecycle notifications.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

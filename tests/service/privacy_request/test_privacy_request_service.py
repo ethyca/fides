@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, create_autospec, patch
 
@@ -33,6 +32,7 @@ from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 from tests.conftest import wait_for_tasks_to_complete
+from tests.service.privacy_request._helpers import _make_action, _req, _svc
 
 
 @pytest.mark.integration
@@ -1483,67 +1483,25 @@ class TestPrivacyRequestService:
             start_idx += len(batch)
 
 
-def _make_action(custom_fields):
-    a = MagicMock()
-    a.custom_privacy_request_fields = custom_fields
-    return a
-
-
-@contextmanager
-def _stub_lookups(svc, *, config_dict={"x": 1}, parsed=True, action=True):
-    """Patch the three DB-backed lookups; ``True`` → non-None default."""
-    parsed_v = MagicMock() if parsed is True else parsed
-    action_v = MagicMock() if action is True else action
-    with (
-        patch.object(
-            svc, "_resolve_privacy_center_config_dict", return_value=config_dict
-        ),
-        patch.object(svc, "_parse_privacy_center_config", return_value=parsed_v),
-        patch.object(svc, "_get_matching_action", return_value=action_v),
-    ):
-        yield
-
-
-def _svc():
-    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock())
-
-
-def _req(custom_fields=None, **kw):
-    return PrivacyRequestCreate(
-        identity=Identity(email="jane@example.com"),
-        policy_key="default_access_policy",
-        custom_privacy_request_fields=custom_fields,
-        **kw,
-    )
-
-
 @pytest.mark.unit
 class TestValidateFieldVisibility:
     """Branch-by-branch coverage of ``_validate_field_visibility`` via mocks."""
 
     @pytest.mark.parametrize(
-        "stub_kwargs",
+        "action",
         [
-            pytest.param({"config_dict": None}, id="no_config"),
-            pytest.param({"parsed": None}, id="unparseable_config"),
-            pytest.param({"action": None}, id="no_matching_action"),
+            pytest.param(None, id="action_none"),
+            pytest.param(_make_action(None), id="action_without_custom_fields"),
             pytest.param(
-                {"action": _make_action(None)}, id="action_without_custom_fields"
-            ),
-            pytest.param(
-                {
-                    "action": _make_action(
-                        {"country": LocationCustomPrivacyRequestField(label="Country")}
-                    )
-                },
+                _make_action(
+                    {"country": LocationCustomPrivacyRequestField(label="Country")}
+                ),
                 id="only_location_fields_after_filter",
             ),
         ],
     )
-    def test_short_circuit_paths(self, stub_kwargs):
-        svc = _svc()
-        with _stub_lookups(svc, **stub_kwargs):
-            svc._validate_field_visibility(_req())
+    def test_short_circuit_paths(self, action):
+        _svc()._validate_field_visibility(_req(), action)
 
     @pytest.mark.parametrize(
         "submitted, raises",
@@ -1565,15 +1523,14 @@ class TestValidateFieldVisibility:
                 )
             }
         )
-        with _stub_lookups(svc, action=action):
-            req = _req(custom_fields=submitted)
-            if raises:
-                with pytest.raises(
-                    PrivacyRequestError, match="Required field 'reason' is missing"
-                ):
-                    svc._validate_field_visibility(req)
-            else:
-                svc._validate_field_visibility(req)
+        req = _req(custom_fields=submitted)
+        if raises:
+            with pytest.raises(
+                PrivacyRequestError, match="Required field 'reason' is missing"
+            ):
+                svc._validate_field_visibility(req, action)
+        else:
+            svc._validate_field_visibility(req, action)
 
     def test_create_privacy_request_invokes_validate_field_visibility(self):
         # Covers the call site inside ``create_privacy_request``. Stub the
@@ -1582,7 +1539,11 @@ class TestValidateFieldVisibility:
         svc = _svc()
         req = _req(location="US-CA")
         req.policy_key = "missing-policy"
+        action_sentinel = object()
         with (
+            patch.object(
+                svc, "_resolve_action_for_request", return_value=action_sentinel
+            ),
             patch.object(svc, "_validate_field_visibility") as visibility,
             patch(
                 "fides.service.privacy_request.privacy_request_service.Policy.get_by",
@@ -1591,41 +1552,32 @@ class TestValidateFieldVisibility:
             pytest.raises(PrivacyRequestError, match="does not exist"),
         ):
             svc.create_privacy_request(req, authenticated=True)
-        visibility.assert_called_once_with(req)
+        visibility.assert_called_once_with(req, action_sentinel)
 
 
 @pytest.mark.unit
 class TestValidateRequiredLocationFields:
     @pytest.mark.parametrize(
-        "stub_kwargs",
+        "action",
         [
-            pytest.param({"config_dict": None}, id="no_config"),
-            pytest.param({"parsed": None}, id="unparseable_config"),
-            pytest.param({"action": None}, id="no_matching_action"),
+            pytest.param(None, id="action_none"),
+            pytest.param(_make_action(None), id="action_without_custom_fields"),
             pytest.param(
-                {"action": _make_action(None)}, id="action_without_custom_fields"
-            ),
-            pytest.param(
-                {
-                    "action": _make_action(
-                        {
-                            "reason": CustomPrivacyRequestField(
-                                label="Reason", field_type="text", required=True
-                            )
-                        }
-                    )
-                },
+                _make_action(
+                    {
+                        "reason": CustomPrivacyRequestField(
+                            label="Reason", field_type="text", required=True
+                        )
+                    }
+                ),
                 id="non_location_required_field_ignored",
             ),
         ],
     )
-    def test_short_circuit_paths(self, stub_kwargs):
-        svc = _svc()
-        with _stub_lookups(svc, **stub_kwargs):
-            svc._validate_required_location_fields(_req())
+    def test_short_circuit_paths(self, action):
+        _svc()._validate_required_location_fields(_req(), action)
 
     def test_missing_required_location_raises(self):
-        svc = _svc()
         action = _make_action(
             {
                 "country": LocationCustomPrivacyRequestField(
@@ -1633,9 +1585,129 @@ class TestValidateRequiredLocationFields:
                 )
             }
         )
-        with _stub_lookups(svc, action=action):
-            with pytest.raises(
-                PrivacyRequestError,
-                match="Location is required for field 'country'",
-            ):
-                svc._validate_required_location_fields(_req())
+        with pytest.raises(
+            PrivacyRequestError,
+            match="Location is required for field 'country'",
+        ):
+            _svc()._validate_required_location_fields(_req(), action)
+
+
+@pytest.mark.unit
+class TestAttachmentStateHooks:
+    """Default OSS implementations of the attachment-state extension hooks."""
+
+    @pytest.mark.parametrize("action", [None, _make_action(None)])
+    def test_resolve_default_is_passthrough(self, action):
+        req = _req()
+        out_req, state = _svc()._resolve_attachment_state(req, action)
+        assert out_req is req and state is None
+
+    @pytest.mark.parametrize("state", [None, {"any": "object"}])
+    def test_promote_default_is_noop(self, state):
+        assert _svc()._promote_attachment_state(MagicMock(), state) is None
+
+    def test_resolve_hook_called_with_resolved_action(self):
+        # _resolve_attachment_state must receive the same action sentinel
+        # the validators got, so subclasses don't re-resolve it. Use an
+        # action with no custom fields so the validators short-circuit
+        # without inspecting attributes the sentinel doesn't have.
+        svc = _svc()
+        req = _req(location="US-CA")  # short-circuit location validator
+        req.policy_key = "missing-policy"
+        action_sentinel = _make_action(None)
+        with (
+            patch.object(
+                svc, "_resolve_action_for_request", return_value=action_sentinel
+            ),
+            patch.object(
+                svc, "_resolve_attachment_state", return_value=(req, "s")
+            ) as resolve,
+            patch(
+                "fides.service.privacy_request.privacy_request_service.Policy.get_by",
+                return_value=None,
+            ),
+            pytest.raises(PrivacyRequestError, match="does not exist"),
+        ):
+            svc.create_privacy_request(req, authenticated=True)
+        resolve.assert_called_once_with(req, action_sentinel)
+
+
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+class TestCreatePrivacyRequestPromotionFailure:
+    """Rollback path when ``_promote_attachment_state`` raises."""
+
+    @pytest.fixture
+    def mock_messaging_service(self) -> MessagingService:
+        return create_autospec(MessagingService)
+
+    def _run_with_failing_hook(
+        self, db, policy, mock_messaging_service, hook
+    ) -> tuple[PrivacyRequestError, set[str], set[str]]:
+        """Run create_privacy_request with a custom failing hook; return
+        (raised exception, ids_before, ids_after)."""
+
+        class FailingService(PrivacyRequestService):
+            _promote_attachment_state = hook  # type: ignore[assignment]
+
+        svc = FailingService(db, ConfigProxy(db), mock_messaging_service)
+        before = {r.id for r in db.query(PrivacyRequest).all()}
+        with pytest.raises(PrivacyRequestError) as exc_info:
+            svc.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=Identity(email="user@example.com"),
+                    policy_key=policy.key,
+                ),
+                authenticated=True,
+            )
+        after = {r.id for r in db.query(PrivacyRequest).all()}
+        return exc_info.value, before, after
+
+    def test_promotion_failure_deletes_request_and_sanitizes_message(
+        self, db: Session, policy: Policy, mock_messaging_service
+    ):
+        # Sensitive-looking detail must not appear in the user-facing
+        # message but must survive on __cause__ for operators.
+        leaky = "privacy_request_attachments/secret_path.pdf"
+
+        def hook(self, privacy_request, attachment_state):
+            raise RuntimeError(leaky)
+
+        exc, before, after = self._run_with_failing_hook(
+            db, policy, mock_messaging_service, hook
+        )
+        assert "Attachment processing failed" in str(exc)
+        assert leaky not in str(exc)
+        assert isinstance(exc.__cause__, RuntimeError)
+        assert leaky in str(exc.__cause__)
+        assert before == after  # the just-created PR was rolled back
+
+    def test_delete_failure_still_surfaces_promotion_error(
+        self, db: Session, policy: Policy, mock_messaging_service
+    ):
+        def hook(self, privacy_request, attachment_state):
+            privacy_request.delete = MagicMock(  # type: ignore[method-assign]
+                side_effect=RuntimeError("delete blew up")
+            )
+            raise RuntimeError("promotion blew up")
+
+        exc, _, _ = self._run_with_failing_hook(
+            db, policy, mock_messaging_service, hook
+        )
+        # __cause__ is the *promotion* exception, not the delete one.
+        assert "promotion blew up" in str(exc.__cause__)
+        assert "delete blew up" not in str(exc)
+
+    def test_privacy_request_error_from_hook_is_not_double_rewrapped(
+        self, db: Session, policy: Policy, mock_messaging_service
+    ):
+        def hook(self, privacy_request, attachment_state):
+            raise PrivacyRequestError("Hook-specific detail", {"k": "v"})
+
+        exc, _, _ = self._run_with_failing_hook(
+            db, policy, mock_messaging_service, hook
+        )
+        # Promotion-failure branch wraps once with the generic message;
+        # the outer catch-all must NOT wrap a second time.
+        assert "Attachment processing failed" in str(exc)
+        assert "This record could not be added" not in str(exc)

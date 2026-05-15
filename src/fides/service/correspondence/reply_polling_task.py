@@ -20,6 +20,9 @@ from fides.config import CONFIG
 
 REPLY_POLLING_JOB = "reply_mailbox_polling"
 REPLY_POLLING_LOCK = "reply_mailbox_polling_lock"
+# Lock auto-expires after this many seconds. If the registered service
+# takes longer, another worker may acquire the lock and run concurrently.
+# The implementation must complete within this window or be idempotent.
 REPLY_POLLING_LOCK_TIMEOUT = 600
 
 # Set once at startup by Fidesplus via register_reply_poll_service();
