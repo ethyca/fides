@@ -462,6 +462,3 @@ describe("resolveApplicableFields", () => {
     expect(result).toEqual(new Set(["a", "b"]));
   });
 });
-
-export {};
-

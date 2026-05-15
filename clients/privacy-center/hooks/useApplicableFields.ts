@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 
 import { resolveApplicableFields } from "~/lib/condition-evaluator";
 import { setsEqual } from "~/lib/set-utils";
-import type { CustomConfigField } from "~/types/config";
+import type { Condition, CustomConfigField } from "~/types/config";
 
 /**
  * Extracts the set of field keys that are referenced by any display_condition
@@ -13,16 +13,12 @@ const extractWatchedKeys = (
 ): Set<string> => {
   const watched = new Set<string>();
 
-  const walk = (condition: unknown): void => {
-    if (!condition || typeof condition !== "object") {
-      return;
+  const walk = (condition: Condition): void => {
+    if ("field_address" in condition) {
+      watched.add(condition.field_address);
     }
-    if ("field_address" in (condition as Record<string, unknown>)) {
-      watched.add((condition as { field_address: string }).field_address);
-    }
-    if ("conditions" in (condition as Record<string, unknown>)) {
-      const group = condition as { conditions: unknown[] };
-      group.conditions.forEach(walk);
+    if ("conditions" in condition) {
+      condition.conditions.forEach(walk);
     }
   };
 
@@ -58,14 +54,12 @@ export const useApplicableFields = (
     if (watchedKeys.size === 0) {
       return "";
     }
-    const entries: string[] = [];
+    const entries: [string, unknown][] = [];
     watchedKeys.forEach((key) => {
-      const val = formValues[key];
-      entries.push(
-        `${key}=${Array.isArray(val) ? val.join(",") : (val ?? "")}`,
-      );
+      entries.push([key, formValues[key] ?? null]);
     });
-    return entries.sort().join("|");
+    entries.sort(([a], [b]) => a.localeCompare(b));
+    return JSON.stringify(entries);
   }, [watchedKeys, formValues]);
 
   return useMemo(() => {

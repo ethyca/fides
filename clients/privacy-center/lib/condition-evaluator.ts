@@ -1,4 +1,9 @@
-import type { Condition, ConditionGroup, ConditionLeaf } from "~/types/config";
+import type {
+  Condition,
+  ConditionGroup,
+  ConditionLeaf,
+  DisplayOperator,
+} from "~/types/config";
 
 import { setsEqual } from "./set-utils";
 
@@ -22,7 +27,7 @@ const hasValue = (val: unknown): boolean => {
 type ConditionValue = ConditionLeaf["value"];
 
 const applyOperator = (
-  operator: string,
+  operator: DisplayOperator,
   actual: unknown,
   expected: ConditionValue,
 ): boolean => {
@@ -147,10 +152,17 @@ export const resolveApplicableFields = <
   const keys = Object.keys(fields);
   let applicable = new Set(keys);
   let previous: Set<string>;
+  // Guard against cycles in case backend validation is bypassed or config is manually edited.
+  const maxIterations = keys.length + 1;
+  let iterations = 0;
 
   do {
     previous = applicable;
     applicable = evaluateFieldSet(previous, fields, formValues);
+    iterations += 1;
+    if (iterations > maxIterations) {
+      return applicable;
+    }
   } while (!setsEqual(applicable, previous));
 
   return applicable;

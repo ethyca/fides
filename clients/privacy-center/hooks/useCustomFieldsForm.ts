@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -56,7 +57,7 @@ export const useCustomFieldsForm = ({
 }: UseCustomFieldsFormProps) => {
   const userLocation = useAppSelector(selectUserLocation);
 
-  const getInitialValues = () => {
+  const getInitialValues = useCallback(() => {
     const values = Object.fromEntries(
       Object.entries(customPrivacyRequestFields).map(([key, field]) => {
         const valueFromQueryParam =
@@ -97,13 +98,16 @@ export const useCustomFieldsForm = ({
     );
 
     return values;
-  };
+  }, [customPrivacyRequestFields, searchParams, userLocation?.code]);
 
-  const getValidationSchema = (applicableFields?: Set<string>) =>
-    buildCustomFieldsValidationSchema(
-      customPrivacyRequestFields,
-      applicableFields,
-    );
+  const getValidationSchema = useCallback(
+    (applicableFields?: Set<string>) =>
+      buildCustomFieldsValidationSchema(
+        customPrivacyRequestFields,
+        applicableFields,
+      ),
+    [customPrivacyRequestFields],
+  );
 
   return { getInitialValues, getValidationSchema };
 };
