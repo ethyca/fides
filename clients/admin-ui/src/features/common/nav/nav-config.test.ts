@@ -323,7 +323,7 @@ describe("configureNavGroups", () => {
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
         flags: {
-          dataCatalog: true,
+          alphaPurposeBasedAccessControl: true,
         },
         hasPlus: true,
       });
@@ -332,7 +332,7 @@ describe("configureNavGroups", () => {
         findGroup(navGroups, "Detection & Discovery").children,
       ).toMatchObject([
         { title: "Action center", path: routes.ACTION_CENTER_ROUTE },
-        { title: "Data catalog", path: routes.DATA_CATALOG_ROUTE },
+        { title: "Access control", path: routes.ACCESS_CONTROL_ROUTE },
       ]);
     });
   });

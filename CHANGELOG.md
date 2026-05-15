@@ -105,6 +105,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Security
 - Validated user_geography field values against a locale-code pattern to prevent malicious data from being persisted [#7889](https://github.com/ethyca/fides/pull/7889)
 
+## [2.84.5](https://github.com/ethyca/fides/compare/2.84.3..2.84.5)
+
+> Note: 2.84.4 was not released; 2.84.5 is the first public patch on the 2.84.x line containing this fix.
+
+### Security
+- Fixed DOM-based XSS in `fides.js` where client-controlled description overrides bypassed the server-side sanitiser when HTML-formatted descriptions were enabled ([GHSA-5qrq-9645-g5g2](https://github.com/ethyca/fides/security/advisories/GHSA-5qrq-9645-g5g2), CVE-2026-44541)
+
 ## [2.84.3](https://github.com/ethyca/fides/compare/2.84.2..2.84.3)
 
 ### Changed

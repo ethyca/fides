@@ -71,7 +71,9 @@ def build_field_documentation(field_name: str, field_info: Dict) -> Optional[str
             # Union field types are under "anyOf"
             any_of: List[Dict[str, str]] = field_info.get("anyOf") or []
             for type_annotation in any_of:
-                if type_annotation["type"] != "null":
+                if "$ref" in type_annotation:
+                    continue
+                if type_annotation.get("type") != "null":
                     # Getting first non-null
                     field_type = type_annotation["type"]
                     break

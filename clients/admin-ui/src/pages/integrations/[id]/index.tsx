@@ -147,6 +147,15 @@ const IntegrationDetailView: NextPage = () => {
     connection?.connection_type !== ConnectionType.MANUAL_TASK &&
     connection?.connection_type !== ConnectionType.JIRA_TICKET;
 
+  // Tab is shown for any integration that participates in privacy request
+  // execution. The set of types that don't is small: website (consent only)
+  // and datahub (sync only). Everything else — databases, SaaS, email,
+  // manual task, jira ticket — has a meaningful "enable for DSRs" toggle.
+  const supportsPrivacyRequests =
+    !!connection &&
+    connection.connection_type !== ConnectionType.WEBSITE &&
+    connection.connection_type !== ConnectionType.DATAHUB;
+
   const tabs = useFeatureBasedTabs({
     connection,
     enabledFeatures,
@@ -161,6 +170,7 @@ const IntegrationDetailView: NextPage = () => {
     instructions,
     supportsConnectionTest,
     supportsSystemLinking,
+    supportsPrivacyRequests,
   });
 
   const { activeTab, onTabChange } = useURLHashedTabs({

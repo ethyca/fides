@@ -4,7 +4,7 @@
 
 from copy import deepcopy
 from typing import Dict, Optional, cast
-from urllib.parse import quote, quote_plus, urlencode
+from urllib.parse import quote, quote_plus, unquote_plus, urlencode
 
 from pydantic import (
     Field,
@@ -116,6 +116,15 @@ class DatabaseSettings(FidesSettings):
     readonly_params: Dict = Field(
         default={},
         description="Additional connection parameters for read-only database connections. If not provided and readonly_server is set, uses 'params'.",
+    )
+
+    credential_secret_name: Optional[str] = Field(
+        default=None,
+        description="Secrets Manager secret name or ARN containing DB credentials (JSON with 'username' and 'password' keys). Used when secrets.provider is 'aws_secrets_manager'.",
+    )
+    readonly_credential_secret_name: Optional[str] = Field(
+        default=None,
+        description="Secrets Manager secret name or ARN for read-only DB credentials. Falls back to credential_secret_name if not set.",
     )
 
     task_engine_pool_size: int = Field(
@@ -274,6 +283,18 @@ class DatabaseSettings(FidesSettings):
         if value and isinstance(value, str):
             return quote_plus(value)
         return value
+
+    @property
+    def raw_password(self) -> str:
+        """Return password unescaped for direct driver use (psycopg2/asyncpg)."""
+        return unquote_plus(self.password)
+
+    @property
+    def raw_readonly_password(self) -> Optional[str]:
+        """Return readonly password unescaped for direct driver use."""
+        if self.readonly_password:
+            return unquote_plus(self.readonly_password)
+        return None
 
     @field_validator("sync_database_uri", mode="before")
     @classmethod

@@ -1,0 +1,4 @@
+type: Added
+description: Data model support for monitor steward inheritance.
+pr: 7888
+labels: [db-migration]
