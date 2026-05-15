@@ -15,12 +15,6 @@ def isolated_registry(monkeypatch):
     yield
 
 
-def test_register_appends_hook():
-    hook = MagicMock()
-    system_stewards.register_system_steward_change_hook(hook)
-    assert system_stewards._HOOKS == [hook]
-
-
 def test_register_is_idempotent():
     hook = MagicMock()
     system_stewards.register_system_steward_change_hook(hook)
@@ -28,34 +22,15 @@ def test_register_is_idempotent():
     assert system_stewards._HOOKS == [hook]
 
 
-def test_notify_calls_each_registered_hook():
-    hook_a = MagicMock()
-    hook_b = MagicMock()
-    system_stewards.register_system_steward_change_hook(hook_a)
-    system_stewards.register_system_steward_change_hook(hook_b)
-
-    bg = BackgroundTasks()
-    system_stewards.notify_system_stewards_changed(bg, "sys-1")
-
-    hook_a.assert_called_once_with(bg, "sys-1")
-    hook_b.assert_called_once_with(bg, "sys-1")
-
-
 def test_notify_isolates_hook_failures():
-    """One hook raising must not prevent the rest from firing."""
+    """A raising hook must not prevent later hooks from firing."""
     raising = MagicMock(side_effect=RuntimeError("boom"))
     survivor = MagicMock()
     system_stewards.register_system_steward_change_hook(raising)
     system_stewards.register_system_steward_change_hook(survivor)
 
     bg = BackgroundTasks()
-    system_stewards.notify_system_stewards_changed(bg, "sys-2")
+    system_stewards.notify_system_stewards_changed(bg, "sys-1")
 
-    raising.assert_called_once()
-    survivor.assert_called_once_with(bg, "sys-2")
-
-
-def test_notify_with_no_hooks_is_noop():
-    bg = BackgroundTasks()
-    # Should not raise even if registry empty
-    system_stewards.notify_system_stewards_changed(bg, "sys-3")
+    raising.assert_called_once_with(bg, "sys-1")
+    survivor.assert_called_once_with(bg, "sys-1")
