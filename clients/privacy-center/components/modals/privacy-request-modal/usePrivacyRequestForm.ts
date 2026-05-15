@@ -7,6 +7,7 @@ import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { isFieldVisible } from "~/common/visibility";
 import { ModalViews } from "~/components/modals/types";
 import {
   emailValidation,
@@ -19,8 +20,15 @@ import { useSettings } from "~/features/common/settings.slice";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
+import {
+  CustomConfigField,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
 import { FormValues, MultiselectFieldValue } from "~/types/forms";
+
+import { buildOrderedFields } from "./buildOrderedFields";
+
+export type { OrderedField } from "./buildOrderedFields";
 
 /**
  *
@@ -135,6 +143,9 @@ const usePrivacyRequestForm = ({
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
                 .filter(([, field]) => field.field_type !== "location")
+                .filter(
+                  ([, field]) => field.hidden || isFieldVisible(field, values),
+                )
                 .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&
@@ -286,12 +297,20 @@ const usePrivacyRequestForm = ({
     }),
   });
 
+  const orderedFields = buildOrderedFields(
+    legacyIdentityFields,
+    customIdentityFields as Record<string, CustomConfigField>,
+    customPrivacyRequestFields,
+    action?.field_order,
+  );
+
   return {
     ...formik,
     isSubmitting: formik.isSubmitting || isSubmitPending,
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,
+    orderedFields,
   };
 };
 
