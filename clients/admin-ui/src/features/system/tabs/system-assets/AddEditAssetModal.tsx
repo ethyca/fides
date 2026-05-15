@@ -194,6 +194,7 @@ const AddEditAssetModal = ({
                   name="base_url"
                   label="Base URL"
                   rules={[{ required: true, message: "Base URL is required" }]}
+                  validateTrigger={["onChange", "onBlur"]}
                   validateStatus={hasBaseUrlError ? "error" : undefined}
                   help={
                     hasBaseUrlError ? (
