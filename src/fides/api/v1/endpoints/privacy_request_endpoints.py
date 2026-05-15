@@ -68,6 +68,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
@@ -241,6 +242,7 @@ def validate_filters(filters: PrivacyRequestFilter) -> None:
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
+@public_endpoint
 def create_privacy_request(
     *,
     privacy_request_service: PrivacyRequestService = Depends(
@@ -996,6 +998,7 @@ def restart_privacy_request_from_failure(
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
 )
+@public_endpoint
 def verify_identification_code(
     privacy_request_id: str,
     *,

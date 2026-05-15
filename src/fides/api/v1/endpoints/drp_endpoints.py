@@ -35,6 +35,7 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
@@ -61,6 +62,7 @@ EMBEDDED_EXECUTION_LOG_LIMIT = 50
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestDRPStatusResponse,
 )
+@public_endpoint
 async def create_drp_privacy_request(
     *,
     cache: FidesopsRedis = Depends(deps.get_cache),

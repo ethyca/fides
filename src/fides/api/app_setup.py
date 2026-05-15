@@ -28,6 +28,7 @@ from fides.api.db.database import configure_db, seed_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.deps import get_async_autoclose_db_session
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.oauth.public_endpoint import validate_endpoint_auth_policy
 from fides.api.oauth.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -151,6 +152,13 @@ def create_fides_app(
     elif security_env == "prod":
         # This is the most secure, so all security deps are maintained
         pass
+
+    # Validate that every endpoint has auth or is explicitly marked @public_endpoint.
+    # This runs after all routes and overrides are registered.
+    # Plugins (e.g. fidesplus) that add routes later should call
+    # validate_endpoint_auth_policy() again after their routes are added.
+    if not CONFIG.test_mode:
+        validate_endpoint_auth_policy(fastapi_app)
 
     return fastapi_app
 

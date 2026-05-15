@@ -50,6 +50,7 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.redis_cache import Identity
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -174,6 +175,7 @@ def report_consent_requests(
     status_code=HTTP_200_OK,
     response_model=ConsentRequestResponse,
 )
+@public_endpoint
 def create_consent_request(
     *,
     db: Session = Depends(get_db),
@@ -239,6 +241,7 @@ def create_consent_request(
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
 )
+@public_endpoint
 def consent_request_verify(
     *,
     consent_request_id: str,
@@ -293,6 +296,7 @@ def consent_request_verify(
         },
     },
 )
+@public_endpoint
 def get_consent_preferences_no_id(
     *,
     db: Session = Depends(get_db),
@@ -440,6 +444,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
 )
+@public_endpoint
 def set_consent_preferences(
     *,
     consent_request_id: str,

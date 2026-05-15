@@ -34,6 +34,7 @@ from fides.api.models.messaging import (
     get_schema_for_secrets,
 )
 from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
@@ -779,6 +780,7 @@ def delete_messaging_template_by_id(
 
 
 @router.get(MESSAGING_EMAIL_INVITE_STATUS)
+@public_endpoint
 def user_email_invite_status(
     messaging_service: MessagingService = Depends(get_messaging_service),
 ) -> UserEmailInviteStatus:

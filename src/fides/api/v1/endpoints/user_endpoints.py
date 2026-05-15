@@ -37,6 +37,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.oauth.roles import APPROVER, EXTERNAL_RESPONDENT, VIEWER
 from fides.api.oauth.utils import (
     PermissionCheckerCallback,
@@ -770,6 +771,7 @@ def get_users(
     response_model=UserLoginResponse,
 )
 @fides_limiter.limit(CONFIG.security.auth_rate_limit)
+@public_endpoint
 def user_login(
     *,
     request: Request,
@@ -905,6 +907,7 @@ def verify_invite_code(
 @router.post(
     urls.USER_ACCEPT_INVITE,
 )
+@public_endpoint
 def accept_user_invite(
     *,
     db: Session = Depends(get_db),
@@ -943,6 +946,7 @@ def accept_user_invite(
     status_code=HTTP_200_OK,
 )
 @fides_limiter.limit(CONFIG.security.auth_rate_limit)
+@public_endpoint
 def forgot_password(
     *,
     request: Request,
@@ -966,6 +970,7 @@ def forgot_password(
     response_model=UserLoginResponse,
 )
 @fides_limiter.limit(CONFIG.security.auth_rate_limit)
+@public_endpoint
 def reset_password_with_token(
     *,
     request: Request,

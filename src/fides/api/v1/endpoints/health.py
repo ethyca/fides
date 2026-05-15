@@ -23,6 +23,7 @@ from fides.api.db.database import get_db_health
 from fides.api.deps import get_db
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
 from fides.common.engine_creators import db_cred_provider
@@ -149,6 +150,7 @@ def get_cache_health() -> str:
         },
     },
 )
+@public_endpoint
 async def database_health(db: Session = Depends(get_db)) -> Dict:
     """Confirm that configured API database pools are reachable."""
     pools: Dict[str, PoolStatus] = {}
@@ -321,6 +323,7 @@ def _get_async_readonly_prewarming_details() -> Optional[PoolPrewarming]:
         },
     },
 )
+@public_endpoint
 async def workers_health() -> Dict:
     """Confirm that the API is running and healthy."""
     response = WorkerHealthCheck(
@@ -367,6 +370,7 @@ async def workers_health() -> Dict:
         },
     },
 )
+@public_endpoint
 async def health(
     include_cache: Optional[bool] = Query(default=False),
 ) -> Dict:

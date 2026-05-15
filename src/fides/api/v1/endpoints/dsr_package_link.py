@@ -13,6 +13,7 @@ from starlette.status import (
 )
 
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
+from fides.api.oauth.public_endpoint import public_endpoint
 from fides.api.deps import get_db
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import get_active_default_storage_config
@@ -63,6 +64,7 @@ def raise_error(status_code: int, detail: str) -> None:
     status_code=HTTP_302_FOUND,
 )
 @fides_limiter.limit(CONFIG.security.request_rate_limit)
+@public_endpoint
 def get_access_results_urls(
     privacy_request_id: str,
     token: str,
