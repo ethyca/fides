@@ -121,9 +121,9 @@ export const ListItem = ({
           )}
         </Flex>
       </Flex>
-      <div
+      <Flex vertical
         className={classNames(
-          "flex shrink-0 flex-col items-end gap-2 pr-2",
+          "shrink-0 items-end gap-2 pr-2",
           !compact && "2xl:flex-row 2xl:gap-4",
         )}
       >
