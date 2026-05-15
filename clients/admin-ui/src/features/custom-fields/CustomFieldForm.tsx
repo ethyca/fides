@@ -79,6 +79,8 @@ const CustomFieldForm = ({
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const valueType = Form.useWatch("value_type", form);
   const selectedTemplate = Form.useWatch("template", form);
+  const isTaxonomyTemplate =
+    !!selectedTemplate && selectedTemplate !== CUSTOM_TEMPLATE_VALUE;
   const router = useRouter();
   const { resource_type: queryResourceType } = router.query;
 
@@ -185,17 +187,26 @@ const CustomFieldForm = ({
       return undefined;
     }
     const fieldType = getCustomFieldType(field);
-    const template =
+    const isCustomTemplate =
       fieldType === FieldTypes.OPEN_TEXT ||
       fieldType === FieldTypes.SINGLE_SELECT ||
-      fieldType === FieldTypes.MULTIPLE_SELECT
-        ? CUSTOM_TEMPLATE_VALUE
-        : undefined;
+      fieldType === FieldTypes.MULTIPLE_SELECT;
+
+    // Detect taxonomy multi-select: field_type ends with "[]" and is not a standard type
+    const isTaxonomyMulti =
+      !isCustomTemplate && field.field_type.endsWith("[]");
+    const taxonomyBaseKey = isTaxonomyMulti
+      ? field.field_type.slice(0, -2)
+      : field.field_type;
+
+    const template = isCustomTemplate ? CUSTOM_TEMPLATE_VALUE : taxonomyBaseKey;
+
     return {
       ...field,
-      value_type: field.field_type,
+      value_type: taxonomyBaseKey,
       template,
       field_type: fieldType,
+      selection_mode: isTaxonomyMulti ? "multiple" : "single",
       resource_type: parseResourceType(field.resource_type),
       options: allowList?.allowed_values ?? [],
     };
@@ -256,8 +267,10 @@ const CustomFieldForm = ({
           onChange={(value) => {
             if (value === CUSTOM_TEMPLATE_VALUE) {
               form.setFieldValue("value_type", undefined);
+              form.setFieldValue("selection_mode", undefined);
             } else {
               form.setFieldValue("value_type", value);
+              form.setFieldValue("selection_mode", "single");
             }
           }}
           data-testid="select-template"
@@ -276,6 +289,25 @@ const CustomFieldForm = ({
           }
         />
       </Form.Item>
+
+      {isTaxonomyTemplate && (
+        <Form.Item
+          label="Selection mode"
+          name="selection_mode"
+          initialValue="single"
+        >
+          <Select
+            options={[
+              { label: "Single select", value: "single" },
+              { label: "Multiple select", value: "multiple" },
+            ]}
+            data-testid="select-selection-mode"
+            getPopupContainer={(trigger) =>
+              trigger.parentElement || document.body
+            }
+          />
+        </Form.Item>
+      )}
 
       {selectedTemplate === CUSTOM_TEMPLATE_VALUE && (
         <>

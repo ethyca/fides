@@ -8,6 +8,7 @@ export interface CustomFieldsFormValues extends Omit<
   field_type?: string;
   template?: string;
   value_type: string;
+  selection_mode?: "single" | "multiple";
 }
 
 export const CUSTOM_TEMPLATE_VALUE = "create-custom-values";

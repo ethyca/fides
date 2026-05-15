@@ -123,11 +123,11 @@ const useCreateOrUpdateCustomField = () => {
       return result;
     }
     // field type is a taxonomy
-    const { value_type: valueType, ...rest } = values;
+    const { value_type: valueType, selection_mode: selectionMode, ...rest } = values;
     const payload = {
       ...rest,
       id: initialField ? initialField.id : undefined,
-      field_type: valueType,
+      field_type: selectionMode === "multiple" ? `${valueType}[]` : valueType,
       resource_type: normalizedResourceType,
     };
     let result: RTKResult | undefined;
