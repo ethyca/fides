@@ -1,0 +1,177 @@
+enum ActionSeverity {
+  critical
+  high
+  medium
+  low
+}
+
+type ActivityFeedItem {
+  actorType: ActorType!
+  message: String!
+  timestamp: DateTime!
+}
+
+type ActivityFeedPage {
+  items: [ActivityFeedItem!]!
+  total: Int!
+  page: Int!
+  size: Int!
+  pages: Int!
+}
+
+enum ActorType {
+  user
+  agent
+}
+
+type AgentBriefing {
+  briefing: String!
+  quickActions: [QuickAction!]!
+}
+
+type Astralis {
+  activeConversations: Int!
+  completedAssessments: Int!
+  awaitingResponse: Int!
+  risksIdentified: Int!
+}
+
+enum DashboardActionStatus {
+  pending
+  in_progress
+  completed
+}
+
+enum DashboardActionType {
+  classification_review
+  dsr_action
+  system_review
+  steward_assignment
+  consent_anomaly
+  policy_violation
+  pia_update
+}
+
+"""Date with time (isoformat)"""
+scalar DateTime
+
+enum DiffDirection {
+  up
+  down
+  unchanged
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf).
+"""
+scalar JSON @specifiedBy(url: "https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf")
+
+type Posture {
+  score: Float!
+  band: PostureBand!
+  diffPercent: Float!
+  diffDirection: DiffDirection!
+  agentAnnotation: String!
+  dimensions: [PostureDimension!]!
+}
+
+enum PostureBand {
+  critical
+  at_risk
+  good
+  excellent
+}
+
+type PostureDimension {
+  dimension: String!
+  label: String!
+  weight: Float!
+  score: Float!
+  band: PostureBand!
+}
+
+type PriorityAction {
+  id: ID!
+  type: DashboardActionType!
+  severity: ActionSeverity!
+  title: String!
+  message: String!
+  agentSummary: String!
+  dueDate: DateTime
+  actionData: JSON!
+  status: DashboardActionStatus!
+}
+
+type PriorityActionsPage {
+  items: [PriorityAction!]!
+  total: Int!
+  page: Int!
+  size: Int!
+  pages: Int!
+}
+
+type PrivacyRequestStatuses {
+  inProgress: Int!
+  pendingAction: Int!
+  awaitingApproval: Int!
+}
+
+type PrivacyRequests {
+  activeCount: Int!
+  statuses: PrivacyRequestStatuses!
+  overdueCount: Int!
+  slaHealth: [SLAHealthBucket!]!
+}
+
+type Query {
+  agentBriefing: AgentBriefing!
+  posture: Posture!
+  trends(period: TrendPeriod! = thirty_days): Trends!
+  astralis: Astralis!
+  activityFeed(page: Int! = 1, size: Int! = 20): ActivityFeedPage!
+  privacyRequests: PrivacyRequests!
+  systemCoverage: SystemCoverage!
+  priorityActions(page: Int! = 1, size: Int! = 8, action: DashboardActionType = null, status: DashboardActionStatus = null, dimension: String = null): PriorityActionsPage!
+}
+
+type QuickAction {
+  label: String!
+  actionType: DashboardActionType!
+  actionData: JSON!
+  severity: ActionSeverity!
+}
+
+type SLAHealthBucket {
+  label: String!
+  onTrack: Int!
+  approaching: Int!
+  overdue: Int!
+}
+
+type SystemCoverage {
+  totalSystems: Int!
+  fullyClassified: Int!
+  partiallyClassified: Int!
+  unclassified: Int!
+  withoutSteward: Int!
+  coveragePercentage: Float!
+}
+
+type TrendMetric {
+  key: String!
+  value: Float!
+  history: [Float!]!
+  metadata: JSON!
+  diff: Float!
+}
+
+enum TrendPeriod {
+  thirty_days
+  sixty_days
+  ninety_days
+}
+
+type Trends {
+  period: TrendPeriod!
+  metrics: [TrendMetric!]!
+}

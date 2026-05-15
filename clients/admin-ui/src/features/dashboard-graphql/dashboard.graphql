@@ -1,0 +1,98 @@
+query DashboardOverview(
+  $trendPeriod: TrendPeriod! = thirty_days
+  $actionsPage: Int! = 1
+  $actionsSize: Int! = 8
+  $activityPage: Int! = 1
+  $activitySize: Int! = 20
+) {
+  posture {
+    score
+    band
+    diffPercent
+    diffDirection
+    agentAnnotation
+    dimensions {
+      dimension
+      label
+      weight
+      score
+      band
+    }
+  }
+  trends(period: $trendPeriod) {
+    period
+    metrics {
+      key
+      value
+      history
+      metadata
+      diff
+    }
+  }
+  systemCoverage {
+    totalSystems
+    fullyClassified
+    partiallyClassified
+    unclassified
+    withoutSteward
+    coveragePercentage
+  }
+  privacyRequests {
+    activeCount
+    overdueCount
+    statuses {
+      inProgress
+      pendingAction
+      awaitingApproval
+    }
+    slaHealth {
+      label
+      onTrack
+      approaching
+      overdue
+    }
+  }
+  priorityActions(page: $actionsPage, size: $actionsSize) {
+    items {
+      id
+      type
+      severity
+      title
+      message
+      agentSummary
+      dueDate
+      actionData
+      status
+    }
+    total
+    page
+    size
+    pages
+  }
+  astralis {
+    activeConversations
+    completedAssessments
+    awaitingResponse
+    risksIdentified
+  }
+  agentBriefing {
+    briefing
+    quickActions {
+      label
+      actionType
+      severity
+      actionData
+    }
+  }
+  activityFeed(page: $activityPage, size: $activitySize) {
+    items {
+      actorType
+      message
+      timestamp
+    }
+    total
+    page
+    size
+    pages
+  }
+}

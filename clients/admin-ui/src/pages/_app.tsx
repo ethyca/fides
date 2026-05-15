@@ -28,7 +28,7 @@ import LoginWithOIDC from "./login/[provider]";
 
 dayjs.extend(utc);
 
-if (process.env.NEXT_PUBLIC_MOCK_API) {
+if (process.env.NEXT_PUBLIC_MOCK_API || process.env.NEXT_PUBLIC_MOCK_GRAPHQL) {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   import("../mocks").then(({ initMocks }) => initMocks());
 }
