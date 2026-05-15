@@ -1,0 +1,4 @@
+type: Fixed
+description: Privacy Center Cypress workflow no longer triggers on PRs that don't touch the Privacy Center
+pr: 8196
+labels: []
