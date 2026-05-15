@@ -6,13 +6,18 @@ from pydantic import ValidationError
 from fides.api.schemas.privacy_center_config import (
     ConsentConfigPage,
     CustomPrivacyRequestField,
+    FileUploadCustomPrivacyRequestField,
     IdentityInputs,
     LocationCustomPrivacyRequestField,
+    MetricsConfig,
     PrivacyCenterConfig,
+    PrivacyRequestOption,
+    _default_allowed_file_types,
     get_field_type_discriminator,
     reorder_custom_privacy_request_fields,
 )
 from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
+from fides.api.service.storage.util import DEFAULT_FILE_MAX_SIZE_BYTES
 from fides.api.util.saas_util import load_as_string
 
 
@@ -754,3 +759,137 @@ class TestReorderCustomPrivacyRequestFields:
         result = reorder_custom_privacy_request_fields(config)
         keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
         assert keys == ["b", "a", "new_field"]  # new_field appended at end
+
+
+class TestFileUploadCustomPrivacyRequestField:
+    def test_defaults(self):
+        field = FileUploadCustomPrivacyRequestField(label="Receipt")
+        assert field.field_type == "file"
+        assert field.required is True
+        assert field.max_size_bytes == DEFAULT_FILE_MAX_SIZE_BYTES
+        assert field.allowed_file_types == sorted(_default_allowed_file_types())
+
+    def test_explicit_allowed_file_types(self):
+        field = FileUploadCustomPrivacyRequestField(
+            label="Receipt", allowed_file_types=["pdf"]
+        )
+        assert field.allowed_file_types == ["pdf"]
+
+    def test_rejects_options(self):
+        with pytest.raises(ValidationError, match="do not support options"):
+            FileUploadCustomPrivacyRequestField(label="Receipt", options=["a"])
+
+    def test_rejects_empty_allowed_file_types(self):
+        with pytest.raises(ValidationError, match="must not be empty"):
+            FileUploadCustomPrivacyRequestField(label="Receipt", allowed_file_types=[])
+
+    def test_rejects_unsupported_file_type(self):
+        with pytest.raises(ValidationError, match="Unsupported file types"):
+            FileUploadCustomPrivacyRequestField(
+                label="Receipt", allowed_file_types=["exe"]
+            )
+
+    def test_rejects_zero_max_size(self):
+        with pytest.raises(ValidationError):
+            FileUploadCustomPrivacyRequestField(label="Receipt", max_size_bytes=0)
+
+    def test_rejects_negative_max_size(self):
+        with pytest.raises(ValidationError):
+            FileUploadCustomPrivacyRequestField(label="Receipt", max_size_bytes=-1)
+
+
+class TestFieldTypeDiscriminator:
+    def test_dispatches_file(self):
+        assert get_field_type_discriminator({"field_type": "file"}) == "file"
+
+    def test_dispatches_location(self):
+        assert get_field_type_discriminator({"field_type": "location"}) == "location"
+
+    def test_dispatches_custom_default(self):
+        assert get_field_type_discriminator({"field_type": "text"}) == "custom"
+
+    def test_dispatches_from_model_instance(self):
+        field = FileUploadCustomPrivacyRequestField(label="Receipt")
+        assert get_field_type_discriminator(field) == "file"
+
+    def test_privacy_center_config_parses_file_field(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "receipt": {"label": "Receipt", "field_type": "file"},
+        }
+        config = PrivacyCenterConfig(**config_data)
+        field = config.actions[0].custom_privacy_request_fields["receipt"]
+        assert isinstance(field, FileUploadCustomPrivacyRequestField)
+
+
+class TestMetricsConfig:
+    def test_all_fields_default_to_none(self):
+        cfg = MetricsConfig()
+        assert cfg.title is None
+        assert cfg.description is None
+        assert cfg.link_text is None
+
+    def test_accepts_string_values(self):
+        cfg = MetricsConfig(title="Metrics", description="Desc", link_text="View")
+        assert cfg.title == "Metrics"
+        assert cfg.description == "Desc"
+        assert cfg.link_text == "View"
+
+
+class TestPrivacyRequestOptionNewFields:
+    def _base_kwargs(self):
+        return {
+            "icon_path": "/icon.svg",
+            "title": "Access",
+            "description": "Request your data",
+        }
+
+    def test_verification_and_success_fields_default_to_none(self):
+        opt = PrivacyRequestOption(**self._base_kwargs())
+        assert opt.verification_title is None
+        assert opt.verification_description is None
+        assert opt.verification_submit_button_text is None
+        assert opt.verification_resend_button_text is None
+        assert opt.success_title is None
+        assert opt.success_description is None
+        assert opt.success_button_text is None
+
+    def test_verification_and_success_fields_accept_values(self):
+        opt = PrivacyRequestOption(
+            **self._base_kwargs(),
+            verification_title="Verify",
+            verification_description="Check your email",
+            verification_submit_button_text="Submit",
+            verification_resend_button_text="Resend",
+            success_title="Done",
+            success_description="Request submitted",
+            success_button_text="Close",
+        )
+        assert opt.verification_title == "Verify"
+        assert opt.verification_description == "Check your email"
+        assert opt.verification_submit_button_text == "Submit"
+        assert opt.verification_resend_button_text == "Resend"
+        assert opt.success_title == "Done"
+        assert opt.success_description == "Request submitted"
+        assert opt.success_button_text == "Close"
+
+
+class TestPrivacyCenterConfigMetrics:
+    def test_metrics_defaults_to_none(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config = PrivacyCenterConfig(**config_data)
+        assert config.metrics is None
+
+    def test_metrics_accepts_metrics_config(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["metrics"] = {"title": "Metrics", "link_text": "View"}
+        config = PrivacyCenterConfig(**config_data)
+        assert isinstance(config.metrics, MetricsConfig)
+        assert config.metrics.title == "Metrics"
+        assert config.metrics.link_text == "View"
