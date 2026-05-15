@@ -87,7 +87,9 @@ const useCustomFieldsTable = () => {
           const customTaxonomy = customTaxonomies?.find(
             (taxonomy) => taxonomy.fides_key === baseFieldType,
           );
-          const label = customTaxonomy?.name ?? getCustomFieldTypeLabel(record);
+          const label =
+            customTaxonomy?.name ??
+            getCustomFieldTypeLabel({ ...record, field_type: baseFieldType });
           return <TagCell value={label} />;
         },
       },

@@ -110,6 +110,7 @@ export const useCustomFields = ({
       activeCustomFieldDefinition.forEach((value) => {
         const customField = definitionIdToCustomField.get(value.id || "");
         if (customField) {
+          // Preserve array values for any multi-value field_type (legacy "string[]" or taxonomy "risk[]")
           if (value.field_type.endsWith("[]")) {
             values[customField.custom_field_definition_id] = customField.value;
           } else {

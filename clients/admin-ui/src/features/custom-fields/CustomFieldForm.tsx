@@ -294,7 +294,6 @@ const CustomFieldForm = ({
         <Form.Item
           label="Selection mode"
           name="selection_mode"
-          initialValue="single"
         >
           <Select
             options={[
