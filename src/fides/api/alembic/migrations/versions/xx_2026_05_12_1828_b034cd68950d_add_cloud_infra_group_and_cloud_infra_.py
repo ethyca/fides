@@ -23,7 +23,7 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('monitor_config_id', sa.String(), nullable=False),
-    sa.Column('draft_system_name', sa.String(), nullable=True),
+    sa.Column('name', sa.String(), nullable=True),
     sa.Column('system_id', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['system_id'], ['ctl_systems.id'], ),
     sa.PrimaryKeyConstraint('id')

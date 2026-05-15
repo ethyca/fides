@@ -39,7 +39,7 @@ class TestCloudInfraGroupModel:
             db=db,
             data={
                 "monitor_config_id": self.MONITOR_KEY,
-                "draft_system_name": "Checkout Service",
+                "name": "Checkout Service",
             },
         )
         yield group
@@ -48,13 +48,13 @@ class TestCloudInfraGroupModel:
 
     def test_create_with_draft_name(self, db: Session, group: CloudInfraGroup):
         assert group.monitor_config_id == self.MONITOR_KEY
-        assert group.draft_system_name == "Checkout Service"
+        assert group.name == "Checkout Service"
         assert group.system_id is None
 
     def test_create_without_system_id(self, db: Session, group: CloudInfraGroup):
         fetched = db.query(CloudInfraGroup).filter_by(id=group.id).one()
         assert fetched.system_id is None
-        assert fetched.draft_system_name == "Checkout Service"
+        assert fetched.name == "Checkout Service"
 
     def test_unique_system_per_monitor(self, db: Session):
         """Two groups from the same monitor cannot target the same System."""
@@ -109,14 +109,14 @@ class TestCloudInfraGroupModel:
             db=db,
             data={
                 "monitor_config_id": self.MONITOR_KEY,
-                "draft_system_name": "Draft A",
+                "name": "Draft A",
             },
         )
         g2 = CloudInfraGroup.create(
             db=db,
             data={
                 "monitor_config_id": self.MONITOR_KEY,
-                "draft_system_name": "Draft B",
+                "name": "Draft B",
             },
         )
         assert g1.system_id is None
@@ -155,7 +155,7 @@ class TestCloudInfraGroupAssignmentModel:
             db=db,
             data={
                 "monitor_config_id": self.MONITOR_KEY,
-                "draft_system_name": "Test Group",
+                "name": "Test Group",
             },
         )
         yield group
@@ -247,7 +247,7 @@ class TestCloudInfraGroupAssignmentModel:
             db=db,
             data={
                 "monitor_config_id": self.MONITOR_KEY,
-                "draft_system_name": "Group B",
+                "name": "Group B",
             },
         )
         a1 = CloudInfraGroupAssignment.create(
@@ -268,4 +268,118 @@ class TestCloudInfraGroupAssignmentModel:
         db.delete(a1)
         db.delete(a2)
         db.delete(group_b)
+        db.commit()
+
+
+class TestUnlinkGroupsOnSystemDelete:
+    """Tests for the _unlink_groups_on_system_delete before_delete listener."""
+
+    MONITOR_KEY = "aws_monitor_1"
+
+    def test_system_delete_unlinks_groups_and_resets_assignments(self, db: Session):
+        """Full scenario: deleting a System reverts groups to draft, resets
+        promoted flags, preserves the System name, and only reverts diff_status
+        on resources that have no remaining promoted assignments elsewhere.
+
+        Setup:
+        - system (to be deleted)
+        - group_a → targets system, name is NULL
+        - group_b → draft group (unaffected)
+        - resource_only_here → promoted in group_a only (should revert to ADDITION)
+        - resource_also_elsewhere → promoted in group_a AND group_b (should stay MONITORED)
+        """
+        system = _create_system(db)
+        system_name = system.name
+
+        def _make_resource(suffix: str) -> CloudInfraStagedResource:
+            return CloudInfraStagedResource.create(
+                db=db,
+                data={
+                    "urn": f"{self.MONITOR_KEY}:arn:aws:s3:::bucket-{suffix}",
+                    "name": f"bucket-{suffix}",
+                    "resource_type": StagedResourceType.CLOUD_INFRA,
+                    "monitor_config_id": self.MONITOR_KEY,
+                    "diff_status": DiffStatus.MONITORED.value,
+                    "service": "s3",
+                    "location": "us-east-1",
+                    "cloud_account_id": "123456789012",
+                    "source_id": f"arn:aws:s3:::bucket-{suffix}",
+                },
+            )
+
+        resource_only_here = _make_resource("only-here")
+        resource_also_elsewhere = _make_resource("also-elsewhere")
+
+        # Group A targets the system being deleted (no name)
+        group_a = CloudInfraGroup.create(
+            db=db,
+            data={
+                "monitor_config_id": self.MONITOR_KEY,
+                "system_id": system.id,
+            },
+        )
+        assign_a1 = CloudInfraGroupAssignment.create(
+            db=db,
+            data={
+                "resource_id": resource_only_here.id,
+                "group_id": group_a.id,
+                "promoted": True,
+            },
+        )
+        assign_a2 = CloudInfraGroupAssignment.create(
+            db=db,
+            data={
+                "resource_id": resource_also_elsewhere.id,
+                "group_id": group_a.id,
+                "promoted": True,
+            },
+        )
+
+        # Group B is a draft group — resource_also_elsewhere is promoted here too
+        group_b = CloudInfraGroup.create(
+            db=db,
+            data={
+                "monitor_config_id": self.MONITOR_KEY,
+                "name": "Other Group",
+            },
+        )
+        CloudInfraGroupAssignment.create(
+            db=db,
+            data={
+                "resource_id": resource_also_elsewhere.id,
+                "group_id": group_b.id,
+                "promoted": True,
+            },
+        )
+
+        # Act
+        db.delete(system)
+        db.commit()
+
+        # Refresh ORM objects
+        db.refresh(group_a)
+        db.refresh(assign_a1)
+        db.refresh(assign_a2)
+        db.refresh(resource_only_here)
+        db.refresh(resource_also_elsewhere)
+
+        # Group A reverted to draft, System name backfilled via COALESCE
+        assert group_a.system_id is None
+        assert group_a.name == system_name
+
+        # Promoted flags reset on group_a's assignments
+        assert assign_a1.promoted is False
+        assert assign_a2.promoted is False
+
+        # Resource only in group_a → reverted to ADDITION
+        assert resource_only_here.diff_status == DiffStatus.ADDITION.value
+
+        # Resource also promoted in group_b → stays MONITORED
+        assert resource_also_elsewhere.diff_status == DiffStatus.MONITORED.value
+
+        # Cleanup
+        db.delete(group_a)
+        db.delete(group_b)
+        db.delete(resource_only_here)
+        db.delete(resource_also_elsewhere)
         db.commit()
