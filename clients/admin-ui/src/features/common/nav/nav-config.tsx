@@ -214,6 +214,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
+      {
+        title: "TCF version history",
+        path: routes.TCF_VERSION_HISTORY_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+      },
     ],
   },
   {
