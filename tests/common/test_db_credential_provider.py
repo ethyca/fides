@@ -257,6 +257,27 @@ class TestGetDatabaseUrl:
         assert url.startswith("postgresql+psycopg2://")
         assert CONFIG.database.server in url
 
+    def test_includes_connection_params(self):
+        """SSL and other params from CONFIG.database.params are appended as query params."""
+        with (
+            patch("fides.config.secrets.static_provider.CONFIG") as mock_sp_config,
+            patch("fides.common.db_credential_provider.CONFIG") as mock_dcp_config,
+            patch(
+                "fides.common.db_credential_provider.get_secret_provider"
+            ) as mock_get,
+        ):
+            mock_sp_config.database = DatabaseSettings(
+                params={"sslmode": "require", "sslrootcert": "/path/to/cert"},
+            )
+            mock_dcp_config.database = mock_sp_config.database
+            mock_dcp_config.test_mode = False
+            mock_get.return_value = StaticSecretProvider()
+
+            provider = DBCredentialProvider()
+            url = provider.get_database_url()
+            assert "sslmode=require" in url
+            assert "sslrootcert=/path/to/cert" in url
+
     @pytest.mark.parametrize(
         "user,password",
         [
