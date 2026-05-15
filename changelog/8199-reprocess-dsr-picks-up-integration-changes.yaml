@@ -1,0 +1,4 @@
+type: Changed
+description: The privacy request Reprocess action now picks up integrations added or removed after the original failure; the request is now resubmitted instead of retried (DAG rebuilt, prior execution logs cleared) instead of retried against the stale DAG. Adds a new `POST /privacy-request/bulk/resubmit` endpoint to support bulk reprocessing.
+pr: 8199
+labels: ["high-risk"]
