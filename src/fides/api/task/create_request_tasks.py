@@ -180,6 +180,20 @@ def build_erasure_networkx_digraph(
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
+    # Validate that all erase_after references point to collections that
+    # exist in the traversal or end_nodes. Dangling references (e.g. from a
+    # deleted integration) would silently create phantom nodes in the graph
+    # via networkx.add_edge, leading to a KeyError during task creation.
+    valid_nodes = set(traversal_nodes.keys()) | set(end_nodes) | set(ARTIFICIAL_NODES)
+    for node_name, traversal_node in traversal_nodes.items():
+        for ref in traversal_node.node.collection.erase_after:
+            if ref not in valid_nodes:
+                raise TraversalError(
+                    f"Collection {node_name} has an erase_after reference to "
+                    f"{ref} which does not exist in the dataset graph. This may "
+                    f"indicate a deleted integration that is still referenced."
+                )
+
     for node_name, traversal_node in traversal_nodes.items():
         # Add an edge from the root node to the current node, unless explicit erasure
         # dependencies are defined. Modifies end_nodes in place
