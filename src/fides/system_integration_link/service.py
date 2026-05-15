@@ -62,9 +62,15 @@ class SystemIntegrationLinkService:
 
         Currently limited to MAX_LINKS_PER_CONNECTION total links per integration.
 
-        When ``background_tasks`` is provided and a write actually happened,
-        fires the system-connection-config-link-change hooks so consumers
-        (e.g. fidesplus's inheritance propagation) can react.
+        When ``background_tasks`` is provided and the call actually mutated
+        rows (i.e. there were prior links or new links to set), fires the
+        system-connection-config-link-change hooks so consumers (e.g.
+        fidesplus's inheritance propagation) can react. The no-op case —
+        ``set_links([])`` when no links previously existed — does not fire.
+        Note: re-setting an identical link is treated as a mutation (the
+        implementation does delete-and-recreate), so the hook fires even
+        though the logical set is unchanged; tolerable because consumers
+        are expected to be idempotent.
         """
         connection_config = self._repo.resolve_connection_config(
             connection_key, session=session
@@ -83,6 +89,10 @@ class SystemIntegrationLinkService:
             if not system:
                 raise SystemNotFoundError(link_spec.system_fides_key)
             system_map[link_spec.system_fides_key] = system
+
+        had_existing_links = bool(
+            self._repo.get_links_for_connection(connection_config.id, session=session)
+        )
 
         self._repo.delete_all_links_for_connection(
             connection_config.id, session=session
@@ -104,7 +114,7 @@ class SystemIntegrationLinkService:
             connection_key,
         )
 
-        if background_tasks is not None:
+        if background_tasks is not None and (had_existing_links or results):
             notify_system_connection_config_link_changed(
                 background_tasks, connection_config.id
             )

@@ -257,6 +257,20 @@ class TestLinkChangeHookDispatch:
 
         hook.assert_not_called()
 
+    def test_set_links_does_not_fire_on_empty_set_with_no_prior_links(
+        self, service, db, connection_config
+    ):
+        """Calling ``set_links([])`` on a connection that had no links is a
+        true no-op — no DB state changed, so the hook must not fire even
+        though ``background_tasks`` was supplied."""
+        hook = MagicMock()
+        link_hooks.register_system_connection_config_link_change_hook(hook)
+        bg = BackgroundTasks()
+
+        service.set_links(connection_config.key, [], session=db, background_tasks=bg)
+
+        hook.assert_not_called()
+
     def test_delete_link_fires_hook_when_background_tasks_passed(
         self, service, db, connection_config, system_a
     ):
