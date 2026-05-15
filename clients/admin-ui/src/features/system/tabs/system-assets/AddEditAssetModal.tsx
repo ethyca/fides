@@ -1,4 +1,5 @@
 import { Button, Flex, Form, Input, Select, useMessage } from "fidesui";
+import { useReducer } from "react";
 
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import {
@@ -50,6 +51,11 @@ const AddEditAssetModal = ({
 }: AddEditAssetModalProps) => {
   const isCreate = !asset;
   const [form] = Form.useForm<Asset>();
+  // antd's <Form.Item shouldUpdate> only re-renders on value changes, not on
+  // error-state changes. Force a re-render whenever any field state updates
+  // so the Save button's disabled state and our custom error display stay in
+  // sync with validation results.
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
 
   const [addSystemAsset, { isLoading: addIsLoading }] =
     useAddSystemAssetMutation();
@@ -96,6 +102,7 @@ const AddEditAssetModal = ({
         layout="vertical"
         initialValues={initialValues}
         onFinish={handleFinish}
+        onFieldsChange={() => forceUpdate()}
         key={asset?.id ?? "create"}
         requiredMark
       >
@@ -134,6 +141,7 @@ const AddEditAssetModal = ({
             ]}
           >
             <DataUseSelect
+              aria-label="Data uses"
               mode="multiple"
               selectedTaxonomies={[]}
               variant="outlined"
@@ -179,11 +187,21 @@ const AddEditAssetModal = ({
                   </Form.Item>
                 );
               }
+              const baseUrlErrors = form.getFieldError("base_url");
+              const hasBaseUrlError = baseUrlErrors.length > 0;
               return (
                 <Form.Item
                   name="base_url"
                   label="Base URL"
                   rules={[{ required: true, message: "Base URL is required" }]}
+                  validateStatus={hasBaseUrlError ? "error" : undefined}
+                  help={
+                    hasBaseUrlError ? (
+                      <span data-testid="error-base_url">
+                        {baseUrlErrors[0]}
+                      </span>
+                    ) : undefined
+                  }
                 >
                   <Input data-testid="input-base_url" />
                 </Form.Item>
@@ -193,22 +211,18 @@ const AddEditAssetModal = ({
         </Flex>
         <Flex justify="space-between">
           <Button onClick={onClose}>Cancel</Button>
-          <Form.Item shouldUpdate noStyle>
-            {() => (
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={addIsLoading || updateIsLoading}
-                disabled={
-                  (isCreate && !form.isFieldsTouched()) ||
-                  form.getFieldsError().some(({ errors }) => errors.length > 0)
-                }
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            )}
-          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={addIsLoading || updateIsLoading}
+            disabled={
+              (isCreate && !form.isFieldsTouched()) ||
+              form.getFieldsError().some(({ errors }) => errors.length > 0)
+            }
+            data-testid="save-btn"
+          >
+            Save
+          </Button>
         </Flex>
       </Form>
     </ConfirmCloseModal>
