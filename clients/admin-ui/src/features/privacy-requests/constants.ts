@@ -1,5 +1,8 @@
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
-import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
+import {
+  ActionType,
+  PrivacyRequestSource,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.APPROVED, "Approved"],

@@ -9,8 +9,12 @@ import { useEffect, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
-import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
+import {
+  ActionType,
+  ColumnSort,
+  PrivacyRequestSource,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 import { SubjectRequestStatusMap } from "../../constants";
 import { filterNullCustomFields, parseAsCustomFields } from "../utils";

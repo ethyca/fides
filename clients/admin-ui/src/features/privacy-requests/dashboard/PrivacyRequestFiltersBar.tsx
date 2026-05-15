@@ -20,8 +20,11 @@ import PrivacyRequestSortMenu, {
 } from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
 import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
-import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
+import {
+  ActionType,
+  PrivacyRequestSource,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 import { CustomFieldFilter } from "./CustomFieldFilter";
 import { extractUniqueCustomFields } from "./utils";

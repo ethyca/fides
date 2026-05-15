@@ -621,8 +621,8 @@ class PrivacyRequestFilter(FidesSchema):
     @classmethod
     def validate_source_field(
         cls,
-        field_value: Union[PrivacyRequestSource, List[PrivacyRequestSource]],
-    ) -> List[PrivacyRequestSource]:
+        field_value: Optional[Union[PrivacyRequestSource, List[PrivacyRequestSource]]],
+    ) -> Optional[List[PrivacyRequestSource]]:
         """
         Keeps the source field flexible but converts a single value to a list for consistent processing.
         """
