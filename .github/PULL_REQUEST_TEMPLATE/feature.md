@@ -60,3 +60,25 @@ Closes #
 ## Risk & rollback
 
 <!-- What breaks if this is wrong? How do we turn it off? If it's flag-gated, say so. If revert is the answer, say so. -->
+
+## Pre-merge checklist
+
+- [ ] All CI pipelines succeeded
+- [ ] Issue requirements met
+- [ ] Changelog entry added under `changelog/` (`{pr-number}-{slug}.yaml`)
+  - [ ] `high-risk` label added if this could cause performance impact or unexpected regression
+  - [ ] `db-migration` label added if this PR includes a DB migration
+- [ ] Database migrations
+  - [ ] Downrev is up to date with the latest revision on the base branch
+  - [ ] `downgrade()` migration is correct and tested
+  - [ ] _Or:_ a downgrade is not possible — called out explicitly in the PR description
+  - [ ] _Or:_ no migrations in this PR
+- [ ] UX review
+  - [ ] Reviewed by a designer
+  - [ ] _Or:_ no UX changes
+- [ ] Documentation
+  - [ ] PR opened in [fidesdocs](https://github.com/ethyca/fidesdocs/pulls)
+  - [ ] _Or:_ issue created in [fidesdocs](https://github.com/ethyca/fidesdocs/issues/new/choose)
+  - [ ] _Or:_ new client scopes — public-facing scope registry docs updated
+  - [ ] _Or:_ no documentation updates required
+- [ ] Verified on demo environment (`nox -s dev -- demo`)

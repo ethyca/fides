@@ -45,3 +45,15 @@ Refs #
 ## Risk
 
 <!-- Refactors are usually low-risk in theory and surprisingly risky in practice. Note anything reviewers should look at extra carefully — shared code paths, anything touching concurrency, anything in a hot path. -->
+
+## Pre-merge checklist
+
+- [ ] All CI pipelines succeeded
+- [ ] Changelog entry added under `changelog/` (`{pr-number}-{slug}.yaml`)
+  - [ ] `high-risk` label added if this could cause performance impact or unexpected regression
+  - [ ] `db-migration` label added if this PR includes a DB migration
+- [ ] Database migrations
+  - [ ] Downrev is up to date with the latest revision on the base branch
+  - [ ] `downgrade()` migration is correct and tested
+  - [ ] _Or:_ a downgrade is not possible — called out explicitly in the PR description
+  - [ ] _Or:_ no migrations in this PR

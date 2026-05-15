@@ -38,3 +38,15 @@
 ## Risk
 
 <!-- Most chores are low-risk. If this one isn't (e.g., touching CI that gates deploys, bumping a load-bearing dep), say so. Otherwise: "Low — config/tooling only." -->
+
+## Pre-merge checklist
+
+- [ ] All CI pipelines succeeded
+- [ ] Changelog entry added under `changelog/` (`{pr-number}-{slug}.yaml`)
+  - [ ] `high-risk` label added if this could cause performance impact or unexpected regression
+  - [ ] `db-migration` label added if this PR includes a DB migration
+- [ ] Database migrations
+  - [ ] Downrev is up to date with the latest revision on the base branch
+  - [ ] `downgrade()` migration is correct and tested
+  - [ ] _Or:_ a downgrade is not possible — called out explicitly in the PR description
+  - [ ] _Or:_ no migrations in this PR
