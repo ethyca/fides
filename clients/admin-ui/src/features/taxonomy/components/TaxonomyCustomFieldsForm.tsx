@@ -59,6 +59,11 @@ const TaxonomyCustomFieldsForm = ({
                 } = customFieldDefinition;
 
                 if (!allowListId) {
+                  const isMultiSelectTaxonomy = fieldType.endsWith("[]");
+                  const taxonomyKey = isMultiSelectTaxonomy
+                    ? fieldType.slice(0, -2)
+                    : fieldType;
+
                   return (
                     <Form.Item
                       key={definitionId}
@@ -70,7 +75,8 @@ const TaxonomyCustomFieldsForm = ({
                         <Input />
                       ) : (
                         <CustomTaxonomySelect
-                          taxonomyKey={fieldType}
+                          taxonomyKey={taxonomyKey}
+                          mode={isMultiSelectTaxonomy ? "multiple" : undefined}
                           defaultValue={customFields.customFieldValues[id]}
                         />
                       )}

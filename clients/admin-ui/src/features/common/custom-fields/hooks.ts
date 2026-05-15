@@ -110,7 +110,7 @@ export const useCustomFields = ({
       activeCustomFieldDefinition.forEach((value) => {
         const customField = definitionIdToCustomField.get(value.id || "");
         if (customField) {
-          if (!!value.allow_list_id && value.field_type === "string[]") {
+          if (value.field_type.endsWith("[]")) {
             values[customField.custom_field_definition_id] = customField.value;
           } else {
             values[customField.custom_field_definition_id] =
