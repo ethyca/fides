@@ -7,8 +7,8 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   selectRetryRequests,
   setRetryRequests,
-  useBulkRetryMutation,
-  useRetryMutation,
+  useBulkResubmitMutation,
+  useResubmitMutation,
 } from "../privacy-requests.slice";
 import { PrivacyRequestEntity } from "../types";
 
@@ -24,12 +24,12 @@ const ReprocessButton = forwardRef<HTMLButtonElement, ReprocessButtonProps>(
     const message = useMessage();
 
     const { errorRequests } = useAppSelector(selectRetryRequests);
-    const [bulkRetry] = useBulkRetryMutation();
-    const [retry] = useRetryMutation();
+    const [bulkResubmit] = useBulkResubmitMutation();
+    const [resubmit] = useResubmitMutation();
 
     const handleBulkReprocessClick = async () => {
       setIsReprocessing(true);
-      const payload = await bulkRetry(errorRequests);
+      const payload = await bulkResubmit(errorRequests);
       if (isErrorResult(payload)) {
         dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
         message.error({
@@ -64,7 +64,7 @@ const ReprocessButton = forwardRef<HTMLButtonElement, ReprocessButtonProps>(
         return;
       }
       setIsReprocessing(true);
-      const payload = await retry(subjectRequest);
+      const payload = await resubmit(subjectRequest);
       if (isErrorResult(payload)) {
         message.error({
           content: `DSR automation has failed for this privacy request due to the following: ${getErrorMessage(payload.error)}`,

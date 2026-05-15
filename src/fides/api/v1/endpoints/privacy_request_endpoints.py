@@ -143,6 +143,7 @@ from fides.common.urn_registry import (
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_FINALIZE,
+    PRIVACY_REQUEST_BULK_RESUBMIT,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
@@ -2115,6 +2116,95 @@ def resubmit_privacy_request(
         )
 
     return privacy_request
+
+
+@router.post(
+    PRIVACY_REQUEST_BULK_RESUBMIT,
+    status_code=HTTP_200_OK,
+    response_model=BulkPostPrivacyRequests,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
+)
+def bulk_resubmit_privacy_requests(
+    privacy_requests: PrivacyRequestBulkSelection,
+    *,
+    db: Session = Depends(deps.get_db),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+) -> BulkPostPrivacyRequests:
+    """
+    Bulk resubmit privacy requests. Each request is deleted and a new privacy
+    request is created in its place, rebuilding the execution DAG from the
+    current integration configuration.
+
+    You can either provide explicit request_ids OR use filters to select privacy requests.
+    When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted.
+    """
+    succeeded: List[PrivacyRequestResponse] = []
+    failed: List[Dict[str, Any]] = []
+
+    try:
+        request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    except ValueError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    batches = privacy_request_service.get_batches_for_bulk_operation(request_ids)
+
+    for batch in batches:
+        privacy_requests_dict = {
+            pr.id: pr
+            for pr in PrivacyRequest.query_without_large_columns(db)
+            .filter(PrivacyRequest.id.in_(batch))
+            .all()
+        }
+
+        for privacy_request_id in batch:
+            privacy_request = privacy_requests_dict.get(privacy_request_id)
+
+            if not privacy_request:
+                failed.append(
+                    {
+                        "message": f"No privacy request found with id '{privacy_request_id}'",
+                        "data": {"privacy_request_id": privacy_request_id},
+                    }
+                )
+                continue
+
+            if privacy_request.deleted_at is not None:
+                failed.append(
+                    {
+                        "message": "Cannot resubmit a deleted privacy request",
+                        "data": {"privacy_request_id": privacy_request_id},
+                    }
+                )
+                continue
+
+            try:
+                resubmitted = privacy_request_service.resubmit_privacy_request(
+                    privacy_request_id
+                )
+            except FidesopsException as exc:
+                failed.append(
+                    {
+                        "message": exc.message,
+                        "data": {"privacy_request_id": privacy_request_id},
+                    }
+                )
+                continue
+
+            if resubmitted is None:
+                failed.append(
+                    {
+                        "message": f"No privacy request found with id '{privacy_request_id}'",
+                        "data": {"privacy_request_id": privacy_request_id},
+                    }
+                )
+                continue
+
+            succeeded.append(resubmitted)  # type: ignore[arg-type]
+
+    return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
 
 
 def get_task_info(tasks: List[RequestTask]) -> Tuple[str, List[ExecutionLogStatus]]:

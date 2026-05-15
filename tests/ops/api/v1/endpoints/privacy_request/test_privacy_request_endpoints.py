@@ -104,6 +104,7 @@ from fides.common.urn_registry import (
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_FINALIZE,
+    PRIVACY_REQUEST_BULK_RESUBMIT,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
@@ -9929,6 +9930,123 @@ class TestResubmitPrivacyRequest:
             headers=auth_header,
         )
         assert response.status_code == HTTP_200_OK
+
+
+class TestBulkResubmitPrivacyRequests:
+    @pytest.fixture(scope="function")
+    def url(self):
+        return f"{V1_URL_PREFIX}{PRIVACY_REQUEST_BULK_RESUBMIT}"
+
+    def test_bulk_resubmit_not_authenticated(self, url, api_client):
+        response = api_client.post(url, json=["1234", "5678"], headers={})
+        assert response.status_code == 401
+
+    def test_bulk_resubmit_wrong_scope(self, url, api_client, generate_auth_header):
+        # PRIVACY_REQUEST_CALLBACK_RESUME is sufficient for /bulk/retry but not /bulk/resubmit
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, json=["1234", "5678"], headers=auth_header)
+        assert response.status_code == 403
+
+    def test_bulk_resubmit_unknown_ids(self, url, api_client, generate_auth_header):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        data = ["does-not-exist-1", "does-not-exist-2"]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        body = response.json()
+        assert body["succeeded"] == []
+        failed_ids = [x["data"]["privacy_request_id"] for x in body["failed"]]
+        assert sorted(failed_ids) == sorted(data)
+
+    def test_bulk_resubmit_deleted_request(
+        self, url, api_client, generate_auth_header, soft_deleted_privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        data = [soft_deleted_privacy_request.id]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        body = response.json()
+        assert body["succeeded"] == []
+        assert body["failed"] == [
+            {
+                "message": "Cannot resubmit a deleted privacy request",
+                "data": {"privacy_request_id": soft_deleted_privacy_request.id},
+            }
+        ]
+
+    def test_bulk_resubmit_completed_request_rejected(
+        self, url, api_client, generate_auth_header, db, privacy_requests
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        privacy_requests[0].status = PrivacyRequestStatus.complete
+        privacy_requests[0].save(db)
+        data = [privacy_requests[0].id]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        body = response.json()
+        assert body["succeeded"] == []
+        assert len(body["failed"]) == 1
+        assert body["failed"][0]["data"]["privacy_request_id"] == privacy_requests[0].id
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_bulk_resubmit_success(
+        self,
+        submit_mock,
+        url,
+        api_client,
+        generate_auth_header,
+        db,
+        privacy_requests,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+        data = [privacy_requests[0].id]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        body = response.json()
+        assert body["failed"] == []
+        succeeded_ids = [x["id"] for x in body["succeeded"]]
+        # Resubmit preserves the original id (uses PrivacyRequestResubmit.id)
+        assert privacy_requests[0].id in succeeded_ids
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_bulk_resubmit_mixed_result(
+        self,
+        submit_mock,
+        url,
+        api_client,
+        generate_auth_header,
+        db,
+        privacy_requests,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        bad_id = "bad_test_id"
+        data = [privacy_requests[0].id, bad_id]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        body = response.json()
+        succeeded_ids = [x["id"] for x in body["succeeded"]]
+        failed_ids = [x["data"]["privacy_request_id"] for x in body["failed"]]
+
+        assert privacy_requests[0].id in succeeded_ids
+        assert bad_id in failed_ids
 
 
 class TestSendBatchEmailIntegrations:

@@ -346,6 +346,14 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkResubmit: build.mutation<BulkPostPrivacyRequests, string[]>({
+      query: (values) => ({
+        url: `privacy-request/bulk/resubmit`,
+        method: "POST",
+        body: values,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     denyRequest: build.mutation<PrivacyRequestEntity, DenyPrivacyRequest>({
       query: ({ id, reason }) => ({
         url: "privacy-request/administrate/deny",
@@ -520,6 +528,16 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    resubmit: build.mutation<
+      PrivacyRequestEntity,
+      Pick<PrivacyRequestEntity, "id">
+    >({
+      query: ({ id }) => ({
+        url: `privacy-request/${id}/resubmit`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
     saveNotification: build.mutation<any, PrivacyRequestNotificationInfo>({
       query: (params) => ({
         url: `privacy-request/notification`,
@@ -642,6 +660,7 @@ export const {
   useApproveRequestMutation,
   useBulkApproveRequestMutation,
   useBulkDenyRequestMutation,
+  useBulkResubmitMutation,
   useBulkRetryMutation,
   useBulkSoftDeleteRequestMutation,
   useBulkFinalizeRequestMutation,
@@ -651,6 +670,7 @@ export const {
   useSearchPrivacyRequestsQuery,
   usePostPrivacyRequestMutation,
   useGetNotificationQuery,
+  useResubmitMutation,
   useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
   useSaveNotificationMutation,
