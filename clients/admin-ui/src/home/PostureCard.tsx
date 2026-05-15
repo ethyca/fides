@@ -19,7 +19,7 @@ import {
   DIMENSION_DESCRIPTIONS,
   DIMENSION_LABELS,
 } from "~/features/dashboard/constants";
-import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
+import { useGetDashboardPostureQuery } from "~/features/dashboard-graphql/hooks";
 
 import styles from "./PostureCard.module.scss";
 import { useCountUp } from "./useCountUp";

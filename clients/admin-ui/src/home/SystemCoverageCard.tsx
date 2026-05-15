@@ -12,8 +12,8 @@ import {
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
-import { useGetSystemCoverageQuery } from "~/features/dashboard/dashboard.slice";
 import type { SystemCoverageResponse } from "~/features/dashboard/types";
+import { useGetSystemCoverageQuery } from "~/features/dashboard-graphql/hooks";
 
 const BREAKDOWN_ITEMS: {
   key: keyof SystemCoverageResponse;

@@ -2,8 +2,8 @@ import { Col, Divider, Flex, Row, Text } from "fidesui";
 
 import { useFlags } from "~/features/common/features";
 import { ThemeModeToggle } from "~/features/common/ThemeModeToggle";
-import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice";
 import { TrendPeriod } from "~/features/dashboard/types";
+import { useGetDashboardTrendsQuery } from "~/features/dashboard-graphql/hooks";
 
 import { ActivityFeedCard } from "./ActivityFeedCard";
 import { AgentBriefingBanner } from "./AgentBriefingBanner";

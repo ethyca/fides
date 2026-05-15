@@ -5,7 +5,7 @@ import {
   ASTRALIS_METRICS,
   ASTRALIS_RISKS_KEY,
 } from "~/features/dashboard/constants";
-import { useGetAstralisQuery } from "~/features/dashboard/dashboard.slice";
+import { useGetAstralisQuery } from "~/features/dashboard-graphql/hooks";
 
 import styles from "./AstralisPanel.module.scss";
 

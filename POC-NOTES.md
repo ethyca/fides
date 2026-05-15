@@ -1,68 +1,68 @@
 # GraphQL PoC — Frontend (Apollo) notes — `graphql-poc-apollo`
 
-Paired BE branch: `graphql-poc-be` in **fidesplus** at commit `104cba76c`.
+Paired BE branch: `graphql-poc-be` in **fidesplus** (HEAD `e45dc01b1`; SDL unchanged since `104cba76c`).
 Sibling FE branch (urql): `graphql-poc-urql` in fides.
 
-The dashboard PoC variant route lives at `/dashboard-graphql`. The existing dashboard at `/` is untouched — both render against their respective data layers so the team can compare them side by side without an entire app rewrite.
+**The real dashboard at `/` now runs on GraphQL.** There is no separate page — the existing `HomeDashboard` cards fetch through Apollo via per-card queries. The standalone `/dashboard-graphql` route and its bespoke view were removed.
+
+## Architecture: per-card queries, drop-in hooks
+
+Each card keeps its own query (not one combined query). Decision rationale (discussed with the team):
+
+- **Independent auth.** Cards map to different permissions/feature flags in the real product. Per-card queries fail independently — an unauthorised card hides itself, the rest of the dashboard is unaffected — exactly mirroring the REST behaviour. One combined query would force field-level auth + partial-error handling on the client.
+- **Progressive loading.** One combined query blocks the whole dashboard on the slowest resolver, and `agent_briefing` is LLM-backed (slow). Per-card preserves card-by-card spinner-then-paint.
+
+Implementation keeps the blast radius tiny: `src/features/dashboard-graphql/hooks.ts` exports replacements with the **exact names, signatures, and return shapes** of the dashboard RTK Query hooks, mapping each camelCase GraphQL response back onto the existing snake_case `~/features/dashboard/types` interfaces. Every card changed by **one line** — its import path. Card JSX/logic is untouched.
+
+`dashboard.slice.ts` is intentionally left in place (the priority-action update mutation stays on RTK; other code/tests may import it). The GraphQL surface replaces only the read queries the dashboard consumes.
 
 ## Try it locally
 
 ```bash
-# With mocks (no BE needed, schema-driven via @graphql-tools/mock):
-NEXT_PUBLIC_MOCK_GRAPHQL=true npm run dev -w admin-ui
-# or: cd clients/admin-ui && npm run dev:mock-graphql
+# Mocks, no BE (schema-driven via @graphql-tools/mock):
+cd clients/admin-ui && npm run dev:mock-graphql
 
-# Against the real BE (run the fidesplus graphql-poc-be branch):
-npm run dev -w admin-ui   # the env var stays off
+# Against the real BE (fidesplus on graphql-poc-be):
+cd clients/admin-ui && npm run dev
 
-open http://localhost:3000/dashboard-graphql
+open http://localhost:3000/        # the real dashboard, now on GraphQL
 ```
 
-After a schema change:
+The dashboard cards render under the `alphaDashboard` feature flag (same as before this change).
 
-```bash
-# 1. In fidesplus:
-nox -s graphql_emit_schema      # writes ../fides/clients/admin-ui/schema.graphql
-
-# 2. In admin-ui:
-npm run graphql:generate        # codegen + sync schema-string.ts
-```
+After a schema change: `nox -s graphql_emit_schema` in fidesplus, then `npm run graphql:generate` in admin-ui.
 
 ## Comparison metrics (Apollo)
 
-> The numbers below count only what was written by hand to author + consume a single typed query. Generated code is excluded.
-
-- **FE lines of code per query (Apollo)**
-  - `dashboard.graphql` query document: **98 lines** (would be the same on either stack — it's the SDL contract).
-  - Provider + Apollo client + auth link: `DashboardGraphqlProvider.tsx` 13 + `apolloClient.ts` 35 = **48 lines**.
-  - Hook usage in the view: 1 line (`useQuery(DashboardOverviewDocument)`).
-  - Total non-render plumbing to ship one typed query: **~50 lines** (provider + client + auth) + 1 hook call.
-
-- **Bundle size delta**: Apollo Client + graphql add **~50 KB gzipped** to the route bundle compared to a Redux-only baseline. Captured via `npm run analyze:browser` and inspecting the new `/dashboard-graphql` route — measured incrementally over the same baseline used for Variant B.
-
-- **Setup time** (excluding the shared BE work on `graphql-poc-be`): **~2 hours**. Most of it was finding the right way to use the `client-preset` documents with `useQuery` — `gql()` template-literal matching is brittle, importing the generated `*Document` is the reliable path.
+- **FE lines of code to wire the whole dashboard**
+  - `queries.graphql` (8 per-card operations): ~110 lines (SDL-shaped; identical on the urql branch).
+  - Provider + Apollo client + auth link: `DashboardGraphqlProvider.tsx` 13 + `apolloClient.ts` ~36 = **~49 lines**.
+  - `hooks.ts` drop-in adapter layer (8 hooks + camel→snake mappers): **~250 lines**. This is the real Apollo-specific surface; most of it is the response remapping that exists only because we kept the REST-shaped card contracts.
+  - Per card: **1 line** (the import path).
+- **Bundle size delta**: Apollo Client + graphql ≈ **~50 KB gzipped** added. Run `npm run analyze:browser` and diff the home route chunk for an exact figure (estimate pending real measurement).
+- **Setup time** (excluding shared BE): the original single-query wiring ~2 h; the per-card refactor + drop-in hook layer ~1.5 h on top.
 
 ## Rough edges
 
-- The `client-preset` `gql()` template-literal type only resolves when the inline template-literal whitespace matches the source `.graphql` document byte-for-byte. Switched to `import { DashboardOverviewDocument } from "~/__generated__/graphql/graphql"` to sidestep this. The docs don't call this out.
-- Mocking with `@graphql-tools/mock` requires the SDL as a runtime string. There's no first-class "import .graphql as string" path that survives both Turbopack (`next dev`) and webpack (`next build`), so a small `scripts/sync-graphql-sdl.mjs` step writes `schema-string.ts` from `schema.graphql` whenever codegen runs. Adds one extra step to the pipeline but keeps the loader config untouched.
-- Apollo's `setContext` link runs once per operation, so reading the redux token there is the right shape. Importing the store at module top would create a circular dependency with `_app.tsx`; the apollo client lazy-imports the store instead.
-- `process.env.NEXT_PUBLIC_FIDESCTL_API` is empty by default in local dev (Next rewrites proxy `/api/v1/...`), so the Apollo `httpLink` URI resolves to `/graphql` which the Next rewrite layer happily forwards in dev and MSW intercepts in mock mode. Good — no extra config needed.
+- **The adapter layer is the cost.** Keeping the existing card contracts (snake_case `types.ts`) means every GraphQL response is remapped by hand in `hooks.ts`. If the cards were rewritten to consume the generated gql types directly, that ~250-line layer mostly disappears — but then it's not a drop-in and the diff explodes across 8 components. The drop-in tradeoff is deliberate for a PoC; a real migration would bite the bullet and consume gql types directly.
+- **Enum value skew.** Most enums share string values between the gql SDL and `types.ts`, *except* `TrendPeriod` (SDL `thirty_days` vs REST `30d`) — needs an explicit map. Easy to miss.
+- **`ActivityFeedItem` has no `id`** in the schema, but the infinite-scroll dedupe keys on `id`. The adapter synthesises `id = ${timestamp}__${message}` so `useInfiniteActivityFeed` works unmodified. A real schema should expose a stable id.
+- **`client-preset` `gql()` template-literal typing is brittle** (whitespace-sensitive). Importing the generated `*Document` constants is the reliable path; all hooks do that.
+- **SDL-as-runtime-string for mocks**: no bundler-agnostic ".graphql as string" import, so `scripts/sync-graphql-sdl.mjs` writes `schema-string.ts` from `schema.graphql` during `graphql:generate`.
+- **Client URL**: the endpoint is at root `/graphql`, not under `NEXT_PUBLIC_FIDESCTL_API` (`/api/v1`). The client posts to a hard `/graphql`; a Next rewrite proxies it to the backend and MSW intercepts it in mock mode. (Earlier this PoC wrongly assumed that env var was empty.)
 
 ## What ships in this branch
 
-- `clients/admin-ui/schema.graphql` — emitted by the fidesplus PoC; committed here so codegen and tooling work without a live fidesplus checkout.
-- `clients/admin-ui/codegen.ts` — `client-preset` config.
-- `clients/admin-ui/scripts/sync-graphql-sdl.mjs` — SDL → TS-constant emitter.
-- `clients/admin-ui/src/__generated__/graphql/` — generated, committed for review reproducibility.
-- `clients/admin-ui/src/features/dashboard-graphql/` — provider, client, query, view, SDL string.
-- `clients/admin-ui/src/mocks/dashboard-graphql/handlers.ts` — `@graphql-tools/mock`-driven MSW handler.
-- `clients/admin-ui/src/pages/dashboard-graphql.tsx` — the variant route.
-- Two new npm scripts: `graphql:generate`, `dev:mock-graphql`.
+- `clients/admin-ui/schema.graphql` — emitted by the fidesplus PoC.
+- `clients/admin-ui/codegen.ts`, `scripts/sync-graphql-sdl.mjs`, `src/__generated__/graphql/`.
+- `src/features/dashboard-graphql/`: `DashboardGraphqlProvider.tsx`, `apolloClient.ts`, `queries.graphql` (8 ops), `hooks.ts` (drop-in adapters), `schema-string.ts`.
+- `src/mocks/dashboard-graphql/handlers.ts` — schema-driven MSW handler (mocks every per-card query).
+- 9 one-line import swaps in `src/home/*` + `_app.tsx` provider wiring + `next.config.js` `/graphql` proxy.
+- npm scripts: `graphql:generate`, `dev:mock-graphql`.
 
 ## Not done / out of scope
 
 - No mutations, no subscriptions, no SSR.
-- No replacement of existing RTK Query dashboard slices — the GraphQL surface is purely additive.
-- No Apollo dev-tools setup beyond the default `connectToDevTools` flag.
-- No persisted queries, no Apollo Studio, no schema registry.
+- `dashboard.slice.ts` kept (mutations + potential other consumers); only read queries moved to gql.
+- No `@defer` (would mitigate the combined-query loading problem, but we went per-card instead).
+- No persisted queries, Apollo Studio, or schema registry.

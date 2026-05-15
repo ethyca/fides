@@ -1,10 +1,4 @@
-query DashboardOverview(
-  $trendPeriod: TrendPeriod! = thirty_days
-  $actionsPage: Int! = 1
-  $actionsSize: Int! = 8
-  $activityPage: Int! = 1
-  $activitySize: Int! = 20
-) {
+query DashboardPosture {
   posture {
     score
     band
@@ -19,7 +13,10 @@ query DashboardOverview(
       band
     }
   }
-  trends(period: $trendPeriod) {
+}
+
+query DashboardTrends($period: TrendPeriod! = thirty_days) {
+  trends(period: $period) {
     period
     metrics {
       key
@@ -29,6 +26,9 @@ query DashboardOverview(
       diff
     }
   }
+}
+
+query DashboardSystemCoverage {
   systemCoverage {
     totalSystems
     fullyClassified
@@ -37,6 +37,9 @@ query DashboardOverview(
     withoutSteward
     coveragePercentage
   }
+}
+
+query DashboardPrivacyRequests {
   privacyRequests {
     activeCount
     overdueCount
@@ -52,7 +55,14 @@ query DashboardOverview(
       overdue
     }
   }
-  priorityActions(page: $actionsPage, size: $actionsSize) {
+}
+
+query DashboardPriorityActions(
+  $page: Int! = 1
+  $size: Int! = 25
+  $dimension: String
+) {
+  priorityActions(page: $page, size: $size, dimension: $dimension) {
     items {
       id
       type
@@ -69,12 +79,18 @@ query DashboardOverview(
     size
     pages
   }
+}
+
+query DashboardAstralis {
   astralis {
     activeConversations
     completedAssessments
     awaitingResponse
     risksIdentified
   }
+}
+
+query DashboardAgentBriefing {
   agentBriefing {
     briefing
     quickActions {
@@ -84,7 +100,10 @@ query DashboardOverview(
       actionData
     }
   }
-  activityFeed(page: $activityPage, size: $activitySize) {
+}
+
+query DashboardActivityFeed($page: Int! = 1, $size: Int! = 20) {
+  activityFeed(page: $page, size: $size) {
     items {
       actorType
       message

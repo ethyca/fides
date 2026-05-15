@@ -11,8 +11,8 @@ import { useMemo } from "react";
 import { useFlags } from "~/features/common/features";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { ACTION_CTA } from "~/features/dashboard/constants";
-import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 import { ActionSeverity } from "~/features/dashboard/types";
+import { useGetAgentBriefingQuery } from "~/features/dashboard-graphql/hooks";
 
 import styles from "./AgentBriefingBanner.module.scss";
 

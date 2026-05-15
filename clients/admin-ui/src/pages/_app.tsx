@@ -19,6 +19,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
 import MainSideNav from "~/features/common/nav/MainSideNav";
+import { DashboardGraphqlProvider } from "~/features/dashboard-graphql/DashboardGraphqlProvider";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
@@ -52,36 +53,38 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     <SafeHydrate>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
-            <DndProvider backend={HTML5Backend}>
-              <NuqsAdapter>
-                {Component === Login ||
-                Component === LoginWithOIDC ||
-                Component === ForgotPassword ? (
-                  // Only the login page is accessible while logged out. If there is
-                  // a use case for more unprotected routes, Next has a guide for
-                  // per-page layouts:
-                  // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
-                  <Component {...pageProps} />
-                ) : (
-                  <ProtectedRoute>
-                    <CommonSubscriptions />
-                    <Flex width="100%" height="100%" flex={1}>
-                      <MainSideNav />
-                      <Flex
-                        direction="column"
-                        flex={1}
-                        minWidth={0}
-                        overflow="hidden"
-                      >
-                        <Component {...pageProps} />
+          <DashboardGraphqlProvider>
+            <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
+              <DndProvider backend={HTML5Backend}>
+                <NuqsAdapter>
+                  {Component === Login ||
+                  Component === LoginWithOIDC ||
+                  Component === ForgotPassword ? (
+                    // Only the login page is accessible while logged out. If there is
+                    // a use case for more unprotected routes, Next has a guide for
+                    // per-page layouts:
+                    // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
+                    <Component {...pageProps} />
+                  ) : (
+                    <ProtectedRoute>
+                      <CommonSubscriptions />
+                      <Flex width="100%" height="100%" flex={1}>
+                        <MainSideNav />
+                        <Flex
+                          direction="column"
+                          flex={1}
+                          minWidth={0}
+                          overflow="hidden"
+                        >
+                          <Component {...pageProps} />
+                        </Flex>
                       </Flex>
-                    </Flex>
-                  </ProtectedRoute>
-                )}
-              </NuqsAdapter>
-            </DndProvider>
-          </FidesUIProvider>
+                    </ProtectedRoute>
+                  )}
+                </NuqsAdapter>
+              </DndProvider>
+            </FidesUIProvider>
+          </DashboardGraphqlProvider>
         </PersistGate>
       </Provider>
     </SafeHydrate>

@@ -19,9 +19,9 @@ import {
   DIMENSION_LABELS,
   getUrgencyGroup,
 } from "~/features/dashboard/constants";
-import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 import type { PriorityAction } from "~/features/dashboard/types";
 import { ActionSeverity } from "~/features/dashboard/types";
+import { useGetPriorityActionsQuery } from "~/features/dashboard-graphql/hooks";
 
 import styles from "./PriorityActionsCard.module.scss";
 import { clearDimensionFilter, useDimensionFilter } from "./useDimensionFilter";

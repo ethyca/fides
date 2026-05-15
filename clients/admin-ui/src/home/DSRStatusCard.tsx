@@ -14,7 +14,7 @@ import { useCallback } from "react";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
-import { useGetPrivacyRequestsQuery } from "~/features/dashboard/dashboard.slice";
+import { useGetPrivacyRequestsQuery } from "~/features/dashboard-graphql/hooks";
 
 import styles from "./DSRStatusCard.module.scss";
 

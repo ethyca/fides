@@ -16,8 +16,8 @@ import {
   DIMENSION_LABELS,
   DIMENSION_ROUTES,
 } from "~/features/dashboard/constants";
-import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
 import type { PostureBand } from "~/features/dashboard/types";
+import { useGetDashboardPostureQuery } from "~/features/dashboard-graphql/hooks";
 
 import styles from "./PostureBreakdownContent.module.scss";
 

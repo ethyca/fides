@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useGetActivityFeedQuery } from "~/features/dashboard/dashboard.slice";
 import type { ActivityFeedItem } from "~/features/dashboard/types";
+import { useGetActivityFeedQuery } from "~/features/dashboard-graphql/hooks";
 
 const PAGE_SIZE = 15;
 const POLLING_INTERVAL = 30_000;
