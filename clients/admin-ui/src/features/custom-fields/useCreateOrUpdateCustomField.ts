@@ -48,8 +48,10 @@ const useCreateOrUpdateCustomField = () => {
       values.resource_type as string,
     );
     if (values.field_type === FieldTypes.OPEN_TEXT) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { selection_mode: _selectionMode, ...rest } = values;
       const payload = {
-        ...values,
+        ...rest,
         field_type: LegacyAllowedTypes.STRING,
         id: initialField ? initialField.id : undefined,
         resource_type: normalizedResourceType,
@@ -67,7 +69,8 @@ const useCreateOrUpdateCustomField = () => {
       values.field_type === FieldTypes.MULTIPLE_SELECT
     ) {
       if (!initialField) {
-        const { options, ...rest } = values;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { options, selection_mode: _selectionMode, ...rest } = values;
         // first create the allow list
         const allowListPayload = {
           name: generateNewAllowListName(),
@@ -92,7 +95,8 @@ const useCreateOrUpdateCustomField = () => {
       }
       // update  the allow list if it's changed
       let allowListResult: RTKResult | undefined;
-      const { options, ...rest } = values;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { options, selection_mode: _selectionMode, ...rest } = values;
       if (!isEqual(initialAllowList?.allowed_values, options)) {
         const allowListPayload = {
           ...initialAllowList,

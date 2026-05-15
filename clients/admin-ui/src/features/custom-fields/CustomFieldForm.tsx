@@ -216,10 +216,11 @@ const CustomFieldForm = ({
 
   const initialValues = queryResourceType
     ? {
+        selection_mode: "single" as const,
         ...defaultInitialValues,
         resource_type: `taxonomy:${queryResourceType}`,
       }
-    : defaultInitialValues;
+    : { selection_mode: "single" as const, ...defaultInitialValues };
 
   if (isLoading || isAllowListLoading || isLocationsLoading) {
     return <SkeletonCustomFieldForm />;
@@ -294,6 +295,7 @@ const CustomFieldForm = ({
         <Form.Item
           label="Selection mode"
           name="selection_mode"
+          rules={[{ required: true, message: "Please select a selection mode" }]}
         >
           <Select
             options={[
