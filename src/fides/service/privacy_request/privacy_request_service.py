@@ -15,6 +15,7 @@ from fides.api.common_exceptions import (
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_center_config import (
@@ -601,6 +602,20 @@ class PrivacyRequestService:
 
         return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
 
+    def _resolve_reviewed_by_user(self, identifier: Optional[str]) -> Optional[str]:
+        """Best-effort lookup of a FidesUser id by email_address then username.
+
+        Used by the historical-import flow to populate the `reviewed_by`
+        foreign key on imported privacy requests when the supplied identifier
+        matches an existing user. Returns the user's id or None.
+        """
+        if not identifier:
+            return None
+        user = FidesUser.get_by(
+            db=self.db, field="email_address", value=identifier
+        ) or FidesUser.get_by(db=self.db, field="username", value=identifier)
+        return user.id if user else None
+
     def _import_single_historical_privacy_request(
         self,
         record: HistoricalPrivacyRequestImport,
@@ -623,6 +638,8 @@ class PrivacyRequestService:
                 record.model_dump(mode="json"),
             )
 
+        resolved_reviewer_id = self._resolve_reviewed_by_user(record.reviewed_by)
+
         kwargs: Dict[str, Any] = {
             "policy_id": policy.id,
             "status": record.status,
@@ -636,6 +653,14 @@ class PrivacyRequestService:
             kwargs["external_id"] = record.external_id
         if record.reviewed_at is not None:
             kwargs["reviewed_at"] = record.reviewed_at
+        if resolved_reviewer_id is not None:
+            kwargs["reviewed_by"] = resolved_reviewer_id
+
+        # Carry either the resolved FidesUser id or the raw identifier from
+        # the source deployment into the lifecycle AuditLog's `user_id` (the
+        # column is plain string with no FK), so the activity timeline retains
+        # reviewer traceability even when no local user matches.
+        lifecycle_user_id = resolved_reviewer_id or record.reviewed_by
 
         # Each `Base.create` call commits independently (see
         # `OrmWrappedFidesBase.persist_obj`). To avoid leaving an orphan
@@ -658,6 +683,34 @@ class PrivacyRequestService:
                     "message": f"Imported with status={record.status.value}",
                 },
             )
+
+            # Synthesize a lifecycle AuditLog row so the CSV "Denial Reason"
+            # column (sourced from `audit_log.message` where `action='denied'`)
+            # and the activity timeline reflect the historical event from the
+            # source deployment. Skip when the caller supplied no reviewer for
+            # non-denied statuses; the schema requires `denial_reason` for
+            # denied imports.
+            if record.status == PrivacyRequestStatus.denied:
+                AuditLog.create(
+                    db=self.db,
+                    data={
+                        "privacy_request_id": privacy_request.id,
+                        "user_id": lifecycle_user_id,
+                        "action": AuditLogAction.denied,
+                        "message": record.denial_reason,
+                    },
+                )
+            elif record.reviewed_by is not None:
+                AuditLog.create(
+                    db=self.db,
+                    data={
+                        "privacy_request_id": privacy_request.id,
+                        "user_id": lifecycle_user_id,
+                        "action": AuditLogAction.approved,
+                        "message": None,
+                    },
+                )
+
             return privacy_request
         except Exception as exc:
             if privacy_request is not None:

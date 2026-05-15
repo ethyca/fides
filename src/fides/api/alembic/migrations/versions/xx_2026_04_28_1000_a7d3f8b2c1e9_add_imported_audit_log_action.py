@@ -20,8 +20,14 @@ def upgrade():
 
 
 def downgrade():
-    # Migrate any rows using the new audit log action back to 'approved'
-    op.execute("update auditlog set action = 'approved' where action = 'imported'")
+    # An 'imported' AuditLog entry records that an OWNER ran a historical
+    # migration; it does not represent an approval, denial, or any other
+    # lifecycle event on the underlying request. There is no equivalent value
+    # in the pre-migration enum to fold these rows into without distorting
+    # compliance queries, so they are dropped on downgrade. The parent
+    # PrivacyRequest still carries `source='Import'` for any post-downgrade
+    # triage.
+    op.execute("delete from auditlog where action = 'imported'")
 
     # Recreate auditlogaction enum without the 'imported' value
     op.execute("alter type auditlogaction rename to auditlogaction_old")

@@ -359,11 +359,17 @@ class HistoricalPrivacyRequestImport(FidesSchema):
     Used by the admin import endpoint to backfill DSRs from another Fides deployment
     without triggering any processing pipeline. Status must be terminal.
 
-    `reviewed_by` is intentionally omitted: the underlying `privacyrequest.reviewed_by`
-    column is a foreign key to `FidesUser.id`, and an arbitrary user identifier from
-    the source deployment will not generally exist as a `FidesUser` in the new tenant.
-    Audit accountability for imported records is captured by the calling admin's
-    `user_id` on the `imported` `AuditLog` entry written for each record.
+    `reviewed_by` accepts a free-string identifier (email or username) from the
+    source deployment. The service performs a best-effort lookup against
+    `FidesUser` by `email_address` and then `username`; if a match is found, the
+    underlying `privacyrequest.reviewed_by` foreign key is populated so the CSV
+    download and the response `reviewer` field surface the user. If no match is
+    found, the foreign key is left NULL and the raw identifier is carried into
+    the synthesized lifecycle `AuditLog.user_id` for traceability.
+
+    `denial_reason` is required when `status == denied` so the CSV "Denial
+    Reason" column (which reads from the `denied` `AuditLog.message`) populates
+    for imported denied requests, satisfying GDPR Art. 5(2) accountability.
     """
 
     external_id: Optional[str] = None
@@ -374,6 +380,8 @@ class HistoricalPrivacyRequestImport(FidesSchema):
     started_processing_at: Optional[datetime] = None
     finished_processing_at: datetime
     reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[SafeStr] = None
+    denial_reason: Optional[SafeStr] = None
     source: Literal[PrivacyRequestSource.import_] = PrivacyRequestSource.import_
 
     @field_validator("status")
@@ -387,6 +395,14 @@ class HistoricalPrivacyRequestImport(FidesSchema):
                 f"status must be one of {allowed} for an imported privacy request"
             )
         return value
+
+    @model_validator(mode="after")
+    def denial_reason_required_when_denied(
+        self,
+    ) -> "HistoricalPrivacyRequestImport":
+        if self.status == PrivacyRequestStatus.denied and not self.denial_reason:
+            raise ValueError("denial_reason is required when status is 'denied'")
+        return self
 
 
 class IdentityValue(BaseModel):

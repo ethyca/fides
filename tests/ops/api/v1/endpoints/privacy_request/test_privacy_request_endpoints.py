@@ -10447,3 +10447,157 @@ class TestImportHistoricalPrivacyRequests:
         pr = PrivacyRequest.get(db=db, object_id=pr_id)
         assert pr.started_processing_at == pr.requested_at
         pr.delete(db=db)
+
+    def test_import_denied_writes_denial_audit_log(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """Imported denied records get a synthesized `denied` AuditLog row
+        carrying the denial reason; the CSV download surfaces it via
+        `audit_log WHERE action='denied'`."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "denied-import@example.com"},
+            "policy_key": policy.key,
+            "status": "denied",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "reviewed_at": "2024-01-16T10:00:00.000Z",
+            "reviewed_by": "external-reviewer@example.com",
+            "denial_reason": "Insufficient proof of identity",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        audit_logs: List[AuditLog] = AuditLog.filter(
+            db=db,
+            conditions=(AuditLog.privacy_request_id == pr_id),
+        ).all()
+        actions = sorted(log.action for log in audit_logs)
+        assert actions == [AuditLogAction.denied, AuditLogAction.imported]
+
+        denied_log = next(
+            log for log in audit_logs if log.action == AuditLogAction.denied
+        )
+        assert denied_log.message == "Insufficient proof of identity"
+        assert denied_log.user_id == "external-reviewer@example.com"
+
+        for log in audit_logs:
+            log.delete(db=db)
+        PrivacyRequest.get(db=db, object_id=pr_id).delete(db=db)
+
+    def test_import_denied_without_denial_reason_returns_422(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+    ):
+        """`denial_reason` is required when `status == 'denied'` so the CSV
+        "Denial Reason" column populates for imported records."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        bad_record = {
+            "identity": {"email": "denied-no-reason@example.com"},
+            "policy_key": policy.key,
+            "status": "denied",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[bad_record])
+        assert resp.status_code == 422
+        assert "denial_reason" in resp.text.lower()
+
+    def test_import_resolves_reviewed_by_to_fides_user(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+        application_user,
+    ):
+        """When `reviewed_by` matches an existing FidesUser by email, the
+        service populates `privacyrequest.reviewed_by` so the CSV "Reviewed By"
+        column and the response `reviewer` field surface the user."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "resolved-reviewer@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "reviewed_at": "2024-01-16T10:00:00.000Z",
+            "reviewed_by": application_user.email_address,
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.reviewed_by == application_user.id
+
+        approved_log = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == pr_id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+        assert approved_log is not None
+        assert approved_log.user_id == application_user.id
+
+        for log in AuditLog.filter(
+            db=db, conditions=(AuditLog.privacy_request_id == pr_id)
+        ).all():
+            log.delete(db=db)
+        pr.delete(db=db)
+
+    def test_import_unresolved_reviewed_by_falls_back_to_audit_log_only(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """When `reviewed_by` does not match any FidesUser, the FK is left
+        NULL and the raw identifier is carried into the synthesized audit
+        log's `user_id` for traceability."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        ghost_identifier = "ghost-reviewer@example.com"
+        record = {
+            "identity": {"email": "ghost-import@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "reviewed_at": "2024-01-16T10:00:00.000Z",
+            "reviewed_by": ghost_identifier,
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.reviewed_by is None
+
+        approved_log = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == pr_id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+        assert approved_log is not None
+        assert approved_log.user_id == ghost_identifier
+
+        for log in AuditLog.filter(
+            db=db, conditions=(AuditLog.privacy_request_id == pr_id)
+        ).all():
+            log.delete(db=db)
+        pr.delete(db=db)
