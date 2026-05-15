@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING
 
 from loguru import logger as log
 
@@ -18,23 +18,25 @@ if TYPE_CHECKING:
 
 def create_secret_provider(
     secrets_settings: SecretsSettings,
-    static_secrets: Dict[str, Dict[str, Any]] | None = None,
 ) -> SecretProvider:
     """Instantiate the configured secret provider.
 
     Args:
         secrets_settings: The ``[secrets]`` config section.
-        static_secrets: Secret ID → key/value mapping for the static provider.
-            Ignored when the provider is not ``"static"``.
     """
     provider_type = secrets_settings.provider
 
     if provider_type == "static":
         log.info("Using static secret provider")
-        return StaticSecretProvider(secrets=static_secrets or {})
+        return StaticSecretProvider()
 
     if provider_type == "aws_secrets_manager":
         aws = secrets_settings.aws_secrets_manager
+        if aws is None:
+            raise SecretProviderError(
+                "secrets.provider is 'aws_secrets_manager' but "
+                "secrets.aws_secrets_manager is not configured."
+            )
         log.info(
             "Using AWS Secrets Manager provider (region={})",
             aws.region,

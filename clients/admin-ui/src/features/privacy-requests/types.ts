@@ -265,4 +265,6 @@ export interface ActivityTimelineItem {
   isPolling: boolean;
   id: string;
   attachments?: { id: string; file_name: string }[];
+  isDuplicateDetection?: boolean;
+  hasRelatedRequests?: boolean;
 }

@@ -1,5 +1,4 @@
 import { CookieAttributes } from "js-cookie";
-import * as uuid from "uuid";
 
 import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
 import { makeFidesCookie } from "~/lib/cookie";
@@ -20,11 +19,7 @@ import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.js
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
 jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 
-// Setup mock uuid
-const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
-jest.mock("uuid");
-const mockUuid = jest.mocked(uuid);
-mockUuid.v4.mockReturnValue(MOCK_UUID);
+// crypto.randomUUID is mocked globally in __tests__/setup.ts
 
 // Setup mock js-cookie
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");

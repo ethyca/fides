@@ -16,6 +16,7 @@ from fides.api.schemas.custom_field_display_validator import (
     DisplayConditionValidator,
 )
 from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
+from fides.api.service.storage.util import DEFAULT_FILE_MAX_SIZE_BYTES, AllowedFileType
 
 RequiredType = Literal["optional", "required"]
 
@@ -106,6 +107,36 @@ class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
         return values
 
 
+def _default_file_max_size_bytes() -> int:
+    return DEFAULT_FILE_MAX_SIZE_BYTES
+
+
+def _default_allowed_file_types() -> list[str]:
+    return sorted(AllowedFileType.default_public_upload_allowed_file_types())
+
+
+class FileUploadCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
+    """File upload field. ``max_size_bytes`` and ``allowed_file_types``
+    drive client hints and per-field upload enforcement."""
+
+    field_type: Literal["file"] = "file"
+    max_size_bytes: int = Field(default_factory=_default_file_max_size_bytes, gt=0)
+    allowed_file_types: list[str] = Field(default_factory=_default_allowed_file_types)
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_file_field(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if values.get("options"):
+            raise ValueError("file fields do not support options")
+        return values
+
+    @field_validator("allowed_file_types")
+    @classmethod
+    def validate_allowed_file_types(cls, v: list[str]) -> list[str]:
+        AllowedFileType.validate_allowed_extensions(v)
+        return v
+
+
 # Create a discriminated union type using the field_type to properly distinguish between types
 def get_field_type_discriminator(v: Any) -> str:
     """Discriminator function for CustomPrivacyRequestFieldUnion"""
@@ -117,12 +148,15 @@ def get_field_type_discriminator(v: Any) -> str:
 
     if field_type == "location":
         return "location"
+    if field_type == "file":
+        return "file"
     return "custom"
 
 
 CustomPrivacyRequestFieldUnion = Annotated[
     Union[
         Annotated[LocationCustomPrivacyRequestField, Tag("location")],
+        Annotated[FileUploadCustomPrivacyRequestField, Tag("file")],
         Annotated[CustomPrivacyRequestField, Tag("custom")],
     ],
     Discriminator(get_field_type_discriminator),

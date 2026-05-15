@@ -300,15 +300,13 @@ export const ConnectorParametersForm = ({
       {contextHolder}
       <Form
         form={form}
-        layout="horizontal"
+        layout="vertical"
         initialValues={initialFormValues}
         onFinish={handleFinish}
         key={connectionConfig?.key ?? "create"}
         validateTrigger="onBlur"
-        labelCol={{ flex: "180px" }}
-        labelAlign="left"
       >
-        <Flex vertical>
+        <Flex vertical className="[&_.ant-form-item]:mb-4">
           <Form.Item
             name="name"
             label="Name"
@@ -366,7 +364,6 @@ export const ConnectorParametersForm = ({
                     isRequired={secretsSchema.required?.includes(key)}
                     secretsSchema={secretsSchema}
                     validate={getFieldValidation(key, item)}
-                    layout="inline"
                   />
                 );
               })
