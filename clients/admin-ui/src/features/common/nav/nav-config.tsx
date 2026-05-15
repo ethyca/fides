@@ -65,6 +65,15 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         exact: true,
         scopes: [],
       },
+      {
+        // GraphQL PoC variant of the dashboard. Hidden from the sidebar but
+        // reachable by URL so it can be compared against the REST dashboard.
+        title: "Dashboard (GraphQL)",
+        path: "/dashboard-graphql",
+        exact: true,
+        hidden: true,
+        scopes: [],
+      },
     ],
   },
   {
