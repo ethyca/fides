@@ -52,7 +52,7 @@ export const SubjectRequestSourceMap = new Map<PrivacyRequestSource, string>([
   [PrivacyRequestSource.REQUEST_MANAGER, "Request Manager"],
   [PrivacyRequestSource.CONSENT_WEBHOOK, "Consent Webhook"],
   [PrivacyRequestSource.FIDES_JS, "Fides.js"],
-  [PrivacyRequestSource.JANUS_SDK, "Janus SDK"],
+  [PrivacyRequestSource.JANUS_SDK, "Mobile SDK"],
 ]);
 
 export const SubjectRequestSourceOptions = [...SubjectRequestSourceMap].map(
