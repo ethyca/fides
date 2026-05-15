@@ -18,6 +18,7 @@ import { useSettings } from "~/features/common/settings.slice";
 import { useApplicableFields } from "~/hooks/useApplicableFields";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
+import type { CustomConfigField } from "~/types/config";
 import { FormValues } from "~/types/forms";
 
 const useConsentRequestForm = ({
@@ -37,13 +38,15 @@ const useConsentRequestForm = ({
   const identityInputs =
     config.consent?.button.identity_inputs ?? DEFAULT_IDENTITY_INPUTS;
   const customPrivacyRequestFields =
-    config.consent?.button.custom_privacy_request_fields ?? {};
+    (config.consent?.button.custom_privacy_request_fields ??
+      {}) as Record<string, CustomConfigField>;
   const settings = useSettings();
   const { BASE_64_COOKIE } = settings;
   const toast = useToast();
   const [cookie, setCookie] = useState<Awaited<
     ReturnType<typeof getOrMakeFidesCookie>
   > | null>(null);
+  const [validationError, setValidationError] = useState(false);
 
   useEffect(() => {
     const loadCookie = async () => {
@@ -55,7 +58,7 @@ const useConsentRequestForm = ({
 
   // Use our custom hook for form field logic
   const { getInitialValues, getValidationSchema } = useCustomFieldsForm({
-    customPrivacyRequestFields: customPrivacyRequestFields as any,
+    customPrivacyRequestFields,
     searchParams: null, // ConsentRequestForm doesn't use URL params
   });
 
@@ -207,6 +210,7 @@ const useConsentRequestForm = ({
     },
 
     validate: (values) => {
+      setValidationError(false);
       const currentApplicable = applicableFieldsRef.current;
       const applicableKey = Array.from(currentApplicable).sort().join(",");
       let combinedSchema: Yup.AnyObjectSchema;
@@ -234,17 +238,20 @@ const useConsentRequestForm = ({
           });
           return errors;
         }
-        return {};
+        setValidationError(true);
+        return { _form: "An unexpected error occurred." };
       }
     },
   });
 
   // Resolve which custom fields are applicable based on current form values
   const applicableFields = useApplicableFields(
-    customPrivacyRequestFields as Record<string, any>,
+    customPrivacyRequestFields,
     formik.values,
   );
-  applicableFieldsRef.current = applicableFields;
+  useEffect(() => {
+    applicableFieldsRef.current = applicableFields;
+  }, [applicableFields]);
 
   // Clear values when fields become non-applicable
   const prevApplicable = useRef<Set<string>>(applicableFields);
@@ -268,6 +275,7 @@ const useConsentRequestForm = ({
     identityInputs,
     customPrivacyRequestFields,
     applicableFields,
+    validationError,
   };
 };
 

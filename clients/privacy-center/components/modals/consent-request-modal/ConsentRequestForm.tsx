@@ -1,4 +1,4 @@
-import { Button, Flex, Form, Input, Text } from "fidesui";
+import { Alert, Button, Flex, Form, Input, Text } from "fidesui";
 import React, { useEffect } from "react";
 
 import CustomFieldRenderer, {
@@ -41,6 +41,7 @@ const ConsentRequestForm = ({
     identityInputs: { email: emailInput, phone: phoneInput },
     customPrivacyRequestFields,
     applicableFields,
+    validationError,
   } = useConsentRequestForm({
     onClose,
     setCurrentView,
@@ -68,6 +69,13 @@ const ConsentRequestForm = ({
         layout="vertical"
         data-testid="consent-request-form"
       >
+        {validationError && (
+          <Alert
+            type="error"
+            title="Something went wrong. Please try again later."
+            showIcon
+          />
+        )}
         {!!emailInput && (
           <Form.Item
             validateStatus={

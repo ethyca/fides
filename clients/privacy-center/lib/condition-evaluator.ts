@@ -1,17 +1,6 @@
 import type { Condition, ConditionGroup, ConditionLeaf } from "~/types/config";
 
-const setsEqual = (a: Set<string>, b: Set<string>): boolean => {
-  if (a.size !== b.size) {
-    return false;
-  }
-  let equal = true;
-  a.forEach((item) => {
-    if (!b.has(item)) {
-      equal = false;
-    }
-  });
-  return equal;
-};
+import { setsEqual } from "./set-utils";
 
 /**
  * Check whether a value should be considered "present" for exists/not_exists.

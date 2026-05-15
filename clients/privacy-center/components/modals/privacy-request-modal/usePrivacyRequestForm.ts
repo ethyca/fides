@@ -75,6 +75,7 @@ const usePrivacyRequestForm = ({
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
   const [isSubmitPending, setIsSubmitPending] = useState(false);
+  const [validationError, setValidationError] = useState(false);
   const searchParams = useSearchParams();
 
   const property = useProperty();
@@ -311,6 +312,7 @@ const usePrivacyRequestForm = ({
     },
 
     validate: (values) => {
+      setValidationError(false);
       // Build the custom fields schema filtered by applicable fields
       const currentApplicable = applicableFieldsRef.current;
       const applicableKey = Array.from(currentApplicable).sort().join(",");
@@ -339,7 +341,8 @@ const usePrivacyRequestForm = ({
           });
           return errors;
         }
-        return {};
+        setValidationError(true);
+        return { _form: "An unexpected error occurred." };
       }
     },
   });
@@ -349,7 +352,9 @@ const usePrivacyRequestForm = ({
     customPrivacyRequestFields,
     formik.values,
   );
-  applicableFieldsRef.current = applicableFields;
+  useEffect(() => {
+    applicableFieldsRef.current = applicableFields;
+  }, [applicableFields]);
 
   // Clear values when fields become non-applicable
   const prevApplicable = useRef<Set<string>>(applicableFields);
@@ -375,6 +380,7 @@ const usePrivacyRequestForm = ({
     customIdentityFields,
     customPrivacyRequestFields,
     applicableFields,
+    validationError,
   };
 };
 

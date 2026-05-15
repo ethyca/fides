@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 
 import { resolveApplicableFields } from "~/lib/condition-evaluator";
+import { setsEqual } from "~/lib/set-utils";
 import type { CustomConfigField } from "~/types/config";
 
 /**
@@ -32,19 +33,6 @@ const extractWatchedKeys = (
   });
 
   return watched;
-};
-
-const setsEqual = (a: Set<string>, b: Set<string>): boolean => {
-  if (a.size !== b.size) {
-    return false;
-  }
-  let equal = true;
-  a.forEach((item) => {
-    if (!b.has(item)) {
-      equal = false;
-    }
-  });
-  return equal;
 };
 
 /**

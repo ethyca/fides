@@ -1,4 +1,4 @@
-import { Button, Flex, Form, Input, Text } from "fidesui";
+import { Alert, Button, Flex, Form, Input, Text } from "fidesui";
 import React from "react";
 
 import CustomFieldRenderer, {
@@ -46,6 +46,7 @@ const PrivacyRequestForm = ({
     customIdentityFields,
     customPrivacyRequestFields,
     applicableFields,
+    validationError,
   } = usePrivacyRequestForm({
     onExit,
     action,
@@ -72,6 +73,13 @@ const PrivacyRequestForm = ({
             <Text size="sm">{paragraph}</Text>
           </Form.Item>
         ))}
+        {validationError && (
+          <Alert
+            type="error"
+            title="Something went wrong. Please try again later."
+            showIcon
+          />
+        )}
         {!!nameInput && (
           <Form.Item
             className="pc-field pc-field--name"
@@ -141,7 +149,11 @@ const PrivacyRequestForm = ({
           ...customIdentityFields,
           ...customPrivacyRequestFields,
         })
-          .filter(([key, field]) => !field?.hidden && applicableFields.has(key))
+          .filter(
+            ([key, field]) =>
+              !field?.hidden &&
+              (key in customIdentityFields || applicableFields.has(key)),
+          )
           .map(([key, item]) => {
             const customFieldProps = (
               value: string | string[],
