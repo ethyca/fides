@@ -123,7 +123,11 @@ const useCreateOrUpdateCustomField = () => {
       return result;
     }
     // field type is a taxonomy
-    const { value_type: valueType, selection_mode: selectionMode, ...rest } = values;
+    const {
+      value_type: valueType,
+      selection_mode: selectionMode,
+      ...rest
+    } = values;
     const payload = {
       ...rest,
       id: initialField ? initialField.id : undefined,
