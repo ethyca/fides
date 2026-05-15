@@ -121,7 +121,8 @@ export const ListItem = ({
           )}
         </Flex>
       </Flex>
-      <Flex vertical
+      <Flex
+        vertical
         className={classNames(
           "shrink-0 items-end gap-2 pr-2",
           !compact && "2xl:flex-row 2xl:gap-4",
@@ -133,7 +134,7 @@ export const ListItem = ({
           timeframe={item.policy.execution_timeframe}
         />
         <ReceivedOn createdAt={item.created_at} />
-      </div>
+      </Flex>
       {showActions && (
         <Flex className="min-w-[90px]" align="center" justify="end" gap="small">
           <RequestTableActions key="other-actions" subjectRequest={item} />
