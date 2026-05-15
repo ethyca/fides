@@ -352,9 +352,7 @@ const usePrivacyRequestForm = ({
     customPrivacyRequestFields,
     formik.values,
   );
-  useEffect(() => {
-    applicableFieldsRef.current = applicableFields;
-  }, [applicableFields]);
+  applicableFieldsRef.current = applicableFields;
 
   // Clear values when fields become non-applicable
   const prevApplicable = useRef<Set<string>>(applicableFields);
