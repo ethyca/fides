@@ -2090,35 +2090,6 @@ def get_test_privacy_request_results(
 
 
 @router.post(
-    PRIVACY_REQUEST_RESUBMIT,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
-    response_model=PrivacyRequestResponse,
-)
-def resubmit_privacy_request(
-    privacy_request_id: str,
-    *,
-    privacy_request_service: PrivacyRequestService = Depends(
-        get_privacy_request_service
-    ),
-) -> PrivacyRequest:
-    try:
-        privacy_request = privacy_request_service.resubmit_privacy_request(
-            privacy_request_id
-        )
-    except FidesopsException as exc:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.message
-        )
-
-    if not privacy_request:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Privacy request not found"
-        )
-
-    return privacy_request
-
-
-@router.post(
     PRIVACY_REQUEST_BULK_RESUBMIT,
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
@@ -2205,6 +2176,35 @@ def bulk_resubmit_privacy_requests(
             succeeded.append(resubmitted)  # type: ignore[arg-type]
 
     return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
+
+
+@router.post(
+    PRIVACY_REQUEST_RESUBMIT,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
+    response_model=PrivacyRequestResponse,
+)
+def resubmit_privacy_request(
+    privacy_request_id: str,
+    *,
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+) -> PrivacyRequest:
+    try:
+        privacy_request = privacy_request_service.resubmit_privacy_request(
+            privacy_request_id
+        )
+    except FidesopsException as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.message
+        )
+
+    if not privacy_request:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail="Privacy request not found"
+        )
+
+    return privacy_request
 
 
 def get_task_info(tasks: List[RequestTask]) -> Tuple[str, List[ExecutionLogStatus]]:
