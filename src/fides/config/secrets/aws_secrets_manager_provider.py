@@ -45,7 +45,7 @@ class AWSSecretsManagerProvider(SecretProvider):
 
     def __init__(
         self,
-        region_name: str,
+        region_name: Optional[str] = None,
         cache_ttl_seconds: float = 300.0,
         cache_stale_ttl_seconds: float = 1800.0,
         circuit_breaker_cooldown_seconds: float = 30.0,
@@ -142,10 +142,12 @@ class AWSSecretsManagerProvider(SecretProvider):
         entry.value = new_value
         entry.fetched_at = time.monotonic()
         entry.last_failed_at = 0.0
+        log.info("Successfully fetched and cached secret {!r}", secret_id)
         return new_value
 
     def _fetch(self, secret_id: str) -> SecretValue:
         """Call AWS Secrets Manager and parse the response."""
+        log.debug("Fetching secret {!r} from AWS Secrets Manager", secret_id)
         response = self._client.get_secret_value(
             SecretId=secret_id,
             VersionStage="AWSCURRENT",

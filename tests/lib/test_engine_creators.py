@@ -1,17 +1,22 @@
-"""Tests for engine creator factories and credential helpers."""
+"""Tests for engine creator factories and helpers."""
 
+import datetime
 import ssl
 from unittest.mock import MagicMock, patch
 
 import pytest
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from fides.common.engine_creators import (
+    ASYNC_DIALECT_URL,
+    SYNC_DIALECT_URL,
     _build_ssl_context,
     _convert_asyncpg_params,
-    get_db_credentials,
-    get_readonly_db_credentials,
     make_async_creator,
     make_sync_creator,
 )
@@ -19,34 +24,26 @@ from fides.config import CONFIG
 from fides.config.database_settings import DatabaseSettings
 
 
-class TestGetDbCredentials:
-    def test_returns_expected_fields(self) -> None:
-        creds = get_db_credentials()
-        assert set(creds.keys()) == {"host", "port", "user", "password", "dbname"}
-
-    def test_port_is_int(self) -> None:
-        creds = get_db_credentials()
-        assert isinstance(creds["port"], int)
-
-    def test_password_is_unescaped(self) -> None:
-        """raw_password should reverse the quote_plus escaping."""
-        creds = get_db_credentials()
-        # The raw password should not contain URL-encoded characters
-        # unless the original password literally contains them
-        assert creds["password"] == CONFIG.database.raw_password
-
-    def test_uses_test_db_in_test_mode(self) -> None:
-        creds = get_db_credentials()
-        if CONFIG.test_mode:
-            assert creds["dbname"] == CONFIG.database.test_db
-        else:
-            assert creds["dbname"] == CONFIG.database.db
-
-
-class TestGetReadonlyDbCredentials:
-    def test_returns_none_when_not_configured(self) -> None:
-        if not CONFIG.database.readonly_server:
-            assert get_readonly_db_credentials() is None
+@pytest.fixture()
+def self_signed_cert(tmp_path):
+    """Generate a self-signed CA cert and return the file path."""
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    subject = issuer = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "test-ca")])
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(issuer)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+        .not_valid_after(
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1)
+        )
+        .sign(key, hashes.SHA256())
+    )
+    cert_file = tmp_path / "ca.pem"
+    cert_file.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+    return str(cert_file)
 
 
 class TestRawPassword:
@@ -125,39 +122,9 @@ class TestBuildSslContext:
         assert _build_ssl_context({}) is None
         assert _build_ssl_context({"sslmode": "require"}) is None
 
-    def test_returns_context_with_valid_sslrootcert(self, tmp_path) -> None:
+    def test_returns_context_with_valid_sslrootcert(self, self_signed_cert) -> None:
         """Success path: a valid CA cert produces a usable SSLContext."""
-        # Generate a self-signed cert for testing
-        import datetime
-
-        from cryptography import x509
-        from cryptography.hazmat.primitives import hashes, serialization
-        from cryptography.hazmat.primitives.asymmetric import rsa
-        from cryptography.x509.oid import NameOID
-
-        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        subject = issuer = x509.Name(
-            [
-                x509.NameAttribute(NameOID.COMMON_NAME, "test-ca"),
-            ]
-        )
-        cert = (
-            x509.CertificateBuilder()
-            .subject_name(subject)
-            .issuer_name(issuer)
-            .public_key(key.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
-            .not_valid_after(
-                datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(days=1)
-            )
-            .sign(key, hashes.SHA256())
-        )
-        cert_file = tmp_path / "ca.pem"
-        cert_file.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
-
-        ctx = _build_ssl_context({"sslrootcert": str(cert_file)})
+        ctx = _build_ssl_context({"sslrootcert": self_signed_cert})
         assert isinstance(ctx, ssl.SSLContext)
         assert ctx.verify_mode == ssl.CERT_REQUIRED
 
@@ -200,7 +167,7 @@ class TestMakeSyncCreator:
     def test_engine_with_sync_creator(self) -> None:
         """A full engine using the sync creator can execute queries."""
         creator = make_sync_creator()
-        engine = create_engine("postgresql+psycopg2://", creator=creator, pool_size=1)
+        engine = create_engine(SYNC_DIALECT_URL, creator=creator, pool_size=1)
         try:
             with engine.connect() as conn:
                 result = conn.execute(text("SELECT 1"))
@@ -217,9 +184,7 @@ class TestMakeAsyncCreator:
     async def test_engine_with_async_creator(self) -> None:
         """A full async engine using the async creator can execute queries."""
         creator = make_async_creator()
-        engine = create_async_engine(
-            "postgresql+asyncpg://", creator=creator, pool_size=1
-        )
+        engine = create_async_engine(ASYNC_DIALECT_URL, creator=creator, pool_size=1)
         try:
             async with engine.connect() as conn:
                 result = await conn.execute(text("SELECT 1"))
@@ -227,36 +192,24 @@ class TestMakeAsyncCreator:
         finally:
             await engine.dispose()
 
-    @patch("fides.common.engine_creators.asyncpg")
     @patch("fides.common.engine_creators.AsyncAdapt_asyncpg_connection")
+    @patch("fides.common.engine_creators.await_only", side_effect=lambda coro: coro)
+    @patch("fides.common.engine_creators.asyncpg")
     def test_ssl_context_not_overwritten_by_async_params(
-        self, mock_adapt_conn, mock_asyncpg
+        self, mock_asyncpg, mock_await, mock_adapt_conn, self_signed_cert
     ) -> None:
         """When both sslrootcert and sslmode are configured, the SSLContext
         must not be overwritten by the raw ssl string from async_params."""
-        mock_ssl_context = MagicMock(spec=ssl.SSLContext)
-
-        with (
-            patch(
-                "fides.common.engine_creators._build_ssl_context",
-                return_value=mock_ssl_context,
-            ),
-            patch(
-                "fides.common.engine_creators._convert_asyncpg_params",
-                return_value={"ssl": "require", "other": "value"},
-            ),
-            patch(
-                "fides.common.engine_creators.await_only",
-                side_effect=lambda coro: coro,
-            ),
+        with patch.object(
+            CONFIG.database,
+            "params",
+            {"sslmode": "verify-full", "sslrootcert": self_signed_cert},
         ):
             creator = make_async_creator()
             creator()
 
-        # asyncpg.connect was called — check the ssl kwarg
         connect_kwargs = mock_asyncpg.connect.call_args[1]
-        assert connect_kwargs["ssl"] is mock_ssl_context, (
+        assert isinstance(connect_kwargs["ssl"], ssl.SSLContext), (
             f"Expected SSLContext but got {connect_kwargs['ssl']!r} — "
             "async_params overwrote the ssl_context"
         )
-        assert connect_kwargs["other"] == "value"

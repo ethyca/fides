@@ -1,0 +1,4 @@
+type: Developer Experience
+description: reduce Next.js CLI log noise by only surfacing errors and ignoring 404s in apis
+pr: 8187
+labels: []

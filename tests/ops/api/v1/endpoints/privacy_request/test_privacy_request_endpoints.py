@@ -1466,6 +1466,132 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert len(resp["items"]) == expected_count
 
+    def test_filter_privacy_requests_by_source(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+        failed_privacy_request,
+    ):
+        """Filtering by source returns only the privacy requests with a matching source."""
+        privacy_request.source = PrivacyRequestSource.privacy_center
+        succeeded_privacy_request.source = PrivacyRequestSource.request_manager
+        privacy_request.save(db)
+        succeeded_privacy_request.save(db)
+        # failed_privacy_request intentionally keeps a null source
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        # Single source filter
+        response = api_client.get(
+            url + f"?source={PrivacyRequestSource.privacy_center.value}",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
+        # Multiple sources OR together
+        response = api_client.get(
+            url
+            + f"?source={PrivacyRequestSource.privacy_center.value}"
+            + f"&source={PrivacyRequestSource.request_manager.value}",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        returned_ids = {item["id"] for item in resp["items"]}
+        assert returned_ids == {privacy_request.id, succeeded_privacy_request.id}
+
+    def test_no_source_filter_includes_null_sources(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+    ):
+        """When no source filter is applied, requests with null source are still returned."""
+        privacy_request.source = PrivacyRequestSource.privacy_center
+        privacy_request.save(db)
+        # succeeded_privacy_request keeps a null source
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        returned_ids = {item["id"] for item in resp["items"]}
+        assert returned_ids == {privacy_request.id, succeeded_privacy_request.id}
+
+    def test_explicit_source_filter_overrides_consent_webhook_exclusion(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        """
+        Consent webhook requests are excluded by default, but an explicit source
+        filter for consent webhooks should return them.
+        """
+        privacy_request.source = PrivacyRequestSource.consent_webhook
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        # Without an explicit filter, consent webhook requests are excluded
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 0
+
+        # Explicitly filtering for the consent webhook source returns them
+        response = api_client.get(
+            url + f"?source={PrivacyRequestSource.consent_webhook.value}",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
+    def test_explicit_source_filter_overrides_dataset_test_exclusion(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        """
+        Dataset test requests are excluded by default, but an explicit source
+        filter for dataset_test should return them.
+        """
+        privacy_request.source = PrivacyRequestSource.dataset_test
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        # Without an explicit filter, dataset test requests are excluded
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 0
+
+        # Explicitly filtering for the dataset_test source returns them
+        response = api_client.get(
+            url + f"?source={PrivacyRequestSource.dataset_test.value}",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
     def test_filter_privacy_requests_by_status(
         self,
         api_client: TestClient,

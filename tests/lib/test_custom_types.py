@@ -1,9 +1,11 @@
+import warnings
 from typing import Optional
 
 import pytest
 from pydantic import BaseModel, ValidationError
 
 from fides.api.custom_types import (
+    AnyHttpUrlStringRemovesSlash,
     GPPMechanismConsentValue,
     PhoneNumber,
     SafeStr,
@@ -306,3 +308,52 @@ class TestUserGeography:
     def test_none_accepted(self) -> None:
         instance = self.TestModel(geography=None)
         assert instance.geography is None
+
+
+@pytest.mark.unit
+class TestAnyHttpUrlStringRemovesSlash:
+    class TestModel(BaseModel):
+        url: Optional[AnyHttpUrlStringRemovesSlash] = None
+
+    @pytest.mark.parametrize(
+        "input_value, expected",
+        (
+            ("https://example.com", "https://example.com"),
+            ("https://example.com/", "https://example.com"),
+            ("http://example.com/path", "http://example.com/path"),
+            ("http://example.com/path/", "http://example.com/path"),
+            ("https://sub.example.com:8080", "https://sub.example.com:8080"),
+            (
+                "https://suscripciones.condenastamericas.com",
+                "https://suscripciones.condenastamericas.com",
+            ),
+        ),
+    )
+    def test_valid_urls_strip_trailing_slash(
+        self, input_value: str, expected: str
+    ) -> None:
+        instance = self.TestModel(url=input_value)
+        assert instance.url == expected
+
+    @pytest.mark.parametrize("value", ("not-a-url", "ftp://example.com", ""))
+    def test_invalid_urls_rejected(self, value: str) -> None:
+        with pytest.raises(ValidationError):
+            self.TestModel(url=value)
+
+    def test_serialization_does_not_warn(self) -> None:
+        """Regression: serializing the field must not emit
+        PydanticSerializationUnexpectedValue warning (ENG-2488 fallout).
+        """
+        instance = self.TestModel(url="https://example.com/path/")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            dumped = instance.model_dump()
+            dumped_json = instance.model_dump_json()
+        assert dumped == {"url": "https://example.com/path"}
+        assert dumped_json == '{"url":"https://example.com/path"}'
+
+    def test_serialization_when_none(self) -> None:
+        instance = self.TestModel(url=None)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            assert instance.model_dump() == {"url": None}

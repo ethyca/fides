@@ -1,5 +1,23 @@
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import classNames from "classnames";
-import type { Identifier, XYCoord } from "dnd-core";
 import { Flex, Icons, Input, Switch, Table, Text } from "fidesui";
 import React, {
   useCallback,
@@ -8,8 +26,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
@@ -22,97 +38,41 @@ import styles from "./PoliciesTable.module.scss";
 import { AccessPolicyListItem } from "./types";
 import { formatRelativeTime } from "./utils";
 
-const ROW_TYPE = "PolicyTableRow";
-
-interface DragItem {
-  index: number;
-  originalIndex: number;
-  id: string;
-  type: string;
-}
-
-interface DraggableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
-  index: number;
-  moveRow: (dragIndex: number, hoverIndex: number) => void;
-  onRowDragEnd: (
-    originalIndex: number,
-    finalIndex: number,
-    dropped: boolean,
-  ) => void;
+type SortableRowProps = React.HTMLAttributes<HTMLTableRowElement> & {
   "data-row-key"?: string;
-}
+};
 
-const DraggableRow = ({
-  index,
-  moveRow,
-  onRowDragEnd,
+const SortableRow = ({
   className,
   style,
   children,
   ...restProps
-}: DraggableRowProps) => {
-  const ref = useRef<HTMLTableRowElement>(null);
+}: SortableRowProps) => {
   const rowKey = restProps["data-row-key"] ?? "";
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: rowKey });
 
-  const [{ handlerId }, drop] = useDrop<
-    DragItem,
-    void,
-    { handlerId: Identifier | null }
-  >({
-    accept: ROW_TYPE,
-    collect(monitor) {
-      return { handlerId: monitor.getHandlerId() };
-    },
-    hover(item: DragItem, monitor) {
-      if (!ref.current) {
-        return;
-      }
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      if (dragIndex === hoverIndex) {
-        return;
-      }
-
-      const hoverBoundingRect = ref.current.getBoundingClientRect();
-      const hoverMiddleY =
-        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return;
-      }
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return;
-      }
-
-      moveRow(dragIndex, hoverIndex);
-      // eslint-disable-next-line no-param-reassign
-      item.index = hoverIndex;
-    },
-  });
-
-  const [{ isDragging }, drag] = useDrag({
-    type: ROW_TYPE,
-    item: () => ({ id: rowKey, index, originalIndex: index }),
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-    end: (item, monitor) => {
-      onRowDragEnd(item.originalIndex, item.index, monitor.didDrop());
-    },
-  });
-
-  drag(drop(ref));
+  const rowStyle: React.CSSProperties = {
+    ...style,
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   return (
     <tr
-      ref={ref}
+      ref={setNodeRef}
       className={classNames(className, styles.draggableRow, {
         [styles.isDragging]: isDragging,
       })}
-      style={style}
-      data-handler-id={handlerId}
+      style={rowStyle}
+      {...attributes}
+      {...listeners}
       {...restProps}
     >
       {children}
@@ -224,6 +184,7 @@ const PoliciesTable = ({
   // when not dragging so in-flight visual reorders aren't overwritten.
   const [localPolicies, setLocalPolicies] = useState(policies);
   const isDraggingRef = useRef(false);
+  const originalIndexRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isDraggingRef.current) {
@@ -231,30 +192,69 @@ const PoliciesTable = ({
     }
   }, [policies]);
 
-  // Called on every hover crossing — updates visual order only, no API calls.
-  const moveRow = useCallback((dragIndex: number, hoverIndex: number) => {
-    isDraggingRef.current = true;
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const items = useMemo(() => localPolicies.map((p) => p.id), [localPolicies]);
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      isDraggingRef.current = true;
+      originalIndexRef.current = localPolicies.findIndex(
+        (p) => p.id === event.active.id,
+      );
+    },
+    [localPolicies],
+  );
+
+  // Updates visual order on every hover crossing, no API calls.
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) {
+      return;
+    }
     setLocalPolicies((prev) => {
-      const next = [...prev];
-      const [moved] = next.splice(dragIndex, 1);
-      next.splice(hoverIndex, 0, moved);
-      return next;
+      const oldIndex = prev.findIndex((p) => p.id === active.id);
+      const newIndex = prev.findIndex((p) => p.id === over.id);
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return prev;
+      }
+      return arrayMove(prev, oldIndex, newIndex);
     });
   }, []);
 
-  // Called once when drag ends — fires the API only if position actually changed.
   const handleDragEnd = useCallback(
-    (originalIndex: number, finalIndex: number, dropped: boolean) => {
+    (event: DragEndEvent) => {
       isDraggingRef.current = false;
-      if (!dropped || originalIndex === finalIndex) {
-        // Drag was cancelled or dropped in the same spot — reset visual state.
+      const originalIndex = originalIndexRef.current;
+      originalIndexRef.current = null;
+      const { active, over } = event;
+
+      if (!over || originalIndex === null) {
         setLocalPolicies(policies);
         return;
       }
+
+      const finalIndex = localPolicies.findIndex((p) => p.id === active.id);
+      if (finalIndex === -1 || finalIndex === originalIndex) {
+        setLocalPolicies(policies);
+        return;
+      }
+
       onReorder(policies, originalIndex, finalIndex);
     },
-    [policies, onReorder],
+    [policies, localPolicies, onReorder],
   );
+
+  const handleDragCancel = useCallback(() => {
+    isDraggingRef.current = false;
+    originalIndexRef.current = null;
+    setLocalPolicies(policies);
+  }, [policies]);
 
   const columns = useMemo(
     () => [
@@ -369,29 +369,31 @@ const PoliciesTable = ({
   );
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <Table
-        dataSource={localPolicies}
-        columns={columns}
-        rowKey="id"
-        loading={isLoading}
-        pagination={false}
-        components={{
-          body: {
-            row: DraggableRow,
-          },
-        }}
-        onRow={(_, index) =>
-          ({
-            index,
-            moveRow,
-            onRowDragEnd: handleDragEnd,
-          }) as unknown as React.HTMLAttributes<HTMLTableRowElement>
-        }
-        tableLayout="fixed"
-        scroll={{ scrollToFirstRowOnChange: true }}
-      />
-    </DndProvider>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <SortableContext items={items} strategy={verticalListSortingStrategy}>
+        <Table
+          dataSource={localPolicies}
+          columns={columns}
+          rowKey="id"
+          loading={isLoading}
+          pagination={false}
+          components={{
+            body: {
+              row: SortableRow,
+            },
+          }}
+          tableLayout="fixed"
+          scroll={{ scrollToFirstRowOnChange: true }}
+        />
+      </SortableContext>
+    </DndContext>
   );
 };
 

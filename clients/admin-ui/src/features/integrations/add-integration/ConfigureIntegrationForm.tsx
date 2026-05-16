@@ -496,7 +496,7 @@ export const ConfigureIntegrationForm = ({
         onFinish={handleSubmit}
         key={connection?.key ?? "create"}
       >
-        <Flex vertical className="mt-4">
+        <Flex vertical className="mt-4 [&_.ant-form-item]:mb-4">
           <Form.Item
             name="name"
             label="Name"
