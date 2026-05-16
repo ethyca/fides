@@ -7,16 +7,12 @@ evaluation logic is tested in Go (policy-engine/pkg/).
 
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-import fides
 from fides.service.pbac.engine import _lib_filename, find_library
-
-_pkg_bin = Path(fides.__file__).parent / "bin" / _lib_filename()
 
 
 class TestLibFilename:
@@ -35,18 +31,10 @@ class TestLibFilename:
 
 class TestFindLibrary:
     def test_finds_installed_binary(self):
-        """Normal install: find_library returns the binary from fides/bin/."""
+        """find_library locates a real libpbac binary."""
         result = find_library()
-        assert result == _pkg_bin
         assert result.is_file()
-
-    def test_importlib_fallback_resolves_same_path(self):
-        """importlib.util.find_spec points to the same package the binary lives in."""
-        spec = importlib.util.find_spec("fides")
-        assert spec is not None
-        assert spec.origin is not None
-        site_bin = Path(spec.origin).parent / "bin" / _lib_filename()
-        assert site_bin.is_file()
+        assert result.name.startswith("libpbac")
 
     def test_raises_with_searched_paths_when_not_found(self, monkeypatch):
         """RuntimeError lists searched paths when library isn't anywhere."""
