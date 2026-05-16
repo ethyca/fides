@@ -21,6 +21,7 @@ Usage:
 from __future__ import annotations
 
 import ctypes
+import importlib.util
 import json
 import os
 import platform
@@ -44,20 +45,14 @@ def _lib_filename() -> str:
     return "libpbac.so"
 
 
-def _find_library() -> Path:
+def find_library() -> Path:
     """Search for libpbac in standard locations.
 
     Order:
-      1. FIDES_PBAC_LIB_PATH env var (explicit override)
-      2. fides/bin/ inside the installed package (wheel distribution)
+      1. fides/bin/ inside the installed package (wheel distribution)
+      2. fides/bin/ via importlib (when __file__ is a hot-reload mount)
       3. policy-engine/ build output (local dev)
     """
-    env_path = os.environ.get("FIDES_PBAC_LIB_PATH")
-    if env_path:
-        p = Path(env_path)
-        if p.is_file():
-            return p
-
     filename = _lib_filename()
 
     # Wheel location: fides/bin/libpbac.so
@@ -65,15 +60,27 @@ def _find_library() -> Path:
     if pkg_bin.is_file():
         return pkg_bin
 
+    # Site-packages fallback — needed when __file__ is a volume mount
+    # (e.g. fidesplus dev containers hot-reloading fides source).
+    spec = importlib.util.find_spec("fides")
+    if spec and spec.origin:
+        site_bin = Path(spec.origin).parent / "bin" / filename
+        if site_bin.is_file() and site_bin != pkg_bin:
+            return site_bin
+
     # Local dev: policy-engine/ build output
     repo_root = Path(__file__).parent.parent.parent.parent.parent
     dev_path = repo_root / "policy-engine" / filename
     if dev_path.is_file():
         return dev_path
 
+    searched = [str(pkg_bin)]
+    if spec and spec.origin:
+        searched.append(str(Path(spec.origin).parent / "bin" / filename))
+    searched.append(str(dev_path))
     raise RuntimeError(
-        f"Could not find {filename}. Set FIDES_PBAC_LIB_PATH or build with: "
-        f"cd policy-engine && go build -buildmode=c-shared -o {filename} ./cmd/libpbac/"
+        f"Could not find {filename}. Searched:\n"
+        + "\n".join(f"  - {p}" for p in searched)
     )
 
 
@@ -90,7 +97,7 @@ def _get_lib() -> ctypes.CDLL:  # pragma: no cover — requires built Go library
         if _lib is not None:
             return _lib  # another thread won the race
 
-        path = _find_library()
+        path = find_library()
         lib = ctypes.cdll.LoadLibrary(str(path))
 
         # All exported functions take a C string and return a C string.
