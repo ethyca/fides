@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Split the PR template into per-type templates under .github/PULL_REQUEST_TEMPLATE/ and refocused the root template for external contributors.
+pr: 8212
+labels: []
