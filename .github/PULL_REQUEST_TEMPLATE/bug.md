@@ -4,8 +4,9 @@
 
 ## Linked issues
 
-<!-- Use "Fixes #123" to auto-close on merge. Use "Refs #123" for related context. -->
-Fixes #
+<!-- Use "Fixes [ENG-1234]" for the ticket this PR resolves, "Refs [ENG-1234]" for related context.
+     Brackets around the ticket ID let the Atlassian GitHub integration auto-link it. -->
+Fixes [ENG-]
 
 ## Root cause
 

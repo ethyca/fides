@@ -8,8 +8,9 @@
 
 ## Linked issues
 
-<!-- Optional. "Refs #123" if this enables a follow-up. -->
-Refs #
+<!-- Optional. "Refs [ENG-1234]" if this enables a follow-up.
+     Brackets around the ticket ID let the Atlassian GitHub integration auto-link it. -->
+Refs [ENG-]
 
 ## Scope
 

@@ -4,8 +4,9 @@
 
 ## Linked issues
 
-<!-- "Closes #123" for the spec/ticket. "Refs #123" for related discussion. -->
-Closes #
+<!-- Use "Closes [ENG-1234]" for the spec/ticket, "Refs [ENG-1234]" for related discussion.
+     Brackets around the ticket ID let the Atlassian GitHub integration auto-link it. -->
+Closes [ENG-]
 
 ## What's new
 

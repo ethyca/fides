@@ -14,7 +14,8 @@
 
 ## Linked issues
 
-<!-- Optional. "Refs #123" or a Dependabot/Renovate link if applicable. -->
+<!-- Optional. "Refs [ENG-1234]" or a Dependabot/Renovate link if applicable.
+     Brackets around the ticket ID let the Atlassian GitHub integration auto-link it. -->
 
 ## Why
 
