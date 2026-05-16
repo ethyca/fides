@@ -68,6 +68,12 @@ def find_library() -> Path:
         if site_bin.is_file() and site_bin != pkg_bin:
             return site_bin
 
+    # Docker fallback — the Dockerfile copies libpbac here so it
+    # survives volume mounts that shadow /fides/src/.
+    docker_bin = Path("/opt/fides/lib") / filename
+    if docker_bin.is_file():
+        return docker_bin
+
     # Local dev: policy-engine/ build output
     repo_root = Path(__file__).parent.parent.parent.parent.parent
     dev_path = repo_root / "policy-engine" / filename
