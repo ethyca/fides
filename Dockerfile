@@ -196,6 +196,11 @@ USER root
 RUN cd /fides && uv build --sdist && \
     uv pip install --python /opt/fides/bin/python dist/ethyca_fides-*.tar.gz
 
+# Copy libpbac into the installed package so find_library() can locate it
+RUN FIDES_BIN=$(/opt/fides/bin/python -c "from pathlib import Path; import fides; print(Path(fides.__file__).parent / 'bin')") && \
+    mkdir -p "$FIDES_BIN" && \
+    cp /fides/src/fides/bin/libpbac.so "$FIDES_BIN/libpbac.so"
+
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build
 USER fidesuser
