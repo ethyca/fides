@@ -243,7 +243,11 @@ const ConfigureMonitorForm = ({
       >
         <Switch data-testid="input-inherit_system_stewards" />
       </Form.Item>
-      <Form.Item label="Stewards" name="stewards">
+      <Form.Item
+        label="Monitor Stewards"
+        name="stewards"
+        tooltip="Assign a steward to own any resources this monitor detects. If the toggle above is enabled, system stewards are added automatically."
+      >
         <Select
           mode="multiple"
           aria-label="Select stewards"
