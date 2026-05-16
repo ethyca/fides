@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Remove FIDES_PBAC_LIB_PATH env var; libpbac is now discovered automatically via importlib fallback
+pr: 8213
+labels: []
