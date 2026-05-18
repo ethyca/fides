@@ -1,5 +1,7 @@
 import type { Node } from "@xyflow/react";
 
+import type { TraversalPreviewResponse as GeneratedTraversalPreviewResponse } from "~/types/api/models/TraversalPreviewResponse";
+
 export enum LaneId {
   IDENTITY = "identity",
   REACH = "reach",
@@ -96,16 +98,16 @@ export interface PreviewEdge {
   dep_count?: number;
 }
 
-export interface TraversalPreviewResponse {
-  property: { id: string; name: string };
+export interface TraversalPreviewResponse
+  extends Omit<
+    GeneratedTraversalPreviewResponse,
+    "action_type" | "identity_root" | "integrations" | "manual_tasks" | "edges"
+  > {
   action_type: ActionType;
-  computed_at: string;
-  cache_hit: boolean;
   identity_root: IdentityRootData;
   integrations: IntegrationNodeData[];
   manual_tasks: ManualTaskNodeData[];
   edges: PreviewEdge[];
-  warnings: string[];
 }
 
 export type AppNode =
