@@ -1780,8 +1780,8 @@ pytest<span class="w"> </span>--collect-only
 <h4 id="running-specific-tests">Running specific tests</h4>
 <p>To run a subset of tests, provide a filename or directory; to match a specific test name, use the <code>-k</code> flag:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Run all tests in the tests/ctl/ directory that contain the word &quot;api&quot; in their name</span>
-pytest<span class="w"> </span>tests/ctl/<span class="w"> </span>-k<span class="w"> </span>api
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Run all tests in the tests/fides/ctl/ directory that contain the word &quot;api&quot; in their name</span>
+pytest<span class="w"> </span>tests/fides/ctl/<span class="w"> </span>-k<span class="w"> </span>api
 </code></pre></div></td></tr></table></div>
 <p>The <code>--sw</code> flag will exit <code>pytest</code> the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.</p>
 <p>For more information on available Pytest invocation options, see the documentation <a href="https://docs.pytest.org/en/6.2.x/usage.html#usage-and-invocations">here</a>.</p>
