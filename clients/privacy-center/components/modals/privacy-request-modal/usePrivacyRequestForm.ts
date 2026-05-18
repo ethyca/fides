@@ -39,9 +39,18 @@ const fallbackNull = (
  * Upload a single file to the privacy request attachment endpoint.
  * Returns the attachment ID on success.
  */
-const uploadFile = async (file: File, apiUrl: string): Promise<string> => {
+const uploadFile = async (
+  file: File,
+  apiUrl: string,
+  context: { propertyId: string; policyKey: string; fieldName: string },
+): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
+  if (context.propertyId) {
+    formData.append("property_id", context.propertyId);
+  }
+  formData.append("policy_key", context.policyKey);
+  formData.append("field_name", context.fieldName);
 
   const response = await fetch(`${apiUrl}/privacy-request/attachment`, {
     method: "POST",
@@ -64,6 +73,7 @@ const uploadFile = async (file: File, apiUrl: string): Promise<string> => {
 const uploadFieldFiles = async (
   fileList: UploadFile[],
   apiUrl: string,
+  context: { propertyId: string; policyKey: string; fieldName: string },
 ): Promise<string[]> => {
   const filesToUpload = fileList
     .filter((f) => f.originFileObj)
@@ -74,7 +84,7 @@ const uploadFieldFiles = async (
   // eslint-disable-next-line no-restricted-syntax
   for (const file of filesToUpload) {
     // eslint-disable-next-line no-await-in-loop
-    const id = await uploadFile(file, apiUrl);
+    const id = await uploadFile(file, apiUrl, context);
     ids.push(id);
   }
   return ids;
@@ -88,6 +98,7 @@ const uploadAllFiles = async (
   values: FormValues,
   fields: Record<string, { field_type?: string | null }>,
   apiUrl: string,
+  context: { propertyId: string; policyKey: string },
 ): Promise<Record<string, string[]>> => {
   const fileFieldKeys = Object.entries(fields)
     .filter(([, field]) => field.field_type === "file")
@@ -101,7 +112,10 @@ const uploadAllFiles = async (
       })
       .map(async (key) => {
         const fileList = values[key] as UploadFile[];
-        const ids = await uploadFieldFiles(fileList, apiUrl);
+        const ids = await uploadFieldFiles(fileList, apiUrl, {
+          ...context,
+          fieldName: key,
+        });
         return [key, ids] as [string, string[]];
       }),
   );
@@ -232,6 +246,10 @@ const usePrivacyRequestForm = ({
             values,
             action.custom_privacy_request_fields,
             settings.FIDES_API_URL,
+            {
+              propertyId: property?.id || "",
+              policyKey: action.policy_key,
+            },
           );
         } catch (uploadError) {
           handleError({
