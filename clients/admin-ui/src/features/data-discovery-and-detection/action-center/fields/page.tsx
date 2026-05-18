@@ -14,7 +14,7 @@ import {
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
-import { Key, useEffect, useRef, useState } from "react";
+import { Key, useCallback, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -140,7 +140,7 @@ const ActionCenterFields = ({
   const [activeListItem, setActiveListItem] = useState<
     MonitorResource & { key: React.Key }
   >();
-  const [setActiveListItemIndex, setSetActiveListItemIndex] = useState<
+  const setActiveListItemIndexRef = useRef<
     ((index: number | null) => void) | null
   >(null);
 
@@ -191,14 +191,15 @@ const ActionCenterFields = ({
   });
 
   const handleNavigate = async (urn: string | undefined) => {
-    if (activeListItem?.urn && urn && setActiveListItemIndex) {
+    const setActiveIndex = setActiveListItemIndexRef.current;
+    if (activeListItem?.urn && urn && setActiveIndex) {
       // When navigating via mouse click after using the keyboard,
       // update the active item to match the clicked item
       const itemIndex = [...listNodes.values()].findIndex(
         (item) => item.urn === urn,
       );
       if (itemIndex !== -1) {
-        setActiveListItemIndex(itemIndex);
+        setActiveIndex(itemIndex);
       }
     }
     setDetailsUrn(urn);
@@ -223,6 +224,31 @@ const ActionCenterFields = ({
     () => setHotkeysHelperModalOpen(!hotkeysHelperModalOpen),
     { useKey: true },
     [hotkeysHelperModalOpen],
+  );
+
+  const handleActiveItemChange = useCallback(
+    (
+      item: MonitorResource | null,
+      _activeListItemIndex: number | null,
+      setActiveIndexFn: (index: number | null) => void,
+    ) => {
+      // Store the setter via ref so handleNavigate can use it without
+      // triggering a re-render (which would re-create this callback and
+      // loop the CustomList effect).
+      setActiveListItemIndexRef.current = setActiveIndexFn;
+
+      if (item?.urn) {
+        if (item.urn !== activeListItem?.urn) {
+          setActiveListItem({ ...item, key: item.urn });
+        }
+        if (detailsUrn && item.urn !== detailsUrn) {
+          setDetailsUrn(item.urn);
+        }
+      } else if (activeListItem) {
+        setActiveListItem(undefined);
+      }
+    },
+    [activeListItem, detailsUrn],
   );
 
   const availableActions =
@@ -478,26 +504,7 @@ const ActionCenterFields = ({
                     }
                   : undefined
               }
-              onActiveItemChange={(
-                item,
-                _activeListItemIndex,
-                setActiveIndexFn,
-              ) => {
-                // Store the setter function so handleNavigate can use it
-                setSetActiveListItemIndex(() => setActiveIndexFn);
-
-                if (item?.urn) {
-                  setActiveListItem({
-                    ...item,
-                    key: item.urn,
-                  });
-                  if (detailsUrn && item.urn !== detailsUrn) {
-                    setDetailsUrn(item.urn);
-                  }
-                } else {
-                  setActiveListItem(undefined);
-                }
-              }}
+              onActiveItemChange={handleActiveItemChange}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,

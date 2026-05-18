@@ -591,6 +591,7 @@ class PrivacyRequestFilter(FidesSchema):
     external_id: Optional[str] = None
     location: Optional[str] = None
     action_type: Optional[Union[ActionType, List[ActionType]]] = None
+    source: Optional[Union[PrivacyRequestSource, List[PrivacyRequestSource]]] = None
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
@@ -613,6 +614,19 @@ class PrivacyRequestFilter(FidesSchema):
         Keeps the status field flexible but converts a single value to a list for consistent processing.
         """
         if isinstance(field_value, PrivacyRequestStatus):
+            return [field_value]
+        return field_value
+
+    @field_validator("source")
+    @classmethod
+    def validate_source_field(
+        cls,
+        field_value: Optional[Union[PrivacyRequestSource, List[PrivacyRequestSource]]],
+    ) -> Optional[List[PrivacyRequestSource]]:
+        """
+        Keeps the source field flexible but converts a single value to a list for consistent processing.
+        """
+        if isinstance(field_value, PrivacyRequestSource):
             return [field_value]
         return field_value
 

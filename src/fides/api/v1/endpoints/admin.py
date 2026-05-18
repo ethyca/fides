@@ -27,6 +27,7 @@ from fides.api.util.memory_watchdog import (
 )
 from fides.api.v1.endpoints import API_PREFIX
 from fides.common import scope_registry
+from fides.common.engine_creators import db_cred_provider
 from fides.common.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
 from fides.config import CONFIG
 
@@ -58,10 +59,12 @@ def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
     explicit guidance from Ethyca support.
     """
 
+    database_url = db_cred_provider.get_database_url()
+
     if action == DBActions.downgrade:
         try:
             migrate_db(
-                database_url=CONFIG.database.sync_database_uri,
+                database_url=database_url,
                 revision=revision,  # type: ignore[arg-type]
                 downgrade=True,
             )
@@ -87,12 +90,12 @@ def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
                     detail="Resetting the application database outside of dev_mode is not supported.",
                 )
 
-            reset_db(CONFIG.database.sync_database_uri)
+            reset_db(database_url)
             action_text = "reset"
 
         try:
             logger.info("Database being configured...")
-            configure_db(CONFIG.database.sync_database_uri, revision=revision)
+            configure_db(database_url, revision=revision)
         except Exception as e:
             logger.exception("Database configuration failed: {e}")
             raise HTTPException(

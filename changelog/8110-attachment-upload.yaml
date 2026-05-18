@@ -1,0 +1,4 @@
+type: Added
+description: Added `attachment_user_provided` table, model, repository and, domain exceptions.
+pr: 8110
+labels: [db-migration]

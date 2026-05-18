@@ -225,6 +225,9 @@ def filter_privacy_request_queryset(
         )
         query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
 
+    if filters.source:
+        query = query.filter(PrivacyRequest.source.in_(filters.source))
+
     if filters.is_overdue is True:
         query = query.filter(
             PrivacyRequest.due_date.isnot(None),
@@ -239,7 +242,14 @@ def filter_privacy_request_queryset(
             )
         )
 
-    if not include_consent_webhook_requests and not filters.request_id:
+    # An explicit source filter takes precedence over the default exclusion
+    # guards below, so users can opt into seeing consent webhook or dataset test
+    # requests by selecting them in the filter.
+    if (
+        not include_consent_webhook_requests
+        and not filters.request_id
+        and not filters.source
+    ):
         query = query.filter(
             or_(
                 PrivacyRequest.source != PrivacyRequestSource.consent_webhook,
@@ -247,13 +257,15 @@ def filter_privacy_request_queryset(
             )
         )
 
-    # Filter out test privacy requests
-    query = query.filter(
-        or_(
-            PrivacyRequest.source != PrivacyRequestSource.dataset_test,
-            PrivacyRequest.source.is_(None),
+    # Filter out test privacy requests unless the caller explicitly requested
+    # them via the source filter.
+    if not filters.source:
+        query = query.filter(
+            or_(
+                PrivacyRequest.source != PrivacyRequestSource.dataset_test,
+                PrivacyRequest.source.is_(None),
+            )
         )
-    )
 
     # Filter out deleted requests
     if not filters.include_deleted_requests:

@@ -2,6 +2,23 @@
   height: 100%;
   overflow: hidden;
   border-left: 1px solid var(--fidesui-color-border);
+
+  & :global(.x-markdown) {
+    --padding-ul-ol: 0 !important;
+    --margin-ul-ol: 0 !important;
+
+    // Let cells wrap at spaces but never break mid-word. The package inherits
+    // `word-break: break-word` onto cell descendants via `.x-markdown div/span`,
+    // and Tailwind's `:where(*)` reapplies `word-wrap: break-word`, so both
+    // need overriding on cells and their children.
+    th,
+    td,
+    :is(th, td) * {
+      word-break: normal;
+      overflow-wrap: normal;
+      word-wrap: normal;
+    }
+  }
 }
 
 .header {
@@ -29,7 +46,6 @@
 
 .footer {
   padding: 8px 12px;
-  border-top: 1px solid var(--fidesui-color-border);
   flex-shrink: 0;
 
   :global(.ant-sender-content) {
