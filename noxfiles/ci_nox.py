@@ -550,7 +550,12 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/fides/api/": ["api"],
     "tests/fides/common/": ["misc-unit"],
     "tests/fides/config/": ["misc-unit"],
-    "tests/fides/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
+    "tests/fides/ctl/": [
+        "ctl-unit",
+        "ctl-not-external",
+        "ctl-integration",
+        "ctl-external",
+    ],
     "tests/fides/lib/": ["lib"],
     "tests/fides/ops/": [
         "ops-unit",
@@ -560,7 +565,11 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-external-datastores",
         "ops-saas",
     ],
-    "tests/fides/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/fides/service/": [
+        "misc-unit",
+        "misc-integration",
+        "misc-integration-external",
+    ],
     "tests/fides/system_integration_link/": [
         "misc-unit",
         "misc-integration",

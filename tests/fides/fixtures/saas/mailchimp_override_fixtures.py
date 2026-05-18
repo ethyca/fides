@@ -21,14 +21,16 @@ from tests.fides.fixtures.application_fixtures import load_dataset
 
 @pytest.fixture
 def mailchimp_override_config() -> Dict[str, Any]:
-    return load_config("tests/fides/fixtures/saas/test_data/mailchimp_override_config.yml")
+    return load_config(
+        "tests/fides/fixtures/saas/test_data/mailchimp_override_config.yml"
+    )
 
 
 @pytest.fixture
 def mailchimp_override_dataset() -> Dict[str, Any]:
-    return load_dataset("tests/fides/fixtures/saas/test_data/mailchimp_override_dataset.yml")[
-        0
-    ]
+    return load_dataset(
+        "tests/fides/fixtures/saas/test_data/mailchimp_override_dataset.yml"
+    )[0]
 
 
 @pytest.fixture(scope="function")

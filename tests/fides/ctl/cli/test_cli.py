@@ -335,7 +335,9 @@ class TestAnnotate:
             input="user\n",
         )
         print(result.output)
-        with open("tests/fides/ctl/data/dataset_missing_categories.yml", "r") as dataset_yml:
+        with open(
+            "tests/fides/ctl/data/dataset_missing_categories.yml", "r"
+        ) as dataset_yml:
             # Helps assert that the data category was output correctly
             dataset_yml = yaml.safe_load(dataset_yml)
             assert dataset_yml["dataset"][0]["collections"][0]["fields"][0][

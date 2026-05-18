@@ -79,17 +79,23 @@ def saas_example_consent_preferences_config() -> Dict:
 
 @pytest.fixture
 def saas_external_example_config() -> Dict:
-    return load_config("tests/fides/fixtures/saas/test_data/saas_external_example_config.yml")
+    return load_config(
+        "tests/fides/fixtures/saas/test_data/saas_external_example_config.yml"
+    )
 
 
 @pytest.fixture
 def saas_example_dataset() -> Dict:
-    return load_dataset("tests/fides/fixtures/saas/test_data/saas_example_dataset.yml")[0]
+    return load_dataset("tests/fides/fixtures/saas/test_data/saas_example_dataset.yml")[
+        0
+    ]
 
 
 @pytest.fixture
 def saas_ctl_dataset(db: Session) -> Dict:
-    dataset = load_dataset("tests/fides/fixtures/saas/test_data/saas_example_dataset.yml")[0]
+    dataset = load_dataset(
+        "tests/fides/fixtures/saas/test_data/saas_example_dataset.yml"
+    )[0]
     ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
     yield ctl_dataset
     ctl_dataset.delete(db)
@@ -97,7 +103,9 @@ def saas_ctl_dataset(db: Session) -> Dict:
 
 @pytest.fixture
 def saas_external_example_dataset() -> Dict:
-    return load_dataset("tests/fides/fixtures/saas/test_data/saas_example_dataset.yml")[1]
+    return load_dataset("tests/fides/fixtures/saas/test_data/saas_example_dataset.yml")[
+        1
+    ]
 
 
 @pytest.fixture(scope="function")
@@ -820,7 +828,9 @@ def hubspot_yaml_icon() -> str:
 
 @pytest.fixture
 def saas_async_config() -> Dict:
-    return load_config("tests/fides/fixtures/saas/test_data/saas_async_callback_config.yml")
+    return load_config(
+        "tests/fides/fixtures/saas/test_data/saas_async_callback_config.yml"
+    )
 
 
 @pytest.fixture
@@ -888,14 +898,16 @@ def saas_async_example_connection_config(
 
 @pytest.fixture
 def saas_async_polling_example_config() -> Dict:
-    return load_config("tests/fides/fixtures/saas/test_data/saas_async_polling_config.yml")
+    return load_config(
+        "tests/fides/fixtures/saas/test_data/saas_async_polling_config.yml"
+    )
 
 
 @pytest.fixture
 def saas_async_polling_example_dataset() -> Dict:
-    return load_dataset("tests/fides/fixtures/saas/test_data/saas_async_polling_dataset.yml")[
-        0
-    ]
+    return load_dataset(
+        "tests/fides/fixtures/saas/test_data/saas_async_polling_dataset.yml"
+    )[0]
 
 
 @pytest.fixture
