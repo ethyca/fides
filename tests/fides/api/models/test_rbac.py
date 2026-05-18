@@ -541,7 +541,7 @@ class TestRBACScopeRegistrySync:
         from fides.common.scope_registry import SCOPE_REGISTRY
 
         migrations_dir = (
-            Path(__file__).parent.parent.parent.parent
+            Path(__file__).parent.parent.parent.parent.parent
             / "src"
             / "fides"
             / "api"

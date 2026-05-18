@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Type
 
 # Add project root and qa directory to path for imports
-project_root = Path(__file__).parent.parent.parent
+project_root = Path(__file__).parent.parent.parent.parent
 qa_dir = project_root / "qa"
 
 if str(project_root) not in sys.path:
