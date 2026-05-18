@@ -34,6 +34,7 @@ class AttachmentType(str, EnumType):
 
     internal_use_only = "internal_use_only"
     include_with_access_package = "include_with_access_package"
+    user_provided = "user_provided"
 
 
 class AttachmentReferenceType(str, EnumType):
@@ -47,6 +48,15 @@ class AttachmentReferenceType(str, EnumType):
     comment = "comment"
     manual_task_submission = "manual_task_submission"
     request_task = "request_task"
+
+
+class AttachmentUserProvidedStatus(str, EnumType):
+    """Lifecycle: ``uploaded`` → ``promoted`` (claimed by a submitted request)
+    or ``deleted`` (orphan-swept; row kept for audit)."""
+
+    uploaded = "uploaded"
+    promoted = "promoted"
+    deleted = "deleted"
 
 
 class AttachmentReference(Base):
@@ -186,3 +196,52 @@ class Attachment(Base):
     ) -> "Attachment":
         """Creates a new attachment record in the database."""
         return cls._create_record(db=db, data=data, check_name=check_name)
+
+
+class AttachmentUserProvided(Base):
+    """Lifecycle row for a data-subject-uploaded file. ``storage_key`` is a
+    plain reference (no FK) so rows survive storage-config churn for audit."""
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "attachment_user_provided"
+
+    # Tighten base columns to ``nullable=False`` (base declares them nullable).
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    object_key = Column(String, nullable=False, unique=True)
+
+    status = Column(
+        EnumColumn(AttachmentUserProvidedStatus, name="attachmentuserprovidedstatus"),
+        nullable=False,
+        server_default=AttachmentUserProvidedStatus.uploaded.value,
+    )
+
+    storage_key = Column(String, nullable=False)
+    promoted_at = Column(DateTime(timezone=True), nullable=True)
+
+    # ``field_name`` + ``property_id`` + ``policy_key`` bind the upload to the
+    # privacy-center config triple it was issued under; re-validated at
+    # promotion. Intentionally non-FK so audit rows survive config rename/delete
+    # between upload and submission.
+    field_name = Column(String, nullable=False)
+    property_id = Column(String, nullable=False)
+    policy_key = Column(String, nullable=False)
+
+    __table_args__ = (
+        # Speeds up the orphan-cleanup sweep:
+        #   WHERE status = 'uploaded' AND created_at < :cutoff
+        Index(
+            "ix_attachment_user_provided_status_created_at",
+            "status",
+            "created_at",
+        ),
+    )

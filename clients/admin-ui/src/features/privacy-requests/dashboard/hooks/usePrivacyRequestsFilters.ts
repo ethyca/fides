@@ -9,9 +9,17 @@ import { useEffect, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
+import {
+  ActionType,
+  ColumnSort,
+  PrivacyRequestSource,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
-import { SubjectRequestStatusMap } from "../../constants";
+import {
+  SubjectRequestSourceMap,
+  SubjectRequestStatusMap,
+} from "../../constants";
 import { filterNullCustomFields, parseAsCustomFields } from "../utils";
 
 export interface FilterQueryParams {
@@ -20,8 +28,8 @@ export interface FilterQueryParams {
   to: string | null;
   status: PrivacyRequestStatus[] | null;
   action_type: ActionType[] | null;
+  source: PrivacyRequestSource[] | null;
   is_overdue: boolean | null;
-  include_consent_webhook_requests: boolean | null;
   location: string | null;
   custom_privacy_request_fields: Record<string, string | number> | null;
   sort_field: string | null;
@@ -54,8 +62,10 @@ const usePrivacyRequestsFilters = ({
       to: parseAsString,
       status: parseAsArrayOf(parseAsStringEnum(allowedStatusFilterOptions)),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
+      source: parseAsArrayOf(
+        parseAsStringEnum([...SubjectRequestSourceMap.keys()]),
+      ),
       is_overdue: parseAsBoolean,
-      include_consent_webhook_requests: parseAsBoolean,
       location: parseAsString,
       custom_privacy_request_fields: parseAsCustomFields,
     },
@@ -81,9 +91,8 @@ const usePrivacyRequestsFilters = ({
       to: filters.to,
       status: filters.status,
       action_type: filters.action_type,
+      source: filters.source,
       is_overdue: filters.is_overdue,
-      include_consent_webhook_requests:
-        filters.include_consent_webhook_requests,
       location: filters.location,
       custom_privacy_request_fields: filterNullCustomFields(
         filters.custom_privacy_request_fields,
@@ -97,8 +106,8 @@ const usePrivacyRequestsFilters = ({
       filters.to,
       filters.status,
       filters.action_type,
+      filters.source,
       filters.is_overdue,
-      filters.include_consent_webhook_requests,
       filters.location,
       filters.custom_privacy_request_fields,
       sortState.sort_field,

@@ -89,6 +89,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
                 pool_size=CONFIG.database.task_engine_pool_size,
                 max_overflow=CONFIG.database.task_engine_max_overflow,
                 pool_pre_ping=CONFIG.database.task_engine_pool_pre_ping,
+                pool_recycle=CONFIG.database.pool_recycle,
             )
 
         # same for the sessionmaker

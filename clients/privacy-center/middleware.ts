@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { v4 } from "uuid";
 
 import {
   applyRequestContext,
@@ -21,7 +20,7 @@ let geolocationApiHost: string;
 
 export default function middleware(request: NextRequest) {
   const log = createLogger();
-  const requestId = v4();
+  const requestId = crypto.randomUUID();
 
   const logDict = {
     method: request.method,
