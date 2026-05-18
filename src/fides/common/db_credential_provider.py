@@ -12,8 +12,12 @@ from __future__ import annotations
 
 import time
 from typing import Any, Callable, Dict, Optional, TypeVar
+from urllib.parse import quote, quote_plus, urlencode
 
 from loguru import logger as log
+from psycopg2 import (  # type: ignore[import-untyped]
+    OperationalError as Psycopg2OperationalError,
+)
 
 from fides.config import CONFIG
 from fides.config.secrets import StaticSecretProvider, get_secret_provider
@@ -64,18 +68,18 @@ class DBCredentialProvider:
         For static provider: uses the well-known default keys.
         """
         if self.is_dynamic:
-            credential_secret_id = CONFIG.database.credential_secret_id
-            if credential_secret_id is None:
+            credential_secret_name = CONFIG.database.credential_secret_name
+            if credential_secret_name is None:
                 raise ValueError(
                     "secrets.provider is not 'static' but "
-                    "database.credential_secret_id is not set."
+                    "database.credential_secret_name is not set."
                 )
             if readonly:
                 return (
-                    CONFIG.database.readonly_credential_secret_id
-                    or credential_secret_id
+                    CONFIG.database.readonly_credential_secret_name
+                    or credential_secret_name
                 )
-            return credential_secret_id
+            return credential_secret_name
         else:
             if readonly and CONFIG.database.readonly_server:
                 return DATABASE_READONLY_CREDENTIALS_KEY
@@ -102,6 +106,24 @@ class DBCredentialProvider:
         creds["password"] = secret["password"]
 
         return creds
+
+    def get_database_url(
+        self, driver: str = "postgresql+psycopg2", readonly: bool = False
+    ) -> str:
+        """Build a SQLAlchemy database URL with credentials from the provider.
+
+        Includes connection params (SSL, keepalives, etc.) from CONFIG.database.params
+        as query parameters, matching the old sync_database_uri behavior.
+        """
+        creds = self.get_credentials(readonly=readonly)
+        user = quote_plus(creds["user"])
+        password = quote_plus(creds["password"])
+        url = f"{driver}://{user}:{password}@{creds['host']}:{creds['port']}/{creds['dbname']}"
+
+        params = CONFIG.database.params
+        if params:
+            url += "?" + urlencode(params, quote_via=quote, safe="/")
+        return url
 
     # ------------------------------------------------------------------
     # Connection with retry
@@ -151,7 +173,8 @@ class DBCredentialProvider:
         secret_id = self._get_secret_id(readonly)
 
         log.warning(
-            "Auth failure (SQLSTATE {}), invalidating secret {!r} and retrying",
+            "Connection failure ({}: SQLSTATE {}), invalidating secret {!r} and retrying",
+            type(original_exc).__name__,
             self._extract_sqlstate(original_exc),
             secret_id,
         )
@@ -180,17 +203,27 @@ class DBCredentialProvider:
 
     @staticmethod
     def _is_auth_error(exc: Exception) -> bool:
-        """Detect PostgreSQL authentication errors.
+        """Detect connection failures that may indicate credential rotation.
 
         Checks SQLSTATE codes first (asyncpg always provides these).
         Falls back to message matching for psycopg2, which does not
         populate pgcode on connection-time errors.  The fallback string
         comes from PostgreSQL's auth handshake, which is always English
         (sent before any locale is configured).
+
+        Also matches any psycopg2 OperationalError as a broad fallback,
+        because RDS Proxy and other managed PostgreSQL services may return
+        non-standard error messages on auth failure that don't match the
+        specific patterns above. The cost of retrying
+        on a non-auth OperationalError is one extra Secrets Manager call
+        and a 1.5s delay, which is acceptable given the alternative is
+        15 minutes of 500s.
         """
         if DBCredentialProvider._extract_sqlstate(exc) in _AUTH_SQLSTATES:
             return True
-        return "password authentication failed" in str(exc).lower()
+        if "password authentication failed" in str(exc).lower():
+            return True
+        return isinstance(exc, Psycopg2OperationalError)
 
     @staticmethod
     def _extract_sqlstate(exc: Exception) -> Optional[str]:

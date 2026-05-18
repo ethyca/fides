@@ -11,10 +11,6 @@ const nextConfig = {
   // repo root (which has an unrelated package-lock.json) for file tracing.
   outputFileTracingRoot: path.join(__dirname, ".."),
   transpilePackages: ["fidesui"],
-  experimental: {
-    // Data flow scanning sometimes takes longer than the default of 30 seconds
-    proxyTimeout: 120000,
-  },
   // Force all imports of "antd" to resolve to the CJS build. fidesui uses
   // "antd/lib" (CJS), but third-party packages like @ant-design/x import plain
   // "antd", which the bundler resolves to ESM — producing two separate antd
@@ -36,6 +32,9 @@ const nextConfig = {
   },
   images: {
     loader: "custom",
+  },
+  logging: {
+    browserToTerminal: "error",
   },
   async rewrites() {
     // The CI tests run without a server, so we leave this value out of .env.test.

@@ -1,7 +1,7 @@
 """add access package review table and status
 
 Revision ID: 1e07732ff193
-Revises: 5f9821b4baf1
+Revises: 9f21507db078
 Create Date: 2026-05-14 16:49:43.846126
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "1e07732ff193"
-down_revision = "5f9821b4baf1"
+down_revision = "9f21507db078"
 branch_labels = None
 depends_on = None
 
