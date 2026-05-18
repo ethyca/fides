@@ -1,4 +1,4 @@
-import { Collapse, Drawer, Flex, Tag, Text } from "fidesui";
+import { Alert, Collapse, Drawer, Flex, Tag, Text } from "fidesui";
 import { useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -9,7 +9,6 @@ import {
   PreviewEdge,
   TraversalPreviewResponse,
 } from "../types";
-import styles from "./IntegrationDetailPanel.module.scss";
 
 interface Props {
   data: IntegrationNodeData | null;
@@ -102,19 +101,14 @@ export const IntegrationDetailPanel = ({
           <Flex vertical gap={4}>
             <Text strong>Manual review required</Text>
             {gatingTasks.map((t) => (
-              <div
+              <Alert
                 key={t.id}
                 data-testid="gating-task"
-                className={styles.gatingTask}
-              >
-                <span className={styles.gatingBadge}>!</span>
-                <Flex vertical>
-                  <Text strong>{t.name}</Text>
-                  <Text type="secondary" className="text-xs">
-                    must complete before this runs
-                  </Text>
-                </Flex>
-              </div>
+                type="warning"
+                showIcon
+                title={t.name}
+                description="must complete before this runs"
+              />
             ))}
           </Flex>
         )}
