@@ -10,35 +10,39 @@ export async function* parseSseStream(
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    // Sequential reads are required: each chunk depends on draining the
-    // previous one, so concurrent reads would interleave SSE frames.
-    // eslint-disable-next-line no-await-in-loop
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-    buffer += decoder.decode(value, { stream: true });
-
-    let delimiter = buffer.indexOf("\n\n");
-    while (delimiter !== -1) {
-      const raw = buffer.slice(0, delimiter);
-      buffer = buffer.slice(delimiter + 2);
-
-      let event = "message";
-      const dataLines: string[] = [];
-      raw.split("\n").forEach((line) => {
-        if (line.startsWith("event: ")) {
-          event = line.slice(7).trim();
-        } else if (line.startsWith("data: ")) {
-          dataLines.push(line.slice(6));
-        }
-      });
-      if (dataLines.length > 0) {
-        yield { event, data: dataLines.join("\n") };
+  try {
+    while (true) {
+      // Sequential reads are required: each chunk depends on draining the
+      // previous one, so concurrent reads would interleave SSE frames.
+      // eslint-disable-next-line no-await-in-loop
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
       }
-      delimiter = buffer.indexOf("\n\n");
+      buffer += decoder.decode(value, { stream: true });
+
+      let delimiter = buffer.indexOf("\n\n");
+      while (delimiter !== -1) {
+        const raw = buffer.slice(0, delimiter);
+        buffer = buffer.slice(delimiter + 2);
+
+        let event = "message";
+        const dataLines: string[] = [];
+        raw.split("\n").forEach((line) => {
+          if (line.startsWith("event: ")) {
+            event = line.slice(7).trim();
+          } else if (line.startsWith("data: ")) {
+            dataLines.push(line.slice(6));
+          }
+        });
+        if (dataLines.length > 0) {
+          yield { event, data: dataLines.join("\n") };
+        }
+        delimiter = buffer.indexOf("\n\n");
+      }
     }
+  } finally {
+    reader.releaseLock();
   }
 }
 
