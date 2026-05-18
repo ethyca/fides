@@ -214,7 +214,6 @@ class TraversalPreviewBuilder:
         }
         return CollectionDetail(
             name=collection.name,
-            skipped=getattr(collection, "skip_processing", False),
             fields=[
                 FieldDetail(
                     name=f.name,

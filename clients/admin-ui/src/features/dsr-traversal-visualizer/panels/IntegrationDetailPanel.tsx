@@ -132,7 +132,6 @@ export const IntegrationDetailPanel = ({
                     <Flex key={c.name} vertical>
                       <Text>
                         {c.name}
-                        {c.skipped ? " (skipped)" : ""}
                       </Text>
                       <Flex gap={4} wrap>
                         {c.fields.flatMap((f) =>

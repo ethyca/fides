@@ -31,7 +31,6 @@ export interface FieldDetail {
 
 export interface CollectionDetail {
   name: string;
-  skipped: boolean;
   fields: FieldDetail[];
 }
 

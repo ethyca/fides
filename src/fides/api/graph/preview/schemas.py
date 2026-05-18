@@ -27,11 +27,6 @@ class FieldDetail(FidesSchema):
 
 class CollectionDetail(FidesSchema):
     name: str
-    skipped: bool = Field(
-        default=False,
-        description="Always False in preview — skip_processing collections "
-        "are excluded during graph construction",
-    )
     fields: list[FieldDetail] = Field(default_factory=list)
 
 
