@@ -61,17 +61,11 @@ const SaaSVersionContent = ({
       );
     }
     if (configError) {
-      return (
-        <Text type="danger">
-          Could not load version config.
-        </Text>
-      );
+      return <Text type="danger">Could not load version config.</Text>;
     }
     if (!configYaml) {
       return (
-        <Text type="secondary">
-          No config available for this version.
-        </Text>
+        <Text type="secondary">No config available for this version.</Text>
       );
     }
     return <EditorWithCopy yaml={configYaml} />;
@@ -87,16 +81,12 @@ const SaaSVersionContent = ({
     }
     if (datasetError) {
       return (
-        <Text type="danger">
-          Could not load dataset for this version.
-        </Text>
+        <Text type="danger">Could not load dataset for this version.</Text>
       );
     }
     if (!datasetYaml) {
       return (
-        <Text type="secondary">
-          No dataset available for this version.
-        </Text>
+        <Text type="secondary">No dataset available for this version.</Text>
       );
     }
     return <EditorWithCopy yaml={datasetYaml} />;
