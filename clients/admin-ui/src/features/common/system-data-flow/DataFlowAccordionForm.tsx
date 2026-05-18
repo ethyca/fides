@@ -120,16 +120,14 @@ export const DataFlowAccordionForm = ({
         label: (
           <Flex
             align="center"
-            justify="start"
-            className={`h-[68px] flex-1 text-left ${isSystemTab ? "pl-4" : ""}`}
+            gap="small"
+            className={isSystemTab ? "pl-4" : undefined}
             data-testid={`data-flow-button-${flowType}`}
           >
-            <Text strong className="mr-2 text-sm leading-5">
+            <Text strong size="sm">
               {pluralFlowType}
             </Text>
-            <Tag color="info" className="ml-2">
-              {assignedDataFlows.length}
-            </Tag>
+            <Tag color="info">{assignedDataFlows.length}</Tag>
           </Flex>
         ),
         children: (
