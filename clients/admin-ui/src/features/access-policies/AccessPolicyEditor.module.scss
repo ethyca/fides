@@ -71,29 +71,31 @@
   }
 }
 
-:global(.react-flow__node.diffStatus-added) > div {
-  outline: 2px solid var(--fidesui-color-success);
-  outline-offset: 2px;
-  border-radius: var(--fidesui-border-radius-lg);
-  animation: diffAddedPulse 800ms ease-out;
-}
-
-:global(.react-flow__node.diffStatus-modified) > div {
-  outline: 2px solid var(--fidesui-color-warning);
-  outline-offset: 2px;
-  border-radius: var(--fidesui-border-radius-lg);
-  animation: diffModifiedPulse 900ms ease-in-out 3;
-}
-
-:global(.react-flow__node.diffStatus-removed) {
-  pointer-events: none;
-  animation: diffRemovedFade 1800ms ease-in-out forwards;
-
-  > div {
-    outline: 2px dashed var(--fidesui-color-error);
+.canvasContainer {
+  :global(.react-flow__node.diffStatus-added) > div {
+    outline: 2px solid var(--fidesui-color-success);
     outline-offset: 2px;
     border-radius: var(--fidesui-border-radius-lg);
-    filter: grayscale(0.4);
+    animation: diffAddedPulse 800ms ease-out;
+  }
+
+  :global(.react-flow__node.diffStatus-modified) > div {
+    outline: 2px solid var(--fidesui-color-warning);
+    outline-offset: 2px;
+    border-radius: var(--fidesui-border-radius-lg);
+    animation: diffModifiedPulse 900ms ease-in-out 3;
+  }
+
+  :global(.react-flow__node.diffStatus-removed) {
+    pointer-events: none;
+    animation: diffRemovedFade 1800ms ease-in-out forwards;
+
+    > div {
+      outline: 2px dashed var(--fidesui-color-error);
+      outline-offset: 2px;
+      border-radius: var(--fidesui-border-radius-lg);
+      filter: grayscale(0.4);
+    }
   }
 }
 
