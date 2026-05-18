@@ -90,7 +90,7 @@ def init_saas_connector(session: nox.Session) -> None:
 
     # render fixtures file
     fixtures_template = environment.get_template("new_fixtures.jinja")
-    filename = f"tests/fixtures/saas/{variable_map['connector_id']}_fixtures.py"
+    filename = f"tests/fides/fixtures/saas/{variable_map['connector_id']}_fixtures.py"
     contents = fixtures_template.render(variable_map)
     try:
         with open(filename, mode="x", encoding="utf-8") as fixtures:
@@ -103,9 +103,7 @@ def init_saas_connector(session: nox.Session) -> None:
 
     # render tests file
     test_template = environment.get_template("test_new_task.jinja")
-    filename = (
-        f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
-    )
+    filename = f"tests/fides/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
     contents = test_template.render(variable_map)
     try:
         with open(filename, mode="x", encoding="utf-8") as tests:

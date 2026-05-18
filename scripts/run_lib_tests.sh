@@ -23,4 +23,4 @@ export FIDES__TEST_MODE="true"
 # Clear config cache so env vars are picked up
 unset FIDES__CONFIG_PATH
 
-exec uv run --python 3.13 pytest tests/lib/ -v "$@"
+exec uv run --python 3.13 pytest tests/fides/lib/ -v "$@"
