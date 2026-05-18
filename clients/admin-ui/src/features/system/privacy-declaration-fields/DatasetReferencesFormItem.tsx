@@ -6,16 +6,20 @@ import { Dataset } from "~/types/api";
 interface DatasetReferencesFormItemProps {
   allDatasets: Dataset[];
   disabled?: boolean;
+  tooltip?: string;
 }
+
+const DEFAULT_TOOLTIP = "Referenced Dataset fides keys used by the system.";
 
 export const DatasetReferencesFormItem = ({
   allDatasets,
   disabled,
+  tooltip = DEFAULT_TOOLTIP,
 }: DatasetReferencesFormItemProps) => (
   <Form.Item
     name="dataset_references"
     label="Dataset references"
-    tooltip="Referenced Dataset fides keys used by the system."
+    tooltip={tooltip}
   >
     <Select
       aria-label="Dataset references"

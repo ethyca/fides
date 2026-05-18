@@ -5,26 +5,35 @@ import { DataCategory } from "~/types/api";
 interface DataCategoriesFormItemProps {
   allDataCategories: DataCategory[];
   disabled?: boolean;
+  required?: boolean;
+  tooltip?: string;
 }
+
+const DEFAULT_TOOLTIP =
+  "What type of data is your system processing? This could be various types of user or system data.";
 
 export const DataCategoriesFormItem = ({
   allDataCategories,
   disabled,
+  required,
+  tooltip = DEFAULT_TOOLTIP,
 }: DataCategoriesFormItemProps) => (
   <Form.Item
     name="data_categories"
     label="Data categories"
-    tooltip="What type of data is your system processing? This could be various types of user or system data."
-    rules={[
-      {
-        validator: (_, value: string[] | undefined) =>
-          value && value.length > 0
-            ? Promise.resolve()
-            : Promise.reject(
-                new Error("Must assign at least one data category"),
-              ),
-      },
-    ]}
+    tooltip={tooltip}
+    rules={
+      required
+        ? [
+            {
+              required: true,
+              type: "array",
+              min: 1,
+              message: "Must assign at least one data category",
+            },
+          ]
+        : undefined
+    }
   >
     <Select
       aria-label="Data categories"
