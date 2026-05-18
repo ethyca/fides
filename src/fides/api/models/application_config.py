@@ -4,7 +4,6 @@ from json import loads
 from typing import Any, Dict, Iterable, Optional
 
 from loguru import logger
-from pydantic.v1.utils import deep_update
 from pydash.objects import get
 from sqlalchemy import Boolean, CheckConstraint, Column
 from sqlalchemy.ext.mutable import MutableDict
@@ -12,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.db.encryption_utils import encrypted_type
+from fides.api.util.collection_util import deep_update
 from fides.config import FidesConfig
 
 

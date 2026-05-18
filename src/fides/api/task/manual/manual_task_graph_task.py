@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
 from loguru import logger
-from pydantic.v1.utils import deep_update
 
 from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.attachment import AttachmentType
@@ -32,7 +31,7 @@ from fides.api.task.manual.manual_task_utils import (
     get_manual_task_for_connection_config,
 )
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.collection_util import Row
+from fides.api.util.collection_util import Row, deep_update
 from fides.service.attachment_service import AttachmentService
 
 

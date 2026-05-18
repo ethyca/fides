@@ -1,7 +1,6 @@
 from typing import Any, Optional, cast
 
 from loguru import logger
-from pydantic.v1.utils import deep_update
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import CollectionAddress, FieldAddress
@@ -29,7 +28,7 @@ from fides.api.task.conditional_dependencies.util import (
     extract_field_addresses,
     extract_nested_field_value,
 )
-from fides.api.util.collection_util import Row
+from fides.api.util.collection_util import Row, deep_update
 
 
 def get_all_field_addresses_from_manual_task(manual_task: ManualTask) -> set[str]:

@@ -13,6 +13,18 @@ Row = Dict[str, Any]
 FIDESOPS_DO_NOT_MASK_INDEX = "FIDESOPS_DO_NOT_MASK"
 
 
+def deep_update(mapping: Dict[str, Any], *updating_mappings: Dict[str, Any]) -> Dict[str, Any]:
+    """Recursively merge dicts, with later mappings taking precedence."""
+    updated_mapping = mapping.copy()
+    for updating_mapping in updating_mappings:
+        for k, v in updating_mapping.items():
+            if k in updated_mapping and isinstance(updated_mapping[k], dict) and isinstance(v, dict):
+                updated_mapping[k] = deep_update(updated_mapping[k], v)
+            else:
+                updated_mapping[k] = v
+    return updated_mapping
+
+
 def make_immutable(obj: Any) -> Any:
     """
     Recursively converts a mutable object into an immutable version.

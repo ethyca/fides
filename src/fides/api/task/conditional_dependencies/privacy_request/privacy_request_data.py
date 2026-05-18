@@ -1,7 +1,5 @@
 from typing import Any, Optional, Protocol
 
-from pydantic.v1.utils import deep_update
-
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import Policy as PolicySchema
 from fides.api.schemas.redis_cache import Identity
@@ -17,6 +15,7 @@ from fides.api.task.conditional_dependencies.util import (
     set_nested_value,
     transform_value_for_evaluation,
 )
+from fides.api.util.collection_util import deep_update
 
 
 class EvaluablePrivacyRequest(Protocol):
