@@ -98,11 +98,10 @@ export interface PreviewEdge {
   dep_count?: number;
 }
 
-export interface TraversalPreviewResponse
-  extends Omit<
-    GeneratedTraversalPreviewResponse,
-    "action_type" | "identity_root" | "integrations" | "manual_tasks" | "edges"
-  > {
+export interface TraversalPreviewResponse extends Omit<
+  GeneratedTraversalPreviewResponse,
+  "action_type" | "identity_root" | "integrations" | "manual_tasks" | "edges"
+> {
   action_type: ActionType;
   identity_root: IdentityRootData;
   integrations: IntegrationNodeData[];

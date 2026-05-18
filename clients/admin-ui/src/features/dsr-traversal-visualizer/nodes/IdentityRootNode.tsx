@@ -16,12 +16,15 @@ export const IdentityRootNode = ({
   const formName = data.privacy_center_forms?.[0]?.name ?? "No form linked";
   return (
     <div
-      className={classNames(styles.card, "relative w-[220px] box-border px-4 py-3")}
+      className={classNames(
+        styles.card,
+        "relative w-[220px] box-border px-4 py-3",
+      )}
       data-testid="identity-root-node"
     >
       <Flex align="center" gap="small">
         <span className={styles.icon}>ID</span>
-        <Text strong className="flex-1 min-w-0" ellipsis={{ tooltip: types }}>
+        <Text strong className="min-w-0 flex-1" ellipsis={{ tooltip: types }}>
           {types}
         </Text>
       </Flex>

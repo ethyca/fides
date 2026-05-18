@@ -69,7 +69,7 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
       />
       <Flex align="flex-start" gap="small" className="px-4 py-3">
         <ConnectionTypeLogo data={logoSource} size={28} />
-        <Flex vertical className="flex-1 min-w-0">
+        <Flex vertical className="min-w-0 flex-1">
           <Text strong ellipsis={{ tooltip: system?.name ?? connectionKey }}>
             {system?.name ?? connectionKey}
           </Text>

@@ -27,7 +27,7 @@ export const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
         />
         <Text
           strong
-          className="flex-1 min-w-0"
+          className="min-w-0 flex-1"
           ellipsis={{ tooltip: data.name }}
         >
           {data.name}
