@@ -20,7 +20,10 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.service.connectors.bigquery_connector import BigQueryConnector
-from tests.fides.fixtures.bigquery_fixtures import PROJECT_NAME, seed_bigquery_integration_db
+from tests.fides.fixtures.bigquery_fixtures import (
+    PROJECT_NAME,
+    seed_bigquery_integration_db,
+)
 
 
 @pytest.fixture(scope="session", autouse=True)

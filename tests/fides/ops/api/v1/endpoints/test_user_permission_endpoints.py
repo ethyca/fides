@@ -30,7 +30,10 @@ from fides.common.scope_registry import (
 )
 from fides.common.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fides.config import CONFIG
-from tests.fides.conftest import generate_auth_header_for_user, generate_role_header_for_user
+from tests.fides.conftest import (
+    generate_auth_header_for_user,
+    generate_role_header_for_user,
+)
 
 
 class TestCreateUserPermissions:

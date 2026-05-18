@@ -20,7 +20,11 @@ from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.service.connectors import get_connector
 from fides.api.task.filter_results import filter_data_categories
 from tests.fides.conftest import access_runner_tester, erasure_runner_tester
-from tests.fides.ops.graph.graph_test_util import assert_rows_match, erasure_policy, field
+from tests.fides.ops.graph.graph_test_util import (
+    assert_rows_match,
+    erasure_policy,
+    field,
+)
 from tests.fides.ops.task.traversal_data import (
     combined_mongo_postgresql_graph,
     integration_db_graph,

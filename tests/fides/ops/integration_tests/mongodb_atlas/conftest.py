@@ -19,7 +19,9 @@ from tests.fides.fixtures.integration_fixtures import (
     generate_mongo_specific_records,
     mongo_dataset_dict,
 )
-from tests.fides.ops.integration_tests.mongodb_atlas.mongo_sample import mongo_sample_data
+from tests.fides.ops.integration_tests.mongodb_atlas.mongo_sample import (
+    mongo_sample_data,
+)
 
 
 @pytest.fixture(scope="function")

@@ -1,4 +1,7 @@
-from tests.fides.ops.test_helpers.dataset_utils import generate_collections, generate_dataset
+from tests.fides.ops.test_helpers.dataset_utils import (
+    generate_collections,
+    generate_dataset,
+)
 
 
 class TestGenerateCollections:
