@@ -235,7 +235,7 @@ warn_required_dynamic_aliases = true
 warn_untyped_fields = true
 
 [[tool.mypy.overrides]]
-module = ["tests.*"]
+module = ["tests.fides.*"]
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
@@ -299,7 +299,7 @@ exclude = [
     "_build",
     "build",
     "dist",
-    "tests/data",
+    "tests/fides/data",
     "src/fides/api/alembic/migrations",
 ]
 
@@ -340,7 +340,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore specific rules in test files
-"tests/**/*.py" = [
+"tests/fides/**/*.py" = [
     "ARG",     # Allow unused arguments in tests
     "B",       # Allow some bugbear rules in tests
     "PIE",     # Allow some pie rules in tests
@@ -382,7 +382,7 @@ env = [
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
-testpaths="tests"
+testpaths="tests/fides"
 log_level = "INFO"
 addopts = [
     "-ra",

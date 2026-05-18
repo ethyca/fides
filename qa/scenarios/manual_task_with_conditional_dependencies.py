@@ -448,7 +448,7 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
 
             # Path to the postgres setup script
             setup_script_path = (
-                "tests/ops/integration_tests/setup_scripts/postgres_setup.py"
+                "tests/fides/ops/integration_tests/setup_scripts/postgres_setup.py"
             )
 
             if not os.path.exists(setup_script_path):
