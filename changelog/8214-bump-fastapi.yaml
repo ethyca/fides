@@ -1,0 +1,4 @@
+type: Changed
+description: Bumped fastapi from 0.123.3 to 0.136.1
+pr: 8214
+labels: []
