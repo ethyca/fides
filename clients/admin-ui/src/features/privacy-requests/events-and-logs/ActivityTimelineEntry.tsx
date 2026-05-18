@@ -113,7 +113,8 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
       [styles["itemButton--polling"]]: isPolling,
       [styles["itemButton--clickable"]]: isClickable,
       [styles["itemButton--comment"]]:
-        type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
+        type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT ||
+        type === ActivityTimelineItemTypeEnum.INTERNAL_AUTOMATION_COMMENT,
       [styles["itemButton--manual-task"]]:
         type === ActivityTimelineItemTypeEnum.MANUAL_TASK,
     }),
