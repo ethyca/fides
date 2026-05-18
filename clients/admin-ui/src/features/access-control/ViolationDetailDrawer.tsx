@@ -179,7 +179,7 @@ export const ViolationDetailDrawer = ({
             <Text type="secondary" strong className="mb-2 block">
               Access policy
             </Text>
-            {violation.policy ? (
+            {violation.policy_id ? (
               <Card size="small">
                 <Tag color="success" className="mb-2">
                   Allowed by policy

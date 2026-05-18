@@ -25,7 +25,7 @@ export const getRequestLogColumns = (): ColumnsType<PolicyViolationLog> => [
     key: "status",
     width: 100,
     render: (_: unknown, record: PolicyViolationLog) =>
-      record.policy ? (
+      record.policy_id ? (
         <Tag color="success">Allowed</Tag>
       ) : (
         <Tag color="error">Violation</Tag>

@@ -38,6 +38,7 @@ export interface PolicyViolationAggregate {
   control: string;
   violation_count: number;
   last_violation: string;
+  suppressed: boolean;
 }
 
 export interface PolicyViolationLog {
