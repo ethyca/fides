@@ -86,7 +86,9 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
           >
-            · View {logCount} {pluralize(logCount, "Log", "Logs")}
+            {item.isDuplicateDetection && item.hasRelatedRequests
+              ? "· View related requests"
+              : `· View ${logCount} ${pluralize(logCount, "Log", "Logs")}`}
           </span>
         )}
       </div>

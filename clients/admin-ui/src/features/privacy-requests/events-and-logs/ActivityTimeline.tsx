@@ -16,11 +16,13 @@ import {
 import ActivityTimelineEntry from "./ActivityTimelineEntry";
 import styles from "./ActivityTimelineEntry.module.scss";
 import {
+  DUPLICATE_DETECTION_DATASET_NAME,
   usePrivacyRequestComments,
   usePrivacyRequestEventLogs,
   usePrivacyRequestManualTasks,
 } from "./hooks";
 import LogDrawer from "./LogDrawer";
+import RelatedRequestsDrawer from "./RelatedRequestsDrawer";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequestEntity;
@@ -35,8 +37,17 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const [currentStatus, setCurrentStatus] = useState<ExecutionLogStatus>(
     ExecutionLogStatus.ERROR,
   );
+  const [isRelatedRequestsDrawerOpen, setIsRelatedRequestsDrawerOpen] =
+    useState(false);
 
   const { results, id: privacyRequestId } = subjectRequest;
+  const hasIdentityForRelatedRequests = useMemo(
+    () =>
+      Object.values(subjectRequest.identity ?? {}).some(
+        (field) => typeof field?.value === "string" && field.value.length > 0,
+      ),
+    [subjectRequest.identity],
+  );
 
   const { commentItems, isLoading: isCommentsLoading } =
     usePrivacyRequestComments(privacyRequestId);
@@ -112,6 +123,16 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     const eventItemsWithClickHandler = eventItems.map((item) => {
       if (item.type === "Request update" && item.title && results) {
         const key = item.title;
+        if (
+          key === DUPLICATE_DETECTION_DATASET_NAME &&
+          hasIdentityForRelatedRequests
+        ) {
+          return {
+            ...item,
+            hasRelatedRequests: true,
+            onClick: () => setIsRelatedRequestsDrawerOpen(true),
+          };
+        }
         if (results[key]) {
           return {
             ...item,
@@ -150,6 +171,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   }, [
     eventItems,
     filteredCommentItems,
+    hasIdentityForRelatedRequests,
     manualTaskItems,
     results,
     showLogs,
@@ -191,6 +213,13 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         onCloseErrorPanel={closeErrorPanel}
         privacyRequest={subjectRequest}
       />
+      {hasIdentityForRelatedRequests && (
+        <RelatedRequestsDrawer
+          isOpen={isRelatedRequestsDrawerOpen}
+          onClose={() => setIsRelatedRequestsDrawerOpen(false)}
+          privacyRequest={subjectRequest}
+        />
+      )}
     </Box>
   );
 };
