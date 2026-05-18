@@ -16,13 +16,94 @@
   border-radius: var(--fidesui-border-radius-lg);
 }
 
+.transitioning {
+  :global(.react-flow__node) {
+    transition: transform 600ms ease-in-out;
+  }
+
+  :global(.react-flow__edge-path) {
+    transition: d 600ms ease-in-out;
+  }
+}
+
+// ---- Agent-update diff highlights -------------------------------------
+// Applied via the className field set by tagNodesWithDiff. Targeting the
+// inner `.react-flow__node-*` so the highlight wraps the node card itself.
+
+@keyframes diffAddedPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6);
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  60% {
+    box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes diffModifiedPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 6px
+      color-mix(in srgb, var(--fidesui-color-warning) 35%, transparent);
+  }
+}
+
+@keyframes diffRemovedFade {
+  0% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+:global(.react-flow__node.diffStatus-added) > div {
+  outline: 2px solid var(--fidesui-color-success);
+  outline-offset: 2px;
+  border-radius: var(--fidesui-border-radius-lg);
+  animation: diffAddedPulse 800ms ease-out;
+}
+
+:global(.react-flow__node.diffStatus-modified) > div {
+  outline: 2px solid var(--fidesui-color-warning);
+  outline-offset: 2px;
+  border-radius: var(--fidesui-border-radius-lg);
+  animation: diffModifiedPulse 900ms ease-in-out 3;
+}
+
+:global(.react-flow__node.diffStatus-removed) {
+  pointer-events: none;
+  animation: diffRemovedFade 1800ms ease-in-out forwards;
+
+  > div {
+    outline: 2px dashed var(--fidesui-color-error);
+    outline-offset: 2px;
+    border-radius: var(--fidesui-border-radius-lg);
+    filter: grayscale(0.4);
+  }
+}
+
 .chatWrapper {
-  width: 350px;
+  width: 400px;
   flex-shrink: 0;
   position: relative;
   z-index: 100;
 
   @media (max-width: 1280px) {
-    width: 300px;
+    width: 350px;
   }
 }

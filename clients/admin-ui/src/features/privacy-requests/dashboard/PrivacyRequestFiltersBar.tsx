@@ -1,23 +1,28 @@
 import dayjs from "dayjs";
 import {
-  antTheme,
   DatePicker,
   DisplayValueType,
   Flex,
   LocationSelect,
   Select,
-  Switch,
 } from "fidesui";
 import { useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
+import {
+  SubjectRequestSourceOptions,
+  SubjectRequestStatusOptions,
+} from "~/features/privacy-requests/constants";
 import PrivacyRequestSortMenu, {
   SortParams,
 } from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
 import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import {
+  ActionType,
+  PrivacyRequestSource,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 import { CustomFieldFilter } from "./CustomFieldFilter";
 import { extractUniqueCustomFields } from "./utils";
@@ -29,8 +34,8 @@ interface PrivacyRequestFiltersBarProps {
     to: string | null;
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
+    source: PrivacyRequestSource[] | null;
     location: string | null;
-    include_consent_webhook_requests: boolean | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   };
   setFilters: (filters: {
@@ -39,8 +44,8 @@ interface PrivacyRequestFiltersBarProps {
     to?: string | null;
     status?: PrivacyRequestStatus[] | null;
     action_type?: ActionType[] | null;
+    source?: PrivacyRequestSource[] | null;
     location?: string | null;
-    include_consent_webhook_requests?: boolean | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   }) => void;
   sortState: SortParams;
@@ -53,7 +58,6 @@ export const PrivacyRequestFiltersBar = ({
   sortState,
   setSortState,
 }: PrivacyRequestFiltersBarProps) => {
-  const { token } = antTheme.useToken();
   const actionTypeOptions = useSubjectRequestActionTypeOptions();
 
   // Fetch privacy center config to get custom fields
@@ -92,6 +96,12 @@ export const PrivacyRequestFiltersBar = ({
   const handleActionTypeChange = (value: ActionType[]) => {
     setFilters({
       action_type: value.length > 0 ? value : null,
+    });
+  };
+
+  const handleSourceChange = (value: PrivacyRequestSource[]) => {
+    setFilters({
+      source: value.length > 0 ? value : null,
     });
   };
 
@@ -168,6 +178,19 @@ export const PrivacyRequestFiltersBar = ({
         className="w-44"
         maxTagPlaceholder={maxTagPlaceholder}
       />
+      <Select
+        mode="multiple"
+        placeholder="Source"
+        options={SubjectRequestSourceOptions}
+        value={filters.source || []}
+        onChange={handleSourceChange}
+        allowClear
+        maxTagCount="responsive"
+        data-testid="request-source-filter"
+        aria-label="Source"
+        className="w-44"
+        maxTagPlaceholder={maxTagPlaceholder}
+      />
       <LocationSelect
         placeholder="Location"
         value={filters.location || null}
@@ -179,25 +202,6 @@ export const PrivacyRequestFiltersBar = ({
         popupMatchSelectWidth={300}
         includeCountryOnlyOptions
       />
-      <Flex align="center" gap={4}>
-        <Switch
-          size="small"
-          checked={filters.include_consent_webhook_requests || false}
-          onChange={(checked) =>
-            setFilters({ include_consent_webhook_requests: checked || null })
-          }
-          data-testid="include-consent-webhook-requests"
-        />
-        <span
-          style={{
-            fontSize: 14,
-            whiteSpace: "nowrap",
-            color: token.colorTextSecondary,
-          }}
-        >
-          Consent webhooks
-        </span>
-      </Flex>
       {/* Custom fields filters */}
       {Object.entries(uniqueCustomFields).map(
         ([fieldName, fieldDefinition]) => (

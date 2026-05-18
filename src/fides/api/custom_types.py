@@ -6,7 +6,13 @@ from re import compile as regex
 from typing import Annotated, Optional
 
 from nh3 import clean
-from pydantic import AfterValidator, AnyHttpUrl, AnyUrl, BeforeValidator
+from pydantic import (
+    AfterValidator,
+    AnyHttpUrl,
+    AnyUrl,
+    BeforeValidator,
+    PlainSerializer,
+)
 
 from fides.api.util.text import is_valid_location_code
 from fides.api.util.unsafe_file_util import verify_css
@@ -186,7 +192,9 @@ def validate_path_of_http_url_no_slash(value: AnyHttpUrl) -> str:
 
 
 AnyHttpUrlStringRemovesSlash = Annotated[
-    AnyHttpUrl, AfterValidator(validate_path_of_http_url_no_slash)
+    AnyHttpUrl,
+    AfterValidator(validate_path_of_http_url_no_slash),
+    PlainSerializer(str, return_type=str),
 ]
 
 

@@ -29,7 +29,24 @@ export enum ConditionProperty {
   DATA_USE = "data_use",
   DATA_CATEGORIES = "data_category",
   DATA_SUBJECTS = "data_subject",
+  SYSTEM_GROUP = "system_group",
 }
+
+/** Ordered list of built-in taxonomy keys, used for dropdown ordering. */
+export const BUILT_IN_TAXONOMY_KEYS: ConditionProperty[] = [
+  ConditionProperty.DATA_USE,
+  ConditionProperty.DATA_CATEGORIES,
+  ConditionProperty.DATA_SUBJECTS,
+  ConditionProperty.SYSTEM_GROUP,
+];
+
+/** Human-readable labels for built-in taxonomies. */
+export const BUILT_IN_TAXONOMY_LABELS: Record<ConditionProperty, string> = {
+  [ConditionProperty.DATA_USE]: "Data uses",
+  [ConditionProperty.DATA_CATEGORIES]: "Data categories",
+  [ConditionProperty.DATA_SUBJECTS]: "Data subjects",
+  [ConditionProperty.SYSTEM_GROUP]: "System groups",
+};
 
 export enum ConditionOperator {
   ALL = "all",
@@ -46,6 +63,7 @@ export interface MatchBlock {
   data_category?: MatchDimension;
   data_use?: MatchDimension;
   data_subject?: MatchDimension;
+  system_group?: MatchDimension;
   /** Custom taxonomy dimensions use their taxonomy_type as key */
   [key: string]: MatchDimension | undefined;
 }

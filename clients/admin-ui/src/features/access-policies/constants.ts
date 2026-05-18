@@ -3,7 +3,6 @@ import type { SelectProps } from "fidesui";
 import {
   ActionType,
   ConditionOperator,
-  ConditionProperty,
   ConsentRequirement,
   ConstraintType,
   DataFlowDirection,
@@ -25,12 +24,6 @@ export const DECISION_LABELS: Record<ActionType, string> = {
   [ActionType.ALLOW]: "Allow",
   [ActionType.DENY]: "Deny",
 };
-
-export const CONDITION_PROPERTY_OPTIONS: NonNullable<SelectProps["options"]> = [
-  { value: ConditionProperty.DATA_USE, label: "Data use" },
-  { value: ConditionProperty.DATA_CATEGORIES, label: "Data categories" },
-  { value: ConditionProperty.DATA_SUBJECTS, label: "Data subjects" },
-];
 
 export const CONDITION_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
   { value: ConditionOperator.ALL, label: "All of" },
@@ -66,3 +59,9 @@ export const DATA_FLOW_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
   { value: DataFlowOperator.ANY_OF, label: "Any of" },
   { value: DataFlowOperator.NONE_OF, label: "None of" },
 ];
+
+// Timings (ms) for the agent-update animated transition. See
+// AccessPolicyEditor.handleYamlProposed for the phase machine.
+export const DIFF_HOLD_MS = 3000;
+export const DIFF_HIGHLIGHT_MS = 6500;
+export const DIFF_FIT_DURATION_MS = 800;

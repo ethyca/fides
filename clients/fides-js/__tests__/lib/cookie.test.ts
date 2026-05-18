@@ -1,5 +1,4 @@
 import { CookieAttributes } from "js-cookie";
-import * as uuid from "uuid";
 
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
@@ -35,11 +34,8 @@ import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
 jest.useFakeTimers().setSystemTime(new Date(MOCK_DATE));
 
-// Setup mock uuid
+// crypto.randomUUID is mocked globally in __tests__/setup.ts
 const MOCK_UUID = "fae7e16d-37fd-40ed-b2a8-a020ad90106d";
-jest.mock("uuid");
-const mockUuid = jest.mocked(uuid);
-mockUuid.v4.mockReturnValue(MOCK_UUID);
 
 // Setup mock js-cookie
 const mockGetCookie = jest.fn(
@@ -495,10 +491,10 @@ describe("cookies", () => {
     });
 
     it("returns true for wildcard cookies", () => {
-      expect(isWildcardCookie({ name: "_ga[id]" })).toBeTruthy();
+      expect(isWildcardCookie({ name: "_ga-id-" })).toBeTruthy();
       expect(
         isWildcardCookie({
-          name: "_ga_[id]_[id]",
+          name: "_ga_-id-_-id-",
         }),
       ).toBeTruthy();
     });
@@ -615,7 +611,7 @@ describe("cookies", () => {
           other_cookie: "other_value",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          [{ name: "_ga-id-", domain: "foo.com", path: "/bar" }],
           false,
           false,
         );
@@ -629,7 +625,7 @@ describe("cookies", () => {
           other_cookie: "other_value",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          [{ name: "_ga-id-", domain: "foo.com", path: "/bar" }],
           true,
           true,
         );
@@ -644,7 +640,7 @@ describe("cookies", () => {
           foo_abc: "test_value_2",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "_ga[id]" }, { name: "foo_[id]" }],
+          [{ name: "_ga-id-" }, { name: "foo_-id-" }],
           false,
           false,
         );
@@ -659,7 +655,7 @@ describe("cookies", () => {
           cab123: "",
         } as any);
         removeCookiesFromBrowser(
-          [{ name: "x[id]" }, { name: "ab[id]" }, { name: "y[id]" }],
+          [{ name: "x-id-" }, { name: "ab-id-" }, { name: "y-id-" }],
           false,
           false,
         );
@@ -670,7 +666,7 @@ describe("cookies", () => {
           ab: "",
           ab123: "",
         } as any);
-        removeCookiesFromBrowser([{ name: "ab[id]" }], false, false);
+        removeCookiesFromBrowser([{ name: "ab-id-" }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
       });
       it("should handle wildcard cookies with special characters", () => {
@@ -679,7 +675,7 @@ describe("cookies", () => {
           [`${prefix}123`]: "test_value",
           other_cookie: "other_value",
         } as any);
-        removeCookiesFromBrowser([{ name: `${prefix}[id]` }], false, false);
+        removeCookiesFromBrowser([{ name: `${prefix}-id-` }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([
           [`${prefix}123`, { path: "/" }],
         ]);
@@ -690,7 +686,7 @@ describe("cookies", () => {
           "_ga_789.101": "test_value_2",
           other_cookie: "other_value",
         } as any);
-        removeCookiesFromBrowser([{ name: "_ga_[id]_[id]" }], false, false);
+        removeCookiesFromBrowser([{ name: "_ga_-id-_-id-" }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([
           ["_ga_123_456", { path: "/" }],
         ]);

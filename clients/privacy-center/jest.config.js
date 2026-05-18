@@ -9,6 +9,7 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   coverageReporters: ["json-summary"],
+  setupFiles: ["<rootDir>/../fides-js/__tests__/setup.ts"],
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],
   testEnvironment: "jest-environment-jsdom",
   testPathIgnorePatterns: ["jest.setup.ts"],

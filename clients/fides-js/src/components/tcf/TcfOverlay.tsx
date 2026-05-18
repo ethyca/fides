@@ -10,10 +10,8 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesAttStatus,
-  FidesExperienceTranslationOverrides,
   FidesModalDefaultView,
   NoticeConsent,
-  OverrideType,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
@@ -49,7 +47,6 @@ import {
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { getOverridesByType } from "../../lib/initialize";
 import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
 import {
@@ -111,16 +108,10 @@ export const TcfOverlay = () => {
   const {
     fidesRegionString,
     cookie,
-    config,
     options,
     saved_consent: savedConsent,
   } = fidesGlobal;
   const experienceMinimal = fidesGlobal.experience as PrivacyExperienceMinimal;
-  const translationOverrides: Partial<FidesExperienceTranslationOverrides> =
-    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
-      OverrideType.EXPERIENCE_TRANSLATION,
-      config,
-    );
   const {
     i18n,
     currentLocale,
@@ -276,7 +267,7 @@ export const TcfOverlay = () => {
     if (isFullExperience) {
       // Load messages from experience
       // This includes any custom notices, but not the GVL translations.
-      loadMessagesFromExperience(i18n, experienceFull, translationOverrides);
+      loadMessagesFromExperience(i18n, experienceFull);
 
       // Set the locale to the best locale
       window.Fides.locale = bestLocale;
