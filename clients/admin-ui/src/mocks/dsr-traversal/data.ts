@@ -42,7 +42,6 @@ const stage1Integrations: IntegrationNodeData[] = [
         collections: [
           {
             name: "customer",
-            skipped: false,
             fields: [
               {
                 name: "email",
@@ -85,7 +84,6 @@ const stage1Integrations: IntegrationNodeData[] = [
         collections: [
           {
             name: "customers",
-            skipped: false,
             fields: [
               {
                 name: "email",
@@ -101,7 +99,6 @@ const stage1Integrations: IntegrationNodeData[] = [
           },
           {
             name: "charges",
-            skipped: false,
             fields: [
               {
                 name: "amount",
@@ -134,7 +131,6 @@ const stage1Integrations: IntegrationNodeData[] = [
         collections: [
           {
             name: "Contact",
-            skipped: false,
             fields: [
               {
                 name: "Email",
@@ -169,7 +165,6 @@ const stage2Integrations: IntegrationNodeData[] = [
         collections: [
           {
             name: "user_events",
-            skipped: false,
             fields: [
               {
                 name: "user_id",
@@ -185,7 +180,6 @@ const stage2Integrations: IntegrationNodeData[] = [
           },
           {
             name: "sessions",
-            skipped: true,
             fields: [],
           },
         ],
@@ -212,7 +206,6 @@ const stage2Integrations: IntegrationNodeData[] = [
         collections: [
           {
             name: "members",
-            skipped: false,
             fields: [
               {
                 name: "email_address",
@@ -246,7 +239,6 @@ const gatedIntegration: IntegrationNodeData = {
       collections: [
         {
           name: "retention_records",
-          skipped: false,
           fields: [
             {
               name: "subject_email",

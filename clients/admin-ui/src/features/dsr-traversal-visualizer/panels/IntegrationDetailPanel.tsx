@@ -124,9 +124,7 @@ export const IntegrationDetailPanel = ({
                 <Flex vertical gap={6}>
                   {ds.collections.map((c) => (
                     <Flex key={c.name} vertical>
-                      <Text>
-                        {c.name}
-                      </Text>
+                      <Text>{c.name}</Text>
                       <Flex gap={4} wrap>
                         {c.fields.flatMap((f) =>
                           f.data_categories.map((dc) => (

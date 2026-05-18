@@ -125,7 +125,7 @@ export const TraversalCanvas = ({ payload }: Props) => {
   }
 
   return (
-    <div className="relative w-full min-h-0 flex-1">
+    <div className="relative min-h-0 w-full flex-1">
       <ReactFlow
         nodes={nodes}
         edges={edges}
