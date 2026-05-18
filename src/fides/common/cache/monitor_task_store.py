@@ -9,7 +9,7 @@ from typing import Any
 
 from loguru import logger
 
-KEY_PREFIX = "monitor_task_stopped:"
+TASK_STOPPED_KEY_PREFIX = "monitor_task_stopped:"
 DEFAULT_TTL_SECONDS = 60 * 60  # 1 hour
 
 
@@ -27,7 +27,7 @@ class MonitorTaskCacheStore:
         should fail the stop request since without the flag the worker
         won't know to stop.
         """
-        self._redis.set(f"{KEY_PREFIX}{celery_id}", "1", ex=self._ttl)
+        self._redis.set(f"{TASK_STOPPED_KEY_PREFIX}{celery_id}", "1", ex=self._ttl)
 
     def is_stopped(self, celery_id: str) -> bool:
         """Check if a task has been stopped.
@@ -35,7 +35,7 @@ class MonitorTaskCacheStore:
         Returns False if Redis is unavailable — the task continues as-is.
         """
         try:
-            return self._redis.get(f"{KEY_PREFIX}{celery_id}") is not None
+            return self._redis.get(f"{TASK_STOPPED_KEY_PREFIX}{celery_id}") is not None
         except Exception:
             logger.warning(
                 "Failed to check task stop flag in Redis, assuming not stopped",
