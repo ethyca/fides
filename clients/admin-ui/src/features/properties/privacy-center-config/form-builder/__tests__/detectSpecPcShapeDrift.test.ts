@@ -1,4 +1,4 @@
-import { detectSpecPcShapeDrift } from "../drift";
+import { detectSpecPcShapeDrift } from "../detectSpecPcShapeDrift";
 
 describe("detectSpecPcShapeDrift", () => {
   it("returns false when the rich spec maps to the saved PC shape", () => {
