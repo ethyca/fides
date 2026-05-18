@@ -14,11 +14,6 @@
   padding: 12px 16px;
 }
 
-.avatar {
-  background-color: var(--fidesui-color-text) !important;
-  border-radius: var(--fidesui-border-radius) !important;
-}
-
 .body {
   padding: 12px 16px;
   border-top: 1px solid var(--fidesui-color-border);
@@ -36,10 +31,6 @@
   min-width: 0;
 }
 
-.metaRow {
-  margin-top: 6px;
-}
-
 // Chips may wrap to a second row when labels are long; card height
 // adapts and stages top-align around the tallest card.
 .chipRow {
@@ -50,23 +41,9 @@
   font-size: 12px;
 }
 
-.miniText {
-  font-size: 11px;
-}
-
 .tag {
   font-size: 10px;
   margin: 0;
-}
-
-.fieldHelp {
-  display: block;
-  margin-top: 2px;
-}
-
-.fieldExtra {
-  display: block;
-  margin-top: 4px;
 }
 
 .stageVia {

@@ -38,12 +38,6 @@
   margin-top: 6px;
 }
 
-.chipRow {
-  margin-top: 6px;
-  flex-wrap: nowrap;
-  overflow: hidden;
-}
-
 .metaText {
   font-size: 12px;
 }
@@ -65,11 +59,4 @@
 .fieldExtra {
   display: block;
   margin-top: 4px;
-}
-
-.stageVia {
-  display: block;
-  font-size: 11px;
-  color: var(--fidesui-color-text-tertiary);
-  margin-top: 1px;
 }
