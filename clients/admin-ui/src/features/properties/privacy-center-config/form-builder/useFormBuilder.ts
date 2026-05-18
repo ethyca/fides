@@ -4,7 +4,7 @@ import { useAppSelector } from "~/app/hooks";
 import { selectToken } from "~/features/auth/auth.slice";
 
 import { catalog } from "./catalog";
-import type { JsonRenderSpec } from "./mapper";
+import type { JsonRenderSpec } from "./types";
 import { streamChatTurn } from "./streaming";
 
 const KNOWN_TYPES = new Set(Object.keys(catalog.components));
