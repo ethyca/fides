@@ -1,9 +1,11 @@
 import { Tabs, TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
 
+import { useFeatures, useFlags } from "~/features/common/features";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
+import PrivacyRequestDetailsAccessPackageTab from "./access-package/PrivacyRequestDetailsAccessPackageTab";
 import ActivityTab from "./events-and-logs/ActivityTab";
 import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
 import RequestDetails from "./RequestDetails";
@@ -38,11 +40,22 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   // Use latest data if available, otherwise use initial data
   const subjectRequest = latestData?.items[0] ?? initialData;
 
+  const { flags } = useFlags();
+  const { plus: hasPlus } = useFeatures();
+
   const isRequiringInputStatus =
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
   const showManualTasks = isRequiringInputStatus;
+  const showAccessPackage = flags.accessPackages && hasPlus;
+  const isAwaitingAccessReview =
+    subjectRequest.status === PrivacyRequestStatus.AWAITING_ACCESS_REVIEW;
 
-  const [activeTabKey, setActiveTabKey] = useState("activity");
+  const [activeTabKey, setActiveTabKey] = useState(() =>
+    showAccessPackage &&
+    initialData.status === PrivacyRequestStatus.AWAITING_ACCESS_REVIEW
+      ? "access-package"
+      : "activity",
+  );
 
   const items: TabsProps["items"] = useMemo(
     () => [
@@ -62,8 +75,27 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         ),
         disabled: !showManualTasks,
       },
+      ...(showAccessPackage
+        ? [
+            {
+              key: "access-package",
+              label: "Access package",
+              children: (
+                <PrivacyRequestDetailsAccessPackageTab
+                  subjectRequest={subjectRequest}
+                />
+              ),
+              disabled: !isAwaitingAccessReview,
+            },
+          ]
+        : []),
     ],
-    [showManualTasks, subjectRequest],
+    [
+      showManualTasks,
+      isAwaitingAccessReview,
+      showAccessPackage,
+      subjectRequest,
+    ],
   );
 
   return (

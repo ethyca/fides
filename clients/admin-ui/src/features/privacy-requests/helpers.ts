@@ -53,7 +53,10 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
     BulkActionType.DENY,
     BulkActionType.DELETE,
   ],
-  [PrivacyRequestStatus.AWAITING_ACCESS_REVIEW]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.AWAITING_ACCESS_REVIEW]: [
+    BulkActionType.APPROVE,
+    BulkActionType.DELETE,
+  ],
 } as const;
 
 /**

@@ -1,0 +1,71 @@
+{
+  "redactions": [
+    {
+      "source": "postgres_db:customers",
+      "record_index": 0,
+      "field_path": "email",
+      "type": "redact"
+    }
+  ],
+  "data_uses": [
+    {
+      "fides_key": "essential.service",
+      "name": "Essential Service Operations",
+      "description": "Data used to provide the core service.",
+      "categories": [
+        {
+          "fides_key": "user.name",
+          "name": "Name",
+          "entries": [
+            {
+              "source": "postgres_db:customers",
+              "system": "internal_db",
+              "system_name": "Internal Database",
+              "record_index": 0,
+              "field_path": "name",
+              "value": "Jane Smith",
+              "redacted": false
+            }
+          ]
+        },
+        {
+          "fides_key": "user.contact.email",
+          "name": "Contact Email",
+          "entries": [
+            {
+              "source": "postgres_db:customers",
+              "system": "internal_db",
+              "system_name": "Internal Database",
+              "record_index": 0,
+              "field_path": "email",
+              "value": "jane@example.com",
+              "redacted": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "other": {
+    "name": "Other Data",
+    "description": "Data not associated with a declared processing purpose.",
+    "categories": [
+      {
+        "fides_key": "system.operations",
+        "name": "System Operations",
+        "entries": [
+          {
+            "source": "stripe_db:payments",
+            "system": "stripe",
+            "system_name": "Stripe",
+            "record_index": 0,
+            "field_path": "currency",
+            "value": "USD",
+            "redacted": false
+          }
+        ]
+      }
+    ]
+  },
+  "attachments": []
+}

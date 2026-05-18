@@ -31,6 +31,7 @@ export enum ExecutionLogStatus {
   PRE_APPROVAL_WEBHOOK_TRIGGERED = "pre_approval_webhook_triggered",
   PRE_APPROVAL_ELIGIBLE = "pre_approval_eligible",
   PRE_APPROVAL_NOT_ELIGIBLE = "pre_approval_not_eligible",
+  ACCESS_PACKAGE_APPROVED = "access_package_approved",
 }
 
 export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
@@ -48,6 +49,7 @@ export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
   [ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED]: "Webhooks triggered",
   [ExecutionLogStatus.PRE_APPROVAL_ELIGIBLE]: "Eligible",
   [ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE]: "Not eligible",
+  [ExecutionLogStatus.ACCESS_PACKAGE_APPROVED]: "Approved",
 };
 
 export const ExecutionLogStatusColors: Record<
@@ -68,6 +70,7 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED]: CUSTOM_TAG_COLOR.INFO,
   [ExecutionLogStatus.PRE_APPROVAL_ELIGIBLE]: CUSTOM_TAG_COLOR.SUCCESS,
   [ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE]: CUSTOM_TAG_COLOR.WARNING,
+  [ExecutionLogStatus.ACCESS_PACKAGE_APPROVED]: CUSTOM_TAG_COLOR.SUCCESS,
 };
 
 export interface ExecutionLog extends Pick<
@@ -133,6 +136,8 @@ export interface PrivacyRequestEntity {
   source?: string;
   location?: string;
   property_id?: string | null;
+  access_review_approved_at?: string | null;
+  access_review_approved_by?: string | null;
 }
 
 export interface PrivacyRequestResponse {
