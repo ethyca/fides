@@ -295,7 +295,9 @@ const CustomFieldForm = ({
         <Form.Item
           label="Selection mode"
           name="selection_mode"
-          rules={[{ required: true, message: "Please select a selection mode" }]}
+          rules={[
+            { required: true, message: "Please select a selection mode" },
+          ]}
         >
           <Select
             options={[
