@@ -19,7 +19,19 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.85.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.85.1..main)
+
+## [2.85.1](https://github.com/ethyca/fides/compare/2.85.0..2.85.1)
+
+### Added
+- Added SecretProvider abstraction and AWS Secrets Manager provider [#8051](https://github.com/ethyca/fides/pull/8051)
+- Add DBCredentialProvider for dynamic database credential resolution via AWS Secrets Manager [#8175](https://github.com/ethyca/fides/pull/8175)
+- Added configurable pool_recycle setting for database connections [#8209](https://github.com/ethyca/fides/pull/8209)
+
+### Changed
+- Route all database connections through DBCredentialProvider for dynamic credential resolution [#8176](https://github.com/ethyca/fides/pull/8176) https://github.com/ethyca/fides/labels/high-risk
+- Refactored database engines to use SQLAlchemy creator pattern for per-connection credential resolution [#8148](https://github.com/ethyca/fides/pull/8148)
+- Changed the label on API client comments to make it more obvious that they are from the API client and not from the user. [#8220](https://github.com/ethyca/fides/pull/8220)
 
 ## [2.85.0](https://github.com/ethyca/fides/compare/2.84.3..2.85.0)
 
