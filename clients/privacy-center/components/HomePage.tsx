@@ -6,8 +6,6 @@ import {
   ChakraHeading as Heading,
   ChakraLink as Link,
   ChakraStack as Stack,
-  ChakraText as Text,
-  ChakraTextProps as TextProps,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
 } from "fidesui";
@@ -18,7 +16,6 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { getEffectivePrivacyCenterLinks } from "~/common/config-links";
 import { encodePolicyKey } from "~/common/policy-key";
-import sanitizeHTML from "~/common/sanitize-html";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 import BrandLink from "~/components/BrandLink";
 import ConsentCard from "~/components/consent/ConsentCard";
@@ -28,6 +25,7 @@ import {
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
 import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
 import PrivacyCard from "~/components/PrivacyCard";
+import TextOrHtml from "~/components/TextOrHtml";
 import { useConfig } from "~/features/common/config.slice";
 import {
   selectIsNoticeDriven,
@@ -36,28 +34,6 @@ import {
 import { selectPrivacyExperience } from "~/features/consent/consent.slice";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-
-const TextOrHtml = ({
-  allowHTMLDescription,
-  children,
-  ...props
-}: Omit<TextProps, "children"> & {
-  allowHTMLDescription: boolean | null;
-  children: string;
-}) => {
-  if (allowHTMLDescription) {
-    return (
-      <Text
-        {...props}
-        dangerouslySetInnerHTML={{
-          __html: sanitizeHTML(children.trim()),
-        }}
-      />
-    );
-  }
-
-  return <Text {...props}>{children}</Text>;
-};
 
 const HomePage: NextPage = () => {
   const config = useConfig();
