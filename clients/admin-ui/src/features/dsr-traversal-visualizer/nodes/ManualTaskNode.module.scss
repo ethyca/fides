@@ -1,14 +1,7 @@
 .node {
-  position: relative;
   background: var(--fidesui-color-bg-container);
   border: 1px solid var(--fidesui-color-warning);
   border-radius: var(--fidesui-border-radius-lg);
-  width: 240px;
-  box-sizing: border-box;
-}
-
-.header {
-  padding: 12px 16px;
 }
 
 .avatar {
@@ -18,7 +11,6 @@
 }
 
 .body {
-  padding: 12px 16px;
   border-top: 1px solid var(--fidesui-color-border);
 }
 
@@ -27,15 +19,6 @@
   border: none;
   width: 8px;
   height: 8px;
-}
-
-.headerLabel {
-  flex: 1;
-  min-width: 0;
-}
-
-.metaRow {
-  margin-top: 6px;
 }
 
 .metaText {
@@ -49,14 +32,4 @@
 .tag {
   font-size: 10px;
   margin: 0;
-}
-
-.fieldHelp {
-  display: block;
-  margin-top: 2px;
-}
-
-.fieldExtra {
-  display: block;
-  margin-top: 4px;
 }

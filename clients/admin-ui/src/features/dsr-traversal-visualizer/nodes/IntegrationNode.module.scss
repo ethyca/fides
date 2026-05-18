@@ -1,21 +1,10 @@
 .node {
-  position: relative;
   background: var(--fidesui-color-bg-container);
   border: 1px solid var(--fidesui-color-border);
   border-radius: var(--fidesui-border-radius-lg);
-  width: 320px;
-  // min-height is applied inline from INTEGRATION_CARD_MIN_HEIGHT so the
-  // TS layout math (CARD_PITCH) and the rendered card height stay locked
-  // to the same constant.
-  box-sizing: border-box;
-}
-
-.header {
-  padding: 12px 16px;
 }
 
 .body {
-  padding: 12px 16px;
   border-top: 1px solid var(--fidesui-color-border);
 }
 
@@ -24,17 +13,6 @@
   border: none;
   width: 8px;
   height: 8px;
-}
-
-.headerLabel {
-  flex: 1;
-  min-width: 0;
-}
-
-// Chips may wrap to a second row when labels are long; card height
-// adapts and stages top-align around the tallest card.
-.chipRow {
-  margin-top: 6px;
 }
 
 .metaText {

@@ -1,17 +1,7 @@
 .card {
-  position: relative;
   background: var(--fidesui-color-bg-container);
   border: 1px solid var(--fidesui-color-border);
   border-radius: var(--fidesui-border-radius-lg);
-  width: 220px;
-  box-sizing: border-box;
-  padding: 12px 16px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .icon {
@@ -28,23 +18,8 @@
   flex-shrink: 0;
 }
 
-.title {
-  font-size: 12px;
-  font-weight: 600;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .sub {
   font-size: 11px;
-  color: var(--fidesui-color-text-tertiary);
-  margin-top: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .handle {

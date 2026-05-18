@@ -1,4 +1,5 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import classNames from "classnames";
 import { Flex, Tag, Text } from "fidesui";
 import { useMemo } from "react";
 
@@ -57,7 +58,7 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
 
   return (
     <div
-      className={styles.node}
+      className={classNames(styles.node, "relative w-80 box-border")}
       style={{ minHeight: INTEGRATION_CARD_MIN_HEIGHT }}
       data-testid={`integration-node:${connectionKey}`}
     >
@@ -66,9 +67,9 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
         position={Position.Left}
         className={styles.handle}
       />
-      <Flex align="flex-start" gap="small" className={styles.header}>
+      <Flex align="flex-start" gap="small" className="px-4 py-3">
         <ConnectionTypeLogo data={logoSource} size={28} />
-        <Flex vertical className={styles.headerLabel}>
+        <Flex vertical className="flex-1 min-w-0">
           <Text strong ellipsis={{ tooltip: system?.name ?? connectionKey }}>
             {system?.name ?? connectionKey}
           </Text>
@@ -88,7 +89,7 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           ) : null}
         </Flex>
       </Flex>
-      <div className={styles.body}>
+      <div className={classNames(styles.body, "px-4 py-3")}>
         <Flex justify="space-between" align="center" gap="small">
           <Text type="secondary" className={styles.metaText}>
             {collectionCount.traversed} of {collectionCount.total} collections
@@ -98,7 +99,7 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           </Tag>
         </Flex>
         {dataCategories.length > 0 && (
-          <Flex gap={4} wrap className={styles.chipRow}>
+          <Flex gap={4} wrap className="mt-1.5">
             {dataCategories.slice(0, 3).map((dc) => (
               <Tag key={dc} className={styles.tag}>
                 {getDataCategoryDisplayName(dc)}

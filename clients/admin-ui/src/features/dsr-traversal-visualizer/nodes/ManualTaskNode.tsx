@@ -14,8 +14,11 @@ export const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
   const extraCount = Math.max(0, data.fields.length - 1);
 
   return (
-    <div className={styles.node} data-testid={`manual-task-node:${data.id}`}>
-      <Flex align="center" gap="small" className={styles.header}>
+    <div
+      className={classNames(styles.node, "relative w-60 box-border")}
+      data-testid={`manual-task-node:${data.id}`}
+    >
+      <Flex align="center" gap="small" className="px-4 py-3">
         <Avatar
           shape="square"
           size="small"
@@ -24,13 +27,13 @@ export const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
         />
         <Text
           strong
-          className={styles.headerLabel}
+          className="flex-1 min-w-0"
           ellipsis={{ tooltip: data.name }}
         >
           {data.name}
         </Text>
       </Flex>
-      <div className={styles.body}>
+      <div className={classNames(styles.body, "px-4 py-3")}>
         {primaryLabel && (
           <Text
             className={styles.metaText}
@@ -42,7 +45,7 @@ export const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
         {primaryHelp && (
           <Text
             type="secondary"
-            className={classNames(styles.miniText, styles.fieldHelp)}
+            className={classNames(styles.miniText, "block mt-0.5")}
             ellipsis={{ tooltip: primaryHelp }}
           >
             {primaryHelp}
@@ -51,13 +54,13 @@ export const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
         {extraCount > 0 && (
           <Text
             type="secondary"
-            className={classNames(styles.miniText, styles.fieldExtra)}
+            className={classNames(styles.miniText, "block mt-1")}
           >
             +{extraCount} more field{extraCount === 1 ? "" : "s"}
           </Text>
         )}
         {data.conditions.length > 0 && (
-          <div className={styles.metaRow}>
+          <div className="mt-1.5">
             <Tag color="warning" className={styles.tag}>
               {data.conditions.length} condition
               {data.conditions.length === 1 ? "" : "s"}
