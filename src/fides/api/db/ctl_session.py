@@ -10,7 +10,12 @@ from sqlalchemy.orm import sessionmaker
 
 from fides.api.db.session import ExtendedSession
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
-from fides.common.engine_creators import make_async_creator, make_sync_creator
+from fides.common.engine_creators import (
+    ASYNC_DIALECT_URL,
+    SYNC_DIALECT_URL,
+    make_async_creator,
+    make_sync_creator,
+)
 from fides.config import CONFIG
 
 # asyncio lock and flag for warming up the async pool
@@ -19,7 +24,7 @@ ASYNC_READONLY_POOL_WARMED = False
 
 # Primary async engine — credentials resolved per-connection via creator
 async_engine = create_async_engine(
-    "postgresql+asyncpg://",
+    ASYNC_DIALECT_URL,
     creator=make_async_creator(),
     echo=False,
     hide_parameters=not CONFIG.dev_mode,
@@ -29,6 +34,9 @@ async_engine = create_async_engine(
     pool_size=CONFIG.database.api_async_engine_pool_size,
     max_overflow=CONFIG.database.api_async_engine_max_overflow,
     pool_pre_ping=CONFIG.database.api_async_engine_pool_pre_ping,
+    pool_recycle=CONFIG.database.pool_recycle
+    if CONFIG.database.pool_recycle is not None
+    else -1,  # -1 is SQLAlchemy's default (no recycling)
 )
 async_session_factory = sessionmaker(
     async_engine, class_=AsyncSession, expire_on_commit=False
@@ -45,7 +53,7 @@ if CONFIG.database.async_readonly_database_uri:
         f"Read-only async settings: max-overflow: {CONFIG.database.api_async_engine_max_overflow}, pool-size: {CONFIG.database.async_readonly_database_pool_size},  pre-warm = {CONFIG.database.async_readonly_database_prewarm}, autocommit = {CONFIG.database.async_readonly_database_autocommit}, skip rollback = {CONFIG.database.async_readonly_database_pool_skip_rollback}"
     )
     readonly_async_engine = create_async_engine(
-        "postgresql+asyncpg://",
+        ASYNC_DIALECT_URL,
         creator=make_async_creator(readonly=True),
         echo=False,
         hide_parameters=not CONFIG.dev_mode,
@@ -55,6 +63,9 @@ if CONFIG.database.async_readonly_database_uri:
         pool_size=CONFIG.database.async_readonly_database_pool_size,
         max_overflow=CONFIG.database.async_readonly_database_max_overflow,
         pool_pre_ping=CONFIG.database.async_readonly_database_pre_ping,
+        pool_recycle=CONFIG.database.pool_recycle
+        if CONFIG.database.pool_recycle is not None
+        else -1,  # -1 is SQLAlchemy's default (no recycling)
         # Don't rollback before returning a connection to the pool - this improves performance dramatically;
         # can be turned off via config but the default is to not reset on return
         pool_reset_on_return=(
@@ -75,7 +86,7 @@ if CONFIG.database.async_readonly_database_uri:
 # and they do not respect engine settings like pool_size, max_overflow, etc.
 # these should be removed, and we should standardize on what's provided in `session.py`
 sync_engine = create_engine(
-    "postgresql+psycopg2://",
+    SYNC_DIALECT_URL,
     creator=make_sync_creator(),
     echo=False,
     hide_parameters=not CONFIG.dev_mode,

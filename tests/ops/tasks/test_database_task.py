@@ -19,9 +19,12 @@ class TestDatabaseTask:
         CONFIG.database.task_engine_pool_size = pool_size + 5
         max_overflow = CONFIG.database.task_engine_max_overflow
         CONFIG.database.task_engine_max_overflow = max_overflow + 5
+        pool_recycle = CONFIG.database.pool_recycle
+        CONFIG.database.pool_recycle = 1800
         yield
         CONFIG.database.task_engine_pool_size = pool_size
         CONFIG.database.task_engine_max_overflow = max_overflow
+        CONFIG.database.pool_recycle = pool_recycle
 
     @pytest.fixture
     def recovering_session_maker(self):
@@ -41,6 +44,15 @@ class TestDatabaseTask:
         mock_maker = mock.Mock()
         mock_maker.side_effect = OperationalError("connection failed", None, None)
         return mock_maker
+
+    @pytest.mark.usefixtures("mock_config_changed_db_engine_settings")
+    def test_task_engine_pool_recycle(self):
+        """pool_recycle from config is applied to the task engine."""
+        task = DatabaseTask()
+        task._task_engine = None
+        task._sessionmaker = None
+        task.get_new_session()
+        assert task._task_engine.pool._recycle == CONFIG.database.pool_recycle
 
     def test_retry_on_operational_error(self, recovering_session_maker):
         """Test that session creation retries on OperationalError"""

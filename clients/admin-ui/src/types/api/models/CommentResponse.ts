@@ -2,6 +2,7 @@
 
 import type { AttachmentResponse } from "./AttachmentResponse";
 import { CommentType } from "./CommentType";
+import { CorrespondenceDeliveryStatus } from "./CorrespondenceDeliveryStatus";
 
 /**
  * CommentResponse
@@ -67,4 +68,38 @@ export type CommentResponse = {
    * The comment type
    */
   comment_type: CommentType;
+  /**
+   * Delivery status for correspondence messages
+   */
+  delivery_status?: CorrespondenceDeliveryStatus | null;
+  /**
+   * Parent Id
+   *
+   * Parent comment ID for threaded replies
+   */
+  parent_id?: string | null;
+  /**
+   * Sender Email
+   *
+   * Sender email address for correspondence messages
+   */
+  sender_email?: string | null;
+  /**
+   * Recipient Email
+   *
+   * Recipient email address for correspondence messages
+   */
+  recipient_email?: string | null;
+  /**
+   * Bounce Reason
+   *
+   * Bounce reason if delivery failed
+   */
+  bounce_reason?: string | null;
+  /**
+   * Reply To Address
+   *
+   * Reply-to address for correspondence threading
+   */
+  reply_to_address?: string | null;
 };

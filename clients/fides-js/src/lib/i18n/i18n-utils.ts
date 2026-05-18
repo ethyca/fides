@@ -217,10 +217,18 @@ function extractMessagesFromGVLTranslations(
 
 /**
  * Load the statically-compiled messages from source into the message catalog.
+ *
+ * NOTE: Only the default locale (English) is bundled statically to keep bundle
+ * size small. Other locales get their translations from the experience API.
+ * The static messages serve as fallbacks (e.g. GPC labels) when the API
+ * doesn't provide them.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
   Object.keys(STATIC_MESSAGES).forEach((locale) => {
-    i18n.load(locale, STATIC_MESSAGES[locale]);
+    const messages = STATIC_MESSAGES[locale];
+    if (messages) {
+      i18n.load(locale, messages);
+    }
   });
   return Object.keys(STATIC_MESSAGES);
 }

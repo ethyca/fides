@@ -1,0 +1,4 @@
+type: Added
+description: Added configurable pool_recycle setting for database connections
+pr: 8209
+labels: []

@@ -31,6 +31,14 @@ def mock_config_changed_db_engine_settings():
     CONFIG.database.api_engine_max_overflow = max_overflow
 
 
+@pytest.fixture
+def mock_config_pool_recycle():
+    original = CONFIG.database.pool_recycle
+    CONFIG.database.pool_recycle = 1800
+    yield
+    CONFIG.database.pool_recycle = original
+
+
 @pytest.mark.usefixtures("mock_config")
 def test_get_cache_not_enabled():
     with pytest.raises(RedisNotConfigured):
@@ -53,3 +61,12 @@ def test_get_api_session(config_fixture, request):
     pool: QueuePool = engine.pool
     assert pool.size() == pool_size
     assert pool._max_overflow == max_overflow
+
+
+@pytest.mark.usefixtures("mock_config_pool_recycle")
+def test_get_api_session_pool_recycle():
+    session_management._engine = None
+    session: Session = get_api_session()
+    engine: Engine = session.get_bind()
+    pool: QueuePool = engine.pool
+    assert pool._recycle == CONFIG.database.pool_recycle
