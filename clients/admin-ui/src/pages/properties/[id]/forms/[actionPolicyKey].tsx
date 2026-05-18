@@ -8,7 +8,6 @@ import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { FormBuilderPage } from "~/features/properties/privacy-center-config/form-builder/FormBuilderPage";
 import type {
-  JsonRenderSpec,
   MapResult,
   PcCustomFields,
 } from "~/features/properties/privacy-center-config/form-builder/types";
@@ -29,8 +28,7 @@ const FormBuilderRoute: NextPage = () => {
   });
   const [updateProperty] = useUpdatePropertyMutation();
   const matchedAction = (
-    (property?.privacy_center_config as { actions?: any[] } | null)?.actions ??
-    []
+    property?.privacy_center_config?.actions ?? []
   ).find((a) => a?.policy_key === actionPolicyKey);
   const breadcrumbTitle = matchedAction?.title || actionPolicyKey;
 
@@ -39,49 +37,39 @@ const FormBuilderRoute: NextPage = () => {
     pcShape,
     identityInputs,
     fieldOrder,
-    richSpec,
   }: {
     actionPolicyKey: string;
     pcShape: PcCustomFields;
     identityInputs: MapResult["identityInputs"];
     fieldOrder: MapResult["fieldOrder"];
-    richSpec: JsonRenderSpec;
   }) => {
-    if (!property) {
+    if (!property?.privacy_center_config) {
       return;
     }
-    const config = property.privacy_center_config ?? { actions: [] };
-    const existingActions = (config as { actions?: any[] }).actions ?? [];
-    const actions = existingActions.map((action: any) => {
+    const config = property.privacy_center_config;
+    const existingActions = config.actions ?? [];
+    const actions = existingActions.map((action) => {
       if (action.policy_key !== key) {
         return action;
       }
-      // Drop the deprecated custom_privacy_request_field_order; field_order
-      // supersedes it. Without this, stale legacy ordering can shadow newly
-      // saved customs after a rename or reorder.
-      const rest = { ...action };
-      delete rest.custom_privacy_request_field_order;
       return {
-        ...rest,
+        ...action,
         custom_privacy_request_fields: pcShape,
         identity_inputs:
           Object.keys(identityInputs).length > 0 ? identityInputs : null,
         field_order: fieldOrder,
-        // eslint-disable-next-line no-underscore-dangle
-        _form_builder_spec: {
-          version: 1,
-          spec: richSpec,
-          updated_at: new Date().toISOString(),
-        },
       };
     });
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id: propertyId, messaging_templates, ...rest } = property as any;
+    const { id: propertyId, messaging_templates, ...rest } = property;
     await updateProperty({
-      id: propertyId,
+      id: propertyId!,
       property: {
         ...rest,
-        privacy_center_config: { ...config, actions },
+        privacy_center_config: {
+          ...config,
+          actions,
+        } as typeof config,
       },
     }).unwrap();
   };
@@ -114,7 +102,7 @@ const FormBuilderRoute: NextPage = () => {
       />
       <FormBuilderPage
         propertyId={property.id!}
-        property={property as any}
+        property={property}
         actionPolicyKey={actionPolicyKey}
         onSave={handleSave}
       />

@@ -9,7 +9,7 @@ import {
 
 import type { ComponentType } from "./catalog";
 import { ChatPane } from "./ChatPane";
-import { detectSpecPcShapeDrift, stableJson } from "./drift";
+import { stableJson } from "./drift";
 import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
 import { jsonSpecToPcShape } from "./jsonSpecToPcShape";
 import { pcShapeToJsonSpec } from "./pcShapeToJsonSpec";
@@ -27,23 +27,21 @@ import { useFormBuilder } from "./useFormBuilder";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
+/** The action fields the form builder actually reads. */
 interface ActionShape {
-  policy_key?: string;
+  policy_key?: string | null;
   description?: string | null;
   description_subtext?: string[] | null;
   confirmButtonText?: string | null;
   cancelButtonText?: string | null;
-  custom_privacy_request_fields?: PcCustomFields;
-  identity_inputs?: Record<string, "required" | "optional"> | null;
-  field_order?: string[] | null;
-  // eslint-disable-next-line no-underscore-dangle
-  _form_builder_spec?: { spec: JsonRenderSpec; version: number };
+  custom_privacy_request_fields?: Record<string, unknown> | null;
+  identity_inputs?: Record<string, unknown> | null;
 }
 
-interface FormBuilderPageProperty {
-  id: string;
+export interface FormBuilderPageProperty {
+  id?: string | null;
   name: string;
-  privacy_center_config: {
+  privacy_center_config?: {
     actions?: ActionShape[];
   } | null;
 }
@@ -57,7 +55,6 @@ interface FormBuilderPageProps {
     pcShape: PcCustomFields;
     identityInputs: Record<string, "required" | "optional">;
     fieldOrder: string[];
-    richSpec: JsonRenderSpec;
   }) => Promise<void>;
 }
 
@@ -120,16 +117,13 @@ export const FormBuilderPage = ({
   );
 
   const initialSpec = useMemo<JsonRenderSpec | null>(() => {
-    /* eslint-disable no-underscore-dangle */
-    if (action?._form_builder_spec?.spec) {
-      return action._form_builder_spec.spec;
-    }
-    /* eslint-enable no-underscore-dangle */
     if (action?.custom_privacy_request_fields || action?.identity_inputs) {
       return pcShapeToJsonSpec(
-        action.custom_privacy_request_fields ?? {},
-        action.identity_inputs,
-        action.field_order,
+        (action.custom_privacy_request_fields ?? {}) as PcCustomFields,
+        action.identity_inputs as
+          | Record<string, "required" | "optional">
+          | null
+          | undefined,
       );
     }
     // No saved fields yet — seed with the standard DSR defaults so the
@@ -142,27 +136,6 @@ export const FormBuilderPage = ({
     actionPolicyKey,
     initialSpec,
   });
-
-  // Drift = the saved rich spec doesn't round-trip cleanly to the saved
-  // legacy `custom_privacy_request_fields`. Comparing live `builder.spec`
-  // would flag every unsaved edit, so we compare the persisted pair only.
-  const savedDrift = useMemo(() => {
-    /* eslint-disable no-underscore-dangle */
-    if (!action?._form_builder_spec?.spec) {
-      return false;
-    }
-    return detectSpecPcShapeDrift(
-      action._form_builder_spec.spec,
-      action.custom_privacy_request_fields ?? {},
-    );
-    /* eslint-enable no-underscore-dangle */
-  }, [action]);
-
-  // Rebuild swaps the in-memory spec; the persisted state is unchanged
-  // until Save. Suppress the alert in the meantime so the user isn't
-  // told their reconciled state still drifts.
-  const [driftAcknowledged, setDriftAcknowledged] = useState(false);
-  const driftDetected = savedDrift && !driftAcknowledged;
 
   const [confirmingDropped, setConfirmingDropped] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -332,12 +305,7 @@ export const FormBuilderPage = ({
         pcShape: result.pcShape,
         identityInputs: result.identityInputs,
         fieldOrder: result.fieldOrder,
-        richSpec: builder.spec,
       });
-      // Save just wrote rich + legacy in lockstep, so any prior drift is
-      // resolved. Acknowledge it now so the warning hides immediately,
-      // even if the property refetch hasn't returned yet.
-      setDriftAcknowledged(true);
       message.success("Saved");
     } catch (err: unknown) {
       const detail =
@@ -369,19 +337,6 @@ export const FormBuilderPage = ({
     ? jsonSpecToPcShape(builder.spec).droppedFeatures
     : [];
 
-  const handleRebuild = () => {
-    if (action.custom_privacy_request_fields || action.identity_inputs) {
-      builder.setSpec(
-        pcShapeToJsonSpec(
-          action.custom_privacy_request_fields ?? {},
-          action.identity_inputs,
-        ),
-      );
-      setSelectedElementId(null);
-      setDriftAcknowledged(true);
-    }
-  };
-
   return (
     <div style={rootStyle}>
       <FormGuard
@@ -389,19 +344,6 @@ export const FormBuilderPage = ({
         name={`Form editor (${actionPolicyKey})`}
         isDirty={isDirty}
       />
-      {driftDetected && (
-        <Alert
-          type="warning"
-          showIcon
-          title="This form was edited outside this editor"
-          description="The editor is showing the configuration from your last edit here. Newer changes were saved elsewhere. Reset to load those instead."
-          action={
-            <Button size="small" onClick={handleRebuild}>
-              Reset to latest saved fields
-            </Button>
-          }
-        />
-      )}
       <Splitter style={splitterStyle}>
         <Splitter.Panel
           defaultSize="25%"

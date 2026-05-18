@@ -31,10 +31,14 @@ const EditPropertyPage: NextPage = () => {
       return;
     }
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
-    const { id: _id, messaging_templates: _mt, ...rest } = data as any;
+    const { id: _id, messaging_templates: _mt, ...rest } = data;
     const result = await updateProperty({
       id: propertyId as string,
-      property: { ...rest, privacy_center_config: nextConfig },
+      property: {
+        ...rest,
+        privacy_center_config:
+          nextConfig as unknown as typeof data.privacy_center_config,
+      },
     });
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
