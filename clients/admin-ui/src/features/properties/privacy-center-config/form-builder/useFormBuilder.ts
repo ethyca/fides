@@ -111,6 +111,8 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const messagesRef = useRef(messages);
+  const specRef = useRef(spec);
   const authToken = useAppSelector(selectToken);
 
   const abort = useCallback(() => {
@@ -123,7 +125,8 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
   const sendMessage = useCallback(
     async (text: string) => {
       const userMessage: ChatMessage = { role: "user", content: text };
-      const nextHistory = [...messages, userMessage];
+      const nextHistory = [...messagesRef.current, userMessage];
+      messagesRef.current = nextHistory;
       setMessages(nextHistory);
       setStatus("streaming");
       setError(null);
@@ -137,7 +140,7 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
         const stream = streamChatTurn({
           propertyId: input.propertyId,
           actionPolicyKey: input.actionPolicyKey,
-          currentSpec: spec,
+          currentSpec: specRef.current,
           messages: nextHistory,
           signal: controller.signal,
           authToken,
@@ -149,33 +152,45 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
             buffer += ev.data;
             const parsed = tryParse(buffer);
             if (parsed) {
-              setSpec(sanitizeSpec(parsed));
+              const sanitized = sanitizeSpec(parsed);
+              specRef.current = sanitized;
+              setSpec(sanitized);
             }
           } else if (ev.event === "done") {
             const payload = tryParse(ev.data) as { raw?: string } | null;
             if (payload?.raw) {
               const final = tryParse(payload.raw);
               if (final) {
-                setSpec(sanitizeSpec(final));
+                const sanitized = sanitizeSpec(final);
+                specRef.current = sanitized;
+                setSpec(sanitized);
                 const fieldCount = (final.elements?.form?.children ?? [])
                   .length;
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    role: "assistant",
-                    content:
-                      fieldCount === 1
-                        ? "Updated the form (1 field)."
-                        : `Updated the form (${fieldCount} fields).`,
-                  },
-                ]);
+                setMessages((prev) => {
+                  const next = [
+                    ...prev,
+                    {
+                      role: "assistant" as const,
+                      content:
+                        fieldCount === 1
+                          ? "Updated the form (1 field)."
+                          : `Updated the form (${fieldCount} fields).`,
+                    },
+                  ];
+                  messagesRef.current = next;
+                  return next;
+                });
               } else {
                 // No usable spec parsed — surface the raw model output so
                 // the user can see whatever the LLM said.
-                setMessages((prev) => [
-                  ...prev,
-                  { role: "assistant", content: payload.raw ?? "" },
-                ]);
+                setMessages((prev) => {
+                  const next = [
+                    ...prev,
+                    { role: "assistant" as const, content: payload.raw ?? "" },
+                  ];
+                  messagesRef.current = next;
+                  return next;
+                });
               }
             }
           } else if (ev.event === "error") {
@@ -196,7 +211,7 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
         abortRef.current = null;
       }
     },
-    [input.actionPolicyKey, input.propertyId, messages, spec, authToken],
+    [input.actionPolicyKey, input.propertyId, authToken],
   );
 
   return { spec, messages, status, error, sendMessage, abort, setSpec };
