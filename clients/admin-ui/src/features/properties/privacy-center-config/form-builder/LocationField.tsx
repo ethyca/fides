@@ -1,46 +1,8 @@
 import { useStateBinding } from "@json-render/react";
 import { Form, isoCodesToOptions, LocationSelect } from "fidesui";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 
-interface BaseFieldProps {
-  name: string;
-  label: string;
-  required: boolean;
-  options?: string[];
-  placeholder?: string;
-  default_value?: string | string[];
-  "data-element-id"?: string;
-}
-
-const isEmptyValue = (v: unknown) =>
-  v === undefined ||
-  v === null ||
-  v === "" ||
-  (Array.isArray(v) && v.length === 0);
-
-const stableValueKey = (v: unknown) => JSON.stringify(v ?? null);
-
-const useDefaultValueSeed = <T,>(
-  value: T | undefined,
-  setValue: (next: T) => void,
-  defaultValue: T | undefined,
-) => {
-  const previousDefaultRef = useRef<T | undefined>(defaultValue);
-  useEffect(() => {
-    const hasDefault = !isEmptyValue(defaultValue);
-    if (!hasDefault) {
-      previousDefaultRef.current = defaultValue;
-      return;
-    }
-    const matchesPreviousDefault =
-      stableValueKey(value) === stableValueKey(previousDefaultRef.current);
-    if (isEmptyValue(value) || matchesPreviousDefault) {
-      setValue(defaultValue as T);
-    }
-    previousDefaultRef.current = defaultValue;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stableValueKey(defaultValue)]);
-};
+import { BaseFieldProps, useDefaultValueSeed } from "./fieldUtils";
 
 export const LocationField = ({ props }: { props: BaseFieldProps }) => {
   // Custom options (when provided) are treated as ISO 3166-1/2 codes — the
