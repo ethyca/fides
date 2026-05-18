@@ -158,7 +158,7 @@ const CustomFieldRenderer = ({
               props.onChange(date ? date.format("YYYY-MM-DD") : "")
             }
             onBlur={onBlur}
-            format="YYYY-MM-DD"
+            format="MM/DD/YYYY"
             getPopupContainer={() => document.body}
             aria-label={label}
             aria-describedby={`${fieldKey}-error`}

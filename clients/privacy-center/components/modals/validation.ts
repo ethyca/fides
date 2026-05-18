@@ -10,7 +10,7 @@ export const dateFieldValidation = (
 ) => {
   let schema = Yup.string().test(
     "valid-date",
-    `${label} must be a valid date (YYYY-MM-DD)`,
+    `${label} must be a valid date (MM/DD/YYYY)`,
     (v) => !v || dayjs(v, "YYYY-MM-DD", true).isValid(),
   );
   if (field.max) {

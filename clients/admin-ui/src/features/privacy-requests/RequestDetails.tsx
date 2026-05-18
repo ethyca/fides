@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures, useFlags } from "~/features/common/features";
+import { formatIsoDate } from "~/features/common/utils";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
@@ -105,7 +106,8 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         {Object.entries(identity)
           .filter(([, { value }]) => value !== null)
           .map(([key, { value = "", label }]) => {
-            const text = `${value}${!identityVerifiedAt ? " (Unverified)" : ""}`;
+            const displayValue = formatIsoDate(value);
+            const text = `${displayValue}${!identityVerifiedAt ? " (Unverified)" : ""}`;
 
             return (
               <RequestDetailsRow
