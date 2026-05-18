@@ -9,10 +9,10 @@ import {
 
 import type { ComponentType } from "./catalog";
 import { ChatPane } from "./ChatPane";
-import { detectDrift, stableJson } from "./drift";
+import { detectSpecPcShapeDrift, stableJson } from "./drift";
 import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
-import type { DroppedFeature, JsonRenderSpec, PcCustomFields } from "./mapper";
-import { mapSpecToPcShape } from "./mapper";
+import { jsonSpecToPcShape } from "./jsonSpecToPcShape";
+import { pcShapeToJsonSpec } from "./pcShapeToJsonSpec";
 import { type PreviewMode, PreviewPane } from "./PreviewPane";
 import {
   addField as addFieldMutation,
@@ -22,7 +22,7 @@ import {
   setFieldVisibility as setFieldVisibilityMutation,
   updateField as updateFieldMutation,
 } from "./specMutations";
-import { synthesizeSpecFromPcShape } from "./synthesize";
+import type { DroppedFeature, JsonRenderSpec, PcCustomFields } from "./types";
 import { useFormBuilder } from "./useFormBuilder";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
@@ -126,7 +126,7 @@ export const FormBuilderPage = ({
     }
     /* eslint-enable no-underscore-dangle */
     if (action?.custom_privacy_request_fields || action?.identity_inputs) {
-      return synthesizeSpecFromPcShape(
+      return pcShapeToJsonSpec(
         action.custom_privacy_request_fields ?? {},
         action.identity_inputs,
         action.field_order,
@@ -151,7 +151,7 @@ export const FormBuilderPage = ({
     if (!action?._form_builder_spec?.spec) {
       return false;
     }
-    return detectDrift(
+    return detectSpecPcShapeDrift(
       action._form_builder_spec.spec,
       action.custom_privacy_request_fields ?? {},
     );
@@ -307,7 +307,7 @@ export const FormBuilderPage = ({
     if (!builder.spec) {
       return;
     }
-    const result = mapSpecToPcShape(builder.spec);
+    const result = jsonSpecToPcShape(builder.spec);
     if (result.errors.length > 0) {
       message.error("Form has validation errors — fix before saving.");
       return;
@@ -349,7 +349,7 @@ export const FormBuilderPage = ({
     if (!builder.spec) {
       return;
     }
-    const result = mapSpecToPcShape(builder.spec);
+    const result = jsonSpecToPcShape(builder.spec);
     if (result.droppedFeatures.length > 0) {
       setConfirmingDropped(true);
       return;
@@ -358,13 +358,13 @@ export const FormBuilderPage = ({
   };
 
   const droppedSummary: DroppedFeature[] = builder.spec
-    ? mapSpecToPcShape(builder.spec).droppedFeatures
+    ? jsonSpecToPcShape(builder.spec).droppedFeatures
     : [];
 
   const handleRebuild = () => {
     if (action.custom_privacy_request_fields || action.identity_inputs) {
       builder.setSpec(
-        synthesizeSpecFromPcShape(
+        pcShapeToJsonSpec(
           action.custom_privacy_request_fields ?? {},
           action.identity_inputs,
         ),

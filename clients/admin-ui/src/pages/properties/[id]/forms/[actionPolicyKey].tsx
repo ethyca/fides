@@ -11,7 +11,7 @@ import type {
   JsonRenderSpec,
   MapResult,
   PcCustomFields,
-} from "~/features/properties/privacy-center-config/form-builder/mapper";
+} from "~/features/properties/privacy-center-config/form-builder/types";
 import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
