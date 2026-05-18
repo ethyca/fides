@@ -34,7 +34,7 @@ const FieldWrapper = ({
   children: React.ReactNode;
 }) => {
   if (!elementId) {
-    return children as React.ReactElement;
+    return <>{children}</>;
   }
   return <span data-element-id={elementId}>{children}</span>;
 };
