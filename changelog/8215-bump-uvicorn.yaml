@@ -1,0 +1,4 @@
+type: Changed
+description: Bumped uvicorn from 0.30.6 to 0.47.0
+pr: 8215
+labels: []
