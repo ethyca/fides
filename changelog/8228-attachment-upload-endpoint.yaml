@@ -1,0 +1,3 @@
+type: Added
+description: Added config validation for field_type constraints and upload context to the attachment endpoint.
+pr: 8228
