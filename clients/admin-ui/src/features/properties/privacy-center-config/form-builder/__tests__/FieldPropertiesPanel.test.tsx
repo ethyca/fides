@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { FidesUIProvider } from "fidesui";
 
 import { FieldPropertiesPanel } from "../FieldPropertiesPanel";
-import type { JsonRenderSpec } from "../mapper";
+import type { JsonRenderSpec } from "../types";
 
 const render = (ui: React.ReactElement) =>
   rtlRender(<FidesUIProvider>{ui}</FidesUIProvider>);

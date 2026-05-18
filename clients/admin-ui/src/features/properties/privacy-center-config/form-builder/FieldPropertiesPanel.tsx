@@ -13,7 +13,7 @@ import snakeCase from "lodash.snakecase";
 import { useEffect, useRef, useState } from "react";
 
 import type { ComponentType } from "./catalog";
-import type { JsonRenderSpec } from "./mapper";
+import type { JsonRenderSpec } from "./types";
 import {
   type ConditionRow,
   rowsToVisible,

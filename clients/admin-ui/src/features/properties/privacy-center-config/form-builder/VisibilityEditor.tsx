@@ -1,7 +1,7 @@
 import { Button, Icons, Input, Radio, Select, Space } from "fidesui";
 import dynamic from "next/dynamic";
 
-import type { JsonRenderSpec } from "./mapper";
+import type { JsonRenderSpec } from "./types";
 
 // LocationSelect transitively imports iso-3166 (CJS), which Turbopack rejects
 // on the SSR path. Mirror the dynamic-import pattern used by LocationField.
