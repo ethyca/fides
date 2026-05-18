@@ -46,7 +46,7 @@ const stripUndefined = (
 ): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
   Object.entries(values).forEach(([k, v]) => {
-    if (v !== undefined && v !== "") {
+    if (v !== undefined) {
       result[k] = v;
     }
   });
