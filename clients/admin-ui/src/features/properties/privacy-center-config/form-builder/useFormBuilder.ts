@@ -111,6 +111,7 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const streamDoneRef = useRef<Promise<void> | null>(null);
   const messagesRef = useRef(messages);
   const specRef = useRef(spec);
   const authToken = useAppSelector(selectToken);
@@ -124,6 +125,13 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
 
   const sendMessage = useCallback(
     async (text: string) => {
+      // If a stream is already running, abort it and wait for it to fully
+      // finish so old event handlers don't interleave with the new stream.
+      if (abortRef.current) {
+        abortRef.current.abort();
+        await streamDoneRef.current;
+      }
+
       const userMessage: ChatMessage = { role: "user", content: text };
       const nextHistory = [...messagesRef.current, userMessage];
       messagesRef.current = nextHistory;
@@ -131,9 +139,13 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
       setStatus("streaming");
       setError(null);
 
-      abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
+
+      let resolveStreamDone: () => void;
+      streamDoneRef.current = new Promise<void>((resolve) => {
+        resolveStreamDone = resolve;
+      });
 
       let buffer = "";
       try {
@@ -209,6 +221,7 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
         setStatus("error");
       } finally {
         abortRef.current = null;
+        resolveStreamDone!();
       }
     },
     [input.actionPolicyKey, input.propertyId, authToken],
