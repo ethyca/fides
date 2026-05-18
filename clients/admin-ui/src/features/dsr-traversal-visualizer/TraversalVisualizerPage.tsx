@@ -1,5 +1,5 @@
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Card, Flex, Spin, Text } from "fidesui";
+import { Card, Empty, Flex, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import { ReactNode, useState } from "react";
 
@@ -61,9 +61,7 @@ export const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
   if (!propertyKey) {
     canvasContent = (
       <Flex align="center" justify="center" flex={1}>
-        <Text type="secondary">
-          Select a property to preview its DSR traversal.
-        </Text>
+        <Empty description="Select a property to preview its DSR traversal." />
       </Flex>
     );
   } else if (isLoading) {
