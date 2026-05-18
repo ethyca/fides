@@ -169,7 +169,12 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
               setSpec(sanitized);
             }
           } else if (ev.event === "done") {
-            const payload = tryParse(ev.data) as { raw?: string } | null;
+            let payload: { raw?: string } | null = null;
+            try {
+              payload = JSON.parse(ev.data) as { raw?: string };
+            } catch {
+              // structured server payload – if it isn't valid JSON, ignore it
+            }
             if (payload?.raw) {
               const final = tryParse(payload.raw);
               if (final) {
