@@ -13,12 +13,18 @@ Row = Dict[str, Any]
 FIDESOPS_DO_NOT_MASK_INDEX = "FIDESOPS_DO_NOT_MASK"
 
 
-def deep_update(mapping: Dict[str, Any], *updating_mappings: Dict[str, Any]) -> Dict[str, Any]:
+def deep_update(
+    mapping: Dict[str, Any], *updating_mappings: Dict[str, Any]
+) -> Dict[str, Any]:
     """Recursively merge dicts, with later mappings taking precedence."""
     updated_mapping = mapping.copy()
     for updating_mapping in updating_mappings:
         for k, v in updating_mapping.items():
-            if k in updated_mapping and isinstance(updated_mapping[k], dict) and isinstance(v, dict):
+            if (
+                k in updated_mapping
+                and isinstance(updated_mapping[k], dict)
+                and isinstance(v, dict)
+            ):
                 updated_mapping[k] = deep_update(updated_mapping[k], v)
             else:
                 updated_mapping[k] = v
@@ -43,8 +49,9 @@ def make_immutable(obj: Any) -> Any:
 def make_mutable(obj: Any) -> Any:
     """
     Recursively converts an immutable object into a mutable version.
-    `Map`s from the `immutables` library and dictionaries are converted to mutable dictionaries,
-    tuples and `OrderedSet`s are converted to lists, and other objects are returned unchanged.
+    `Map`s from the `immutables` library and dicts are converted to dicts,
+    tuples and `OrderedSet`s are converted to lists, and other objects are
+    returned unchanged.
     """
     if isinstance(obj, (dict, immutables.Map)):
         return {key: make_mutable(value) for key, value in obj.items()}
@@ -168,7 +175,7 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
                     target.append(None)
                 target[idx] = value
             else:
-                # If the value is a dictionary, add its components to the queue for processing
+                # If value is a dict, add its components to the queue for processing
                 if isinstance(value, dict):
                     target = target.setdefault(keys[-1], {})
                     for inner_key, inner_value in value.items():
@@ -186,9 +193,9 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
 # pylint: disable=too-many-branches
 def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str, Any]:
     """
-    Recursively flatten a dictionary or list into a flat dictionary with dot-notation keys.
-    Handles nested dictionaries and arrays with proper indices.
-    Preserves empty lists and dictionaries.
+    Recursively flatten a dict or list into a flat dict with dot-notation keys.
+    Handles nested dicts and arrays with proper indices.
+    Preserves empty lists and dicts.
 
     example:
 
