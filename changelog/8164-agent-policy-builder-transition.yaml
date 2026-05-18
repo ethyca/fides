@@ -1,0 +1,4 @@
+type: Added
+description: Animated transition and "Policy agent is working" indicator for the agent policy builder
+pr: 8164
+labels: []

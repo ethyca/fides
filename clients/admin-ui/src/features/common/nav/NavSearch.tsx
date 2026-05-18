@@ -1,7 +1,6 @@
 import { AutoComplete, Icons, Input, InputRef } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
@@ -103,18 +102,6 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
     }
   }, []);
 
-  // Cmd+K on Mac, Ctrl+K elsewhere
-  useHotkeys(
-    isMac ? "meta+k" : "ctrl+k",
-    () => {
-      setOpen(true);
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
-    },
-    { enableOnFormTags: true, preventDefault: true },
-  );
-
   const handleEscapeKey = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       setOpen(false);
@@ -174,7 +161,12 @@ const NavSearch = ({ groups, collapsed = false }: NavSearchProps) => {
     return <NavSearchModal groups={groups} />;
   }
 
-  return <NavSearchExpanded groups={groups} />;
+  return (
+    <>
+      <NavSearchModal groups={groups} hideToggle />
+      <NavSearchExpanded groups={groups} />
+    </>
+  );
 };
 
 export default NavSearch;

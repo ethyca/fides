@@ -71,9 +71,13 @@ const NavSearchResultItem = ({
 
 interface NavSearchModalProps {
   groups: NavGroup[];
+  hideToggle?: boolean;
 }
 
-const NavSearchModal = ({ groups }: NavSearchModalProps) => {
+const NavSearchModal = ({
+  groups,
+  hideToggle = false,
+}: NavSearchModalProps) => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const modalInputRef = useRef<InputRef>(null);
@@ -154,16 +158,18 @@ const NavSearchModal = ({ groups }: NavSearchModalProps) => {
   const hasResults = indexedGroups.length > 0;
 
   return (
-    <div className="flex flex-col items-center pb-3">
-      <button
-        type="button"
-        className="flex size-9 cursor-pointer items-center justify-center rounded-md border-none bg-transparent transition-colors hover:bg-[var(--fidesui-neutral-700)]"
-        onClick={() => setOpen(true)}
-        aria-label="Search navigation"
-        data-testid="nav-search-toggle"
-      >
-        <Icons.Search style={COLLAPSED_ICON_STYLE} />
-      </button>
+    <div className={hideToggle ? "" : "flex flex-col items-center pb-3"}>
+      {!hideToggle && (
+        <button
+          type="button"
+          className="flex size-9 cursor-pointer items-center justify-center rounded-md border-none bg-transparent transition-colors hover:bg-[var(--fidesui-neutral-700)]"
+          onClick={() => setOpen(true)}
+          aria-label="Search navigation"
+          data-testid="nav-search-toggle"
+        >
+          <Icons.Search style={COLLAPSED_ICON_STYLE} />
+        </button>
+      )}
       <Modal
         open={open}
         onCancel={handleClose}

@@ -15,12 +15,17 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Image from "~/features/common/Image";
 import { RTKErrorResult } from "~/types/errors";
 
-import { useSendAccessPolicyChatMessageMutation } from "./agent-chat.slice";
+import {
+  PolicyUpdate,
+  useSendAccessPolicyChatMessageMutation,
+} from "./agent-chat.slice";
 import styles from "./AgentChatPanel.module.scss";
+import PolicyAgentWorking from "./PolicyAgentWorking";
 
 interface AgentChatPanelProps {
   currentYaml: string;
-  onYamlProposed: (yaml: string) => void;
+  onPolicyUpdate: (update: PolicyUpdate) => void;
+  isAgentWorking: boolean;
 }
 
 interface ChatMessage {
@@ -56,7 +61,8 @@ const renderAgentMarkdown = (content: string) => (
 
 const AgentChatPanel = ({
   currentYaml,
-  onYamlProposed,
+  onPolicyUpdate,
+  isAgentWorking,
 }: AgentChatPanelProps) => {
   const messageApi = useMessage();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -100,13 +106,13 @@ const AgentChatPanel = ({
           key: nextKey("agent"),
           role: "agent",
           content: response.message,
-          yamlApplied: !!response.new_policy_yaml,
+          yamlApplied: !!response.policy_update,
         };
 
         setMessages((prev) => [...prev, agentMsg]);
 
-        if (response.new_policy_yaml) {
-          onYamlProposed(response.new_policy_yaml);
+        if (response.policy_update) {
+          onPolicyUpdate(response.policy_update);
         }
       } catch (error) {
         messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
@@ -126,29 +132,44 @@ const AgentChatPanel = ({
       chatHistoryId,
       currentYaml,
       sendMessage,
-      onYamlProposed,
+      onPolicyUpdate,
       messageApi,
     ],
   );
 
+  const latestYamlAppliedKey = useMemo(
+    () => messages.findLast((m) => m.yamlApplied)?.key,
+    [messages],
+  );
+
   const bubbleItems: BubbleItemType[] = useMemo(
     () =>
-      messages.map((msg) => ({
-        key: msg.key,
-        role: msg.role === "user" ? "user" : "ai",
-        content: msg.content,
-        footer: msg.yamlApplied ? (
-          <Flex align="center" gap="small">
-            <Icons.CheckmarkFilled
-              style={{ color: "var(--fidesui-color-success)" }}
-            />
-            <Typography.Text type="secondary">
-              The policy was updated
-            </Typography.Text>
-          </Flex>
-        ) : undefined,
-      })),
-    [messages],
+      messages.map((msg) => {
+        let footer;
+        if (msg.yamlApplied) {
+          const isLatest = msg.key === latestYamlAppliedKey;
+          footer =
+            isLatest && isAgentWorking ? (
+              <PolicyAgentWorking size="small" />
+            ) : (
+              <Flex align="center" gap="small">
+                <Icons.CheckmarkFilled
+                  style={{ color: "var(--fidesui-color-success)" }}
+                />
+                <Typography.Text type="secondary">
+                  The policy was updated
+                </Typography.Text>
+              </Flex>
+            );
+        }
+        return {
+          key: msg.key,
+          role: msg.role === "user" ? "user" : "ai",
+          content: msg.content,
+          footer,
+        };
+      }),
+    [messages, latestYamlAppliedKey, isAgentWorking],
   );
 
   const roles = useMemo(
@@ -173,7 +194,7 @@ const AgentChatPanel = ({
   return (
     <Flex vertical className={styles.panel} data-testid="agent-chat-panel">
       <Flex align="center" gap="small" className={styles.header}>
-        <Typography.Title level={3}>Policy builder agent</Typography.Title>
+        <Typography.Title level={3}>Policy agent</Typography.Title>
       </Flex>
 
       <div className={styles.body}>

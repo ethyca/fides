@@ -58,6 +58,7 @@
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
     "sanitize-html": "^2.17.0",
+    "swagger-ui-react": "^5.32.6",
     "validator": "^13.15.22",
     "yup": "^0.32.11"
   },
@@ -75,6 +76,7 @@
     "@types/node": "18.15.10",
     "@types/react": "^19.0.10",
     "@types/sanitize-html": "^2.16.0",
+    "@types/swagger-ui-react": "^5.18.0",
     "@types/validator": "^13.11.9",
     "@ant-design/cli": "^6.3.7",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
