@@ -3701,6 +3701,8 @@ dataset:
         data_categories: [system.operations]
       - name: child_resource_urns
         data_categories: [system.operations]
+      - name: group_id
+        data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at

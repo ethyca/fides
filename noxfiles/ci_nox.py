@@ -320,13 +320,13 @@ REDIS_CLUSTER_ENV_LOCAL = {
 # Requeue tests use get_cache() and retry counts; some tests in that file need DB.
 # Model and service tests below exercise get_cached_identity_data, get_cached_task_id, etc.
 REDIS_CLUSTER_TEST_PATHS = [
-    "tests/ops/util/test_cache.py",
-    "tests/ops/tasks/test_celery.py",
-    "tests/task/test_requeue_interrupted_tasks.py",
-    "tests/ops/models/privacy_request/test_privacy_request.py",
-    "tests/ops/models/privacy_request/test_consent.py",
-    "tests/ops/models/privacy_request/test_request_task.py",
-    "tests/ops/service/privacy_request/test_request_service.py",
+    "tests/fides/ops/util/test_cache.py",
+    "tests/fides/ops/tasks/test_celery.py",
+    "tests/fides/task/test_requeue_interrupted_tasks.py",
+    "tests/fides/ops/models/privacy_request/test_privacy_request.py",
+    "tests/fides/ops/models/privacy_request/test_consent.py",
+    "tests/fides/ops/models/privacy_request/test_request_task.py",
+    "tests/fides/ops/service/privacy_request/test_request_service.py",
 ]
 
 
@@ -547,12 +547,17 @@ TEST_MATRIX: Dict[str, Callable] = {
 # Define the mapping of test directories to test groups
 # This maps actual test directories to the test groups that cover them
 TEST_DIRECTORY_COVERAGE = {
-    "tests/api/": ["api"],
-    "tests/common/": ["misc-unit"],
-    "tests/config/": ["misc-unit"],
-    "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
-    "tests/lib/": ["lib"],
-    "tests/ops/": [
+    "tests/fides/api/": ["api"],
+    "tests/fides/common/": ["misc-unit"],
+    "tests/fides/config/": ["misc-unit"],
+    "tests/fides/ctl/": [
+        "ctl-unit",
+        "ctl-not-external",
+        "ctl-integration",
+        "ctl-external",
+    ],
+    "tests/fides/lib/": ["lib"],
+    "tests/fides/ops/": [
         "ops-unit",
         "ops-unit-api",
         "ops-unit-non-api",
@@ -560,18 +565,22 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-external-datastores",
         "ops-saas",
     ],
-    "tests/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/system_integration_link/": [
+    "tests/fides/service/": [
         "misc-unit",
         "misc-integration",
         "misc-integration-external",
     ],
-    "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/unit/": ["misc-unit"],
-    "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/integration/": ["ops-integration"],  # Workflow integration tests
-    "tests/fixtures/": [],  # fixtures are not test files, just test data
+    "tests/fides/system_integration_link/": [
+        "misc-unit",
+        "misc-integration",
+        "misc-integration-external",
+    ],
+    "tests/fides/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/fides/unit/": ["misc-unit"],
+    "tests/fides/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/fides/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/fides/integration/": ["ops-integration"],  # Workflow integration tests
+    "tests/fides/fixtures/": [],  # fixtures are not test files, just test data
 }
 
 
@@ -596,7 +605,7 @@ def collect_tests(session: nox.Session) -> None:
     """
     session.install(".")
     (install_requirements(session, True))
-    command = ("pytest", "--collect-only", "tests/")
+    command = ("pytest", "--collect-only", "tests/fides/")
     session.run(
         *command,
         env={"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
@@ -725,7 +734,7 @@ def _check_test_directory_coverage(
 
     if test_dir not in TEST_DIRECTORY_COVERAGE:
         uncovered_dirs.append(f"{test_dir} - No coverage mapping defined")
-    elif test_dir == "tests/fixtures/":
+    elif test_dir == "tests/fides/fixtures/":
         # Directory is explicitly marked as not needing coverage (like fixtures)
         excluded_dirs.append(
             f"{test_dir} - Explicitly excluded from coverage (fixtures/data)"
@@ -770,7 +779,7 @@ def validate_test_coverage(session: nox.Session) -> None:
     and fails if any are missing.
     """
     # Check which test directories actually exist
-    tests_dir = Path("tests")
+    tests_dir = Path("tests/fides")
     existing_test_dirs = []
 
     for item in tests_dir.iterdir():
@@ -779,7 +788,7 @@ def validate_test_coverage(session: nox.Session) -> None:
             and not item.name.startswith("__")
             and not item.name.startswith(".")
         ):
-            existing_test_dirs.append(f"tests/{item.name}/")
+            existing_test_dirs.append(f"tests/fides/{item.name}/")
 
     # Check coverage for each test directory
     all_missing_coverage = []
