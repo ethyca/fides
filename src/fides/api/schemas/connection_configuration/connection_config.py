@@ -32,6 +32,9 @@ class CreateConnectionConfiguration(BaseModel):
     key: Optional[FidesKey] = None
     connection_type: ConnectionType
     access: AccessLevel
+    # See ConnectionConfig.disabled — excludes the connection from privacy
+    # request (DSR) execution only; does not affect discovery monitors or
+    # connection tests.
     disabled: Optional[bool] = False
     description: Optional[str] = None
     model_config = ConfigDict(
@@ -100,6 +103,9 @@ class ConnectionConfigurationResponseBase(ConnectionConfigSecretsMixin):
     access: AccessLevel
     created_at: datetime
     updated_at: Optional[datetime] = None
+    # See ConnectionConfig.disabled — excludes the connection from privacy
+    # request (DSR) execution only; does not affect discovery monitors or
+    # connection tests.
     disabled: Optional[bool] = False
     last_test_timestamp: Optional[datetime] = None
     last_test_succeeded: Optional[bool] = None

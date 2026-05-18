@@ -348,9 +348,10 @@ class IdentityValue(BaseModel):
     """Represents an identity value with a label in API responses.
 
     The value field accepts MultiValue types which match what LabeledIdentity supports:
+    - bool
     - int
     - str
-    - List[Union[int, str]]
+    - List[Union[bool, int, str]]
 
     This allows the schema to accept list values that were previously causing
     validation errors.
@@ -592,9 +593,11 @@ class PrivacyRequestFilter(FidesSchema):
     external_id: Optional[str] = None
     location: Optional[str] = None
     action_type: Optional[Union[ActionType, List[ActionType]]] = None
+    source: Optional[Union[PrivacyRequestSource, List[PrivacyRequestSource]]] = None
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
+    include_consent_webhook_requests: Optional[bool] = False
     include_deleted_requests: Optional[bool] = False
     is_overdue: Optional[bool] = None
     download_csv: Optional[bool] = False
@@ -613,6 +616,19 @@ class PrivacyRequestFilter(FidesSchema):
         Keeps the status field flexible but converts a single value to a list for consistent processing.
         """
         if isinstance(field_value, PrivacyRequestStatus):
+            return [field_value]
+        return field_value
+
+    @field_validator("source")
+    @classmethod
+    def validate_source_field(
+        cls,
+        field_value: Optional[Union[PrivacyRequestSource, List[PrivacyRequestSource]]],
+    ) -> Optional[List[PrivacyRequestSource]]:
+        """
+        Keeps the source field flexible but converts a single value to a list for consistent processing.
+        """
+        if isinstance(field_value, PrivacyRequestSource):
             return [field_value]
         return field_value
 

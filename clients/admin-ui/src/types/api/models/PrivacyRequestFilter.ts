@@ -2,6 +2,7 @@
 
 import { ActionType } from "./ActionType";
 import { ColumnSort } from "./ColumnSort";
+import { PrivacyRequestSource } from "./PrivacyRequestSource";
 import { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 
 /**
@@ -77,6 +78,10 @@ export type PrivacyRequestFilter = {
    */
   action_type?: ActionType | Array<ActionType> | null;
   /**
+   * Source
+   */
+  source?: PrivacyRequestSource | Array<PrivacyRequestSource> | null;
+  /**
    * Verbose
    */
   verbose?: boolean | null;
@@ -88,6 +93,10 @@ export type PrivacyRequestFilter = {
    * Include Custom Privacy Request Fields
    */
   include_custom_privacy_request_fields?: boolean | null;
+  /**
+   * Include Consent Webhook Requests
+   */
+  include_consent_webhook_requests?: boolean | null;
   /**
    * Include Deleted Requests
    */

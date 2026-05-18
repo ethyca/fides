@@ -61,7 +61,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("adding a vendor", () => {
+  describe("adding a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -99,12 +99,9 @@ describe("Consent configuration", () => {
       it("can add a vendor from the modal without the dictionary", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-name").type("test vendor");
-        cy.selectOption(
-          "input-privacy_declarations.0.consent_use",
-          "analytics",
-        );
-        cy.getByTestId("input-privacy_declarations.0.cookieNames")
-          .find(".custom-creatable-select__input-container")
+        cy.getByTestId("select-consent-use-0").antSelect("Analytics");
+        cy.getByTestId("select-cookies-0")
+          .find("input")
           .type("test{enter}cookie{enter}");
         cy.getByTestId("save-btn").click();
         cy.wait("@postSystem").then((interception) => {
@@ -138,24 +135,15 @@ describe("Consent configuration", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("add-data-use-btn").should("be.disabled");
         cy.getByTestId("input-name").type("test vendor");
-        cy.selectOption(
-          "input-privacy_declarations.0.consent_use",
-          "analytics",
-        );
-        cy.getByTestId("input-privacy_declarations.0.cookieNames")
-          .find(".custom-creatable-select__input-container")
-          .type("one{enter}");
+        cy.getByTestId("select-consent-use-0").antSelect("Analytics");
+        cy.getByTestId("select-cookies-0").find("input").type("one{enter}");
+        // Close the tags dropdown so it doesn't overlap the add-data-use button.
+        cy.getByTestId("select-cookies-0").find("input").blur();
 
         // Add another use
         cy.getByTestId("add-data-use-btn").click();
-        // TODO: this select fails when trying to select "essential" or "functional", but accepts "analytics" or "marketing"
-        cy.selectOption(
-          "input-privacy_declarations.1.consent_use",
-          "marketing",
-        );
-        cy.getByTestId("input-privacy_declarations.1.cookieNames")
-          .find(".custom-creatable-select__input-container")
-          .type("two{enter}");
+        cy.getByTestId("select-consent-use-1").antSelect("Marketing");
+        cy.getByTestId("select-cookies-1").find("input").type("two{enter}");
         cy.getByTestId("save-btn").click();
         cy.wait("@postSystem").then((interception) => {
           const { body } = interception.request;
@@ -232,29 +220,22 @@ describe("Consent configuration", () => {
       it("can add a vendor with dictionary suggestions from the modal", () => {
         cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
         cy.getByTestId("add-vendor-btn").click();
-        cy.getByTestId("input-name").type("Aniview LTD{enter}");
+        cy.wait("@getDictionaryEntries");
+        cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
         cy.wait("@getDictionaryDeclarations");
-        cy.getByTestId(
-          "controlled-select-privacy_declarations.0.consent_use",
-        ).contains("Marketing");
-        cy.getByTestId(
-          "controlled-select-privacy_declarations.0.data_use",
-        ).contains("Profiling for Advertising");
+        cy.getByTestId("select-consent-use-0").contains("Marketing");
+        cy.getByTestId("select-data-use-0").contains(
+          "Profiling for Advertising",
+        );
         ["av_*", "aniC", "2_C_*"].forEach((cookieName) => {
-          cy.getByTestId("input-privacy_declarations.0.cookieNames").contains(
-            cookieName,
-          );
+          cy.getByTestId("select-cookies-0").contains(cookieName);
         });
 
         // Also check one that shouldn't have any cookies
-        cy.getByTestId(
-          "controlled-select-privacy_declarations.1.data_use",
-        ).contains("Analytics for Insights");
-        cy.getByTestId("input-privacy_declarations.1.cookieNames").contains(
-          "Select...",
-        );
+        cy.getByTestId("select-data-use-1").contains("Analytics for Insights");
+        cy.getByTestId("select-cookies-1").contains("Select...");
         // There should be 13 declarations (but start from 0, so 12)
-        cy.getByTestId("input-privacy_declarations.12.cookieNames");
+        cy.getByTestId("select-cookies-12");
         cy.getByTestId("save-btn").click();
         cy.wait("@postSystem").then((interception) => {
           const { body } = interception.request;
@@ -681,14 +662,11 @@ describe("Consent configuration", () => {
       it("can create a vendor that is not in the dictionary", () => {
         cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
         cy.getByTestId("add-vendor-btn").click();
-        cy.getByTestId("input-name").type("custom vendor{enter}");
-        cy.selectOption(
-          "input-privacy_declarations.0.consent_use",
-          "analytics",
-        );
-        cy.getByTestId("input-privacy_declarations.0.cookieNames")
-          .find(".custom-creatable-select__input-container")
-          .type("test{enter}");
+        cy.getByTestId("vendor-name-select")
+          .find("input")
+          .type("custom vendor{enter}");
+        cy.getByTestId("select-consent-use-0").antSelect("Analytics");
+        cy.getByTestId("select-cookies-0").find("input").type("test{enter}");
         cy.getByTestId("save-btn").click();
         cy.wait("@postSystem").then((interception) => {
           const { body } = interception.request;

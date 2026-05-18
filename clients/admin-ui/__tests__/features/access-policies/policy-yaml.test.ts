@@ -344,9 +344,7 @@ name: Metadata Test
 description: Testing metadata fields
 enabled: false
 priority: 50
-controls:
-  - gdpr_article_9
-  - ccpa_compliance
+control: gdpr_article_9
 decision: ALLOW
 match:
   data_use:
@@ -360,10 +358,7 @@ action:
     expect(policyNode.data.fidesKey).toBe("meta_test");
     expect(policyNode.data.enabled).toBe(false);
     expect(policyNode.data.priority).toBe(50);
-    expect(policyNode.data.controls).toEqual([
-      "gdpr_article_9",
-      "ccpa_compliance",
-    ]);
+    expect(policyNode.data.control).toBe("gdpr_article_9");
     expect(policyNode.data.actionMessage).toBe(
       "Blocked for compliance reasons.",
     );
@@ -387,7 +382,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -401,7 +396,7 @@ describe("nodesToYaml", () => {
     expect(parsed?.enabled).toBeUndefined();
   });
 
-  it("includes fides_key, priority, controls when set", () => {
+  it("includes fides_key, priority, control when set", () => {
     const nodes = [
       {
         id: "policy",
@@ -413,7 +408,7 @@ describe("nodesToYaml", () => {
           fidesKey: "my_key",
           enabled: true,
           priority: 100,
-          controls: ["gdpr_article_9"],
+          control: "gdpr_article_9",
           controlOptions: [],
           actionMessage: "",
         },
@@ -423,7 +418,7 @@ describe("nodesToYaml", () => {
     const parsed = parseYaml(result);
     expect(parsed?.fides_key).toBe("my_key");
     expect(parsed?.priority).toBe(100);
-    expect(parsed?.controls).toEqual(["gdpr_article_9"]);
+    expect(parsed?.control).toBe("gdpr_article_9");
   });
 
   it("includes enabled: false when disabled", () => {
@@ -438,7 +433,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: false,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -461,7 +456,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -484,7 +479,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -540,7 +535,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -591,7 +586,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -644,7 +639,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -693,7 +688,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -762,7 +757,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -833,7 +828,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -905,7 +900,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -977,7 +972,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -1063,7 +1058,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -1115,7 +1110,7 @@ describe("nodesToYaml", () => {
           fidesKey: "",
           enabled: true,
           priority: 0,
-          controls: [],
+          control: null,
           controlOptions: [],
           actionMessage: "",
         },
@@ -1311,8 +1306,7 @@ fides_key: ccpa_sale_blocker
 name: CCPA Commercial Data Restriction
 description: Allow commercial data use unless the user has opted out of data sales.
 priority: 100
-controls:
-  - ccpa_compliance
+control: ccpa_compliance
 decision: ALLOW
 match:
   data_use:
@@ -1329,7 +1323,7 @@ action:
     const parsed = parseYaml(output!);
     expect(parsed?.decision).toBe("ALLOW");
     expect(parsed?.priority).toBe(100);
-    expect(parsed?.controls).toEqual(["ccpa_compliance"]);
+    expect(parsed?.control).toBe("ccpa_compliance");
     expect(parsed?.match?.data_use?.any).toContain("commercial");
     expect(parsed?.unless).toHaveLength(1);
     expect(parsed?.unless?.[0]).toEqual({

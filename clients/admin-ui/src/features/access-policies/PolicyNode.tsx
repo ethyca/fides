@@ -22,7 +22,7 @@ export interface PolicyNodeData extends Record<string, unknown> {
   fidesKey: string;
   enabled: boolean;
   priority: number;
-  controls: string[];
+  control: string | null;
   controlOptions: NonNullable<SelectProps["options"]>;
   actionMessage: string;
   onNameChange: (value: string) => void;
@@ -30,7 +30,7 @@ export interface PolicyNodeData extends Record<string, unknown> {
   onFidesKeyChange: (value: string) => void;
   onEnabledChange: (value: boolean) => void;
   onPriorityChange: (value: number) => void;
-  onControlsChange: (value: string[]) => void;
+  onControlChange: (value: string | null) => void;
   onActionMessageChange: (value: string) => void;
   onAddNode?: () => void;
   onAddAction?: () => void;
@@ -46,14 +46,14 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
     fidesKey,
     enabled,
     priority,
-    controls,
+    control,
     controlOptions,
     onNameChange,
     onDescriptionChange,
     onFidesKeyChange,
     onEnabledChange,
     onPriorityChange,
-    onControlsChange,
+    onControlChange,
     onAddNode,
     onAddAction,
     hasChildren,
@@ -102,17 +102,16 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
               data-testid="policy-description-input"
             />
           </Form.Item>
-          <Form.Item label="Controls" className="mb-2">
+          <Form.Item label="Control" className="mb-2">
             <Select
-              placeholder="Select controls"
-              mode="multiple"
-              value={controls}
-              onChange={onControlsChange}
+              placeholder="Select control"
+              value={control ?? undefined}
+              onChange={(value) => onControlChange(value ?? null)}
               options={controlOptions}
               className="w-full"
-              maxTagCount={1}
-              data-testid="policy-controls-select"
-              aria-label="Select controls"
+              allowClear
+              data-testid="policy-control-select"
+              aria-label="Select control"
             />
           </Form.Item>
         </Form>

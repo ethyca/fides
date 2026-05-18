@@ -130,6 +130,7 @@ describe("PrivacyRequestFiltersBar", () => {
       to: null,
       status: null,
       action_type: null,
+      source: null,
       location: null,
       custom_privacy_request_fields: null,
     },
@@ -174,6 +175,7 @@ describe("PrivacyRequestFiltersBar", () => {
             to: "2024-01-31",
             status: [PrivacyRequestStatus.PENDING],
             action_type: [ActionType.ACCESS],
+            source: null,
             location: "US",
             custom_privacy_request_fields: null,
           }}
@@ -243,6 +245,7 @@ describe("PrivacyRequestFiltersBar", () => {
             to: "2024-01-31",
             status: [PrivacyRequestStatus.PENDING],
             action_type: [ActionType.ACCESS],
+            source: null,
             location: "US",
             custom_privacy_request_fields: null,
           }}

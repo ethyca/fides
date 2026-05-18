@@ -94,6 +94,31 @@ dataset:
     - name: username
       data_categories:
         - user.account.username
+    - name: client_id
+      data_categories:
+        - system.operations
+  - name: attachment_user_provided
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: field_name
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: object_key
+      data_categories: [system.operations]
+    - name: policy_key
+      data_categories: [system.operations]
+    - name: promoted_at
+      data_categories: [system.operations]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: storage_key
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: answer_version
     description: 'Immutable history of assessment answer versions'
     fields:
@@ -396,6 +421,9 @@ dataset:
     - name: username
       data_categories:
         - user.account.username
+    - name: client_id
+      data_categories:
+        - system.operations
   - name: comment_reference
     fields:
     - name: comment_id
@@ -1601,6 +1629,8 @@ dataset:
       data_categories: [system.operations]
     - name: connection_config_id
       data_categories: [system.operations]
+    - name: needs_polling
+      data_categories: [system.operations]
     - name: ticket_key
       data_categories: [system.operations]
     - name: ticket_url
@@ -2054,6 +2084,8 @@ dataset:
   - name: privacynoticetemplate
     data_categories: []
     fields:
+    - name: att_exempt
+      data_categories: [system.operations]
     - name: consent_mechanism
       data_categories: [system.operations]
     - name: created_at
@@ -2085,6 +2117,8 @@ dataset:
   - name: privacynotice
     data_categories: []
     fields:
+    - name: att_exempt
+      data_categories: [system.operations]
     - name: consent_mechanism
       data_categories: [system.operations]
     - name: created_at
@@ -2120,6 +2154,8 @@ dataset:
   - name: privacynoticehistory
     description: For auditing purposes, a record of how a privacy notice and a translation has changed
     fields:
+    - name: att_exempt
+      data_categories: [ system.operations ]
     - name: displayed_in_api
       data_categories: [ system.operations ]
     - name: displayed_in_overlay
@@ -3262,6 +3298,8 @@ dataset:
       data_categories: [system]
     - name: shared_config_id
       data_categories: [system]
+    - name: inherit_system_stewards
+      data_categories: [system]
   - name: shared_monitor_config
     fields:
     - name: created_at
@@ -3909,6 +3947,8 @@ dataset:
     - name: user_id
       description: 'ID of the user who triggered the audit event'
       data_categories: [user.unique_id]
+    - name: client_id
+      data_categories: [system.operations]
   - name: oauth_config
     description: 'Fides Generated Description for Table: oauth_config'
     data_categories: [ ]
@@ -4110,6 +4150,10 @@ dataset:
       - name: user_id
         data_categories: [system.operations]
       - name: monitor_config_id
+        data_categories: [system.operations]
+      - name: source
+        data_categories: [system.operations]
+      - name: source_system_id
         data_categories: [system.operations]
   - name: questionnaire
     description: 'SME questionnaire sessions linked to privacy assessments'

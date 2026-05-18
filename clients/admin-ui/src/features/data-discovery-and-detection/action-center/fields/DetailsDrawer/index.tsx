@@ -11,28 +11,24 @@ export const DetailsDrawer = ({
   actions,
   width,
   ...drawerProps
-}: DetailsDrawerProps) => {
-  return (
-    <Drawer
-      title={
-        <DetailsDrawerTitle
-          title={title}
-          titleIcon={titleIcon}
-          titleTag={titleTag}
-        />
-      }
-      footer={
-        drawerProps.footer || !actions ? (
-          drawerProps.footer
-        ) : (
-          <DetailsDrawerFooter
-            itemKey={drawerProps.itemKey}
-            actions={actions}
-          />
-        )
-      }
-      width={width}
-      {...drawerProps}
-    />
-  );
-};
+}: DetailsDrawerProps) => (
+  <Drawer
+    title={
+      <DetailsDrawerTitle
+        title={title}
+        titleIcon={titleIcon}
+        titleTag={titleTag}
+      />
+    }
+    footer={
+      drawerProps.footer || !actions ? (
+        drawerProps.footer
+      ) : (
+        <DetailsDrawerFooter itemKey={drawerProps.itemKey} actions={actions} />
+      )
+    }
+    width={width}
+    {...drawerProps}
+    className={`[&_.ant-drawer-title]:min-w-0 ${drawerProps.className ?? ""}`}
+  />
+);

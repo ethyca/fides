@@ -17,8 +17,10 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    event,
     func,
     text,
+    update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +28,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
 from sqlalchemy.orm import RelationshipProperty, Session, relationship, validates
-from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -212,6 +213,13 @@ class MonitorConfig(Base):
     )  # when the monitor was last executed
 
     enabled = Column(
+        Boolean,
+        default=True,
+        nullable=False,
+        server_default="t",
+    )
+
+    inherit_system_stewards = Column(
         Boolean,
         default=True,
         nullable=False,
@@ -814,6 +822,28 @@ class StagedResource(StagedResourceBase):
     )
 
 
+@event.listens_for(System, "before_delete")
+def _unlink_staged_resources_on_system_delete(
+    mapper: Any, connection: Any, target: System
+) -> None:
+    """Null out system_id and reset diff_status on StagedResources before a System is deleted.
+
+    StagedResources may reference a System from IDP monitor promotion (app promoted
+    to system) or website monitor vendor matching (resource linked to an existing
+    system by vendor_id).  This listener handles both paths.
+
+    The dependency direction stays correct: the discovery module knows about
+    System (via the FK), not the other way around.
+
+    """
+    logger.debug("Unlinking StagedResources from System {} before deletion", target.id)
+    connection.execute(
+        update(StagedResource.__table__)
+        .where(StagedResource.__table__.c.system_id == target.id)
+        .values(system_id=None, diff_status=DiffStatus.ADDITION.value)
+    )
+
+
 class MonitorExecution(Base):
     """
     Monitor execution record used for data detection and discovery.
@@ -857,31 +887,3 @@ class MonitorExecution(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
-
-
-def fetch_staged_resources_by_type_query(
-    resource_type: str,
-    monitor_config_ids: Optional[List[str]] = None,
-    show_hidden: bool = False,
-) -> Query[StagedResource]:
-    """
-    Fetches staged resources by type and monitor config ID. Optionally filters out muted staged resources ("hidden").
-    """
-    logger.info(
-        f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_ids={monitor_config_ids}"
-    )
-    query = select(StagedResource).where(StagedResource.resource_type == resource_type)
-
-    if monitor_config_ids:
-        query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
-    if not show_hidden:
-        from sqlalchemy import or_
-
-        query = query.filter(
-            or_(
-                StagedResource.diff_status != DiffStatus.MUTED.value,
-                StagedResource.diff_status.is_(None),
-            )
-        )
-
-    return query

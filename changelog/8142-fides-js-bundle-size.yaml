@@ -1,0 +1,4 @@
+type: Changed
+description: Reduced fides-js bundle size by removing dependencies and trimming locale data
+pr: 8142
+labels: []

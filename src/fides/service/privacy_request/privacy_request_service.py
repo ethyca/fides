@@ -34,11 +34,13 @@ from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_center_config import (
     LocationCustomPrivacyRequestField,
+    PrivacyRequestOption,
     reorder_custom_privacy_request_fields,
 )
 from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
+from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
 from fides.api.schemas.privacy_request import (
     BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
@@ -58,6 +60,7 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
@@ -68,6 +71,10 @@ from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
+)
+from fides.service.privacy_request.custom_field_display_evaluator import (
+    DisplayConditionViolation,
+    evaluate_submission,
 )
 from fides.service.privacy_request.privacy_request_csv_download import (
     privacy_request_csv_download,
@@ -105,7 +112,6 @@ class PrivacyRequestService:
         query: Query,
         filters: PrivacyRequestFilter,
         identity: Optional[str] = None,
-        include_consent_webhook_requests: Optional[bool] = False,
     ) -> Query:
         """Apply filters to a privacy request query."""
         return filter_privacy_request_queryset(
@@ -113,7 +119,8 @@ class PrivacyRequestService:
             query,
             filters,
             identity=identity,
-            include_consent_webhook_requests=include_consent_webhook_requests,
+            include_consent_webhook_requests=filters.include_consent_webhook_requests
+            or False,
         )
 
     def sort_privacy_requests(
@@ -189,30 +196,19 @@ class PrivacyRequestService:
         return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption],
     ) -> None:
         """Validate that location is provided for required location fields.
 
-        Looks up the actual Privacy Center configuration to check if any location
-        fields are marked as required for the specified policy.
+        Caller resolves ``action`` once via :meth:`_resolve_action_for_request`
+        and passes it in; ``None`` short-circuits.
         """
         # If location is already provided, no validation needed
         if privacy_request_data.location:
             return
 
-        config_dict = self._resolve_privacy_center_config_dict(
-            privacy_request_data.property_id
-        )
-        if not config_dict:
-            return
-
-        privacy_center_config = self._parse_privacy_center_config(config_dict)
-        if not privacy_center_config:
-            return
-
-        action = self._get_matching_action(
-            privacy_center_config, privacy_request_data.policy_key
-        )
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -290,22 +286,77 @@ class PrivacyRequestService:
     @staticmethod
     def _get_matching_action(
         privacy_center_config: PrivacyCenterConfigSchema, policy_key: str
-    ) -> Optional[Any]:
+    ) -> Optional[PrivacyRequestOption]:
         """Return the action entry matching the given policy key, if any."""
         for action in privacy_center_config.actions:
             if action.policy_key == policy_key:
                 return action
         return None
 
+    def _resolve_action_for_request(
+        self, privacy_request_data: PrivacyRequestCreate
+    ) -> Optional[PrivacyRequestOption]:
+        """Walk config dict → parsed schema → matching action; return
+        ``None`` at the first step that yields nothing."""
+        property_id = privacy_request_data.property_id
+        policy_key = privacy_request_data.policy_key
+        config_dict = self._resolve_privacy_center_config_dict(property_id)
+        if not config_dict:
+            logger.debug("No privacy center config for property_id={}", property_id)
+            return None
+
+        privacy_center_config = self._parse_privacy_center_config(config_dict)
+        if not privacy_center_config:
+            logger.debug("Config failed to parse for property_id={}", property_id)
+            return None
+
+        action = self._get_matching_action(privacy_center_config, policy_key)
+        if not action or not action.custom_privacy_request_fields:
+            logger.debug("No matching action with fields for policy_key={}", policy_key)
+            return None
+
+        return action
+
+    def _validate_field_visibility(
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption],
+    ) -> None:
+        """Reject payloads that violate the action's display_condition
+        contract; translate :class:`DisplayConditionViolation` to
+        ``PrivacyRequestError``. Caller resolves ``action`` once via
+        :meth:`_resolve_action_for_request` and passes it in; ``None``
+        short-circuits."""
+        if not action or not action.custom_privacy_request_fields:
+            return
+
+        # Location fields validated separately in ``_validate_required_location_fields``.
+        fields: dict[str, BaseCustomPrivacyRequestField] = {
+            key: cfg
+            for key, cfg in action.custom_privacy_request_fields.items()
+            if not isinstance(cfg, LocationCustomPrivacyRequestField)
+        }
+        if not fields:
+            return
+
+        try:
+            evaluate_submission(
+                fields=fields,
+                submitted=privacy_request_data.custom_privacy_request_fields or {},
+                condition_evaluator=ConditionEvaluator(self.db),
+            )
+        except DisplayConditionViolation as exc:
+            raise PrivacyRequestError(
+                str(exc), privacy_request_data.model_dump(mode="json")
+            ) from exc
+
     @staticmethod
     def _is_required_location_missing(
-        action: Any, privacy_request_data: PrivacyRequestCreate
+        action: PrivacyRequestOption, privacy_request_data: PrivacyRequestCreate
     ) -> bool:
         """Check if any required location fields exist without values in the request."""
-        if not getattr(action, "custom_privacy_request_fields", None):
-            return False
-
-        custom_fields = action.custom_privacy_request_fields
+        # Caller already guards against ``None``/empty; ``or {}`` narrows for mypy.
+        custom_fields = action.custom_privacy_request_fields or {}
         for field_name, field_config in custom_fields.items():
             if not isinstance(field_config, LocationCustomPrivacyRequestField):
                 continue
@@ -325,6 +376,26 @@ class PrivacyRequestService:
                 return True
 
         return False
+
+    def _resolve_attachment_state(
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption],
+    ) -> tuple[PrivacyRequestCreate, Any]:
+        """Extension hook (no-op by default). fidesplus overrides this to
+        resolve file-field attachments and strip them from the persisted
+        payload. Returns ``(possibly-stripped data, opaque state)``; the
+        state is forwarded to :meth:`_promote_attachment_state`."""
+        return privacy_request_data, None
+
+    def _promote_attachment_state(
+        self,
+        privacy_request: PrivacyRequest,
+        attachment_state: Any,
+    ) -> None:
+        """Extension hook (no-op by default). fidesplus overrides this to
+        promote resolved attachments after the request row exists. Raising
+        triggers the rollback path in :meth:`create_privacy_request`."""
 
     # pylint: disable=too-many-branches, too-many-statements
     def create_privacy_request(
@@ -366,8 +437,15 @@ class PrivacyRequestService:
                     privacy_request_data.model_dump(mode="json"),
                 )
 
-        # Validate location is provided for required location fields
-        self._validate_required_location_fields(privacy_request_data)
+        # Resolve the action once and forward to validators + hooks below.
+        # Visibility runs before the attachment hook so required FileUpload
+        # fields are seen as having a submitted value.
+        action = self._resolve_action_for_request(privacy_request_data)
+        self._validate_required_location_fields(privacy_request_data, action)
+        self._validate_field_visibility(privacy_request_data, action)
+        privacy_request_data, attachment_state = self._resolve_attachment_state(
+            privacy_request_data, action
+        )
 
         policy = Policy.get_by(
             db=self.db,
@@ -456,6 +534,31 @@ class PrivacyRequestService:
                 )
                 privacy_request.persist_masking_secrets(masking_secrets)
 
+            # Promote resolved attachments. ``delete()`` commits, so the
+            # invariant assumed here is that the request row is the only
+            # DB-side write pending on ``self.db`` (cache + masking
+            # secrets target Redis, not the DB).
+            try:
+                self._promote_attachment_state(privacy_request, attachment_state)
+            except Exception as promotion_exc:
+                logger.exception(
+                    "Attachment promotion failed for privacy request {}; "
+                    "deleting to preserve 'files required' invariant",
+                    privacy_request.id,
+                )
+                try:
+                    privacy_request.delete(self.db)
+                except Exception:
+                    logger.exception(
+                        "Failed to delete privacy request {} after promotion failure",
+                        privacy_request.id,
+                    )
+                # Generic user-facing message — promotion_exc may include
+                # storage paths/object keys; chained via __cause__ for ops.
+                raise PrivacyRequestError(
+                    "Attachment processing failed.", kwargs
+                ) from promotion_exc
+
             check_and_dispatch_error_notifications(db=self.db)
 
             _handle_notifications_and_processing(
@@ -481,6 +584,10 @@ class PrivacyRequestService:
             raise PrivacyRequestError(
                 "Verification message could not be sent.", kwargs
             ) from exc
+        except PrivacyRequestError:
+            # Already carries a specific reason (e.g. attachment promotion
+            # failure) - don't rewrap with the generic message below.
+            raise
         except Exception as exc:
             logger.error(f"{exc.__class__.__name__}: {str(exc)}")
             raise PrivacyRequestError("This record could not be added", kwargs) from exc

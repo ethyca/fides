@@ -12,6 +12,8 @@ import * as routes from "./routes";
 export interface NavConfigTab {
   title: string;
   path: string;
+  /** Optional hand-curated aliases/synonyms used by nav search. */
+  keywords?: string[];
 }
 
 export type NavModule = "consent";
@@ -40,6 +42,8 @@ export interface NavConfigRoute {
   tabs?: NavConfigTab[];
   /** Stable module identifier used to toggle visibility via env vars */
   module?: NavModule;
+  /** Optional hand-curated aliases/synonyms used by nav search. */
+  keywords?: string[];
 }
 
 export interface NavConfigGroup {
@@ -75,13 +79,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         tabs: ACTION_CENTER_TAB_ITEMS,
       },
       {
-        title: "Data catalog",
-        path: routes.DATA_CATALOG_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresFlag: "dataCatalog",
-        requiresPlus: true,
-      },
-      {
         title: "Access control",
         path: routes.ACCESS_CONTROL_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
@@ -104,6 +101,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "System inventory",
         path: routes.SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
+        keywords: ["data map", "data inventory", "assets"],
       },
       {
         title: "Add systems",
@@ -146,6 +144,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
         tabs: PRIVACY_REQUEST_TAB_ITEMS,
+        keywords: ["DSR", "data subject"],
       },
       {
         title: "DSR policies",
@@ -178,6 +177,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PRIVACY_ASSESSMENTS_ROUTE,
         scopes: [],
         requiresFlag: "privacyAssessments",
+        keywords: ["PIA", "DPIA"],
       },
     ],
   },
@@ -191,18 +191,21 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.CONFIGURE_CONSENT_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        keywords: ["TCF", "GVL"],
       },
       {
         title: "Notices",
         path: routes.PRIVACY_NOTICES_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        keywords: ["consent", "opt-in", "opt-out"],
       },
       {
         title: "Experiences",
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
+        keywords: ["banner", "overlay", "CMP"],
       },
       {
         title: "Consent report",
@@ -229,6 +232,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Integrations",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
         requiresPlus: true,
+        keywords: ["connectors", "connections"],
         scopes: [
           ScopeRegistryEnum.CONNECTION_AUTHORIZE,
           ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
@@ -312,6 +316,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
+        keywords: ["GDPR", "CCPA"],
       },
       {
         title: "Regulations",
@@ -321,6 +326,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
+        keywords: ["GDPR", "CCPA"],
       },
     ],
   },
@@ -332,6 +338,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+        keywords: ["redaction", "deduplication", "duplicate detection"],
         tabs: [
           {
             title: "Redaction patterns",
@@ -340,6 +347,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           {
             title: "Duplicate detection",
             path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+            keywords: ["deduplication"],
           },
         ],
       },
@@ -375,6 +383,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.RBAC_ROUTE,
         requiresPlus: true,
         requiresRbac: true,
+        keywords: ["RBAC", "permissions"],
         scopes: [
           // Only Owners can access Role Management - they have assign_owners scope
           ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
@@ -458,11 +467,6 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         scopes: [],
       },
       {
-        title: "Fides JS docs",
-        path: routes.FIDES_JS_DOCS,
-        scopes: [],
-      },
-      {
         title: "Forms POC",
         path: routes.FORMS_POC_ROUTE,
         scopes: [],
@@ -483,6 +487,7 @@ export interface NavGroupChild {
   hidden?: boolean;
   children: Array<NavGroupChild>;
   tabs?: NavConfigTab[];
+  keywords?: string[];
 }
 
 export interface NavGroup {
@@ -651,6 +656,7 @@ const configureNavRoute = ({
     hidden: route.hidden,
     children,
     tabs: route.tabs,
+    keywords: route.keywords,
   };
 
   return groupChild;

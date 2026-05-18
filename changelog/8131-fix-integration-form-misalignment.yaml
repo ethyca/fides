@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed misaligned field labels on the system integration configuration form. Aligned its look more with other forms.
+pr: 8131
+labels: []

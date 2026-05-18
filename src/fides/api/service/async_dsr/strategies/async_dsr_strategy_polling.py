@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from uuid import uuid4
 
 import pydash
@@ -36,6 +36,7 @@ from fides.api.service.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
 )
 from fides.api.service.async_dsr.handlers.polling_sub_request_handler import (
+    TERMINAL_STATUSES,
     PollingSubRequestHandler,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
@@ -58,8 +59,14 @@ if TYPE_CHECKING:
 
 class AsyncPollingStrategy(AsyncDSRStrategy):
     """
-    Enhanced strategy for polling async DSR requests.
+    Strategy for polling async DSR requests.
     Works for both access and erasure operations with internal phase-based organization.
+
+    Session contract: this class commits immediately and deliberately.
+    Initial-phase writes (async_type, sub-requests) must be durable before this method
+    returns, because the polling continuation runs in a separate Celery task invocation
+    with no shared session. Callers should not wrap calls to this strategy in an outer
+    transaction expecting atomicity — each phase is its own durable unit of work.
     """
 
     type = AsyncTaskType.polling
@@ -152,6 +159,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         request_task.async_type = AsyncTaskType.polling
         self.session.add(request_task)
+        # Commit immediately — sub-requests must be visible to the polling Celery task,
+        # which runs in a separate invocation with no shared session.
         self.session.commit()
 
         for read_request in async_requests_to_process:
@@ -190,33 +199,28 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
 
-        all_requests = []
         masking_request = query_config.get_masking_request()
-        if masking_request:
-            all_requests.append(masking_request)
 
-        # Set async type once for the task
+        # Set async type once for the task.
         request_task.async_type = AsyncTaskType.polling
         self.session.add(request_task)
+        # Commit immediately — sub-requests must be visible to the polling Celery task,
+        # which runs in a separate invocation with no shared session.
         self.session.commit()
 
-        for request in all_requests:
-            if not (request.async_config and request_task.id):
-                continue
-
-            if request.path:
-                logger.info(
-                    f"Executing initial masking request for polling task {request_task.id}"
-                )
-                self._handle_polling_initial_erasure_request(
-                    request_task,
-                    query_config,
-                    request,
-                    rows,
-                    policy,
-                    privacy_request,
-                    client,
-                )
+        if masking_request and masking_request.async_config and masking_request.path:
+            logger.info(
+                f"Executing initial masking request for polling task {request_task.id}"
+            )
+            self._handle_polling_initial_erasure_request(
+                request_task,
+                query_config,
+                masking_request,
+                rows,
+                policy,
+                privacy_request,
+                client,
+            )
 
         # After processing all requests, raise AwaitingAsyncProcessing (like access flow)
         # But only if we actually created any sub-requests
@@ -270,7 +274,21 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         # If we have merged attachments, add them to the first aggregated result
         if merged_attachments and aggregated_results:
-            aggregated_results[0]["retrieved_attachments"] = merged_attachments
+            aggregated_results[0] = {
+                **aggregated_results[0],
+                "retrieved_attachments": merged_attachments,
+            }
+
+        errored = [
+            sr
+            for sr in request_task.sub_requests
+            if sr.status == ExecutionLogStatus.error.value
+        ]
+        if errored:
+            logger.warning(
+                f"Access task {request_task.id} completed with {len(errored)} failed "
+                f"sub-request(s): {[sr.id for sr in errored]}. Returning partial results."
+            )
 
         return aggregated_results
 
@@ -296,7 +314,59 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         total_rows_masked = sum(
             sub_request.rows_masked or 0 for sub_request in request_task.sub_requests
         )
+
+        errored = [
+            sr
+            for sr in request_task.sub_requests
+            if sr.status == ExecutionLogStatus.error.value
+        ]
+        if errored:
+            logger.warning(
+                f"Erasure task {request_task.id} completed with {len(errored)} failed "
+                f"sub-request(s): {[sr.id for sr in errored]}. Returning partial rows_masked count."
+            )
+
         return total_rows_masked
+
+    @staticmethod
+    def _extract_correlation_id(
+        response: Any,
+        correlation_id_path: Optional[str],
+        param_value_map: Dict[str, Any],
+    ) -> str:
+        """Extract correlation ID from the response body, falling back to param_value_map.
+
+        Some APIs return an empty body after the initial request (e.g. Movable Ink).
+        In those cases the correlation ID can be resolved from the request's own
+        param values — for example using ``<privacy_request_id>`` which is always
+        populated automatically.
+        """
+        # Try extracting from the response body first
+        response_data = None
+        if response.content:
+            try:
+                response_data = response.json()
+            except ValueError as exc:
+                raise FidesopsException(f"Invalid JSON response: {exc}")
+
+        if response_data and correlation_id_path:
+            correlation_id = pydash.get(response_data, correlation_id_path)
+            if correlation_id:
+                return str(correlation_id)
+
+        # Fall back to param_value_map (e.g. privacy_request_id, uuid)
+        if correlation_id_path:
+            fallback = param_value_map.get(correlation_id_path)
+            if fallback:
+                logger.info(
+                    "Correlation ID not found in response body; using '{}' from param values",
+                    correlation_id_path,
+                )
+                return str(fallback)
+
+        raise FidesopsException(
+            f"Could not extract correlation ID from response or param values using path: {correlation_id_path}"
+        )
 
     def _handle_polling_initial_request(
         self,
@@ -325,20 +395,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             if not response.ok:
                 continue
 
-            try:
-                response_data = response.json()
-                correlation_id = pydash.get(
-                    response_data, read_request.correlation_id_path
-                )
-                if not correlation_id:
-                    raise FidesopsException(
-                        f"Could not extract correlation ID from response using path: {read_request.correlation_id_path}"
-                    )
-            except ValueError as exc:
-                raise FidesopsException(
-                    f"Invalid JSON response from initial request: {exc}"
-                )
-
+            correlation_id = self._extract_correlation_id(
+                response, read_request.correlation_id_path, param_value_map
+            )
             param_value_map["correlation_id"] = str(correlation_id)
             PollingSubRequestHandler.create_sub_request(
                 self.session, request_task, param_value_map
@@ -381,22 +440,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 if not response.ok:
                     continue
 
-                # Extract correlation ID from response (required, like access requests)
-                try:
-                    response_data = response.json()
-                    correlation_id = pydash.get(
-                        response_data, request.correlation_id_path
-                    )
-                    if not correlation_id:
-                        raise FidesopsException(
-                            f"Could not extract correlation ID from response using path: {request.correlation_id_path}"
-                        )
-                except ValueError as exc:
-                    raise FidesopsException(
-                        f"Invalid JSON response from initial erasure request: {exc}"
-                    )
-
-                # Add correlation_id to the existing param_value_map (like access requests)
+                correlation_id = self._extract_correlation_id(
+                    response, request.correlation_id_path, param_value_map
+                )
                 param_value_map["correlation_id"] = str(correlation_id)
                 PollingSubRequestHandler.create_sub_request(
                     self.session, request_task, param_value_map
@@ -406,7 +452,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 if request.skip_missing_param_values:
                     logger.debug("Skipping optional masking request: {}", exc)
                     continue
-                raise exc
+                raise
 
     def _get_requests_for_action(
         self, polling_task: RequestTask, query_config: "SaaSQueryConfig"
@@ -654,11 +700,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
 
         for sub_request in sub_requests:
-            # Skip already completed or skipped sub-requests
-            if sub_request.status in [
-                ExecutionLogStatus.complete.value,
-                ExecutionLogStatus.skipped.value,
-            ]:
+            # Skip already-terminal sub-requests
+            if sub_request.status in TERMINAL_STATUSES:
                 continue
 
             try:
@@ -668,7 +711,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
                 )
                 sub_request.update_status(self.session, ExecutionLogStatus.error.value)
-                raise exc
 
     def _execute_polling_requests(
         self,
@@ -734,7 +776,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 sub_request.access_data = attachment_metadata
                 sub_request.save(self.session)
             except Exception as exc:
-                raise PrivacyRequestError(f"Attachment storage failed: {exc}")
+                raise PrivacyRequestError(f"Attachment storage failed: {exc}") from exc
         else:
             raise PrivacyRequestError(
                 f"Unsupported result type: {polling_result.result_type}"

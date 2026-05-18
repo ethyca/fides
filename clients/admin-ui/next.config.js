@@ -41,6 +41,9 @@ const nextConfig = {
   images: {
     loader: "custom",
   },
+  logging: {
+    browserToTerminal: "error",
+  },
   async rewrites() {
     // The CI tests run without a server, so we leave this value out of .env.test.
     // These rewrites then cause Next to continually try to connect, which spams the logs with "ECONNREFUSED".

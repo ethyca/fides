@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated admin-ui drag-and-drop to dnd-kit for keyboard-accessible reordering
+pr: 8169
+labels: []

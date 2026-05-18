@@ -11,5 +11,5 @@ export type PartialPrivacyCenterConfig = {
   /**
    * Actions
    */
-  actions: Array<PartialPrivacyRequestOption>;
+  actions?: Array<PartialPrivacyRequestOption>;
 };

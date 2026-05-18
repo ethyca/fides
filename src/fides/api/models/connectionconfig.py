@@ -208,6 +208,12 @@ class ConnectionConfig(Base):
     )  # Type bytes in the db
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
+    # When True, this connection is excluded from privacy request (DSR)
+    # execution — see graph_task.skip_if_disabled, the request runner's
+    # collection / dataset filters, and the manual-webhook DSR utilities.
+    # It does NOT exclude the connection from discovery monitors, connection
+    # tests, or any non-DSR consumer; those have their own enable/disable
+    # controls.
     disabled = Column(Boolean, server_default="f", default=False)
     disabled_at = Column(DateTime(timezone=True))
 

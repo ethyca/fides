@@ -25,6 +25,7 @@ from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
+from fides.common.engine_creators import db_cred_provider
 from fides.common.session_management import get_readonly_api_session
 from fides.config import CONFIG
 
@@ -33,13 +34,16 @@ PoolHealth = Literal["healthy", "unhealthy", "skipped"]
 DatabaseResponseHealth = Literal["healthy", "unhealthy", "needs migration"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
 
+
 # Per-pool ping: cap how long the health endpoint can block on each async check, and bound
 # statement runtime on PostgreSQL (SET LOCAL is a no-op on other dialects we skip).
-DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS = 1.0
+def _healthcheck_timeout_seconds() -> float:
+    """Configurable timeout for healthcheck queries (default 1.0s)."""
+    return CONFIG.database.healthcheck_query_timeout
 
 
 def _healthcheck_statement_timeout_ms() -> int:
-    return max(1, int(DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS * 1000))
+    return max(1, int(_healthcheck_timeout_seconds() * 1000))
 
 
 def _bind_dialect_name(bind: Any) -> str:
@@ -151,7 +155,7 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
     async_readonly_pool_prewarmed: Optional[bool] = None
 
     migration_health, current_revision = get_db_health(
-        CONFIG.database.sync_database_uri, db=db
+        db_cred_provider.get_database_url(), db=db
     )
 
     # Primary sync pool (already checked out by dependency-injected session).
@@ -249,13 +253,13 @@ async def _check_async_session(
     try:
         await asyncio.wait_for(
             _ping_with_session(),
-            timeout=DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS,
+            timeout=_healthcheck_timeout_seconds(),
         )
         return "healthy"
     except asyncio.TimeoutError:
         logger.error(
             "Async database healthcheck timed out after {}s",
-            DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS,
+            _healthcheck_timeout_seconds(),
         )
         return "unhealthy"
     except Exception as error:  # pylint: disable=broad-except

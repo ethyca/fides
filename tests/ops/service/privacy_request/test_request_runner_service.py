@@ -9,6 +9,7 @@ from unittest.mock import ANY, Mock, call
 import pydash
 import pytest
 import sqlalchemy.exc
+from celery.exceptions import SoftTimeLimitExceeded
 
 # pylint: disable=no-name-in-module
 from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
@@ -852,14 +853,10 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_messaging_config(
         self,
         upload_mock,
-        mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
         cache,
@@ -889,18 +886,12 @@ class TestPrivacyRequestsEmailNotifications:
         assert pr.status == PrivacyRequestStatus.error
         pr.delete(db=db)
 
-        assert mailgun_send.called is False
-
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(
         self,
         upload_mock,
-        mailgun_send,
         postgres_integration_db,
         postgres_example_test_dataset_config,
         cache,
@@ -911,6 +902,8 @@ class TestPrivacyRequestsEmailNotifications:
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
         request,
+        messaging_config,
+        mock_mailgun_http,
     ):
         upload_mock.return_value = "http://www.data-download-url"
         data = {
@@ -929,7 +922,7 @@ class TestPrivacyRequestsEmailNotifications:
         assert pr.status == PrivacyRequestStatus.error
         pr.delete(db=db)
 
-        assert mailgun_send.called is False
+        assert not mock_mailgun_http.called
 
 
 class TestPrivacyRequestsManualWebhooks:
@@ -2215,12 +2208,12 @@ class TestAsyncCallbacks:
         assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
 
-class TestDatasetReferenceValidation:
+class TestRequestExecutionPlan:
     @pytest.mark.usefixtures("dataset_config")
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
-    def test_dataset_reference_validation_success(
+    def test_request_execution_plan_success(
         self,
         run_access,
         db: Session,
@@ -2228,7 +2221,7 @@ class TestDatasetReferenceValidation:
         run_privacy_request_task,
         request,
     ):
-        """Test that successful dataset reference validation is logged"""
+        """Test that a successful request execution plan is logged"""
 
         # Run privacy request
         run_privacy_request_task.delay(privacy_request.id).get(
@@ -2239,9 +2232,7 @@ class TestDatasetReferenceValidation:
         success_logs = privacy_request.execution_logs.filter_by(status="complete").all()
 
         validation_logs = [
-            log
-            for log in success_logs
-            if log.dataset_name == "Dataset reference validation"
+            log for log in success_logs if log.dataset_name == "Request execution plan"
         ]
 
         assert len(validation_logs) == 1
@@ -2250,14 +2241,14 @@ class TestDatasetReferenceValidation:
         assert log.collection_name is None
         assert (
             log.message
-            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
+            == f"Request execution plan successful for privacy request: {privacy_request.id}"
         )
         assert log.action_type == privacy_request.policy.get_action_type()
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
-    def test_dataset_reference_validation_error(
+    def test_request_execution_plan_error(
         self,
         run_access,
         db: Session,
@@ -2266,7 +2257,7 @@ class TestDatasetReferenceValidation:
         run_privacy_request_task,
         request,
     ):
-        """Test that dataset reference validation errors are logged"""
+        """Test that request execution plan errors are logged"""
 
         # Add invalid dataset reference that will cause validation error
         dataset_config.ctl_dataset.collections[0]["fields"][0]["fides_meta"] = {
@@ -2286,9 +2277,7 @@ class TestDatasetReferenceValidation:
         error_logs = privacy_request.execution_logs.filter_by(status="error").all()
 
         validation_logs = [
-            log
-            for log in error_logs
-            if log.dataset_name == "Dataset reference validation"
+            log for log in error_logs if log.dataset_name == "Request execution plan"
         ]
 
         assert len(validation_logs) == 1
@@ -2829,3 +2818,197 @@ class TestSaveAccessResults:
                 "error:" in log_text,
             ]
         ), f"Expected error message in logs, got: {loguru_caplog.text}"
+
+
+@pytest.mark.unit
+class TestShouldProcessConsent:
+    """Tests for the _should_process_consent helper."""
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
+    )
+    def test_skip_when_no_propagatable_preferences_and_no_manual_tasks(
+        self, mock_filter, mock_manual, db
+    ):
+        """Should skip when there are no propagatable preferences and no manual consent tasks."""
+        from fides.api.service.privacy_request.request_runner_service import (
+            _should_process_consent,
+        )
+
+        mock_filter.return_value = []
+        mock_manual.return_value = []
+
+        pr = Mock(spec=PrivacyRequest)
+        pr.consent_preferences = None
+        pr.consent_tasks.count.return_value = 0
+        pr.privacy_preferences = []
+
+        assert _should_process_consent(pr, db) is False
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
+    )
+    def test_has_work_when_consent_preferences_present(
+        self, mock_filter, mock_manual, db
+    ):
+        """Should have work when legacy consent_preferences (old workflow) is populated."""
+        from fides.api.service.privacy_request.request_runner_service import (
+            _should_process_consent,
+        )
+
+        pr = Mock(spec=PrivacyRequest)
+        pr.consent_preferences = [{"opt_in": True}]
+
+        assert _should_process_consent(pr, db) is True
+        mock_filter.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
+    )
+    def test_has_work_when_consent_tasks_exist(self, mock_filter, mock_manual, db):
+        """Should have work when consent tasks already exist (reprocessing scenario)."""
+        from fides.api.service.privacy_request.request_runner_service import (
+            _should_process_consent,
+        )
+
+        pr = Mock(spec=PrivacyRequest)
+        pr.consent_preferences = None
+        pr.consent_tasks.count.return_value = 3
+
+        assert _should_process_consent(pr, db) is True
+        mock_filter.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
+    )
+    def test_has_work_when_propagatable_preferences_exist(
+        self, mock_filter, mock_manual, db
+    ):
+        """Should have work when there are propagatable preferences."""
+        from fides.api.service.privacy_request.request_runner_service import (
+            _should_process_consent,
+        )
+
+        mock_filter.return_value = [Mock()]
+
+        pr = Mock(spec=PrivacyRequest)
+        pr.consent_preferences = None
+        pr.consent_tasks.count.return_value = 0
+        pr.privacy_preferences = [Mock()]
+
+        assert _should_process_consent(pr, db) is True
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
+    )
+    def test_has_work_when_manual_consent_tasks_configured(
+        self, mock_filter, mock_manual, db
+    ):
+        """Should have work when manual consent task addresses are configured."""
+        from fides.api.service.privacy_request.request_runner_service import (
+            _should_process_consent,
+        )
+
+        mock_filter.return_value = []
+        mock_manual.return_value = ["dataset:collection"]
+
+        pr = Mock(spec=PrivacyRequest)
+        pr.consent_preferences = None
+        pr.consent_tasks.count.return_value = 0
+        pr.privacy_preferences = []
+
+        assert _should_process_consent(pr, db) is True
+
+
+class TestSoftTimeLimit:
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner",
+        side_effect=SoftTimeLimitExceeded(),
+    )
+    @pytest.mark.usefixtures("dataset_config")
+    def test_access_runner_soft_time_limit(
+        self,
+        mock_access_runner,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+    ):
+        """SoftTimeLimitExceeded during access marks request as errored with execution log."""
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.error
+
+        error_logs = privacy_request.execution_logs.filter_by(status="error").all()
+        timeout_logs = [
+            log for log in error_logs if "soft time limit" in (log.message or "")
+        ]
+        assert len(timeout_logs) == 1
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.consent_runner",
+        side_effect=SoftTimeLimitExceeded(),
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service._should_process_consent",
+        return_value=True,
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.enrich_identities_for_consent",
+        return_value={"email": "test@example.com"},
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner",
+    )
+    @pytest.mark.usefixtures("dataset_config")
+    def test_consent_runner_soft_time_limit(
+        self,
+        mock_access_runner,
+        mock_enrich,
+        mock_skip,
+        mock_consent_runner,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+    ):
+        """SoftTimeLimitExceeded during consent marks request as errored with execution log."""
+        from fides.api.models.policy.policy import Rule as RuleModel
+
+        RuleModel.create(
+            db=db,
+            data={
+                "action_type": ActionType.consent.value,
+                "name": "Consent Rule for soft limit test",
+                "policy_id": privacy_request.policy.id,
+            },
+        )
+
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.error
+
+        error_logs = privacy_request.execution_logs.filter_by(status="error").all()
+        timeout_logs = [
+            log
+            for log in error_logs
+            if "soft time limit" in (log.message or "").lower()
+        ]
+        assert len(timeout_logs) == 1

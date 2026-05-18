@@ -19,7 +19,7 @@ export const POSTGRES_PLACEHOLDER = {
   created_at: "",
 };
 
-export const POSTGRES_TAGS = ["Detection", "Discovery"];
+export const POSTGRES_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const PostgresOverview = () => (
   <>

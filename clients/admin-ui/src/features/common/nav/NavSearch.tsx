@@ -1,12 +1,14 @@
 import { AutoComplete, Icons, Input, InputRef } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
 import NavSearchModal from "./NavSearchModal";
-import useNavSearchItems, { FlatNavItem } from "./useNavSearchItems";
+import useNavSearchItems, {
+  filterAndRankNavItems,
+  FlatNavItem,
+} from "./useNavSearchItems";
 
 const isMac =
   typeof navigator !== "undefined" &&
@@ -41,11 +43,11 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
   const flatItems: FlatNavItem[] = useNavSearchItems(groups, debouncedQuery);
 
   const filteredOptions = useMemo(() => {
-    const query = searchValue.trim().toLowerCase();
+    const query = searchValue.trim();
     // When no query, only show top-level pages (not tabs/dynamic items).
     // Sub-items only appear when the search text matches them.
     const items = query
-      ? flatItems.filter((item) => item.title.toLowerCase().includes(query))
+      ? filterAndRankNavItems(flatItems, query)
       : flatItems.filter((item) => !item.parentTitle);
 
     // Group by nav group
@@ -100,18 +102,6 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
     }
   }, []);
 
-  // Cmd+K on Mac, Ctrl+K elsewhere
-  useHotkeys(
-    isMac ? "meta+k" : "ctrl+k",
-    () => {
-      setOpen(true);
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
-    },
-    { enableOnFormTags: true, preventDefault: true },
-  );
-
   const handleEscapeKey = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       setOpen(false);
@@ -128,6 +118,9 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
         onSelect={handleSelect}
         onOpenChange={handleOpenChange}
         defaultActiveFirstOption
+        // Disable Ant Design's built-in filter — it only checks title substrings,
+        // which would silently drop keyword/group matches. We filter manually.
+        filterOption={false}
         className={styles.expandedAutoComplete}
         classNames={{ popup: { root: styles.searchDropdown } }}
         value={searchValue}
@@ -168,7 +161,12 @@ const NavSearch = ({ groups, collapsed = false }: NavSearchProps) => {
     return <NavSearchModal groups={groups} />;
   }
 
-  return <NavSearchExpanded groups={groups} />;
+  return (
+    <>
+      <NavSearchModal groups={groups} hideToggle />
+      <NavSearchExpanded groups={groups} />
+    </>
+  );
 };
 
 export default NavSearch;

@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { Icons, Tag, Tooltip, Typography } from "fidesui";
 import React from "react";
 
-import { formatDate } from "~/features/common/utils";
+import { formatDate, pluralize } from "~/features/common/utils";
 
 import {
   ActivityTimelineItem,
@@ -28,11 +28,12 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     isPolling,
     description,
     attachments,
-    showViewLog,
+    logCount = 0,
   } = item;
 
   // Format the date for display
   const formattedDate = formatDate(date);
+  const showViewLog = logCount > 0;
 
   const isClickable = !!onClick;
 
@@ -79,12 +80,15 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         >
           {type}
         </Tag>
+
         {showViewLog && (
           <span
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
           >
-            View Log
+            {item.isDuplicateDetection && item.hasRelatedRequests
+              ? "· View related requests"
+              : `· View ${logCount} ${pluralize(logCount, "Log", "Logs")}`}
           </span>
         )}
       </div>
@@ -109,7 +113,8 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
       [styles["itemButton--polling"]]: isPolling,
       [styles["itemButton--clickable"]]: isClickable,
       [styles["itemButton--comment"]]:
-        type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
+        type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT ||
+        type === ActivityTimelineItemTypeEnum.INTERNAL_AUTOMATION_COMMENT,
       [styles["itemButton--manual-task"]]:
         type === ActivityTimelineItemTypeEnum.MANUAL_TASK,
     }),

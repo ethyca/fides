@@ -8,51 +8,54 @@ import {
   EdgeTypes,
   Node,
   NodeTypes,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import {
-  Button,
-  Flex,
-  Icons,
-  Popconfirm,
-  SelectProps,
-  Space,
-  Splitter,
-  Tabs,
-  useMessage,
-} from "fidesui";
+import classNames from "classnames";
+import { Flex, SelectProps, Switch, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import Layout from "~/features/common/Layout";
-import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
 import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
 import styles from "./AccessPolicyEditor.module.scss";
+import { PolicyUpdate } from "./agent-chat.slice";
 import AgentChatPanel from "./AgentChatPanel";
+import {
+  DIFF_FIT_DURATION_MS,
+  DIFF_HIGHLIGHT_MS,
+  DIFF_HOLD_MS,
+} from "./constants";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
-import ConditionNode, { ConditionNodeType } from "./MatchNode";
+import ConditionNode, {
+  ConditionNodeData,
+  ConditionNodeType,
+} from "./MatchNode";
 import {
+  buildUnionGraph,
   deriveLayoutEdges,
   nodesToYaml,
   parseYaml,
   POLICY_NODE_ID,
+  tagNodesWithDiff,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
+import PolicyAgentWorking from "./PolicyAgentWorking";
+import PolicyEditorPanel from "./PolicyEditorPanel";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
   ConditionOperator,
-  ConditionProperty,
   ConsentRequirement,
   ConstraintType,
   DataFlowDirection,
@@ -69,7 +72,7 @@ export enum EditorMode {
 export interface SidebarFormValues {
   name: string;
   description: string;
-  controls?: string[];
+  control?: string | null;
 }
 
 interface AccessPolicyEditorProps {
@@ -90,13 +93,22 @@ const edgeTypes: EdgeTypes = {
   labeledEdge: LabeledEdge,
 };
 
+interface PendingTransition {
+  phase: "ghost-hold" | "settling";
+  update: PolicyUpdate;
+  oldYaml: string;
+  epoch: number;
+}
+
 interface PolicyCanvasPanelProps {
-  controls: string[];
+  control: string | null;
   controlOptions: NonNullable<SelectProps["options"]>;
-  onControlsChange: (value: string[]) => void;
+  onControlChange: (value: string | null) => void;
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
   syncKey?: number;
+  pendingTransition?: PendingTransition | null;
+  agentEditEpoch?: number;
 }
 
 const DEFAULT_ZOOM = 1;
@@ -183,7 +195,7 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       fidesKey: "",
       enabled: false,
       priority: 0,
-      controls: props.controls,
+      control: props.control,
       controlOptions: props.controlOptions,
       actionMessage: "",
       onNameChange: () => {},
@@ -191,7 +203,7 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       onFidesKeyChange: () => {},
       onEnabledChange: () => {},
       onPriorityChange: () => {},
-      onControlsChange: props.onControlsChange,
+      onControlChange: props.onControlChange,
       onActionMessageChange: () => {},
     },
   } satisfies PolicyNodeType,
@@ -238,14 +250,129 @@ const findFirstOfType = (
   );
 };
 
+/**
+ * Re-fit the canvas after an agent edit that didn't trigger the diff
+ * transition (empty added/changed/removed). When there IS a diff,
+ * DiffViewportController already handles fitView at ghost-hold and settling.
+ */
+const AgentEditFitController = ({
+  agentEditEpoch,
+  pendingTransition,
+  layoutedNodes,
+}: {
+  agentEditEpoch: number;
+  pendingTransition: PendingTransition | null | undefined;
+  layoutedNodes: Node[];
+}) => {
+  const { fitView } = useReactFlow();
+  const lastSeenRef = useRef<number>(agentEditEpoch);
+  // Timer lives in a ref so subsequent effect re-runs (from onNodesChange
+  // bursts during React Flow's measurement) don't clobber it via the
+  // useEffect cleanup. We only clear it on unmount.
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (agentEditEpoch === lastSeenRef.current) {
+      return;
+    }
+    // Diff transitions are handled by DiffViewportController. Mark this epoch
+    // as seen so we don't double-fit when the transition ends.
+    if (pendingTransition) {
+      lastSeenRef.current = agentEditEpoch;
+      return;
+    }
+    const allMeasured =
+      layoutedNodes.length > 0 &&
+      layoutedNodes.every(
+        (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
+      );
+    if (!allMeasured) {
+      return;
+    }
+    lastSeenRef.current = agentEditEpoch;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      fitView({ duration: DIFF_FIT_DURATION_MS, padding: 0.3 });
+      timerRef.current = null;
+    }, 150);
+  }, [agentEditEpoch, pendingTransition, layoutedNodes, fitView]);
+
+  return null;
+};
+
+const DiffViewportController = ({
+  pendingTransition,
+  layoutedNodes,
+}: {
+  pendingTransition: PendingTransition | null | undefined;
+  layoutedNodes: Node[];
+}) => {
+  const { fitView } = useReactFlow();
+  const lastSeenRef = useRef<{ phase: string; epoch: number } | null>(null);
+  // See AgentEditFitController for why the timer lives in a ref.
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!pendingTransition) {
+      lastSeenRef.current = null;
+      return;
+    }
+    const { phase, epoch } = pendingTransition;
+    if (
+      lastSeenRef.current?.phase === phase &&
+      lastSeenRef.current?.epoch === epoch
+    ) {
+      return;
+    }
+    const allMeasured =
+      layoutedNodes.length > 0 &&
+      layoutedNodes.every(
+        (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
+      );
+    if (!allMeasured) {
+      return;
+    }
+    lastSeenRef.current = { phase, epoch };
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      fitView({ duration: DIFF_FIT_DURATION_MS, padding: 0.3 });
+      timerRef.current = null;
+    }, 150);
+  }, [pendingTransition, layoutedNodes, fitView]);
+
+  return null;
+};
+
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
-    controls,
+    control,
     controlOptions,
-    onControlsChange,
+    onControlChange,
     onYamlChange,
     initialYaml,
     syncKey,
+    pendingTransition,
+    agentEditEpoch = 0,
   } = props;
 
   const initialResult = useMemo(
@@ -294,23 +421,47 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When syncKey increments (Code → Builder switch), re-parse initialYaml
+  // When syncKey increments, re-parse initialYaml. If a pendingTransition is
+  // active, build the union graph (with ghost-removed nodes) during ghost-hold
+  // and tag nodes/edges with their _diffStatus so node components can drive
+  // CSS animations.
   const prevSyncKeyRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (syncKey === undefined || syncKey === prevSyncKeyRef.current) {
       return;
     }
     prevSyncKeyRef.current = syncKey;
-    const parsed = initialYaml ? yamlToNodesAndEdges(initialYaml) : null;
-    if (parsed) {
-      setNodes(parsed.nodes);
-      setEdges(parsed.edges);
-      syncCounters(parsed.nodes);
-    } else {
+    if (!initialYaml) {
       setNodes(createPolicyNode(props));
       setEdges([]);
       nextIdRef.current = { action: 1, condition: 1, constraint: 1 };
+      return;
     }
+    let built: { nodes: Node[]; edges: Edge[] } | null;
+    if (pendingTransition?.phase === "ghost-hold") {
+      built = buildUnionGraph(
+        pendingTransition.oldYaml,
+        initialYaml,
+        pendingTransition.update.removed,
+      );
+    } else {
+      built = yamlToNodesAndEdges(initialYaml);
+    }
+    if (!built) {
+      return;
+    }
+    if (pendingTransition?.update) {
+      built = tagNodesWithDiff(
+        built.nodes,
+        built.edges,
+        pendingTransition.update.added,
+        pendingTransition.update.changed,
+        syncKey,
+      );
+    }
+    setNodes(built.nodes);
+    setEdges(built.edges);
+    syncCounters(built.nodes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncKey]);
 
@@ -445,22 +596,24 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData],
   );
 
-  const handleControlsChange = useCallback(
-    (value: string[]) => {
-      updateNodeData(POLICY_NODE_ID, { controls: value });
-      onControlsChange(value);
+  const handleControlChange = useCallback(
+    (value: string | null) => {
+      updateNodeData(POLICY_NODE_ID, { control: value });
+      onControlChange(value);
     },
-    [updateNodeData, onControlsChange],
+    [updateNodeData, onControlChange],
   );
 
-  // Derive YAML from nodes/edges
+  // Derive YAML from nodes/edges. Skipped while a transition is active so the
+  // ghost-hold's transient nodes don't get serialized back into yamlValue and
+  // resurrect themselves when the settling phase re-parses from it.
   useEffect(() => {
-    if (!onYamlChange) {
+    if (!onYamlChange || pendingTransition) {
       return;
     }
     const derived = nodesToYaml(nodes, edges);
     onYamlChange(derived);
-  }, [nodes, edges, onYamlChange]);
+  }, [nodes, edges, onYamlChange, pendingTransition]);
 
   const layoutEdges = useMemo(
     () => deriveLayoutEdges(nodes, edges),
@@ -638,14 +791,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
-              controls,
+              control,
               controlOptions,
               onNameChange: handleNameChange,
               onDescriptionChange: handleDescriptionChange,
               onFidesKeyChange: handleFidesKeyChange,
               onEnabledChange: handleEnabledChange,
               onPriorityChange: handlePriorityChange,
-              onControlsChange: handleControlsChange,
+              onControlChange: handleControlChange,
               onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
             },
@@ -667,6 +820,10 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           };
         }
         if (node.type === "conditionNode") {
+          const disabledProperties = layoutedNodes
+            .filter((n) => n.type === "conditionNode" && n.id !== node.id)
+            .map((n) => (n.data as ConditionNodeData).property)
+            .filter((p): p is string => !!p);
           return {
             ...node,
             data: {
@@ -677,7 +834,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConditionNode(node.id),
               hasChildren: constraintsExist,
-              onPropertyChange: (value: ConditionProperty) =>
+              disabledProperties,
+              onPropertyChange: (value: string) =>
                 updateNodeData(node.id, { property: value, values: [] }),
               onValuesChange: (values: string[]) =>
                 updateNodeData(node.id, { values }),
@@ -735,14 +893,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [
       layoutedNodes,
       edges,
-      controls,
+      control,
       controlOptions,
       handleNameChange,
       handleDescriptionChange,
       handleFidesKeyChange,
       handleEnabledChange,
       handlePriorityChange,
-      handleControlsChange,
+      handleControlChange,
       handleAddCondition,
       handleAddActionFromNode,
       handleAddConstraint,
@@ -759,7 +917,11 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
 
   return (
-    <div className={styles.canvasContainer}>
+    <div
+      className={classNames(styles.canvasContainer, {
+        [styles.transitioning]: pendingTransition,
+      })}
+    >
       <ReactFlow
         nodes={nodesWithCallbacks}
         edges={edges}
@@ -770,6 +932,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         defaultEdgeOptions={{ type: "labeledEdge" }}
         defaultViewport={{ x: 0, y: 0, zoom: DEFAULT_ZOOM }}
         nodesConnectable={false}
+        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
@@ -779,6 +942,20 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           layoutedNodes={layoutedNodes}
           onCentered={clearLastCreatedNodeId}
         />
+        <DiffViewportController
+          pendingTransition={pendingTransition}
+          layoutedNodes={layoutedNodes}
+        />
+        <AgentEditFitController
+          agentEditEpoch={agentEditEpoch}
+          pendingTransition={pendingTransition}
+          layoutedNodes={layoutedNodes}
+        />
+        {pendingTransition && (
+          <Panel position="top-center">
+            <PolicyAgentWorking />
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );
@@ -796,8 +973,7 @@ const AccessPolicyEditor = ({
   const { data: appConfig } = useGetConfigurationSettingsQuery({
     api_set: false,
   });
-  const agentChatEnabled =
-    !!appConfig?.detection_discovery?.llm_classifier_enabled;
+  const agentChatEnabled = !!appConfig?.access_policies?.agent_enabled;
 
   const { data: controlGroups = [] } = useGetControlsQuery();
 
@@ -808,19 +984,42 @@ const AccessPolicyEditor = ({
 
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
-  const [controls, setControls] = useState<string[]>(
-    initialValues?.controls ?? [],
+  const [control, setControl] = useState<string | null>(
+    initialValues?.control ?? null,
   );
   const [syncKey, setSyncKey] = useState(0);
+  const [agentEditEpoch, setAgentEditEpoch] = useState(0);
+  const [pendingTransition, setPendingTransition] =
+    useState<PendingTransition | null>(null);
+  const transitionEpochRef = useRef(0);
+  const transitionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const clearTransitionTimers = useCallback(() => {
+    transitionTimersRef.current.forEach((t) => clearTimeout(t));
+    transitionTimersRef.current = [];
+  }, []);
+  useEffect(() => () => clearTransitionTimers(), [clearTransitionTimers]);
+  const [chatVisible, setChatVisible] = useLocalStorage<boolean>(
+    "access-policies:chat-visible",
+    true,
+  );
+  const toggleChat = useCallback(
+    () => setChatVisible((v) => !v),
+    [setChatVisible],
+  );
 
   const handleModeChange = useCallback(
     (newMode: EditorMode) => {
       if (mode === EditorMode.Code && newMode !== EditorMode.Code) {
         setSyncKey((k) => k + 1);
       }
+      // Code mode shouldn't render ghosts — drop any active transition.
+      if (newMode === EditorMode.Code && pendingTransition) {
+        clearTransitionTimers();
+        setPendingTransition(null);
+      }
       setMode(newMode);
     },
-    [mode],
+    [mode, pendingTransition, clearTransitionTimers],
   );
 
   const handleYamlChange = useCallback((derivedYaml: string) => {
@@ -838,25 +1037,66 @@ const AccessPolicyEditor = ({
       {
         name,
         description: parsed?.description ?? "",
-        controls: controls.length > 0 ? controls : undefined,
+        control,
       },
       yamlValue,
     );
   };
 
-  const handleControlsChange = useCallback(
-    (value: string[]) => setControls(value),
+  const handleControlChange = useCallback(
+    (value: string | null) => setControl(value),
     [],
   );
 
-  const handleYamlProposed = useCallback((newYaml: string) => {
-    setYamlValue(newYaml);
-    setSyncKey((k) => k + 1);
-    const parsed = parseYaml(newYaml);
-    if (parsed?.controls) {
-      setControls(parsed.controls);
-    }
-  }, []);
+  const handlePolicyUpdate = useCallback(
+    (update: PolicyUpdate) => {
+      const oldYaml = yamlValue;
+      setYamlValue(update.yaml);
+      const parsed = parseYaml(update.yaml);
+      if (parsed?.control !== undefined) {
+        setControl(parsed.control ?? null);
+      }
+
+      // Cancel any in-flight transition before starting a new one.
+      clearTransitionTimers();
+
+      // Always bump the agent-edit epoch so the canvas re-fits, even when
+      // there's no diff to animate (AgentEditFitController handles this case;
+      // DiffViewportController handles the with-diff case).
+      setAgentEditEpoch((e) => e + 1);
+
+      const hasHighlights =
+        update.added.length > 0 ||
+        update.changed.length > 0 ||
+        update.removed.length > 0;
+      if (!hasHighlights) {
+        setPendingTransition(null);
+        setSyncKey((k) => k + 1);
+        return;
+      }
+
+      transitionEpochRef.current += 1;
+      const epoch = transitionEpochRef.current;
+
+      setPendingTransition({ phase: "ghost-hold", update, oldYaml, epoch });
+      setSyncKey((k) => k + 1);
+
+      const settleTimer = setTimeout(() => {
+        setPendingTransition((prev) =>
+          prev?.epoch === epoch ? { ...prev, phase: "settling" } : prev,
+        );
+        setSyncKey((k) => k + 1);
+      }, DIFF_HOLD_MS);
+
+      const cleanupTimer = setTimeout(() => {
+        setPendingTransition((prev) => (prev?.epoch === epoch ? null : prev));
+        setSyncKey((k) => k + 1);
+      }, DIFF_HIGHLIGHT_MS);
+
+      transitionTimersRef.current = [settleTimer, cleanupTimer];
+    },
+    [yamlValue, clearTransitionTimers],
+  );
 
   const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
   const displayName = parsedForDisplay?.name ?? "";
@@ -878,12 +1118,14 @@ const AccessPolicyEditor = ({
 
   const canvasPanel = (
     <PolicyCanvasPanel
-      controls={controls}
+      control={control}
       controlOptions={controlOptions}
-      onControlsChange={handleControlsChange}
+      onControlChange={handleControlChange}
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
+      pendingTransition={pendingTransition}
+      agentEditEpoch={agentEditEpoch}
     />
   );
 
@@ -950,74 +1192,47 @@ const AccessPolicyEditor = ({
       data-testid="mode-toggle"
       items={tabItems}
       className={styles.tabs}
+      tabBarExtraContent={
+        agentChatEnabled ? (
+          <Flex align="center" gap="small">
+            <span>Policy agent</span>
+            <Switch
+              checked={chatVisible}
+              onChange={toggleChat}
+              aria-label={chatVisible ? "Hide agent" : "Show agent"}
+              size="small"
+              data-testid="toggle-agent-switch"
+            />
+          </Flex>
+        ) : undefined
+      }
     />
   );
 
   return (
-    <Layout title={title}>
-      <Flex vertical className="h-full">
-        <div>
-          <PageHeader
-            heading={title}
-            breadcrumbItems={[
-              { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
-              { title: breadcrumbTitle },
-            ]}
-            isSticky
-            rightContent={
-              <Space>
-                {!isNew && (
-                  <Popconfirm
-                    title="Delete policy"
-                    description="Are you sure you want to delete this policy?"
-                    onConfirm={onDelete}
-                    okText="Delete"
-                    okButtonProps={{ danger: true }}
-                    cancelText="Cancel"
-                  >
-                    <Button
-                      icon={<Icons.TrashCan />}
-                      danger
-                      aria-label="Delete policy"
-                      data-testid="delete-btn"
-                    />
-                  </Popconfirm>
-                )}
-                <Button
-                  icon={<Icons.Download />}
-                  onClick={handleExport}
-                  data-testid="export-btn"
-                >
-                  Export
-                </Button>
-                <Button
-                  type="primary"
-                  onClick={handleSave}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </Space>
-            }
-          />
+    <Layout title={title} padded={false}>
+      <Flex className="h-full">
+        <div className="flex-1">
+          <PolicyEditorPanel
+            title={title}
+            breadcrumbTitle={breadcrumbTitle}
+            isNew={isNew}
+            onDelete={onDelete}
+            onExport={handleExport}
+            onSave={handleSave}
+          >
+            {tabsNode}
+          </PolicyEditorPanel>
         </div>
-        <div className="relative min-h-0 grow">
-          {agentChatEnabled ? (
-            <Splitter className="h-full">
-              <Splitter.Panel>
-                <div className="h-full pr-3">{tabsNode}</div>
-              </Splitter.Panel>
-              <Splitter.Panel defaultSize={300} min={260} max="50%" collapsible>
-                <AgentChatPanel
-                  currentYaml={yamlValue}
-                  onYamlProposed={handleYamlProposed}
-                />
-              </Splitter.Panel>
-            </Splitter>
-          ) : (
-            tabsNode
-          )}
-        </div>
+        {agentChatEnabled && chatVisible && (
+          <div className={`h-full pb-2 ${styles.chatWrapper}`}>
+            <AgentChatPanel
+              currentYaml={yamlValue}
+              onPolicyUpdate={handlePolicyUpdate}
+              isAgentWorking={!!pendingTransition}
+            />
+          </div>
+        )}
       </Flex>
     </Layout>
   );

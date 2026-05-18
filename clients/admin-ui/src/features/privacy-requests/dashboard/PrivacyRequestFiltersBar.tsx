@@ -9,13 +9,20 @@ import {
 import { useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
+import {
+  SubjectRequestSourceOptions,
+  SubjectRequestStatusOptions,
+} from "~/features/privacy-requests/constants";
 import PrivacyRequestSortMenu, {
   SortParams,
 } from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
 import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import {
+  ActionType,
+  PrivacyRequestSource,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 import { CustomFieldFilter } from "./CustomFieldFilter";
 import { extractUniqueCustomFields } from "./utils";
@@ -27,6 +34,7 @@ interface PrivacyRequestFiltersBarProps {
     to: string | null;
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
+    source: PrivacyRequestSource[] | null;
     location: string | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   };
@@ -36,6 +44,7 @@ interface PrivacyRequestFiltersBarProps {
     to?: string | null;
     status?: PrivacyRequestStatus[] | null;
     action_type?: ActionType[] | null;
+    source?: PrivacyRequestSource[] | null;
     location?: string | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   }) => void;
@@ -87,6 +96,12 @@ export const PrivacyRequestFiltersBar = ({
   const handleActionTypeChange = (value: ActionType[]) => {
     setFilters({
       action_type: value.length > 0 ? value : null,
+    });
+  };
+
+  const handleSourceChange = (value: PrivacyRequestSource[]) => {
+    setFilters({
+      source: value.length > 0 ? value : null,
     });
   };
 
@@ -160,6 +175,19 @@ export const PrivacyRequestFiltersBar = ({
         maxTagCount="responsive"
         data-testid="request-action-type-filter"
         aria-label="Request type"
+        className="w-44"
+        maxTagPlaceholder={maxTagPlaceholder}
+      />
+      <Select
+        mode="multiple"
+        placeholder="Source"
+        options={SubjectRequestSourceOptions}
+        value={filters.source || []}
+        onChange={handleSourceChange}
+        allowClear
+        maxTagCount="responsive"
+        data-testid="request-source-filter"
+        aria-label="Source"
         className="w-44"
         maxTagPlaceholder={maxTagPlaceholder}
       />

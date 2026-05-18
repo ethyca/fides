@@ -168,26 +168,65 @@ describe("Data map report table", () => {
       cy.getByTestId("column-legal_name").should("exist");
     });
 
-    it("should reorder columns", () => {
-      cy.getByTestId("more-menu").click();
-      cy.selectAntDropdownOption("Edit columns");
-      cy.getAntModal().should("be.visible");
-      cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
-      cy.getByTestId("column-list-item-data_categories").trigger("drop");
-      cy.getByTestId("column-dragger-legal_name").trigger("dragend");
-      cy.getByTestId("save-button").click({ force: true });
+    describe("should reorder columns", () => {
+      const assertModalOrder = () => {
+        cy.get('[data-testid^="column-list-item-"]')
+          .eq(0)
+          .should("have.attr", "data-testid", "column-list-item-legal_name");
+        cy.get('[data-testid^="column-list-item-"]')
+          .eq(1)
+          .should(
+            "have.attr",
+            "data-testid",
+            "column-list-item-data_categories",
+          );
+      };
+      const assertTableOrderAndPersistsAfterSave = () => {
+        cy.getByTestId("fidesTable").within(() => {
+          cy.get("thead th").eq(2).should("contain.text", "Legal name");
+          cy.get("thead th").eq(3).should("contain.text", "Data categories");
+        });
+        cy.reload();
+        cy.getByTestId("fidesTable").within(() => {
+          cy.get("thead th").eq(2).should("contain.text", "Legal name");
+          cy.get("thead th").eq(3).should("contain.text", "Data categories");
+        });
+      };
 
-      // Verify the new order
-      cy.getByTestId("fidesTable").within(() => {
-        cy.get("thead th").eq(2).should("contain.text", "Legal name");
-        cy.get("thead th").eq(3).should("contain.text", "Data categories");
+      beforeEach(() => {
+        cy.getByTestId("more-menu").click();
+        cy.selectAntDropdownOption("Edit columns");
+        cy.getAntModal().should("be.visible");
       });
 
-      // Reload and verify the order persists
-      cy.reload();
-      cy.getByTestId("fidesTable").within(() => {
-        cy.get("thead th").eq(2).should("contain.text", "Legal name");
-        cy.get("thead th").eq(3).should("contain.text", "Data categories");
+      it("via mouse drag", () => {
+        cy.getByTestId("column-dragger-legal_name").scrollIntoView();
+        cy.getByTestId("column-dragger-legal_name").realMouseDown();
+        // Step in small increments so dnd-kit's collision detection registers
+        // each crossing instead of stalling on a single large jump.
+        // eslint-disable-next-line no-restricted-syntax
+        for (let i = 0; i < 20; i += 1) {
+          cy.getByTestId("column-dragger-legal_name").realMouseMove(0, -10);
+        }
+        cy.getByTestId("column-dragger-legal_name").realMouseUp();
+        // Let dnd-kit's drop animation finish — otherwise the next click is
+        // swallowed by transitional pointer state.
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(400);
+        assertModalOrder();
+        cy.getByTestId("save-button").realClick();
+        assertTableOrderAndPersistsAfterSave();
+      });
+
+      it("via keyboard", () => {
+        cy.getByTestId("column-dragger-legal_name").focus();
+        cy.focused().realPress("Space");
+        cy.focused().realPress("ArrowUp");
+        cy.focused().realPress("ArrowUp");
+        cy.focused().realPress("Space");
+        assertModalOrder();
+        cy.getByTestId("save-button").click({ force: true });
+        assertTableOrderAndPersistsAfterSave();
       });
     });
 
@@ -297,11 +336,16 @@ describe("Data map report table", () => {
       it("should cancel renaming columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
+        // data_uses is a pinned (fixed: "left") column, so its rename input
+        // sits in a sticky cell that the page-level sticky toolbar covers from
+        // Cypress's visibility check perspective. force: true bypasses that.
         cy.getByTestId("column-data_uses-input")
           .eq(0)
-          .clear()
+          .clear({ force: true })
           .then(() => {
-            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
+            cy.getByTestId("column-data_uses-input")
+              .eq(0)
+              .type("Custom Title", { force: true });
           });
         cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
@@ -312,11 +356,15 @@ describe("Data map report table", () => {
       it("should reset columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
+        // See note in "should cancel renaming columns": data_uses is a pinned
+        // column, so we bypass Cypress's visibility check on its rename input.
         cy.getByTestId("column-data_uses-input")
           .eq(0)
-          .clear()
+          .clear({ force: true })
           .then(() => {
-            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
+            cy.getByTestId("column-data_uses-input")
+              .eq(0)
+              .type("Custom Title", { force: true });
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("more-menu").click();

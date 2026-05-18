@@ -30,19 +30,19 @@ class TestStartWorker:
             (
                 None,
                 None,
-                "fides,fidesops.messaging,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fides.dsr,fidesplus.consent_webhooks,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
+                "fides,fidesops.messaging,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fides.dsr,fidesplus.consent_webhooks,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion,fidesplus.bulk_consent_import",
             ),
             ("fides.dsr", None, "fides.dsr"),
             (
                 None,
                 "fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection",
-                "fides,fidesops.messaging,fidesplus.consent_webhooks,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
+                "fides,fidesops.messaging,fidesplus.consent_webhooks,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion,fidesplus.bulk_consent_import",
             ),
             ("fides,fides.dsr", None, "fides,fides.dsr"),
             (
                 None,
                 "fides,fides.dsr",
-                "fidesops.messaging,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.consent_webhooks,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
+                "fidesops.messaging,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.consent_webhooks,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion,fidesplus.bulk_consent_import",
             ),
         ],
     )
@@ -132,3 +132,113 @@ class TestStartWorkerReload:
         start_worker()
 
         worker_main_mock.assert_called_once()
+
+
+class TestWorkerDisableFlags:
+    """Tests for the individual worker_disable_heartbeat/gossip/mingle config flags."""
+
+    @pytest.fixture(autouse=True)
+    def mock_celery_config(self):
+        """Provide a mock CONFIG.celery with the three disable flags."""
+        mock_config = MagicMock()
+        mock_config.celery.worker_disable_heartbeat = False
+        mock_config.celery.worker_disable_gossip = False
+        mock_config.celery.worker_disable_mingle = False
+        mock_config.celery.worker_concurrency = 2
+        with patch("fides.api.worker.CONFIG", mock_config):
+            yield mock_config
+
+    @pytest.fixture
+    def worker_main_mock(self):
+        with patch("fides.api.worker.celery_app.worker_main") as mock:
+            yield mock
+
+    def test_no_without_flags_when_all_disabled_false(
+        self, mock_celery_config, worker_main_mock: MagicMock
+    ):
+        """Default: no --without-* flags when all flags are False."""
+        start_worker()
+
+        call_args = worker_main_mock.call_args
+        argv = call_args.kwargs["argv"]
+        assert "--without-heartbeat" not in argv
+        assert "--without-gossip" not in argv
+        assert "--without-mingle" not in argv
+
+    @pytest.mark.parametrize(
+        "flag_name",
+        [
+            "worker_disable_heartbeat",
+            "worker_disable_gossip",
+            "worker_disable_mingle",
+        ],
+    )
+    def test_single_flag_enabled(
+        self, mock_celery_config, worker_main_mock: MagicMock, flag_name: str
+    ):
+        """When a disable flag is True, the matching --without-* appears in argv."""
+        setattr(mock_celery_config.celery, flag_name, True)
+        start_worker()
+
+        call_args = worker_main_mock.call_args
+        argv = call_args.kwargs["argv"]
+        flag_to_arg = {
+            "worker_disable_heartbeat": "--without-heartbeat",
+            "worker_disable_gossip": "--without-gossip",
+            "worker_disable_mingle": "--without-mingle",
+        }
+        assert flag_to_arg[flag_name] in argv
+
+    def test_all_three_flags_enabled(
+        self, mock_celery_config, worker_main_mock: MagicMock
+    ):
+        """All three flags together produces all --without-* flags."""
+        mock_celery_config.celery.worker_disable_heartbeat = True
+        mock_celery_config.celery.worker_disable_gossip = True
+        mock_celery_config.celery.worker_disable_mingle = True
+
+        start_worker()
+
+        call_args = worker_main_mock.call_args
+        argv = call_args.kwargs["argv"]
+        assert "--without-heartbeat" in argv
+        assert "--without-gossip" in argv
+        assert "--without-mingle" in argv
+
+
+class TestWorkerConcurrency:
+    """Tests for CONFIG.celery.worker_concurrency."""
+
+    @pytest.fixture(autouse=True)
+    def mock_celery_config(self):
+        mock_config = MagicMock()
+        mock_config.celery.worker_disable_heartbeat = False
+        mock_config.celery.worker_disable_gossip = False
+        mock_config.celery.worker_disable_mingle = False
+        mock_config.celery.worker_concurrency = 2
+        with patch("fides.api.worker.CONFIG", mock_config):
+            yield mock_config
+
+    @pytest.fixture
+    def worker_main_mock(self):
+        with patch("fides.api.worker.celery_app.worker_main") as mock:
+            yield mock
+
+    def test_default_concurrency_in_argv(
+        self, mock_celery_config: MagicMock, worker_main_mock: MagicMock
+    ):
+        start_worker()
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert "--concurrency=2" in argv
+
+    @pytest.mark.parametrize("concurrency", [1, 4, 16])
+    def test_custom_concurrency_in_argv(
+        self,
+        mock_celery_config: MagicMock,
+        worker_main_mock: MagicMock,
+        concurrency: int,
+    ):
+        mock_celery_config.celery.worker_concurrency = concurrency
+        start_worker()
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert f"--concurrency={concurrency}" in argv

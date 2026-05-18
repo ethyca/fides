@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
-
 class FidesLifecycleManager {
   private servedNoticeHistoryId: string | null = null;
 
@@ -9,7 +7,7 @@ class FidesLifecycleManager {
    */
   getServedNoticeHistoryId(): string {
     if (!this.servedNoticeHistoryId) {
-      this.servedNoticeHistoryId = uuidv4();
+      this.servedNoticeHistoryId = crypto.randomUUID();
     }
     return this.servedNoticeHistoryId;
   }
