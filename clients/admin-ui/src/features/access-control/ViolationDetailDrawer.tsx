@@ -165,7 +165,7 @@ export const ViolationDetailDrawer = ({
             <Text type="secondary" strong className="mb-2 block">
               Policy deviated
             </Text>
-            {violation.policy ? (
+            {violation.policy_id ? (
               <Card size="small">
                 <Flex align="center" gap="small" className="mb-2">
                   <Title level={5} className="!m-0">
