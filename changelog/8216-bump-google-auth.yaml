@@ -1,0 +1,4 @@
+type: Changed
+description: Bumped google-auth from 2.48.0 to 2.53.0
+pr: 8216
+labels: []
