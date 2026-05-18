@@ -6,7 +6,7 @@
  * features, retention period). Validation lives on each Form.Item's `rules` array — no Yup.
  */
 
-import { Button, Flex, Form, Input, Select, Switch } from "fidesui";
+import { Button, Card, Flex, Form, Input, Select, Switch } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -24,7 +24,6 @@ import {
   DeclarationNameFormItem,
   PrivacyDeclarationCustomFields,
 } from "~/features/system/privacy-declaration-fields";
-import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import {
   DataCategory,
   Dataset,
@@ -177,7 +176,7 @@ export const PrivacyDeclarationForm = ({
       data-testid="declaration-form"
     >
       <Flex vertical gap="middle">
-        <SystemFormInputGroup heading="Data use declaration">
+        <Card size="small" title="Data use declaration">
           <DeclarationNameFormItem
             disabled={isEditing}
             label="Declaration name (optional)"
@@ -242,16 +241,18 @@ export const PrivacyDeclarationForm = ({
             name="retention_period"
             label="Retention period (days)"
             tooltip="How long is personal data retained for this purpose?"
+            className="mb-0"
           >
             <Input aria-label="Retention period" disabled={lockedForGVL} />
           </Form.Item>
-        </SystemFormInputGroup>
+        </Card>
 
-        <SystemFormInputGroup heading="Features">
+        <Card size="small" title="Features">
           <Form.Item
             name="features"
             label="Features"
             tooltip="What are some features of how data is processed?"
+            className="mb-0"
           >
             <Select
               aria-label="Features"
@@ -260,21 +261,22 @@ export const PrivacyDeclarationForm = ({
               disabled={lockedForGVL}
             />
           </Form.Item>
-        </SystemFormInputGroup>
+        </Card>
 
-        <SystemFormInputGroup heading="Dataset reference">
+        <Card size="small" title="Dataset reference">
           <DatasetReferencesFormItem
             allDatasets={allDatasets ?? []}
             tooltip="Is there a dataset configured for this system?"
           />
-        </SystemFormInputGroup>
+        </Card>
 
-        <SystemFormInputGroup heading="Special category data">
+        <Card size="small" title="Special category data">
           <Form.Item
             name="processes_special_category_data"
             label="This system processes special category data"
             tooltip="Is this system processing special category data as defined by GDPR Article 9?"
             valuePropName="checked"
+            className="mb-0"
           >
             <Switch />
           </Form.Item>
@@ -291,6 +293,7 @@ export const PrivacyDeclarationForm = ({
                   name="special_category_legal_basis"
                   label="Legal basis for processing"
                   tooltip="What is the legal basis under which the special category data is processed?"
+                  className="mb-0 mt-4"
                   rules={[
                     {
                       required: true,
@@ -307,14 +310,15 @@ export const PrivacyDeclarationForm = ({
               ) : null
             }
           </Form.Item>
-        </SystemFormInputGroup>
+        </Card>
 
-        <SystemFormInputGroup heading="Third parties">
+        <Card size="small" title="Third parties">
           <Form.Item
             name="data_shared_with_third_parties"
             label="This system shares data with 3rd parties for this purpose"
             tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
             valuePropName="checked"
+            className="mb-0"
           >
             <Switch />
           </Form.Item>
@@ -327,11 +331,12 @@ export const PrivacyDeclarationForm = ({
           >
             {({ getFieldValue }) =>
               getFieldValue("data_shared_with_third_parties") ? (
-                <>
+                <Flex vertical gap="middle" className="mt-4">
                   <Form.Item
                     name="third_parties"
                     label="Third parties"
                     tooltip="Which type of third parties is the data shared with?"
+                    className="mb-0"
                   >
                     <Input aria-label="Third parties" />
                   </Form.Item>
@@ -339,6 +344,7 @@ export const PrivacyDeclarationForm = ({
                     name="shared_categories"
                     label="Shared categories"
                     tooltip="Which categories of personal data does this system share with third parties?"
+                    className="mb-0"
                   >
                     <Select
                       aria-label="Shared categories"
@@ -349,11 +355,11 @@ export const PrivacyDeclarationForm = ({
                       }))}
                     />
                   </Form.Item>
-                </>
+                </Flex>
               ) : null
             }
           </Form.Item>
-        </SystemFormInputGroup>
+        </Card>
 
         {includeCustomFields ? (
           <PrivacyDeclarationCustomFields

@@ -1,11 +1,10 @@
-import { Form, Input, Select, Spin } from "fidesui";
+import { Card, Form, Input, Select, Spin } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import {
   LegacyAllowedTypes,
   LegacyResourceTypes,
 } from "~/features/common/custom-fields/types";
-import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 
 interface PrivacyDeclarationCustomFieldsProps {
   privacyDeclarationId?: string;
@@ -38,7 +37,7 @@ export const PrivacyDeclarationCustomFields = ({
   }
 
   return (
-    <SystemFormInputGroup heading="Custom fields">
+    <Card size="small" title="Custom fields">
       {isLoading ? (
         <Spin />
       ) : (
@@ -92,6 +91,6 @@ export const PrivacyDeclarationCustomFields = ({
           );
         })
       )}
-    </SystemFormInputGroup>
+    </Card>
   );
 };
