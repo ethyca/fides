@@ -5,6 +5,10 @@ import { formatIsoDate } from "~/features/common/utils";
 import RequestDetailsRow from "./RequestDetailsRow";
 import { PrivacyRequestEntity } from "./types";
 
+type RequestCustomFieldsProps = {
+  subjectRequest: PrivacyRequestEntity;
+};
+
 const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
   const { custom_privacy_request_fields: customPrivacyRequestFields } =
     subjectRequest;
