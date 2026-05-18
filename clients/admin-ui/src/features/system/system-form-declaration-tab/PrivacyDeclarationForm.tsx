@@ -204,6 +204,7 @@ export const PrivacyDeclarationForm = ({
           >
             <Select
               aria-label="Legal basis for processing"
+              data-testid="input-legal_basis_for_processing"
               options={legalBasisOptions}
               disabled={lockedForGVL}
               allowClear
@@ -224,7 +225,10 @@ export const PrivacyDeclarationForm = ({
                   label="Impact assessment location"
                   tooltip="Where is the legitimate interest impact assessment stored?"
                 >
-                  <Input aria-label="Impact assessment location" />
+                  <Input
+                    aria-label="Impact assessment location"
+                    data-testid="input-impact_assessment_location"
+                  />
                 </Form.Item>
               ) : null
             }
@@ -235,7 +239,10 @@ export const PrivacyDeclarationForm = ({
             tooltip="Has the vendor declared that the legal basis may be overridden?"
             valuePropName="checked"
           >
-            <Switch disabled={lockedForGVL} />
+            <Switch
+              disabled={lockedForGVL}
+              data-testid="input-flexible_legal_basis_for_processing"
+            />
           </Form.Item>
           <Form.Item
             name="retention_period"
@@ -243,7 +250,11 @@ export const PrivacyDeclarationForm = ({
             tooltip="How long is personal data retained for this purpose?"
             className="mb-0"
           >
-            <Input aria-label="Retention period" disabled={lockedForGVL} />
+            <Input
+              aria-label="Retention period"
+              data-testid="input-retention_period"
+              disabled={lockedForGVL}
+            />
           </Form.Item>
         </Card>
 
@@ -256,6 +267,7 @@ export const PrivacyDeclarationForm = ({
           >
             <Select
               aria-label="Features"
+              data-testid="input-features"
               mode="tags"
               placeholder="Describe features..."
               disabled={lockedForGVL}
@@ -278,7 +290,7 @@ export const PrivacyDeclarationForm = ({
             valuePropName="checked"
             className="mb-0"
           >
-            <Switch />
+            <Switch data-testid="input-processes_special_category_data" />
           </Form.Item>
           <Form.Item
             noStyle
@@ -303,6 +315,7 @@ export const PrivacyDeclarationForm = ({
                 >
                   <Select
                     aria-label="Special category legal basis"
+                    data-testid="input-special_category_legal_basis"
                     options={specialCategoryLegalBasisOptions}
                     allowClear
                   />
@@ -320,7 +333,7 @@ export const PrivacyDeclarationForm = ({
             valuePropName="checked"
             className="mb-0"
           >
-            <Switch />
+            <Switch data-testid="input-data_shared_with_third_parties" />
           </Form.Item>
           <Form.Item
             noStyle
@@ -338,7 +351,10 @@ export const PrivacyDeclarationForm = ({
                     tooltip="Which type of third parties is the data shared with?"
                     className="mb-0"
                   >
-                    <Input aria-label="Third parties" />
+                    <Input
+                      aria-label="Third parties"
+                      data-testid="input-third_parties"
+                    />
                   </Form.Item>
                   <Form.Item
                     name="shared_categories"
@@ -348,6 +364,7 @@ export const PrivacyDeclarationForm = ({
                   >
                     <Select
                       aria-label="Shared categories"
+                      data-testid="input-shared_categories"
                       mode="multiple"
                       options={allDataCategories.map((c) => ({
                         value: c.fides_key,
