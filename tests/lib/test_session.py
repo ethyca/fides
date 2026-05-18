@@ -81,6 +81,24 @@ class TestGetDbEngine:
         finally:
             engine.dispose()
 
+    def test_pool_recycle_passed_to_engine(self) -> None:
+        """pool_recycle is forwarded to the underlying QueuePool."""
+        creator = make_sync_creator()
+        engine = session.get_db_engine(creator=creator, pool_size=1, pool_recycle=900)
+        try:
+            assert engine.pool._recycle == 900
+        finally:
+            engine.dispose()
+
+    def test_pool_recycle_default(self) -> None:
+        """Default pool_recycle (None) leaves SQLAlchemy's default of -1."""
+        creator = make_sync_creator()
+        engine = session.get_db_engine(creator=creator, pool_size=1)
+        try:
+            assert engine.pool._recycle == -1
+        finally:
+            engine.dispose()
+
     def test_disable_pooling(self) -> None:
         """disable_pooling uses NullPool — no connections are kept."""
         from sqlalchemy.pool import NullPool

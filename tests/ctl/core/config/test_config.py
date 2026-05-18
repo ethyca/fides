@@ -71,6 +71,7 @@ def test_get_config_default() -> None:
     """Check that get_config loads default values when given an empty TOML."""
     config = get_config()
     assert config.database.api_engine_pool_size == 50
+    assert config.database.pool_recycle is None
     assert config.security.env == "prod"
     assert config.security.app_encryption_key == ""
     assert config.logging.level == "INFO"
@@ -244,6 +245,28 @@ def test_get_alembic_config_with_special_char_in_database_url():
     # this would fail with - ValueError: invalid interpolation syntax
     # if not handled
     get_alembic_config(database_url)
+
+
+@pytest.mark.unit
+def test_database_settings_pool_recycle_defaults_to_none() -> None:
+    """pool_recycle is optional and defaults to None."""
+    db_settings = DatabaseSettings()
+    assert db_settings.pool_recycle is None
+
+
+@pytest.mark.unit
+def test_database_settings_pool_recycle_accepts_positive() -> None:
+    """pool_recycle accepts a positive integer."""
+    db_settings = DatabaseSettings(pool_recycle=1800)
+    assert db_settings.pool_recycle == 1800
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("value", [0, -1, -5], ids=["zero", "neg_one", "neg_five"])
+def test_database_settings_pool_recycle_rejects_invalid(value: int) -> None:
+    """pool_recycle must be > 0 when set."""
+    with pytest.raises(ValidationError):
+        DatabaseSettings(pool_recycle=value)
 
 
 @pytest.mark.unit
