@@ -81,7 +81,24 @@ export async function* streamChatTurn(
   );
 
   if (!response.ok || !response.body) {
-    throw new Error(`Form builder chat failed: HTTP ${response.status}`);
+    const MAX_BODY_LENGTH = 500;
+    let detail = "";
+    try {
+      const text = await response.text();
+      try {
+        const json = JSON.parse(text);
+        detail = typeof json.detail === "string" ? json.detail : text;
+      } catch {
+        detail = text;
+      }
+    } catch {
+      // body unreadable, leave detail empty
+    }
+    if (detail.length > MAX_BODY_LENGTH) {
+      detail = `${detail.slice(0, MAX_BODY_LENGTH)}…`;
+    }
+    const suffix = detail ? `: ${detail}` : "";
+    throw new Error(`Form builder chat failed: HTTP ${response.status}${suffix}`);
   }
 
   yield* parseSseStream(response.body);
