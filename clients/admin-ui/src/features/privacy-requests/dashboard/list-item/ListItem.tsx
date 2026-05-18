@@ -3,6 +3,7 @@ import { Flex, formatIsoLocation, isoStringToEntry, List } from "fidesui";
 import { isArray } from "lodash";
 import React from "react";
 
+import { formatIsoDate } from "~/features/common/utils";
 import { PrivacyRequestResponseExtended } from "~/types/api";
 
 import { RequestTableActions } from "../../RequestTableActions";
@@ -11,7 +12,6 @@ import {
   getOtherIdentities,
   getPrimaryIdentity,
 } from "../utils";
-import { formatIsoDate } from "~/features/common/utils";
 import {
   DaysLeft,
   Header,

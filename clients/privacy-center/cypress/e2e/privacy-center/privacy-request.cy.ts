@@ -541,7 +541,7 @@ describe("Privacy Request with date of birth identity field", () => {
     cy.loadConfigFixture("config/config_dob_request.json").then(() => {
       cy.getByTestId("privacy-request-form").within(() => {
         cy.get("#email").type("test@example.com");
-        cy.get("[data-testid='date-date_of_birth'] input").type("1990-01-15");
+        cy.get("[data-testid='date-date_of_birth'] input").type("01/15/1990");
         cy.get("[data-testid='date-date_of_birth'] input").blur();
         cy.get("button[type='submit']").click();
 
@@ -573,7 +573,7 @@ describe("Privacy Request with date of birth identity field", () => {
     cy.loadConfigFixture("config/config_dob_request_max.json").then(() => {
       cy.getByTestId("privacy-request-form").within(() => {
         cy.get("#email").type("test@example.com");
-        cy.get("[data-testid='date-date_of_birth'] input").type("2030-01-01");
+        cy.get("[data-testid='date-date_of_birth'] input").type("01/01/2030");
         cy.get("[data-testid='date-date_of_birth'] input").blur();
         cy.get("button[type='submit']").click();
         cy.contains("Date of Birth must be on or before 2020-01-01").should(
@@ -589,7 +589,7 @@ describe("Privacy Request with date of birth identity field", () => {
     cy.loadConfigFixture("config/config_dob_request_min.json").then(() => {
       cy.getByTestId("privacy-request-form").within(() => {
         cy.get("#email").type("test@example.com");
-        cy.get("[data-testid='date-date_of_birth'] input").type("1800-01-01");
+        cy.get("[data-testid='date-date_of_birth'] input").type("01/01/1800");
         cy.get("[data-testid='date-date_of_birth'] input").blur();
         cy.get("button[type='submit']").click();
         cy.contains("Date of Birth must be on or after 1900-01-01").should(
