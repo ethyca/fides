@@ -23,6 +23,14 @@ def upgrade():
         "ALTER TYPE privacyrequeststatus ADD VALUE IF NOT EXISTS 'awaiting_access_review'"
     )
 
+    # Add access package audit log actions
+    op.execute(
+        "ALTER TYPE auditlogaction ADD VALUE IF NOT EXISTS 'access_package_approved'"
+    )
+    op.execute(
+        "ALTER TYPE auditlogaction ADD VALUE IF NOT EXISTS 'access_package_redacted'"
+    )
+
     op.create_table(
         "access_package_review",
         sa.Column("id", sa.String(length=255), nullable=False),
