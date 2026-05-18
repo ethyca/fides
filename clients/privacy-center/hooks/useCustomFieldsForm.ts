@@ -88,7 +88,7 @@ export const useCustomFieldsForm = ({
                 return [key, Yup.boolean().notRequired()];
               case "file": {
                 const maxSize = field.max_size_bytes ?? DEFAULT_MAX_SIZE_BYTES;
-                const allowedTypes = field.allowed_mime_types;
+                const allowedTypes = field.allowed_file_types;
                 let fileSchema = Yup.array();
                 if (isRequired) {
                   fileSchema = fileSchema.min(

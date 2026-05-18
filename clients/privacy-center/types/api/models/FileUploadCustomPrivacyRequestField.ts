@@ -6,17 +6,18 @@ import type { ConditionGroup } from './ConditionGroup';
 import type { ConditionLeaf } from './ConditionLeaf';
 
 /**
- * Regular custom privacy request field supporting text, select, multiselect,
- * checkbox, checkbox_group, and textarea types
+ * File upload field. ``max_size_bytes`` and ``allowed_file_types``
+ * drive client hints and per-field upload enforcement.
  */
-export type fides__api__schemas__privacy_center_config__CustomPrivacyRequestField = {
+export type FileUploadCustomPrivacyRequestField = {
   label: string;
   required?: (boolean | null);
   default_value?: (string | null);
   hidden?: (boolean | null);
   query_param_key?: (string | null);
   display_condition?: (ConditionLeaf | ConditionGroup | null);
-  field_type?: ('text' | 'select' | 'multiselect' | 'checkbox' | 'checkbox_group' | 'textarea' | null);
-  options?: (Array<string> | null);
+  field_type?: string;
+  max_size_bytes?: number;
+  allowed_file_types?: Array<string>;
 };
 

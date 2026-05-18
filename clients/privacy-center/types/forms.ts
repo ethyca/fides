@@ -28,7 +28,7 @@ export interface CustomPrivacyRequestField {
   query_param_key?: string;
   ip_geolocation_hint?: boolean;
   max_size_bytes?: number;
-  allowed_mime_types?: string[];
+  allowed_file_types?: string[];
 }
 
 export interface CustomPrivacyRequestFields {

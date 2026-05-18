@@ -61,7 +61,7 @@ export interface CustomFileUploadField extends ICustomField {
   default_value?: string | null;
   field_type: "file";
   max_size_bytes?: number;
-  allowed_mime_types?: string[];
+  allowed_file_types?: string[];
 }
 
 export interface CustomLocationField extends ICustomField {

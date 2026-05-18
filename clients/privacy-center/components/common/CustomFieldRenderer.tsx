@@ -225,7 +225,7 @@ const CustomFieldRenderer = ({
           }}
           beforeUpload={() => false}
           multiple
-          accept={props.allowed_mime_types?.join(",")}
+          accept={props.allowed_file_types?.join(",")}
           data-testid={`file-upload-${fieldKey}`}
         >
           <Button data-testid={`file-upload-button-${fieldKey}`}>
