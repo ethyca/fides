@@ -4,6 +4,7 @@ import {
   CollapseProps,
   Flex,
   Icons,
+  Space,
   Tag,
   Text,
   useMessage,
@@ -132,8 +133,10 @@ export const DataFlowAccordionForm = ({
           </Flex>
         ),
         children: (
-          <div
-            className="space-y-4 rounded-md bg-gray-50 p-6"
+          <Space
+            direction="vertical"
+            size="middle"
+            className="w-full"
             data-testid={`data-flow-panel-${flowType}`}
           >
             <Button
@@ -153,7 +156,7 @@ export const DataFlowAccordionForm = ({
               onDelete={handleDelete}
             />
 
-            <div className="mt-6 flex gap-2">
+            <Flex gap={2} className="mt-6">
               <Button
                 disabled={!isDirty}
                 onClick={handleCancel}
@@ -170,7 +173,7 @@ export const DataFlowAccordionForm = ({
               >
                 Save
               </Button>
-            </div>
+            </Flex>
             {/* By conditionally rendering the modal, we force it to reset its state
             whenever it opens */}
             {modalOpen ? (
@@ -184,7 +187,7 @@ export const DataFlowAccordionForm = ({
                 flowType={flowType}
               />
             ) : null}
-          </div>
+          </Space>
         ),
       },
     ],

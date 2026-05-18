@@ -1,4 +1,4 @@
-import { Button, Flex, Modal, Switch, Tag, Text } from "fidesui";
+import { Button, Flex, Form, Modal, Switch, Tag, Text } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
@@ -103,26 +103,19 @@ const DataFlowSystemsModal = ({
         {emptySystems ? (
           <Text>No systems found</Text>
         ) : (
-          <Flex vertical gap={16}>
+          <Flex vertical gap="large">
             <Flex justify="space-between" align="center">
               <Text className="flex-1 text-sm font-medium">
                 Add or remove destination systems from your data map
               </Text>
-              <Flex align="center" gap="small">
-                <label
-                  htmlFor="assign-all-systems"
-                  className="text-sm leading-none"
-                >
-                  Assign all systems
-                </label>
+              <Form.Item label="Assign all systems" className="mb-0">
                 <Switch
                   size="small"
-                  id="assign-all-systems"
                   checked={allSystemsAssigned}
                   onChange={handleToggleAllSystems}
                   data-testid="assign-all-systems-toggle"
                 />
-              </Flex>
+              </Form.Item>
             </Flex>
             <SearchInput
               value={searchFilter}
