@@ -37,7 +37,7 @@ dependencies = [
     "attrs~=25.4.0",
     "boto3==1.41.2",
     "celery-redis-cluster~=0.2.3",
-    "celery==5.5.3",
+    "celery==5.6.3",
     "certifi==2024.8.30",
     "click-repl~=0.3.0",
     "click==8.1.8",
