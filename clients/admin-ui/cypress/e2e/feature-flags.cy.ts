@@ -60,18 +60,16 @@ describe("Feature Flags", () => {
     cy.login();
     stubPlus(true);
 
-    // Set flags BEFORE visiting the page - this is the ideal pattern
+    // Set flag BEFORE visiting the page - this is the ideal pattern
     cy.overrideFeatureFlag("webMonitor", false);
-    cy.overrideFeatureFlag("dataCatalog", false);
 
     // Navigate to feature flags
     stubFeatureFlags();
     cy.visit("/settings/about");
     cy.wait("@createConfigurationSettings");
 
-    // Verify the flags were set correctly on initial load
+    // Verify the flag was set correctly on initial load
     cy.get("#flag-webMonitor").should("have.attr", "aria-checked", "false");
-    cy.get("#flag-dataCatalog").should("have.attr", "aria-checked", "false");
 
     // Can also override after the page loads and it updates automatically
     cy.overrideFeatureFlag("webMonitor", true);
@@ -85,12 +83,12 @@ describe("Feature Flags", () => {
     stubPlus(true);
 
     // This pattern is useful when testing features behind flags
-    // Set the flag before navigating to test the enabled state
-    cy.overrideFeatureFlag("dataCatalog", false);
+    // Set the flag before navigating to verify the flag-gated nav link is hidden
+    cy.overrideFeatureFlag("policies", false);
 
-    // Now visit a page that uses this flag
-    cy.visit("/data-catalog");
-    // The feature will be disabled from the start
-    cy.getByTestId("Data catalog").should("not.exist");
+    // Now visit a page where the side nav is rendered
+    cy.visit("/");
+    // The flag-gated nav link should not appear when the flag is off
+    cy.get('[data-testid="DSR policies-nav-link"]').should("not.exist");
   });
 });

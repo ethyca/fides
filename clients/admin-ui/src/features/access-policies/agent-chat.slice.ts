@@ -6,10 +6,29 @@ export interface AccessPolicyChatRequest {
   current_policy_yaml?: string;
 }
 
+/**
+ * Bundles a proposed policy change from the agent. The id buckets drive the
+ * visual editor's animation:
+ *   - added/changed → highlight pulses on the new graph
+ *   - removed → ghost nodes during the hold phase
+ *
+ * Id format (matches the system prompt taught to the LLM):
+ *   - "policy"
+ *   - "action"
+ *   - "condition:<dimension>"               e.g. "condition:data_use"
+ *   - "constraint:<type>:<discriminator>"   e.g. "constraint:geo_location:..."
+ */
+export interface PolicyUpdate {
+  yaml: string;
+  added: string[];
+  changed: string[];
+  removed: string[];
+}
+
 export interface AccessPolicyChatResponse {
   chat_history_id: string;
   message: string;
-  new_policy_yaml: string | null;
+  policy_update: PolicyUpdate | null;
 }
 
 const agentChatApi = baseApi.injectEndpoints({

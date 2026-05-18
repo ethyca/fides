@@ -32,6 +32,30 @@ class TestPrivacyRequestFilter:
         with pytest.raises(ValidationError):
             PrivacyRequestFilter(status="invalid_status")
 
+    def test_single_source(self):
+        params = PrivacyRequestFilter(source=PrivacyRequestSource.privacy_center)
+        assert params.source == [PrivacyRequestSource.privacy_center]
+
+    def test_list_of_sources(self):
+        params = PrivacyRequestFilter(
+            source=[
+                PrivacyRequestSource.privacy_center,
+                PrivacyRequestSource.request_manager,
+            ]
+        )
+        assert params.source == [
+            PrivacyRequestSource.privacy_center,
+            PrivacyRequestSource.request_manager,
+        ]
+
+    def test_none_source(self):
+        params = PrivacyRequestFilter(source=None)
+        assert params.source is None
+
+    def test_invalid_source(self):
+        with pytest.raises(ValidationError):
+            PrivacyRequestFilter(source="not_a_real_source")
+
 
 class TestPrivacyRequestCreate:
     def test_valid_source(self):

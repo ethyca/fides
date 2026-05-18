@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed privacy-center middleware build error by replacing uuid dependency with native crypto.randomUUID()
+pr: 8179
+labels: []

@@ -7,7 +7,11 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.db.database import get_alembic_config
-from fides.config import check_required_webserver_config_values, get_config
+from fides.config import (
+    build_config,
+    check_required_webserver_config_values,
+    get_config,
+)
 from fides.config.database_settings import DatabaseSettings
 from fides.config.redis_settings import RedisSettings
 from fides.config.security_settings import SecuritySettings
@@ -67,6 +71,7 @@ def test_get_config_default() -> None:
     """Check that get_config loads default values when given an empty TOML."""
     config = get_config()
     assert config.database.api_engine_pool_size == 50
+    assert config.database.pool_recycle is None
     assert config.security.env == "prod"
     assert config.security.app_encryption_key == ""
     assert config.logging.level == "INFO"
@@ -240,6 +245,28 @@ def test_get_alembic_config_with_special_char_in_database_url():
     # this would fail with - ValueError: invalid interpolation syntax
     # if not handled
     get_alembic_config(database_url)
+
+
+@pytest.mark.unit
+def test_database_settings_pool_recycle_defaults_to_none() -> None:
+    """pool_recycle is optional and defaults to None."""
+    db_settings = DatabaseSettings()
+    assert db_settings.pool_recycle is None
+
+
+@pytest.mark.unit
+def test_database_settings_pool_recycle_accepts_positive() -> None:
+    """pool_recycle accepts a positive integer."""
+    db_settings = DatabaseSettings(pool_recycle=1800)
+    assert db_settings.pool_recycle == 1800
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("value", [0, -1, -5], ids=["zero", "neg_one", "neg_five"])
+def test_database_settings_pool_recycle_rejects_invalid(value: int) -> None:
+    """pool_recycle must be > 0 when set."""
+    with pytest.raises(ValidationError):
+        DatabaseSettings(pool_recycle=value)
 
 
 @pytest.mark.unit
@@ -778,3 +805,69 @@ class TestReadOnlyDatabaseConfig:
         assert "ssl=" in parsed.query
         # sslrootcert should be removed from query params
         assert "sslrootcert" not in parsed.query
+
+
+@pytest.mark.unit
+class TestDatabaseCredentialSecretIdValidation:
+    """Validate cross-section coherence between secrets.provider and database.credential_secret_name."""
+
+    def test_static_provider_with_credential_secret_name_raises(self) -> None:
+        with pytest.raises(ValidationError) as exc:
+            build_config(
+                {
+                    "secrets": {"provider": "static"},
+                    "database": {
+                        "credential_secret_name": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+                    },
+                }
+            )
+        assert "credential_secret_name" in str(exc.value)
+        assert "static" in str(exc.value)
+
+    def test_static_provider_with_readonly_credential_secret_name_raises(self) -> None:
+        with pytest.raises(ValidationError) as exc:
+            build_config(
+                {
+                    "secrets": {"provider": "static"},
+                    "database": {
+                        "readonly_credential_secret_name": "arn:aws:secretsmanager:us-east-1:123:secret:ro-creds"
+                    },
+                }
+            )
+        assert "readonly_credential_secret_name" in str(exc.value)
+        assert "static" in str(exc.value)
+
+    def test_aws_provider_without_credential_secret_name_raises(self) -> None:
+        with pytest.raises(ValidationError) as exc:
+            build_config(
+                {
+                    "secrets": {
+                        "provider": "aws_secrets_manager",
+                        "aws_secrets_manager": {"region": "us-east-1"},
+                    },
+                }
+            )
+        assert "credential_secret_name is not set" in str(exc.value)
+
+    def test_aws_provider_with_credential_secret_name_passes(self) -> None:
+        config = build_config(
+            {
+                "secrets": {
+                    "provider": "aws_secrets_manager",
+                    "aws_secrets_manager": {"region": "us-east-1"},
+                },
+                "database": {
+                    "credential_secret_name": "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+                },
+            }
+        )
+        assert (
+            config.database.credential_secret_name
+            == "arn:aws:secretsmanager:us-east-1:123:secret:db-creds"
+        )
+        assert config.database.readonly_credential_secret_name is None
+
+    def test_static_provider_without_secret_ids_passes(self) -> None:
+        config = build_config({})
+        assert config.database.credential_secret_name is None
+        assert config.database.readonly_credential_secret_name is None

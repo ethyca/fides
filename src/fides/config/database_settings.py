@@ -4,7 +4,7 @@
 
 from copy import deepcopy
 from typing import Dict, Optional, cast
-from urllib.parse import quote, quote_plus, urlencode
+from urllib.parse import quote, quote_plus, unquote_plus, urlencode
 
 from pydantic import (
     Field,
@@ -53,6 +53,18 @@ class DatabaseSettings(FidesSettings):
     api_engine_pool_pre_ping: bool = Field(
         default=True,
         description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
+    )
+
+    # Pool Recycle (applies to all engines)
+    pool_recycle: Optional[int] = Field(
+        default=None,
+        gt=0,
+        description=(
+            "Number of seconds after which a database connection is automatically "
+            "recycled (closed and replaced). Useful when a connection proxy or "
+            "firewall imposes an idle connection timeout. Set this to a value lower "
+            "than the proxy/DB timeout. When unset (None), connections are never recycled."
+        ),
     )
 
     # Async Engine Settings
@@ -116,6 +128,15 @@ class DatabaseSettings(FidesSettings):
     readonly_params: Dict = Field(
         default={},
         description="Additional connection parameters for read-only database connections. If not provided and readonly_server is set, uses 'params'.",
+    )
+
+    credential_secret_name: Optional[str] = Field(
+        default=None,
+        description="Secrets Manager secret name or ARN containing DB credentials (JSON with 'username' and 'password' keys). Used when secrets.provider is 'aws_secrets_manager'.",
+    )
+    readonly_credential_secret_name: Optional[str] = Field(
+        default=None,
+        description="Secrets Manager secret name or ARN for read-only DB credentials. Falls back to credential_secret_name if not set.",
     )
 
     task_engine_pool_size: int = Field(
@@ -274,6 +295,18 @@ class DatabaseSettings(FidesSettings):
         if value and isinstance(value, str):
             return quote_plus(value)
         return value
+
+    @property
+    def raw_password(self) -> str:
+        """Return password unescaped for direct driver use (psycopg2/asyncpg)."""
+        return unquote_plus(self.password)
+
+    @property
+    def raw_readonly_password(self) -> Optional[str]:
+        """Return readonly password unescaped for direct driver use."""
+        if self.readonly_password:
+            return unquote_plus(self.readonly_password)
+        return None
 
     @field_validator("sync_database_uri", mode="before")
     @classmethod

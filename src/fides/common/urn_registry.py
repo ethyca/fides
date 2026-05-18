@@ -84,6 +84,7 @@ PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
 PRIVACY_REQUEST_BATCH_EMAIL_SEND = (
     "/privacy-request/administrate/process-awaiting-email-send"
 )
+PRIVACY_REQUEST_ATTACHMENT = "/privacy-request/attachment"
 PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_FINALIZE = "/privacy-request/bulk/finalize"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
