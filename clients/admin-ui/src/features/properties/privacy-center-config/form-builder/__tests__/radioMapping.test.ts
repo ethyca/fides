@@ -1,5 +1,5 @@
-import type { JsonRenderSpec } from "../mapper";
-import { mapSpecToPcShape } from "../mapper";
+import type { JsonRenderSpec } from "../types";
+import { jsonSpecToPcShape } from "../jsonSpecToPcShape";
 
 describe("Radio mapping (legacy PC shape)", () => {
   it("emits field_type=radio for Radio components", () => {
@@ -19,7 +19,7 @@ describe("Radio mapping (legacy PC shape)", () => {
         },
       },
     };
-    const { pcShape, errors } = mapSpecToPcShape(spec);
+    const { pcShape, errors } = jsonSpecToPcShape(spec);
     expect(errors).toEqual([]);
     expect(pcShape.user_type).toEqual({
       label: "User type",

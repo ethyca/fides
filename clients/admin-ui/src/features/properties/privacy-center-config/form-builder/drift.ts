@@ -1,5 +1,5 @@
-import type { JsonRenderSpec, PcCustomFields } from "./mapper";
-import { mapSpecToPcShape } from "./mapper";
+import type { JsonRenderSpec, PcCustomFields } from "./types";
+import { jsonSpecToPcShape } from "./jsonSpecToPcShape";
 
 export const stableJson = (value: unknown): string => {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -62,11 +62,11 @@ const normalizeShape = (shape: PcCustomFields): Record<string, unknown> => {
  * comparison so a clean save → reload round-trip doesn't surface as
  * drift just because the backend echoed unset fields.
  */
-export function detectDrift(
+export function detectSpecPcShapeDrift(
   richSpec: JsonRenderSpec,
   savedPcShape: PcCustomFields,
 ): boolean {
-  const { pcShape, errors } = mapSpecToPcShape(richSpec);
+  const { pcShape, errors } = jsonSpecToPcShape(richSpec);
   if (errors.length > 0) {
     return true;
   }

@@ -7,7 +7,7 @@ import type {
   PcRadioField,
   PcSelectField,
   PcTextField,
-} from "./mapper";
+} from "./types";
 
 const COMPONENT_FOR_FIELD: Record<PcCustomField["field_type"], string> = {
   text: "Text",
@@ -130,7 +130,7 @@ const buildCustomElement = (
   return element;
 };
 
-export function synthesizeSpecFromPcShape(
+export function pcShapeToJsonSpec(
   pcShape: PcCustomFields,
   identityInputs?: Record<string, "required" | "optional"> | null,
   fieldOrder?: string[] | null,

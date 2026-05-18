@@ -1,5 +1,5 @@
 import type { ComponentType } from "./catalog";
-import type { JsonRenderSpec } from "./mapper";
+import type { JsonRenderSpec } from "./types";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 

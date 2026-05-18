@@ -1,6 +1,6 @@
-import { detectDrift } from "../drift";
+import { detectSpecPcShapeDrift } from "../drift";
 
-describe("detectDrift", () => {
+describe("detectSpecPcShapeDrift", () => {
   it("returns false when the rich spec maps to the saved PC shape", () => {
     const richSpec = {
       root: "form",
@@ -21,7 +21,7 @@ describe("detectDrift", () => {
       },
     };
 
-    expect(detectDrift(richSpec, savedPc)).toBe(false);
+    expect(detectSpecPcShapeDrift(richSpec, savedPc)).toBe(false);
   });
 
   it("returns true when fields differ", () => {
@@ -44,6 +44,6 @@ describe("detectDrift", () => {
       },
     };
 
-    expect(detectDrift(richSpec, savedPc)).toBe(true);
+    expect(detectSpecPcShapeDrift(richSpec, savedPc)).toBe(true);
   });
 });

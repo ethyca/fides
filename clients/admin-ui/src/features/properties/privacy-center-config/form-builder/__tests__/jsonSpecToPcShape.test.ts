@@ -1,4 +1,4 @@
-import { mapSpecToPcShape } from "../mapper";
+import { jsonSpecToPcShape } from "../jsonSpecToPcShape";
 
 const buildSpec = (elements: Record<string, any>, children: string[]) => ({
   root: "form",
@@ -8,7 +8,7 @@ const buildSpec = (elements: Record<string, any>, children: string[]) => ({
   },
 });
 
-describe("mapSpecToPcShape", () => {
+describe("jsonSpecToPcShape", () => {
   it("maps a Text field", () => {
     const spec = buildSpec(
       {
@@ -21,7 +21,7 @@ describe("mapSpecToPcShape", () => {
       ["f1"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     expect(result.errors).toEqual([]);
     expect(result.droppedFeatures).toEqual([]);
@@ -66,7 +66,7 @@ describe("mapSpecToPcShape", () => {
       ["s", "m", "l"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     expect(result.errors).toEqual([]);
     expect(result.pcShape.reason.field_type).toBe("select");
@@ -91,7 +91,7 @@ describe("mapSpecToPcShape", () => {
       ["a", "b"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     expect(result.errors).toContainEqual(
       expect.objectContaining({ kind: "duplicate_name", name: "email" }),
@@ -132,7 +132,7 @@ describe("mapSpecToPcShape", () => {
       ["a", "b", "c"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     const kinds = result.droppedFeatures.map((d) => d.kind).sort();
     expect(kinds).toContain("visible");
@@ -173,7 +173,7 @@ describe("mapSpecToPcShape", () => {
       ["f1", "f2", "f3"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     expect(result.errors).toEqual([]);
     expect(result.pcShape.country.placeholder).toBe("e.g. US");
@@ -205,7 +205,7 @@ describe("mapSpecToPcShape", () => {
       ["f_email", "f_reason", "f_name", "f_topics"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     expect(result.errors).toEqual([]);
     expect(result.fieldOrder).toEqual(["email", "reason", "name", "topics"]);
@@ -218,7 +218,7 @@ describe("mapSpecToPcShape", () => {
 
   it("returns an empty fieldOrder when the spec has no children", () => {
     const spec = buildSpec({}, []);
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
     expect(result.fieldOrder).toEqual([]);
   });
 
@@ -239,7 +239,7 @@ describe("mapSpecToPcShape", () => {
       ["ok", "weird"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     expect(result.fieldOrder).toEqual(["notes"]);
     expect(result.droppedFeatures.map((d) => d.kind)).toContain(
@@ -268,7 +268,7 @@ describe("mapSpecToPcShape", () => {
       ["a", "b"],
     );
 
-    const result = mapSpecToPcShape(spec);
+    const result = jsonSpecToPcShape(spec);
 
     expect(result.droppedFeatures).toEqual([]);
     expect(result.pcShape.state.visible_when).toEqual([
