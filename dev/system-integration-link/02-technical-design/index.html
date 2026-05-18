@@ -2141,7 +2141,7 @@ You're not viewing the latest version.
 <p><strong>Status:</strong> Not yet implemented.</p>
 <h2 id="7-test-coverage">7. Test Coverage</h2>
 <h3 id="service-layer-unit-tests">Service Layer (Unit Tests)</h3>
-<p>13 tests in <code>tests/system_integration_link/test_service.py</code> covering:</p>
+<p>13 tests in <code>tests/fides/system_integration_link/test_service.py</code> covering:</p>
 <ul>
 <li><code>TestGetLinksForConnection</code> (3 tests): happy path, empty result, connection not found</li>
 <li><code>TestSetLinks</code> (6 tests): single link, idempotent replace with pre-existing links, clear with empty list, reject &gt;1 link, connection not found, system not found</li>
@@ -2149,7 +2149,7 @@ You're not viewing the latest version.
 </ul>
 <p>Tests mock the repository and inject it via the service constructor.</p>
 <h3 id="repository-layer-integration-tests">Repository Layer (Integration Tests)</h3>
-<p>13 tests in <code>tests/system_integration_link/test_repository.py</code> covering:</p>
+<p>13 tests in <code>tests/fides/system_integration_link/test_repository.py</code> covering:</p>
 <ul>
 <li><code>TestUpsertLink</code> (2 tests): creates new link, returns existing on duplicate</li>
 <li><code>TestGetLinksForConnection</code> (2 tests): returns links with system info, empty result</li>
