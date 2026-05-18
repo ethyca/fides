@@ -367,7 +367,7 @@ export const PrivacyDeclarationForm = ({
           />
         ) : null}
 
-        <Flex justify="space-between" align="center">
+        <Flex justify="end" align="center" gap="small">
           <Button onClick={onCancel} data-testid="cancel-btn">
             Cancel
           </Button>
