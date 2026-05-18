@@ -15,11 +15,11 @@ import {
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
-import { Editor } from "~/features/common/yaml/helpers";
 import {
   ACCESS_POLICIES_ROUTE,
   ACCESS_POLICY_EDIT_ROUTE,
 } from "~/features/common/nav/routes";
+import { Editor } from "~/features/common/yaml/helpers";
 
 import { useGetViolationDetailQuery } from "./access-control.slice";
 
@@ -49,18 +49,15 @@ export const ViolationDetailDrawer = ({
 
   const [editorHeight, setEditorHeight] = useState(80);
 
-  const handleEditorMount = useCallback(
-    (editor: any) => {
-      const updateHeight = () => {
-        const contentHeight = editor.getContentHeight();
-        setEditorHeight(Math.max(80, contentHeight));
-        editor.layout();
-      };
-      updateHeight();
-      editor.onDidContentSizeChange(updateHeight);
-    },
-    [],
-  );
+  const handleEditorMount = useCallback((editor: any) => {
+    const updateHeight = () => {
+      const contentHeight = editor.getContentHeight();
+      setEditorHeight(Math.max(80, contentHeight));
+      editor.layout();
+    };
+    updateHeight();
+    editor.onDidContentSizeChange(updateHeight);
+  }, []);
 
   return (
     <Drawer
@@ -214,7 +211,7 @@ export const ViolationDetailDrawer = ({
                 <Text type="secondary" className="mb-2 block">
                   No matching access policy
                 </Text>
-                <Link href={ACCESS_POLICIES_ROUTE + "/new"}>
+                <Link href={`${ACCESS_POLICIES_ROUTE}/new`}>
                   <Button size="small">Add policy</Button>
                 </Link>
               </Card>
