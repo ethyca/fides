@@ -87,5 +87,42 @@ def downgrade():
     )
     op.drop_table("access_package_review")
 
-    # PostgreSQL does not support removing individual enum values.
-    # The awaiting_access_review value will remain in the enum but be unused.
+    # Remove access package audit log action values by recreating the enum
+    # without them. PostgreSQL does not support DROP VALUE from enums.
+    op.execute(
+        "DELETE FROM auditlog WHERE action IN "
+        "('access_package_approved', 'access_package_redacted')"
+    )
+    op.execute("ALTER TYPE auditlogaction RENAME TO auditlogaction_old")
+    op.execute(
+        "CREATE TYPE auditlogaction AS ENUM ("
+        "'approved', 'denied', 'email_sent', 'finished', "
+        "'policy_evaluated', 'pre_approval_webhook_triggered', "
+        "'pre_approval_eligible', 'pre_approval_not_eligible')"
+    )
+    op.execute(
+        "ALTER TABLE auditlog ALTER COLUMN action TYPE auditlogaction "
+        "USING action::text::auditlogaction"
+    )
+    op.execute("DROP TYPE auditlogaction_old")
+
+    # Remove awaiting_access_review from privacyrequeststatus by recreating
+    # the enum. First update any rows using the value.
+    op.execute(
+        "UPDATE privacyrequest SET status = 'error' "
+        "WHERE status = 'awaiting_access_review'"
+    )
+    op.execute("ALTER TYPE privacyrequeststatus RENAME TO privacyrequeststatus_old")
+    op.execute(
+        "CREATE TYPE privacyrequeststatus AS ENUM ("
+        "'identity_unverified', 'requires_input', 'pending', 'approved', "
+        "'denied', 'in_processing', 'complete', 'paused', "
+        "'awaiting_email_send', 'requires_manual_finalization', "
+        "'pending_external', 'canceled', 'error', 'duplicate', "
+        "'awaiting_pre_approval', 'pre_approval_not_eligible')"
+    )
+    op.execute(
+        "ALTER TABLE privacyrequest ALTER COLUMN status TYPE privacyrequeststatus "
+        "USING status::text::privacyrequeststatus"
+    )
+    op.execute("DROP TYPE privacyrequeststatus_old")
