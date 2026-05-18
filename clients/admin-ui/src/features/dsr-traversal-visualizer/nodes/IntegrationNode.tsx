@@ -66,7 +66,7 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
         position={Position.Left}
         className={styles.handle}
       />
-      <Flex align="center" gap="small" className={styles.header}>
+      <Flex align="flex-start" gap="small" className={styles.header}>
         <ConnectionTypeLogo data={logoSource} size={28} />
         <Flex vertical className={styles.headerLabel}>
           <Text strong ellipsis={{ tooltip: system?.name ?? connectionKey }}>
@@ -81,11 +81,13 @@ export const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
               {connectionKey}
             </Text>
           )}
+          {data.stage_via ? (
+            <Text type="secondary" className={styles.stageVia}>
+              via {data.stage_via}
+            </Text>
+          ) : null}
         </Flex>
       </Flex>
-      {data.stage_via ? (
-        <span className={styles.stageVia}>via {data.stage_via}</span>
-      ) : null}
       <div className={styles.body}>
         <Flex justify="space-between" align="center" gap="small">
           <Text type="secondary" className={styles.metaText}>
