@@ -488,6 +488,14 @@ read_only_enabled = false # boolean
 # The network address for the read-only Redis cache.
 read_only_host = "" # string
 
+#-------------#
+#-- SECRETS --#
+#--------------------------------------------------------------------#
+[secrets] # Top-level configuration for the secrets provider.
+
+# Which secret provider to use: 'static' or 'aws_secrets_manager'.
+provider = "static" # string
+
 #--------------#
 #-- SECURITY --#
 #--------------------------------------------------------------------#

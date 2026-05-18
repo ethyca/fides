@@ -2290,7 +2290,15 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">619</span>
 <span class="normal">620</span>
 <span class="normal">621</span>
-<span class="normal">622</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2779,6 +2787,14 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The network address for the read-only Redis cache.</span>
 <span class="n">read_only_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1">#-------------#</span>
+<span class="c1">#-- SECRETS --#</span>
+<span class="c1">#--------------------------------------------------------------------#</span>
+<span class="k">[secrets]</span><span class="w"> </span><span class="c1"># Top-level configuration for the secrets provider.</span>
+
+<span class="c1"># Which secret provider to use: &#39;static&#39; or &#39;aws_secrets_manager&#39;.</span>
+<span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;static&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1">#--------------#</span>
 <span class="c1">#-- SECURITY --#</span>
