@@ -63,9 +63,8 @@ export const SortableFieldItem = ({
       className="[&_.ant-form-item]:!mb-0"
       data-element-id={id}
       data-testid={`sortable-field-${id}`}
-      role="button"
+      role="listitem"
       tabIndex={0}
-      aria-pressed={selected}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(id);
