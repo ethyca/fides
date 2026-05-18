@@ -10,15 +10,7 @@ const nextConfig = {
   // Clients monorepo root. Explicit so Next 16 doesn't walk up to the fides
   // repo root (which has an unrelated package-lock.json) for file tracing.
   outputFileTracingRoot: path.join(__dirname, ".."),
-  transpilePackages: [
-    "fidesui",
-    "@rc-component/util",
-    "react-phone-number-input",
-  ],
-  experimental: {
-    // Data flow scanning sometimes takes longer than the default of 30 seconds
-    proxyTimeout: 120000,
-  },
+  transpilePackages: ["fidesui"],
   // Force all imports of "antd" to resolve to the CJS build. fidesui uses
   // "antd/lib" (CJS), but third-party packages like @ant-design/x import plain
   // "antd", which the bundler resolves to ESM — producing two separate antd
