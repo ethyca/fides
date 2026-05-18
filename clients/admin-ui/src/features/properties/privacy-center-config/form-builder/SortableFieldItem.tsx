@@ -67,13 +67,19 @@ export const SortableFieldItem = ({
       tabIndex={0}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect(id);
+        if (!isDragging) {
+          onSelect(id);
+        }
       }}
       // Auto-select on focus so keyboard users (Tab) populate the
       // properties panel without an extra Space/Enter press. The
       // onKeyDown handler still satisfies activation for AT users
       // who expect a button to be pressable.
-      onFocus={() => onSelect(id)}
+      onFocus={() => {
+        if (!isDragging) {
+          onSelect(id);
+        }
+      }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
