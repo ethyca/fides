@@ -339,6 +339,14 @@ export const FormBuilderPage = ({
       // even if the property refetch hasn't returned yet.
       setDriftAcknowledged(true);
       message.success("Saved");
+    } catch (err: unknown) {
+      const detail =
+        typeof err === "string"
+          ? err
+          : err instanceof Error
+            ? err.message
+            : undefined;
+      message.error(detail ? `Failed to save: ${detail}` : "Failed to save");
     } finally {
       setSaving(false);
       setConfirmingDropped(false);
