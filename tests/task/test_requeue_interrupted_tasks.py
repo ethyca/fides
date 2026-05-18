@@ -704,3 +704,35 @@ class TestOrphanedAsyncTasks:
         requeue_interrupted_tasks.apply().get()
         # The stuck non-async task should cause a requeue
         mock_requeue.assert_called_once()
+
+    # -- pending_external PR with orphaned async task should requeue, not cancel --
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_pending_external_pr_with_orphaned_task_requeued(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """A PR in pending_external (e.g. waiting for Jira) that also has an
+        orphaned async callback task should be requeued — not canceled.
+
+        On requeue, the orphaned task will be re-executed and skipped
+        (CollectionDisabled), while the Jira task re-pauses idempotently."""
+        pr = make_privacy_request(status=PrivacyRequestStatus.pending_external)
+        make_request_task(
+            pr,
+            ExecutionLogStatus.awaiting_processing,
+            async_type=AsyncTaskType.callback,
+            connection_key="deleted_conn",
+            cached_subtask_id="old-celery-id",
+        )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
+        mock_cancel.assert_not_called()
