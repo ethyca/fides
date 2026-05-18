@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated the simplified Privacy Declaration form (used in the data lineage drawer) from Formik/Chakra to antd
+pr: 8227
+labels: []
