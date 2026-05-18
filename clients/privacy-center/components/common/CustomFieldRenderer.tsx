@@ -153,7 +153,7 @@ const CustomFieldRenderer = ({
           <DatePicker
             id={fieldKey}
             placeholder={label}
-            value={props.value ? dayjs(props.value) : null}
+            value={props.value ? dayjs(props.value, "YYYY-MM-DD") : null}
             onChange={(date) =>
               props.onChange(date ? date.format("YYYY-MM-DD") : "")
             }
