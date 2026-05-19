@@ -13,7 +13,10 @@ import {
   RequestLogFilterContext,
   useRequestLogFilters,
 } from "~/features/access-control/hooks/useRequestLogFilters";
-import type { FiltersResponse } from "~/features/access-control/types";
+import type {
+  FacetOption,
+  FiltersResponse,
+} from "~/features/access-control/types";
 import { ViolationRateCard } from "~/features/access-control/ViolationRateCard";
 import { ViolationsChartCard } from "~/features/access-control/ViolationsChartCard";
 import { useFeatures } from "~/features/common/features";
@@ -49,12 +52,12 @@ const AccessControlPage: NextPage = () => {
       .filter((responseKey) => facetOptions[responseKey]?.length > 0)
       .map((responseKey) => {
         const { key, label } = FACET_LABELS[responseKey];
-        const raw = facetOptions[responseKey];
-        const hasEmpty = raw.some((v) => !v);
-        const options = raw.filter(Boolean) as string[];
-        if (hasEmpty) {
-          options.push("");
-        }
+        const raw: FacetOption[] = facetOptions[responseKey];
+        // Surface the "Missing" bucket (empty key) at the end of the list so
+        // it doesn't compete with real options alphabetically.
+        const real = raw.filter((o) => o.key !== "");
+        const missing = raw.find((o) => o.key === "");
+        const options = missing ? [...real, missing] : real;
         return { key, label, options };
       });
   }, [facetOptions]);
