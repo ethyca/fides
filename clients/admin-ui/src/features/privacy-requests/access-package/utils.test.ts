@@ -7,9 +7,9 @@ import {
 } from "./utils";
 
 describe("redactionKey", () => {
-  it("joins the three parts with the :: separator", () => {
+  it("encodes the three parts as a JSON array", () => {
     expect(redactionKey("postgres_db:customers", 0, "email")).toBe(
-      "postgres_db:customers::0::email",
+      '["postgres_db:customers",0,"email"]',
     );
   });
 
@@ -17,15 +17,14 @@ describe("redactionKey", () => {
     expect(redactionKey("s", 1, null)).toBe(redactionKey("s", 1, undefined));
   });
 
-  it("normalizes null/undefined field_path to empty string", () => {
-    expect(redactionKey("s", 1, null)).toBe("s::1::");
+  it("distinguishes null field_path from empty-string field_path", () => {
+    expect(redactionKey("s", 1, null)).not.toBe(redactionKey("s", 1, ""));
   });
 
-  it("does not collide an empty-string key with a null one", () => {
-    // Both render the same: "s::1::". This is intentional -- the API never
-    // produces an empty-string field_path for REDACT redactions, only null
-    // for REMOVE_RECORD. Documented here so a future change knows.
-    expect(redactionKey("s", 1, "")).toBe(redactionKey("s", 1, null));
+  it("does not collide on sources that contain '::'", () => {
+    expect(redactionKey("a::b", 1, "x")).not.toBe(
+      redactionKey("a", 1, "b::1::x"),
+    );
   });
 });
 

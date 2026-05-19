@@ -25,8 +25,8 @@ import { isErrorResult } from "~/types/errors";
 import { PrivacyRequestEntity } from "../types";
 import {
   useApproveAccessPackageMutation,
+  useDownloadAccessPackageMutation,
   useGetAccessPackageQuery,
-  useLazyDownloadAccessPackageQuery,
   useUpdateAccessPackageRedactionsMutation,
 } from "./access-package.slice";
 import {
@@ -122,8 +122,8 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
     useUpdateAccessPackageRedactionsMutation();
   const [approve, { isLoading: isApproving }] =
     useApproveAccessPackageMutation();
-  const [downloadPackage, { isFetching: isDownloading }] =
-    useLazyDownloadAccessPackageQuery();
+  const [downloadPackage, { isLoading: isDownloading }] =
+    useDownloadAccessPackageMutation();
 
   const isAwaitingReview =
     subjectRequest.status === PrivacyRequestStatus.AWAITING_ACCESS_REVIEW;
@@ -143,7 +143,9 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
   const totalFields = allEntries.length;
   const redactedCount = allEntries.filter((e) => e.redacted).length;
   const systemCount = useMemo(
-    () => new Set(allEntries.map((e) => e.system || e.source)).size,
+    () =>
+      new Set(allEntries.map((e) => e.system_name || e.system || e.source))
+        .size,
     [allEntries],
   );
 
@@ -176,7 +178,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
 
   const handleDownload = useCallback(async () => {
     const result = await downloadPackage(privacyRequestId);
-    if (result.isError) {
+    if (isErrorResult(result)) {
       message.error(
         getErrorMessage(
           result.error,
@@ -198,8 +200,10 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
     a.download = `access-package-${privacyRequestId}.zip`;
     a.click();
     a.remove();
-    // Defer revoke so Safari has time to start the download.
-    setTimeout(() => window.URL.revokeObjectURL(url), 0);
+    // Defer revoke so Safari has time to start the download. A 0ms timeout
+    // only yields to the next macrotask, which may still fire before Safari
+    // initiates the download; 100ms gives a more reliable window.
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
   }, [downloadPackage, privacyRequestId, message]);
 
   const handleApprove = useCallback(async () => {
@@ -210,6 +214,47 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
     }
     message.success("Access package approved. Upload will continue.");
   }, [approve, privacyRequestId, message]);
+
+  const renderSectionBody = useCallback(
+    (
+      description: string | null | undefined,
+      categories: AccessPackageCategory[],
+    ) => (
+      <Flex vertical gap="large">
+        {description && (
+          <Typography.Paragraph>{description}</Typography.Paragraph>
+        )}
+        {categories.map((cat) => (
+          <div key={cat.fides_key}>
+            <Typography.Title level={3} className="pb-2">
+              {cat.name}
+            </Typography.Title>
+            <CategoryTable
+              category={cat}
+              onSelectionChange={handleCategorySelectionChange}
+              disabled={!isAwaitingReview}
+            />
+          </div>
+        ))}
+      </Flex>
+    ),
+    [handleCategorySelectionChange, isAwaitingReview],
+  );
+
+  const renderSectionLabel = useCallback(
+    (name: string, categories: AccessPackageCategory[]) => {
+      const count = categories.reduce((n, c) => n + c.entries.length, 0);
+      return (
+        <Space>
+          <Typography.Text strong>{name}</Typography.Text>
+          <Typography.Text type="secondary">
+            ({count} {count === 1 ? "field" : "fields"})
+          </Typography.Text>
+        </Space>
+      );
+    },
+    [],
+  );
 
   if (isLoading) {
     return <Skeleton active />;
@@ -233,42 +278,9 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
   const { attachments } = data;
 
   const isEmpty =
-    data.data_uses.length === 0 && !data.other && attachments.length === 0;
-
-  const renderSectionBody = (
-    description: string | null | undefined,
-    categories: AccessPackageCategory[],
-  ) => (
-    <Flex vertical gap="large">
-      {description && (
-        <Typography.Paragraph>{description}</Typography.Paragraph>
-      )}
-      {categories.map((cat) => (
-        <div key={cat.fides_key}>
-          <Typography.Title level={3} className="pb-2">
-            {cat.name}
-          </Typography.Title>
-          <CategoryTable
-            category={cat}
-            onSelectionChange={handleCategorySelectionChange}
-            disabled={!isAwaitingReview}
-          />
-        </div>
-      ))}
-    </Flex>
-  );
-
-  const renderSectionLabel = (
-    name: string,
-    categories: AccessPackageCategory[],
-  ) => (
-    <Space>
-      <Typography.Text strong>{name}</Typography.Text>
-      <Typography.Text type="secondary">
-        ({categories.reduce((n, c) => n + c.entries.length, 0)} fields)
-      </Typography.Text>
-    </Space>
-  );
+    data.data_uses.length === 0 &&
+    (!data.other || data.other.categories.length === 0) &&
+    attachments.length === 0;
 
   const sections = [
     ...data.data_uses.map((du) => ({
@@ -299,7 +311,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
           type="info"
           showIcon
           title="This request is not currently awaiting access review."
-          description="Redactions and approval are only available while the request is in awaiting_access_review."
+          description="Redactions and approval are only available while the request is awaiting access review."
         />
       )}
 
@@ -349,7 +361,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
       )}
 
       {attachments.length > 0 && (
-        <div>
+        <Flex vertical gap="small">
           <Typography.Title level={5}>Attachments</Typography.Title>
           <List
             size="small"
@@ -366,7 +378,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
               </List.Item>
             )}
           />
-        </div>
+        </Flex>
       )}
     </Flex>
   );

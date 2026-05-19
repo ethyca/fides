@@ -15,6 +15,12 @@ export enum RedactionType {
 export interface RedactionEntry {
   source: string;
   record_index: number;
+  /**
+   * Field path to redact. Null only when `type` is `REMOVE_RECORD`, which
+   * targets the entire record rather than a single field. This UI never
+   * emits null itself (it only creates REDACT-type entries from field rows),
+   * but it must preserve null entries returned by the API.
+   */
   field_path: string | null;
   type: RedactionType;
 }

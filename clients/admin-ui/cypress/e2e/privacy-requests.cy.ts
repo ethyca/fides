@@ -797,7 +797,7 @@ describe("Privacy Requests", () => {
         cy.contains("Essential Service Operations").should("be.visible");
         cy.contains("Other Data").should("be.visible");
         cy.contains("(2 fields)").should("be.visible");
-        cy.contains("(1 fields)").should("be.visible");
+        cy.contains("(1 field)").should("be.visible");
       });
 
       it("PUTs the full redaction list when a row is unchecked", () => {

@@ -45,9 +45,10 @@ export const accessPackageApi = baseApi.injectEndpoints({
       ],
     }),
 
-    downloadAccessPackage: build.query<Blob, string>({
+    downloadAccessPackage: build.mutation<Blob, string>({
       query: (privacyRequestId) => ({
         url: `plus/privacy-request/${privacyRequestId}/access-package/download`,
+        method: "GET",
         responseHandler: (response: Response) => response.blob(),
         cache: "no-cache",
       }),
@@ -59,5 +60,5 @@ export const {
   useGetAccessPackageQuery,
   useUpdateAccessPackageRedactionsMutation,
   useApproveAccessPackageMutation,
-  useLazyDownloadAccessPackageQuery,
+  useDownloadAccessPackageMutation,
 } = accessPackageApi;

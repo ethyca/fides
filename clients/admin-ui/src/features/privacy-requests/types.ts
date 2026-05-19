@@ -136,8 +136,6 @@ export interface PrivacyRequestEntity {
   source?: string;
   location?: string;
   property_id?: string | null;
-  access_review_approved_at?: string | null;
-  access_review_approved_by?: string | null;
 }
 
 export interface PrivacyRequestResponse {

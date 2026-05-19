@@ -4,12 +4,15 @@ import { AccessPackageEntry, RedactionEntry, RedactionType } from "./types";
  * Stable key for a redactable target. Used as the Table rowKey for
  * AccessPackageEntry rows and to compare against existing RedactionEntry
  * items (whose field_path is null for REMOVE_RECORD-type redactions).
+ *
+ * Uses JSON.stringify to disambiguate null vs. undefined vs. empty string
+ * for field_path, and to avoid collisions with sources that contain "::".
  */
 export const redactionKey = (
   source: string,
   recordIndex: number,
   fieldPath: string | null | undefined,
-): string => `${source}::${recordIndex}::${fieldPath ?? ""}`;
+): string => JSON.stringify([source, recordIndex, fieldPath ?? null]);
 
 export const rowKeyFor = (e: AccessPackageEntry): string =>
   redactionKey(e.source, e.record_index, e.field_path);
