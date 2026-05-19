@@ -1,4 +1,4 @@
-import { Flex, Select, Tag, Text } from "fidesui";
+import { Flex, Select, SelectProps, Tag, Text } from "fidesui";
 import { ReactNode, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -79,6 +79,33 @@ const ConditionValuesField = ({
   };
 
   if (isEditing) {
+    const renderSelectedTag: SelectProps["tagRender"] = ({
+      value,
+      closable,
+      onClose,
+    }) => (
+      <Tag
+        color="white"
+        closable={closable}
+        onClose={onClose}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        style={{
+          marginInlineEnd: "var(--fidesui-padding-xs)",
+          marginBottom: "var(--fidesui-padding-xs)",
+        }}
+      >
+        <Text
+          ellipsis={{ tooltip: true }}
+          style={{ color: "inherit", maxWidth: 200 }}
+        >
+          {getDisplayName(value as string)}
+        </Text>
+      </Tag>
+    );
+
     const commonProps = {
       selectedTaxonomies: safeValues,
       value: safeValues,
@@ -87,6 +114,7 @@ const ConditionValuesField = ({
       autoFocus: true,
       open: true,
       onBlur: () => setIsEditing(false),
+      tagRender: renderSelectedTag,
     };
 
     switch (property) {
