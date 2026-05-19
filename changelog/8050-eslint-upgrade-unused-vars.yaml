@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Upgrade ESLint and fix no-unused-vars errors for mapped types in admin-ui
-pr: 8050
-labels: []

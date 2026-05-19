@@ -8,7 +8,6 @@ from .core import (
     SharedMonitorConfig,
     StagedResource,
     StagedResourceAncestor,
-    fetch_staged_resources_by_type_query,
 )
 from .monitor_steward import MonitorSteward
 from .monitor_task import (
@@ -17,6 +16,7 @@ from .monitor_task import (
     MonitorTaskType,
     TaskRunType,
     create_monitor_task_with_execution_log,
+    is_monitor_task_paused,
     update_monitor_task_with_execution_log,
 )
 from .staged_resource_error import StagedResourceError
@@ -33,11 +33,11 @@ __all__ = [
     "StagedResource",
     "StagedResourceAncestor",
     "StagedResourceError",
-    "fetch_staged_resources_by_type_query",
     "MonitorTask",
     "MonitorTaskExecutionLog",
     "MonitorTaskType",
     "TaskRunType",
     "create_monitor_task_with_execution_log",
+    "is_monitor_task_paused",
     "update_monitor_task_with_execution_log",
 ]

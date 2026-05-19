@@ -8,12 +8,14 @@ import {
   EdgeTypes,
   Node,
   NodeTypes,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
+import classNames from "classnames";
 import { Flex, SelectProps, Switch, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -25,24 +27,35 @@ import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
 import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
 import styles from "./AccessPolicyEditor.module.scss";
+import { PolicyUpdate } from "./agent-chat.slice";
 import AgentChatPanel from "./AgentChatPanel";
+import {
+  DIFF_FIT_DURATION_MS,
+  DIFF_HIGHLIGHT_MS,
+  DIFF_HOLD_MS,
+} from "./constants";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
-import ConditionNode, { ConditionNodeType } from "./MatchNode";
+import ConditionNode, {
+  ConditionNodeData,
+  ConditionNodeType,
+} from "./MatchNode";
 import {
+  buildUnionGraph,
   deriveLayoutEdges,
   nodesToYaml,
   parseYaml,
   POLICY_NODE_ID,
+  tagNodesWithDiff,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
+import PolicyAgentWorking from "./PolicyAgentWorking";
 import PolicyEditorPanel from "./PolicyEditorPanel";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
   ConditionOperator,
-  ConditionProperty,
   ConsentRequirement,
   ConstraintType,
   DataFlowDirection,
@@ -80,6 +93,13 @@ const edgeTypes: EdgeTypes = {
   labeledEdge: LabeledEdge,
 };
 
+interface PendingTransition {
+  phase: "ghost-hold" | "settling";
+  update: PolicyUpdate;
+  oldYaml: string;
+  epoch: number;
+}
+
 interface PolicyCanvasPanelProps {
   control: string | null;
   controlOptions: NonNullable<SelectProps["options"]>;
@@ -87,6 +107,8 @@ interface PolicyCanvasPanelProps {
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
   syncKey?: number;
+  pendingTransition?: PendingTransition | null;
+  agentEditEpoch?: number;
 }
 
 const DEFAULT_ZOOM = 1;
@@ -228,6 +250,119 @@ const findFirstOfType = (
   );
 };
 
+/**
+ * Re-fit the canvas after an agent edit that didn't trigger the diff
+ * transition (empty added/changed/removed). When there IS a diff,
+ * DiffViewportController already handles fitView at ghost-hold and settling.
+ */
+const AgentEditFitController = ({
+  agentEditEpoch,
+  pendingTransition,
+  layoutedNodes,
+}: {
+  agentEditEpoch: number;
+  pendingTransition: PendingTransition | null | undefined;
+  layoutedNodes: Node[];
+}) => {
+  const { fitView } = useReactFlow();
+  const lastSeenRef = useRef<number>(agentEditEpoch);
+  // Timer lives in a ref so subsequent effect re-runs (from onNodesChange
+  // bursts during React Flow's measurement) don't clobber it via the
+  // useEffect cleanup. We only clear it on unmount.
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (agentEditEpoch === lastSeenRef.current) {
+      return;
+    }
+    // Diff transitions are handled by DiffViewportController. Mark this epoch
+    // as seen so we don't double-fit when the transition ends.
+    if (pendingTransition) {
+      lastSeenRef.current = agentEditEpoch;
+      return;
+    }
+    const allMeasured =
+      layoutedNodes.length > 0 &&
+      layoutedNodes.every(
+        (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
+      );
+    if (!allMeasured) {
+      return;
+    }
+    lastSeenRef.current = agentEditEpoch;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      fitView({ duration: DIFF_FIT_DURATION_MS, padding: 0.3 });
+      timerRef.current = null;
+    }, 150);
+  }, [agentEditEpoch, pendingTransition, layoutedNodes, fitView]);
+
+  return null;
+};
+
+const DiffViewportController = ({
+  pendingTransition,
+  layoutedNodes,
+}: {
+  pendingTransition: PendingTransition | null | undefined;
+  layoutedNodes: Node[];
+}) => {
+  const { fitView } = useReactFlow();
+  const lastSeenRef = useRef<{ phase: string; epoch: number } | null>(null);
+  // See AgentEditFitController for why the timer lives in a ref.
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!pendingTransition) {
+      lastSeenRef.current = null;
+      return;
+    }
+    const { phase, epoch } = pendingTransition;
+    if (
+      lastSeenRef.current?.phase === phase &&
+      lastSeenRef.current?.epoch === epoch
+    ) {
+      return;
+    }
+    const allMeasured =
+      layoutedNodes.length > 0 &&
+      layoutedNodes.every(
+        (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
+      );
+    if (!allMeasured) {
+      return;
+    }
+    lastSeenRef.current = { phase, epoch };
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      fitView({ duration: DIFF_FIT_DURATION_MS, padding: 0.3 });
+      timerRef.current = null;
+    }, 150);
+  }, [pendingTransition, layoutedNodes, fitView]);
+
+  return null;
+};
+
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
     control,
@@ -236,6 +371,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     onYamlChange,
     initialYaml,
     syncKey,
+    pendingTransition,
+    agentEditEpoch = 0,
   } = props;
 
   const initialResult = useMemo(
@@ -284,23 +421,47 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When syncKey increments (Code → Builder switch), re-parse initialYaml
+  // When syncKey increments, re-parse initialYaml. If a pendingTransition is
+  // active, build the union graph (with ghost-removed nodes) during ghost-hold
+  // and tag nodes/edges with their _diffStatus so node components can drive
+  // CSS animations.
   const prevSyncKeyRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (syncKey === undefined || syncKey === prevSyncKeyRef.current) {
       return;
     }
     prevSyncKeyRef.current = syncKey;
-    const parsed = initialYaml ? yamlToNodesAndEdges(initialYaml) : null;
-    if (parsed) {
-      setNodes(parsed.nodes);
-      setEdges(parsed.edges);
-      syncCounters(parsed.nodes);
-    } else {
+    if (!initialYaml) {
       setNodes(createPolicyNode(props));
       setEdges([]);
       nextIdRef.current = { action: 1, condition: 1, constraint: 1 };
+      return;
     }
+    let built: { nodes: Node[]; edges: Edge[] } | null;
+    if (pendingTransition?.phase === "ghost-hold") {
+      built = buildUnionGraph(
+        pendingTransition.oldYaml,
+        initialYaml,
+        pendingTransition.update.removed,
+      );
+    } else {
+      built = yamlToNodesAndEdges(initialYaml);
+    }
+    if (!built) {
+      return;
+    }
+    if (pendingTransition?.update) {
+      built = tagNodesWithDiff(
+        built.nodes,
+        built.edges,
+        pendingTransition.update.added,
+        pendingTransition.update.changed,
+        syncKey,
+      );
+    }
+    setNodes(built.nodes);
+    setEdges(built.edges);
+    syncCounters(built.nodes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncKey]);
 
@@ -443,14 +604,16 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData, onControlChange],
   );
 
-  // Derive YAML from nodes/edges
+  // Derive YAML from nodes/edges. Skipped while a transition is active so the
+  // ghost-hold's transient nodes don't get serialized back into yamlValue and
+  // resurrect themselves when the settling phase re-parses from it.
   useEffect(() => {
-    if (!onYamlChange) {
+    if (!onYamlChange || pendingTransition) {
       return;
     }
     const derived = nodesToYaml(nodes, edges);
     onYamlChange(derived);
-  }, [nodes, edges, onYamlChange]);
+  }, [nodes, edges, onYamlChange, pendingTransition]);
 
   const layoutEdges = useMemo(
     () => deriveLayoutEdges(nodes, edges),
@@ -460,11 +623,20 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const nodeSizes = useMemo(() => {
     const sizes: Record<string, { width: number; height: number }> = {};
     nodes.forEach((n) => {
-      if (n.type === "conditionNode") {
-        sizes[n.id] = { width: 320, height: 310 };
-      } else if (n.type === "constraintNode") {
-        sizes[n.id] = { width: 320, height: 380 };
+      if (n.type !== "conditionNode" && n.type !== "constraintNode") {
+        return;
       }
+      // Once React Flow has measured the node, use the real DOM height so
+      // condition nodes that grow vertically (e.g. a chip list of many
+      // selected values) don't overlap the next match node below. The
+      // fallback covers the first paint before measurement is available.
+      const measuredHeight = (n as Node & { measured?: { height?: number } })
+        .measured?.height;
+      const fallbackHeight = n.type === "conditionNode" ? 310 : 380;
+      sizes[n.id] = {
+        width: 320,
+        height: measuredHeight ?? fallbackHeight,
+      };
     });
     return sizes;
   }, [nodes]);
@@ -657,6 +829,10 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           };
         }
         if (node.type === "conditionNode") {
+          const disabledProperties = layoutedNodes
+            .filter((n) => n.type === "conditionNode" && n.id !== node.id)
+            .map((n) => (n.data as ConditionNodeData).property)
+            .filter((p): p is string => !!p);
           return {
             ...node,
             data: {
@@ -667,7 +843,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConditionNode(node.id),
               hasChildren: constraintsExist,
-              onPropertyChange: (value: ConditionProperty) =>
+              disabledProperties,
+              onPropertyChange: (value: string) =>
                 updateNodeData(node.id, { property: value, values: [] }),
               onValuesChange: (values: string[]) =>
                 updateNodeData(node.id, { values }),
@@ -749,7 +926,11 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
 
   return (
-    <div className={styles.canvasContainer}>
+    <div
+      className={classNames(styles.canvasContainer, {
+        [styles.transitioning]: pendingTransition,
+      })}
+    >
       <ReactFlow
         nodes={nodesWithCallbacks}
         edges={edges}
@@ -760,6 +941,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         defaultEdgeOptions={{ type: "labeledEdge" }}
         defaultViewport={{ x: 0, y: 0, zoom: DEFAULT_ZOOM }}
         nodesConnectable={false}
+        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
@@ -769,6 +951,20 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           layoutedNodes={layoutedNodes}
           onCentered={clearLastCreatedNodeId}
         />
+        <DiffViewportController
+          pendingTransition={pendingTransition}
+          layoutedNodes={layoutedNodes}
+        />
+        <AgentEditFitController
+          agentEditEpoch={agentEditEpoch}
+          pendingTransition={pendingTransition}
+          layoutedNodes={layoutedNodes}
+        />
+        {pendingTransition && (
+          <Panel position="top-center">
+            <PolicyAgentWorking />
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );
@@ -786,8 +982,7 @@ const AccessPolicyEditor = ({
   const { data: appConfig } = useGetConfigurationSettingsQuery({
     api_set: false,
   });
-  const agentChatEnabled =
-    !!appConfig?.detection_discovery?.llm_classifier_enabled;
+  const agentChatEnabled = !!appConfig?.access_policies?.agent_enabled;
 
   const { data: controlGroups = [] } = useGetControlsQuery();
 
@@ -802,6 +997,16 @@ const AccessPolicyEditor = ({
     initialValues?.control ?? null,
   );
   const [syncKey, setSyncKey] = useState(0);
+  const [agentEditEpoch, setAgentEditEpoch] = useState(0);
+  const [pendingTransition, setPendingTransition] =
+    useState<PendingTransition | null>(null);
+  const transitionEpochRef = useRef(0);
+  const transitionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const clearTransitionTimers = useCallback(() => {
+    transitionTimersRef.current.forEach((t) => clearTimeout(t));
+    transitionTimersRef.current = [];
+  }, []);
+  useEffect(() => () => clearTransitionTimers(), [clearTransitionTimers]);
   const [chatVisible, setChatVisible] = useLocalStorage<boolean>(
     "access-policies:chat-visible",
     true,
@@ -816,9 +1021,14 @@ const AccessPolicyEditor = ({
       if (mode === EditorMode.Code && newMode !== EditorMode.Code) {
         setSyncKey((k) => k + 1);
       }
+      // Code mode shouldn't render ghosts — drop any active transition.
+      if (newMode === EditorMode.Code && pendingTransition) {
+        clearTransitionTimers();
+        setPendingTransition(null);
+      }
       setMode(newMode);
     },
-    [mode],
+    [mode, pendingTransition, clearTransitionTimers],
   );
 
   const handleYamlChange = useCallback((derivedYaml: string) => {
@@ -847,14 +1057,55 @@ const AccessPolicyEditor = ({
     [],
   );
 
-  const handleYamlProposed = useCallback((newYaml: string) => {
-    setYamlValue(newYaml);
-    setSyncKey((k) => k + 1);
-    const parsed = parseYaml(newYaml);
-    if (parsed?.control !== undefined) {
-      setControl(parsed.control ?? null);
-    }
-  }, []);
+  const handlePolicyUpdate = useCallback(
+    (update: PolicyUpdate) => {
+      const oldYaml = yamlValue;
+      setYamlValue(update.yaml);
+      const parsed = parseYaml(update.yaml);
+      if (parsed?.control !== undefined) {
+        setControl(parsed.control ?? null);
+      }
+
+      // Cancel any in-flight transition before starting a new one.
+      clearTransitionTimers();
+
+      // Always bump the agent-edit epoch so the canvas re-fits, even when
+      // there's no diff to animate (AgentEditFitController handles this case;
+      // DiffViewportController handles the with-diff case).
+      setAgentEditEpoch((e) => e + 1);
+
+      const hasHighlights =
+        update.added.length > 0 ||
+        update.changed.length > 0 ||
+        update.removed.length > 0;
+      if (!hasHighlights) {
+        setPendingTransition(null);
+        setSyncKey((k) => k + 1);
+        return;
+      }
+
+      transitionEpochRef.current += 1;
+      const epoch = transitionEpochRef.current;
+
+      setPendingTransition({ phase: "ghost-hold", update, oldYaml, epoch });
+      setSyncKey((k) => k + 1);
+
+      const settleTimer = setTimeout(() => {
+        setPendingTransition((prev) =>
+          prev?.epoch === epoch ? { ...prev, phase: "settling" } : prev,
+        );
+        setSyncKey((k) => k + 1);
+      }, DIFF_HOLD_MS);
+
+      const cleanupTimer = setTimeout(() => {
+        setPendingTransition((prev) => (prev?.epoch === epoch ? null : prev));
+        setSyncKey((k) => k + 1);
+      }, DIFF_HIGHLIGHT_MS);
+
+      transitionTimersRef.current = [settleTimer, cleanupTimer];
+    },
+    [yamlValue, clearTransitionTimers],
+  );
 
   const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
   const displayName = parsedForDisplay?.name ?? "";
@@ -882,6 +1133,8 @@ const AccessPolicyEditor = ({
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
+      pendingTransition={pendingTransition}
+      agentEditEpoch={agentEditEpoch}
     />
   );
 
@@ -984,7 +1237,8 @@ const AccessPolicyEditor = ({
           <div className={`h-full pb-2 ${styles.chatWrapper}`}>
             <AgentChatPanel
               currentYaml={yamlValue}
-              onYamlProposed={handleYamlProposed}
+              onPolicyUpdate={handlePolicyUpdate}
+              isAgentWorking={!!pendingTransition}
             />
           </div>
         )}

@@ -329,6 +329,9 @@ class PrivacyRequestStatus(StrEnum):
         "awaiting_pre_approval"  # Awaiting external pre-approval webhook responses
     )
     pre_approval_not_eligible = "pre_approval_not_eligible"  # Pre-approval webhook(s) responded not eligible; manual review required
+    awaiting_access_review = (
+        "awaiting_access_review"  # Access package awaiting admin review before delivery
+    )
 
 
 ACTIVE_REQUEST_STATUSES = frozenset(
@@ -340,6 +343,7 @@ ACTIVE_REQUEST_STATUSES = frozenset(
         PrivacyRequestStatus.requires_input,
         PrivacyRequestStatus.requires_manual_finalization,
         PrivacyRequestStatus.pending_external,
+        PrivacyRequestStatus.awaiting_access_review,
     }
 )
 
@@ -654,6 +658,7 @@ class PrivacyRequestFilter(FidesSchema):
     external_id: Optional[str] = None
     location: Optional[str] = None
     action_type: Optional[Union[ActionType, List[ActionType]]] = None
+    source: Optional[Union[PrivacyRequestSource, List[PrivacyRequestSource]]] = None
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
@@ -676,6 +681,19 @@ class PrivacyRequestFilter(FidesSchema):
         Keeps the status field flexible but converts a single value to a list for consistent processing.
         """
         if isinstance(field_value, PrivacyRequestStatus):
+            return [field_value]
+        return field_value
+
+    @field_validator("source")
+    @classmethod
+    def validate_source_field(
+        cls,
+        field_value: Optional[Union[PrivacyRequestSource, List[PrivacyRequestSource]]],
+    ) -> Optional[List[PrivacyRequestSource]]:
+        """
+        Keeps the source field flexible but converts a single value to a list for consistent processing.
+        """
+        if isinstance(field_value, PrivacyRequestSource):
             return [field_value]
         return field_value
 

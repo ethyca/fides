@@ -3,24 +3,30 @@ import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import useI18n from "~/common/hooks/useI18n";
+import TextOrHtml from "~/components/TextOrHtml";
 import { useConfig } from "~/features/common/config.slice";
-import { selectIsNoticeDriven } from "~/features/common/settings.slice";
+import {
+  selectIsNoticeDriven,
+  useSettings,
+} from "~/features/common/settings.slice";
 
 const ConsentHeading = () => {
   const config = useConfig();
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
+  const { ALLOW_HTML_DESCRIPTION } = useSettings();
   const { i18n } = useI18n();
 
   const headingText = useMemo(() => {
     if (!isNoticeDriven) {
-      return config.consent?.page.title;
+      return config.consent?.page.title ?? "";
     }
 
     return i18n.t("exp.title");
   }, [config, isNoticeDriven, i18n]);
 
   return (
-    <Heading
+    <TextOrHtml
+      component={Heading}
       className="pc-page__heading"
       fontSize={["3xl", "4xl"]}
       color="gray.800"
@@ -28,9 +34,10 @@ const ConsentHeading = () => {
       textAlign="center"
       data-testid="consent-heading"
       mb={3}
+      allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
     >
       {headingText}
-    </Heading>
+    </TextOrHtml>
   );
 };
 

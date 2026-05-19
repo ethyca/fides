@@ -2,10 +2,11 @@ from logging.config import fileConfig
 
 from alembic import context
 from loguru import logger as log
-from sqlalchemy import engine_from_config, pool, text
+from sqlalchemy import create_engine, pool, text
 
 from fides.api.db.database import include_object
 from fides.api.util.logger import setup as setup_fidesapi_logger
+from fides.common.engine_creators import SYNC_DIALECT_URL, db_cred_provider, make_sync_creator
 from fides.config import CONFIG
 
 # this is the Alembic Config object, which provides
@@ -44,7 +45,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = fides_config.database.sync_database_uri
+    url = db_cred_provider.get_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -71,11 +72,9 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    configuration = alembic_config.get_section(alembic_config.config_ini_section)
-    configuration["sqlalchemy.url"] = fides_config.database.sync_database_uri
-    connectable = engine_from_config(
-        configuration,
-        prefix="sqlalchemy.",
+    connectable = create_engine(
+        SYNC_DIALECT_URL,
+        creator=make_sync_creator(),
         poolclass=pool.NullPool,
     )
 

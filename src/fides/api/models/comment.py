@@ -161,6 +161,7 @@ class Comment(Base):
         "CorrespondenceMetadata",
         back_populates="comment",
         uselist=False,
+        lazy="selectin",
         cascade="all, delete-orphan",
     )
 

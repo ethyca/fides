@@ -10,7 +10,6 @@ export type FormFieldProps = {
   name: string;
   fieldSchema: ConnectionTypeSecretSchemaProperty;
   isRequired: boolean;
-  layout?: "stacked" | "inline";
   secretsSchema?: ConnectionTypeSecretSchemaResponse;
   validate?: (value: string | undefined) => string | undefined;
 };
@@ -19,7 +18,6 @@ export const FormFieldFromSchema = ({
   name,
   fieldSchema,
   isRequired,
-  layout = "stacked",
   secretsSchema,
   validate,
 }: FormFieldProps) => {
@@ -64,7 +62,6 @@ export const FormFieldFromSchema = ({
     label: fieldSchema.title,
     tooltip: fieldSchema.description,
     rules,
-    layout: layout === "inline" ? ("horizontal" as const) : undefined,
   };
 
   if (isSelect) {

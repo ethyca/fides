@@ -1,7 +1,7 @@
 """add imported audit log action
 
 Revision ID: a7d3f8b2c1e9
-Revises: 55cf25a3e2ca
+Revises: 1e07732ff193
 Create Date: 2026-04-28 10:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a7d3f8b2c1e9"
-down_revision = "55cf25a3e2ca"
+down_revision = "1e07732ff193"
 branch_labels = None
 depends_on = None
 
@@ -29,13 +29,19 @@ def downgrade():
     # triage.
     op.execute("delete from auditlog where action = 'imported'")
 
-    # Recreate auditlogaction enum without the 'imported' value
+    # Recreate auditlogaction enum without the 'imported' value. The list
+    # below must contain every enum value that legitimately exists at this
+    # point in the migration chain — including `access_package_approved`
+    # and `access_package_redacted`, added by revision 1e07732ff193 — so the
+    # subsequent `USING action::text::auditlogaction` cast does not fail on
+    # rows holding those actions.
     op.execute("alter type auditlogaction rename to auditlogaction_old")
     op.execute(
         "create type auditlogaction as enum("
         "'approved', 'denied', 'email_sent', 'finished', 'policy_evaluated', "
         "'pre_approval_webhook_triggered', 'pre_approval_eligible', "
-        "'pre_approval_not_eligible')"
+        "'pre_approval_not_eligible', "
+        "'access_package_approved', 'access_package_redacted')"
     )
     op.execute(
         "alter table auditlog alter column action type auditlogaction "

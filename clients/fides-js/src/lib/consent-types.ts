@@ -165,6 +165,11 @@ export interface FidesInitOptions {
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
 
+  // ATT authorization status from Apple's ATTrackingManager. When "denied" or "restricted",
+  // notices where att_exempt is false are disabled (locked to opt_out).
+  // Intended for use by mobile SDKs after the user denies Apple's App Tracking Transparency prompt.
+  fidesAttStatus?: FidesAttStatus;
+
   // List of system names to exclude from notice asset disclosure (e.g., cookies) in responses
   fidesDisabledSystems?: string[] | null;
 
@@ -761,6 +766,7 @@ export type PrivacyNotice = {
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
+  att_exempt?: boolean;
   has_gpc_flag?: boolean;
   framework?: PrivacyNoticeFramework;
   default_preference?: UserConsentPreference;
@@ -893,13 +899,6 @@ export enum FidesModalDefaultView {
  */
 export { FidesOptions };
 
-export type OverrideExperienceTranslations = {
-  fides_title: string;
-  fides_description: string;
-  fides_privacy_policy_url: string;
-  fides_override_language: string;
-};
-
 /**
  * Select the subset of FidesInitOptions that can be overridden at runtime using
  * one of the customer-provided FidesOptions properties above. There's a 1:1
@@ -922,6 +921,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "otFidesMapping"
   | "transcendFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesAttStatus"
   | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
@@ -934,22 +934,13 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesExternalId"
 >;
 
-export type FidesExperienceTranslationOverrides = {
-  title: string;
-  description: string;
-  privacy_policy_url: string;
-  override_language: string;
-};
-
 export type FidesOverrides = {
   optionsOverrides: Partial<FidesInitOptionsOverrides>;
   consentPrefsOverrides: GetPreferencesFnResp | null;
-  experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides>;
 };
 
 export enum OverrideType {
   OPTIONS = "options",
-  EXPERIENCE_TRANSLATION = "language",
 }
 
 export enum ButtonType {
@@ -973,6 +964,13 @@ export enum RejectAllMechanism {
 }
 
 // NOTE: updates to this enum should be reflected in the FidesEventDetailsTrigger type and vice versa
+export enum FidesAttStatus {
+  NOT_DETERMINED = "not_determined",
+  RESTRICTED = "restricted",
+  DENIED = "denied",
+  AUTHORIZED = "authorized",
+}
+
 export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
@@ -1142,13 +1140,6 @@ export type FidesOverrideValidatorMap = FidesValidatorMap<
   keyof FidesOptions
 >;
 
-export type FidesExperienceLanguageValidatorMap = FidesValidatorMap<
-  FidesExperienceTranslationOverrides,
-  string
->;
-
-export type FidesWindowOverrides = Partial<
-  FidesOptions & OverrideExperienceTranslations
-> & {
+export type FidesWindowOverrides = Partial<FidesOptions> & {
   [key: string]: string | boolean | undefined;
 };

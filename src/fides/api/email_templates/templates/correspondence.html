@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {# subject is HTML-escaped by select_autoescape(); body uses sanitize_html
+       because it contains intentional HTML that shouldn't be escaped. #}
+    <title>{{ subject }}</title>
+</head>
+<body>
+<main>
+    {{ body | sanitize_html }}
+</main>
+</body>
+</html>

@@ -1,5 +1,7 @@
 import os
 from collections import defaultdict
+from collections.abc import Iterable
+from dataclasses import dataclass
 from enum import Enum as EnumType
 from typing import Any, Callable, Optional
 from urllib.parse import quote
@@ -7,6 +9,54 @@ from urllib.parse import quote
 from loguru import logger
 
 from fides.api.util.storage_util import format_size
+
+DEFAULT_FILE_MAX_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+class FilesMagicBytes:
+    """Magic-byte signatures keyed by file extension."""
+
+    SIGNATURES: dict[str, bytes] = {
+        "pdf": b"%PDF",
+        "doc": b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1",
+        "docx": b"PK\x03\x04",
+        "jpg": b"\xff\xd8\xff",
+        "jpeg": b"\xff\xd8\xff",
+        "png": b"\x89PNG\r\n\x1a\n",
+        "xls": b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1",
+        "xlsx": b"PK\x03\x04",
+        "zip": b"PK\x03\x04",
+    }
+
+    @classmethod
+    def candidates(cls, data: bytes) -> set[str]:
+        """All extensions whose magic prefix matches ``data``.
+
+        The shared ZIP container family (``docx``, ``xlsx``, ``zip``, ...)
+        all match ``PK\\x03\\x04`` so this returns a set; callers
+        disambiguate by intersecting with their own allow-list rather
+        than relying on dict-iteration order.
+        """
+        return {
+            ext for ext, magic in cls.SIGNATURES.items() if data[: len(magic)] == magic
+        }
+
+    @classmethod
+    def max_prefix_length(cls) -> int:
+        """Longest signature in :attr:`SIGNATURES`. Callers that peek a
+        header for :meth:`candidates` should read at least this many
+        bytes — auto-stays-correct if a longer signature is added."""
+        return max(len(m) for m in cls.SIGNATURES.values())
+
+    @classmethod
+    def extensions_without_magic(cls) -> set[str]:
+        """Supported extensions that have no magic-byte signature (CSV,
+        TXT). Callers fall back to the client-claimed filename for these
+        only — types with a real signature stay magic-byte-authoritative
+        so a malicious file cannot bypass validation by claiming a
+        misleading extension."""
+        return AllowedFileType.supported_file_types() - set(cls.SIGNATURES.keys())
+
 
 # This is the max file size for downloading the content of an attachment.
 # This is an industry standard used by companies like Google and Microsoft.
@@ -29,6 +79,56 @@ class AllowedFileType(EnumType):
     xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     csv = "text/csv"
     zip = "application/zip"
+
+    @classmethod
+    def default_public_upload_allowed_file_types(cls) -> set[str]:
+        """Default extensions accepted on public (unauthenticated) upload endpoints."""
+        return {"pdf", "jpg", "png"}
+
+    @classmethod
+    def supported_file_types(cls) -> set[str]:
+        """File extensions that have a known ``AllowedFileType`` enum entry."""
+        return set(cls.__members__.keys())
+
+    @classmethod
+    def validate_allowed_extensions(cls, extensions: Iterable[str]) -> None:
+        """Raise ``ValueError`` if ``extensions`` is empty or contains any
+        entry not in :class:`AllowedFileType`. Shared by
+        :class:`FileUploadConstraints` and the privacy-center file-field
+        schema validator so error messages stay in sync."""
+        ext_set = set(extensions)
+        if not ext_set:
+            raise ValueError("allowed_file_types must not be empty")
+        supported = cls.supported_file_types()
+        unsupported = ext_set - supported
+        if unsupported:
+            raise ValueError(
+                f"Unsupported file types: {sorted(unsupported)}. "
+                f"Supported: {sorted(supported)}"
+            )
+
+
+@dataclass(frozen=True)
+class FileUploadConstraints:
+    """Resolved upload constraints; self-validates ``allowed_file_types``
+    against :class:`AllowedFileType` keys."""
+
+    max_size_bytes: int
+    allowed_file_types: frozenset[str]
+
+    def __post_init__(self) -> None:
+        if self.max_size_bytes <= 0:
+            raise ValueError("max_size_bytes must be greater than 0")
+        AllowedFileType.validate_allowed_extensions(self.allowed_file_types)
+
+    @classmethod
+    def defaults(cls) -> "FileUploadConstraints":
+        return cls(
+            max_size_bytes=DEFAULT_FILE_MAX_SIZE_BYTES,
+            allowed_file_types=frozenset(
+                AllowedFileType.default_public_upload_allowed_file_types()
+            ),
+        )
 
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"

@@ -3,7 +3,6 @@ import {
   ExperienceConfig,
   ExperienceConfigMinimal,
   ExperienceConfigTranslation,
-  FidesExperienceTranslationOverrides,
   FidesInitOptions,
   PrivacyExperience,
   PrivacyExperienceMinimal,
@@ -71,7 +70,6 @@ export function areLocalesEqual(a: Locale, b: Locale): boolean {
  */
 function extractMessagesFromExperienceConfig(
   experienceConfig: ExperienceConfig | ExperienceConfigMinimal,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ): Record<Locale, Messages> {
   const extracted: Record<Locale, Messages> = {};
   const EXPERIENCE_TRANSLATION_FIELDS = [
@@ -100,33 +98,10 @@ function extractMessagesFromExperienceConfig(
       // For each translation, extract each of the translated fields
       (translation: ExperienceConfigTranslation) => {
         const locale = translation.language;
-        // We only override experience translations if the override_language matches current locale
-        let localeHasOverride = false;
-        if (experienceTranslationOverrides?.override_language) {
-          // If translation overrides exist for this language, we will need to apply them below
-          localeHasOverride = areLocalesEqual(
-            experienceTranslationOverrides.override_language,
-            locale,
-          );
-        }
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
-          let overrideValue: string | null | undefined = null;
+          const overrideValue: string | null | undefined = null;
 
-          const isPrivacyPolicyUrl = key === "privacy_policy_url";
-          // Override value when matching translation override exists for the language.
-          // Override privacy_policy_url, even if the translation doesn't match the language
-          const shouldOverrideValue =
-            experienceTranslationOverrides &&
-            (localeHasOverride || isPrivacyPolicyUrl);
-          if (shouldOverrideValue) {
-            overrideValue =
-              key in experienceTranslationOverrides
-                ? experienceTranslationOverrides[
-                    key as keyof FidesExperienceTranslationOverrides
-                  ]
-                : null;
-          }
           const message = translation[key];
           if (typeof message === "string") {
             messages[`exp.${key}`] = overrideValue || message;
@@ -242,10 +217,18 @@ function extractMessagesFromGVLTranslations(
 
 /**
  * Load the statically-compiled messages from source into the message catalog.
+ *
+ * NOTE: Only the default locale (English) is bundled statically to keep bundle
+ * size small. Other locales get their translations from the experience API.
+ * The static messages serve as fallbacks (e.g. GPC labels) when the API
+ * doesn't provide them.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
   Object.keys(STATIC_MESSAGES).forEach((locale) => {
-    i18n.load(locale, STATIC_MESSAGES[locale]);
+    const messages = STATIC_MESSAGES[locale];
+    if (messages) {
+      i18n.load(locale, messages);
+    }
   });
   return Object.keys(STATIC_MESSAGES);
 }
@@ -266,7 +249,6 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience | PrivacyExperienceMinimal>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ) {
   const allMessages: Record<Locale, Messages> = {};
   const availableLocales: Locale[] = experience.available_locales?.length
@@ -277,10 +259,7 @@ export function loadMessagesFromExperience(
   if (experience?.experience_config) {
     const config = experience.experience_config;
     const extracted: Record<Locale, Messages> =
-      extractMessagesFromExperienceConfig(
-        config,
-        experienceTranslationOverrides,
-      );
+      extractMessagesFromExperienceConfig(config);
     Object.keys(extracted).forEach((locale) => {
       allMessages[locale] = {
         ...extracted[locale],
@@ -523,14 +502,13 @@ export function initializeI18n(
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
   options?: Partial<FidesInitOptions>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
   const availableLocales: Locale[] = experience.available_locales?.length
     ? experience.available_locales
     : [DEFAULT_LOCALE];
-  loadMessagesFromExperience(i18n, experience, experienceTranslationOverrides);
+  loadMessagesFromExperience(i18n, experience);
   fidesDebugger(
     `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`,
   );

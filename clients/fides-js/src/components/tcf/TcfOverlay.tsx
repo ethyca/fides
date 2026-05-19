@@ -9,10 +9,9 @@ import {
   ConsentMechanism,
   ConsentMethod,
   EmptyExperience,
-  FidesExperienceTranslationOverrides,
+  FidesAttStatus,
   FidesModalDefaultView,
   NoticeConsent,
-  OverrideType,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
@@ -48,13 +47,13 @@ import {
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { getOverridesByType } from "../../lib/initialize";
 import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
 import {
   InitializedFidesGlobal,
   useFidesGlobal,
 } from "../../lib/providers/fides-global-context";
+import { filterAttDeniedFromDraft } from "../../lib/tcf/att-utils";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -109,16 +108,10 @@ export const TcfOverlay = () => {
   const {
     fidesRegionString,
     cookie,
-    config,
     options,
     saved_consent: savedConsent,
   } = fidesGlobal;
   const experienceMinimal = fidesGlobal.experience as PrivacyExperienceMinimal;
-  const translationOverrides: Partial<FidesExperienceTranslationOverrides> =
-    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
-      OverrideType.EXPERIENCE_TRANSLATION,
-      config,
-    );
   const {
     i18n,
     currentLocale,
@@ -183,7 +176,10 @@ export const TcfOverlay = () => {
             notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
             (options.fidesDisabledNotices?.includes(notice.notice_key) ??
               false) ||
-            notice.disabled;
+            notice.disabled ||
+            ((options.fidesAttStatus === FidesAttStatus.DENIED ||
+              options.fidesAttStatus === FidesAttStatus.RESTRICTED) &&
+              !notice.att_exempt);
           const bestTranslation = selectBestNoticeTranslation(
             currentLocale,
             i18n.getDefaultLocale(),
@@ -271,7 +267,7 @@ export const TcfOverlay = () => {
     if (isFullExperience) {
       // Load messages from experience
       // This includes any custom notices, but not the GVL translations.
-      loadMessagesFromExperience(i18n, experienceFull, translationOverrides);
+      loadMessagesFromExperience(i18n, experienceFull);
 
       // Set the locale to the best locale
       window.Fides.locale = bestLocale;
@@ -308,7 +304,11 @@ export const TcfOverlay = () => {
         if (isMounted) {
           setDraftIds({
             ...EMPTY_ENABLED_IDS,
-            customPurposesConsent,
+            customPurposesConsent: filterAttDeniedFromDraft(
+              customPurposesConsent,
+              experienceMinimal.privacy_notices || [],
+              options.fidesAttStatus,
+            ),
           });
         }
       } else {
@@ -336,7 +336,11 @@ export const TcfOverlay = () => {
           // Vendors and systems are the same to the FE, so we combine them here
           setDraftIds({
             purposesConsent: getEnabledIds(consentPurposes),
-            customPurposesConsent,
+            customPurposesConsent: filterAttDeniedFromDraft(
+              customPurposesConsent,
+              customPurposes,
+              options.fidesAttStatus,
+            ),
             purposesLegint: getEnabledIds(legintPurposes),
             specialPurposes: getEnabledIds(specialPurposes),
             features: getEnabledIds(features),
@@ -522,6 +526,15 @@ export const TcfOverlay = () => {
     (wasAutomated?: boolean) => {
       let allIds: EnabledIds;
       let exp = experienceFull || experienceMinimal;
+      // Include a custom notice in "Accept All" if it is not disabled, OR if it is
+      // disabled-but-opted-in (which covers notice_only notices that are always
+      // locked at opt-in and must be preserved).
+      //
+      // ATT-denied non-exempt notices are disabled, but they must NOT be included
+      // even if they appear opted-in in draftIds. filterAttDeniedFromDraft() strips
+      // those IDs from the draft at initialization, so they won't appear in
+      // draftIds.customPurposesConsent here — the existing logic handles them
+      // correctly without any extra ATT-specific branching.
       const enabledActiveNotices = privacyNoticesWithBestTranslation.filter(
         (n) => !n.disabled || draftIds.customPurposesConsent.includes(n.id),
       );
@@ -584,8 +597,17 @@ export const TcfOverlay = () => {
 
   const handleRejectAll = useCallback(
     (wasAutomated?: boolean) => {
-      // Notice-only and disabled custom purposes should not be rejected
       const enabledIds: EnabledIds = EMPTY_ENABLED_IDS;
+      // "Reject All" must still preserve two kinds of custom notices as opted-in:
+      //   1. notice_only — always locked at opt-in regardless of user action
+      //   2. Other disabled notices (e.g. fidesDisabledNotices) that the user had
+      //      previously opted into — their locked state keeps them opted-in
+      //
+      // ATT-denied non-exempt notices look like case 2 (disabled + potentially opted-in
+      // in the draft from a previous cookie), but they must NOT be preserved — they're
+      // forced opt-out by system constraint. filterAttDeniedFromDraft() strips them from
+      // draftIds at initialization so they won't appear in
+      // draftIds.customPurposesConsent here, and the existing logic correctly excludes them.
       enabledIds.customPurposesConsent =
         privacyNoticesWithBestTranslation
           .filter((n) => {
@@ -765,6 +787,10 @@ export const TcfOverlay = () => {
           activeTabIndex={activeTabIndex}
           onTabChange={handleTabChange}
           fullExperienceState={fullExperienceState}
+          attDenied={
+            options.fidesAttStatus === FidesAttStatus.DENIED ||
+            options.fidesAttStatus === FidesAttStatus.RESTRICTED
+          }
         />
       )}
       renderModalFooter={({ onClose }) => {

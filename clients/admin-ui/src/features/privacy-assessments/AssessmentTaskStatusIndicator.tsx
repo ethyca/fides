@@ -151,7 +151,7 @@ export const AssessmentTaskStatusIndicator = ({
         <Flex align="center" gap="small">
           <Icons.CheckmarkFilled size={14} />
           <Text type="secondary" size="sm">
-            Last assessment evaluated {lastAssessmentAgo}
+            Last evaluated {lastAssessmentAgo}
           </Text>
         </Flex>
       );

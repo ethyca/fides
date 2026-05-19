@@ -21,6 +21,7 @@ import { useMemo, useState } from "react";
 
 import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
+import { parseSecretsFieldErrors } from "~/features/common/form/parseSecretsFieldErrors";
 import { useAPIHelper } from "~/features/common/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
@@ -308,6 +309,16 @@ export const useConnectorForm = ({
         }!`,
       );
     } catch (error) {
+      // If the BE returned a 422 we can map to a known secrets field, surface
+      // it in the form via setFields rather than as a transient toast. Re-throw
+      // so the form can do that.
+      if (
+        parseSecretsFieldErrors(error, {
+          knownFields: Object.keys(secretsSchema?.properties ?? {}),
+        })
+      ) {
+        throw error;
+      }
       handleError(error);
     } finally {
       setIsSubmitting(false);
@@ -440,9 +451,7 @@ export const ConnectorParameters = ({
         mb={4}
       >
         <div>
-          Connect to your {connectionOption!.human_readable} environment by
-          providing the information below. Once you have saved the form, you may
-          test the integration to confirm that it&apos;s working correctly.
+          {`Connect to your ${connectionOption!.human_readable} environment by providing the information below. Once you have saved the form, you may test the integration to confirm that it's working correctly.`}
         </div>
         {connectionOption.user_guide && (
           <div style={{ marginTop: "12px" }}>
