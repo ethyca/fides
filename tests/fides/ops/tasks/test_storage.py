@@ -140,22 +140,90 @@ class TestWriteToInMemoryBuffer:
             write_to_in_memory_buffer("invalid_format", data, privacy_request)
 
     @patch("fides.api.tasks.storage.DSRReportBuilder")
-    def test_write_to_in_memory_buffer_html(self, mock_dsr_builder):
-        """Test HTML format generation using DSRReportBuilder."""
+    @patch("fides.api.tasks.storage.get_dsr_report_builder")
+    def test_write_to_in_memory_buffer_html(
+        self, mock_get_builder, mock_dsr_builder_cls
+    ):
+        """Test HTML format generation using default DSRReportBuilder path."""
         data = {"key": "value"}
         privacy_request = MagicMock(id="test-request-id")
         mock_report = BytesIO(b"<html>Test Report</html>")
-        mock_dsr_builder.return_value.generate.return_value = mock_report
+        # Registry returns the same class as the module-level DSRReportBuilder,
+        # so the default path is taken
+        mock_get_builder.return_value = mock_dsr_builder_cls
+        mock_dsr_builder_cls.return_value.generate.return_value = mock_report
 
         result = write_to_in_memory_buffer(
             ResponseFormat.html.value, data, privacy_request
         )
 
-        mock_dsr_builder.assert_called_once_with(
+        mock_dsr_builder_cls.assert_called_once_with(
             privacy_request=privacy_request,
             dsr_data=data,
         )
         assert result == mock_report
+
+    @patch("fides.api.tasks.storage.get_dsr_report_builder")
+    def test_write_to_in_memory_buffer_registered_builder_html(self, mock_get_builder):
+        """When a different builder is registered, it handles HTML."""
+        data = {"key": "value"}
+        privacy_request = MagicMock(id="test-request-id")
+        mock_report = BytesIO(b"<html>Access Package</html>")
+
+        registered_builder = MagicMock()
+        registered_builder.return_value.generate.return_value = mock_report
+        mock_get_builder.return_value = registered_builder
+
+        result = write_to_in_memory_buffer(
+            ResponseFormat.html.value, data, privacy_request
+        )
+
+        registered_builder.assert_called_once_with(
+            privacy_request=privacy_request,
+            dsr_data=data,
+        )
+        assert result == mock_report
+
+    @patch("fides.api.tasks.storage.encrypt_access_request_results")
+    @patch("fides.api.tasks.storage.get_dsr_report_builder")
+    def test_write_to_in_memory_buffer_registered_builder_json(
+        self, mock_get_builder, mock_encrypt
+    ):
+        """When a different builder is registered, JSON output is encrypted."""
+        data = {"key": "value"}
+        privacy_request = MagicMock(id="test-request-id")
+        raw_json = BytesIO(b'{"organized": "by_data_use"}')
+
+        registered_builder = MagicMock()
+        registered_builder.return_value.generate_json.return_value = raw_json
+        mock_get_builder.return_value = registered_builder
+        mock_encrypt.return_value = "encrypted-json"
+
+        result = write_to_in_memory_buffer(
+            ResponseFormat.json.value, data, privacy_request
+        )
+
+        registered_builder.return_value.generate_json.assert_called_once()
+        mock_encrypt.assert_called_once()
+        assert isinstance(result, BytesIO)
+
+    @patch("fides.api.tasks.storage.get_dsr_report_builder")
+    def test_write_to_in_memory_buffer_registered_builder_csv(self, mock_get_builder):
+        """When a different builder is registered, it handles CSV."""
+        data = {"key": "value"}
+        privacy_request = MagicMock(id="test-request-id")
+        mock_csv = BytesIO(b"csv-content")
+
+        registered_builder = MagicMock()
+        registered_builder.return_value.generate_csv.return_value = mock_csv
+        mock_get_builder.return_value = registered_builder
+
+        result = write_to_in_memory_buffer(
+            ResponseFormat.csv.value, data, privacy_request
+        )
+
+        registered_builder.return_value.generate_csv.assert_called_once()
+        assert result == mock_csv
 
     def test_write_to_in_memory_buffer_with_attachments(self):
         """Test handling of data with attachments."""

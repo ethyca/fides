@@ -34,6 +34,7 @@ ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.paused,
     PrivacyRequestStatus.awaiting_email_send,
     PrivacyRequestStatus.error,
+    PrivacyRequestStatus.awaiting_access_review,
 ]
 
 # Dataset name written on every ExecutionLog entry produced by duplicate

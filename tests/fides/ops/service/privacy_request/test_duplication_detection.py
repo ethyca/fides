@@ -225,6 +225,24 @@ class TestFindDuplicatePrivacyRequests:
         assert len(duplicates) == 1
         assert duplicates[0].id == old_privacy_request_with_email.id
 
+    def test_find_duplicates_awaiting_access_review(
+        self,
+        db,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+        policy,
+    ):
+        """Test that a request in awaiting_access_review is found as a duplicate."""
+        duplicate_requests = create_duplicate_requests(
+            db, policy, 1, PrivacyRequestStatus.awaiting_access_review
+        )
+        duplicates = duplicate_detection_service.find_duplicate_privacy_requests(
+            privacy_request_with_email_identity
+        )
+
+        assert len(duplicates) == 1
+        assert duplicates[0].id == duplicate_requests[0].id
+
     def test_no_duplicates_different_identity_value(
         self,
         db,
