@@ -144,7 +144,7 @@ dev = [
     "debugpy~=1.8.0",
     "Faker==14.1.0",
     "freezegun==1.5.5",
-    "GitPython>=3.1.50",
+    "GitPython==3.1.50",
     "moto[s3,secretsmanager,ses]==5.1.22",
     "mypy==1.10.0",
     "nox>=2025.11",

@@ -131,6 +131,13 @@ class TestGitIsDirty:
         ):
             assert not core_utils.git_is_dirty()
 
+    def test_git_timeout_returns_false(self) -> None:
+        with mock.patch(
+            "fides.core.utils.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(cmd="git", timeout=10),
+        ):
+            assert not core_utils.git_is_dirty()
+
 
 @pytest.mark.unit
 def test_repeatable_unique_key() -> None:

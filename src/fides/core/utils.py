@@ -142,8 +142,8 @@ def generate_unique_fides_key(
 
 def git_is_dirty(dir_to_check: str = ".") -> bool:
     """
-    Checks to see if the local repo has unstaged changes.
-    Can also specify a directory to check.
+    Checks to see if the local repo has any uncommitted changes (staged,
+    unstaged, or untracked). Can also specify a directory to check.
     """
     if not os.path.exists(".git"):
         print("No git repo detected at '.git', skipping git check...")
@@ -155,12 +155,15 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
             capture_output=True,
             text=True,
             check=False,
+            timeout=10,
         )
+        return bool(result.stdout.strip())
     except FileNotFoundError:
         print("Git executable not detected, skipping git check...")
         return False
-
-    return bool(result.stdout.strip())
+    except subprocess.TimeoutExpired:
+        print("Git status timed out, skipping git check...")
+        return False
 
 
 def write_credentials_file(credentials: Credentials, credentials_path: str) -> str:
