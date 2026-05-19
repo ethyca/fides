@@ -151,7 +151,12 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
 
   const handleCategorySelectionChange = useCallback(
     async (category: AccessPackageCategory, includedKeys: Set<string>) => {
-      if (!data) {
+      if (!data || isSaving) {
+        // While a previous save is in flight, `data.redactions` is stale for
+        // any entry outside the current category. A second click here would
+        // rebuild `preserved` from stale data and silently drop an in-flight
+        // redaction. The checkboxes are visually disabled during save (see
+        // `disabled` below), so this is just a defense-in-depth guard.
         return;
       }
       const categoryKeys = new Set(category.entries.map(rowKeyFor));
@@ -173,7 +178,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
         message.error(getErrorMessage(result.error));
       }
     },
-    [data, privacyRequestId, updateRedactions, message],
+    [data, isSaving, privacyRequestId, updateRedactions, message],
   );
 
   const handleDownload = useCallback(async () => {
@@ -232,13 +237,13 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
             <CategoryTable
               category={cat}
               onSelectionChange={handleCategorySelectionChange}
-              disabled={!isAwaitingReview}
+              disabled={!isAwaitingReview || isSaving}
             />
           </div>
         ))}
       </Flex>
     ),
-    [handleCategorySelectionChange, isAwaitingReview],
+    [handleCategorySelectionChange, isAwaitingReview, isSaving],
   );
 
   const renderSectionLabel = useCallback(
