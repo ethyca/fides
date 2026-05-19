@@ -279,6 +279,12 @@ export const FormBuilderPage = ({
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
 
+  const droppedSummary: DroppedFeature[] = useMemo(
+    () =>
+      builder.spec ? jsonSpecToPcShape(builder.spec).droppedFeatures : [],
+    [builder.spec],
+  );
+
   if (!action) {
     return <Alert type="error" title="Action not found on property." />;
   }
@@ -340,10 +346,6 @@ export const FormBuilderPage = ({
     }
     persist();
   };
-
-  const droppedSummary: DroppedFeature[] = builder.spec
-    ? jsonSpecToPcShape(builder.spec).droppedFeatures
-    : [];
 
   return (
     <div style={rootStyle}>
