@@ -94,10 +94,10 @@ export const ChatPane = ({
       {disabled && (
         <Alert
           type="info"
-          message={disabledReason ?? "LLM provider not configured."}
+          title={disabledReason ?? "LLM provider not configured."}
         />
       )}
-      {error && <Alert type="error" message={error} closable />}
+      {error && <Alert type="error" title={error} closable />}
 
       <div className={styles.body}>
         {messages.length === 0 ? (
