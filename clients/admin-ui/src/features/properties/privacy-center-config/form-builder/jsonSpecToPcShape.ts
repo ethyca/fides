@@ -17,25 +17,6 @@ import type {
   VisibilityOperator,
 } from "./types";
 
-export type {
-  DroppedFeature,
-  JsonRenderElement,
-  JsonRenderSpec,
-  MapResult,
-  PcCustomField,
-  PcCustomFields,
-  PcFieldBase,
-  PcFieldType,
-  PcLocationField,
-  PcMultiSelectField,
-  PcRadioField,
-  PcSelectField,
-  PcTextField,
-  ValidationError,
-  VisibilityCondition,
-  VisibilityOperator,
-} from "./types";
-
 const FIELD_TYPE: Record<
   Exclude<ComponentType, "Form" | "Email" | "Name" | "Phone">,
   PcFieldType
@@ -234,7 +215,7 @@ export function jsonSpecToPcShape(spec: JsonRenderSpec): MapResult {
       return;
     }
 
-    const props = validation.data as Record<string, any>;
+    const props = validation.data as Record<string, unknown>;
     const name = props.name as string;
     seenNames[name] = [...(seenNames[name] ?? []), childId];
 
@@ -254,16 +235,16 @@ export function jsonSpecToPcShape(spec: JsonRenderSpec): MapResult {
       case "Text": {
         const text: PcTextField = { ...baseField, field_type: "text" };
         if (props.default_value !== undefined && props.default_value !== null) {
-          text.default_value = props.default_value;
+          text.default_value = props.default_value as string;
         }
         if (props.hidden !== undefined) {
-          text.hidden = props.hidden;
+          text.hidden = props.hidden as boolean;
         }
         if (
           props.query_param_key !== undefined &&
           props.query_param_key !== null
         ) {
-          text.query_param_key = props.query_param_key;
+          text.query_param_key = props.query_param_key as string;
         }
         pcField = text;
         break;
@@ -275,7 +256,7 @@ export function jsonSpecToPcShape(spec: JsonRenderSpec): MapResult {
           options: props.options as string[],
         };
         if (props.default_value !== undefined && props.default_value !== null) {
-          select.default_value = props.default_value;
+          select.default_value = props.default_value as string;
         }
         pcField = select;
         break;
@@ -287,7 +268,7 @@ export function jsonSpecToPcShape(spec: JsonRenderSpec): MapResult {
           options: props.options as string[],
         };
         if (props.default_value !== undefined && props.default_value !== null) {
-          radio.default_value = props.default_value;
+          radio.default_value = props.default_value as string;
         }
         pcField = radio;
         break;
@@ -299,7 +280,7 @@ export function jsonSpecToPcShape(spec: JsonRenderSpec): MapResult {
           options: props.options as string[],
         };
         if (props.default_value !== undefined && props.default_value !== null) {
-          multi.default_value = props.default_value;
+          multi.default_value = props.default_value as string[];
         }
         pcField = multi;
         break;
@@ -313,7 +294,7 @@ export function jsonSpecToPcShape(spec: JsonRenderSpec): MapResult {
           location.options = props.options as string[];
         }
         if (props.ip_geolocation_hint !== undefined) {
-          location.ip_geolocation_hint = props.ip_geolocation_hint;
+          location.ip_geolocation_hint = props.ip_geolocation_hint as boolean;
         }
         pcField = location;
         break;

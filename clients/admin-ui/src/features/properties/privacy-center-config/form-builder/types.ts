@@ -96,3 +96,28 @@ export interface JsonRenderSpec {
   root: string;
   elements: Record<string, JsonRenderElement>;
 }
+
+export type ChatRole = "user" | "assistant" | "system";
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
+export type Status = "idle" | "streaming" | "aborted" | "error";
+
+export interface UseFormBuilderInput {
+  propertyId: string;
+  actionPolicyKey: string;
+  initialSpec: JsonRenderSpec | null;
+}
+
+export interface UseFormBuilder {
+  spec: JsonRenderSpec | null;
+  messages: ChatMessage[];
+  status: Status;
+  error: string | null;
+  sendMessage: (text: string) => Promise<void>;
+  abort: () => void;
+  setSpec: (spec: JsonRenderSpec | null) => void;
+}

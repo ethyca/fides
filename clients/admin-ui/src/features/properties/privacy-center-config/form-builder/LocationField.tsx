@@ -2,7 +2,11 @@ import { useStateBinding } from "@json-render/react";
 import { Form, isoCodesToOptions, LocationSelect } from "fidesui";
 import React from "react";
 
-import { BaseFieldProps, useDefaultValueSeed } from "./fieldUtils";
+import {
+  BaseFieldProps,
+  FieldWrapper,
+  useDefaultValueSeed,
+} from "./fieldUtils";
 
 export const LocationField = ({ props }: { props: BaseFieldProps }) => {
   // Custom options (when provided) are treated as ISO 3166-1/2 codes — the
@@ -18,22 +22,19 @@ export const LocationField = ({ props }: { props: BaseFieldProps }) => {
     setValue,
     props.default_value as string | undefined,
   );
-  const elementId = props["data-element-id"];
-  const content = (
-    <Form.Item label={props.label} required={props.required}>
-      <LocationSelect
-        aria-label={props.label}
-        data-testid={`field-${props.name}`}
-        placeholder={props.placeholder}
-        value={value}
-        onChange={(v) => setValue(v)}
-        onBlur={() => {}}
-        options={isoOptions}
-      />
-    </Form.Item>
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label={props.label} required={props.required}>
+        <LocationSelect
+          aria-label={props.label}
+          data-testid={`field-${props.name}`}
+          placeholder={props.placeholder}
+          value={value}
+          onChange={(v) => setValue(v)}
+          onBlur={() => {}}
+          options={isoOptions}
+        />
+      </Form.Item>
+    </FieldWrapper>
   );
-  if (!elementId) {
-    return content;
-  }
-  return <span data-element-id={elementId}>{content}</span>;
 };
