@@ -48,10 +48,12 @@ const FormBuilderRoute: NextPage = () => {
     }
     const config = property.privacy_center_config;
     const existingActions = config.actions ?? [];
+    let found = false;
     const actions = existingActions.map((action) => {
       if (action.policy_key !== key) {
         return action;
       }
+      found = true;
       return {
         ...action,
         custom_privacy_request_fields: pcShape,
@@ -60,6 +62,11 @@ const FormBuilderRoute: NextPage = () => {
         field_order: fieldOrder,
       };
     });
+    if (!found) {
+      throw new Error(
+        "Action not found — it may have been deleted or renamed.",
+      );
+    }
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { id: propertyId, messaging_templates, ...rest } = property;
     await updateProperty({
