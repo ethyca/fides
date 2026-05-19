@@ -260,15 +260,22 @@ const PrivacyNoticeForm = ({
             </Form.Item>
             <Form.Item
               name="att_exempt"
-              label="Exempt from App Tracking Transparency (ATT)"
-              valuePropName="checked"
-              help={
-                consentMechanism === ConsentMechanism.NOTICE_ONLY
-                  ? "Notice-only notices are not affected by this setting."
-                  : undefined
+              label={
+                <Flex align="center" gap={4}>
+                  Exempt from App Tracking Transparency (ATT)
+                  {consentMechanism === ConsentMechanism.NOTICE_ONLY && (
+                    <InfoTooltip label="Notice-only notices are not affected by this setting." />
+                  )}
+                </Flex>
               }
+              valuePropName="checked"
             >
-              <Switch data-testid="input-att_exempt" />
+              <Switch
+                data-testid="input-att_exempt"
+                disabled={
+                  consentMechanism === ConsentMechanism.NOTICE_ONLY
+                }
+              />
             </Form.Item>
             <PrivacyNoticeLocationDisplay
               regions={passedInPrivacyNotice?.configured_regions}
