@@ -223,20 +223,24 @@ const SystemInformationForm = ({
   const message = useMessage();
   const { Text } = Typography;
 
-  const processesPersonalData = Form.useWatch("processes_personal_data", form);
-  const exemptFromPrivacyRegulations = Form.useWatch(
-    "exempt_from_privacy_regulations",
-    form,
-  );
-  const usesProfiling = Form.useWatch("uses_profiling", form);
-  const doesInternationalTransfers = Form.useWatch(
-    "does_international_transfers",
-    form,
-  );
-  const requiresDpas = Form.useWatch(
-    "requires_data_protection_assessments",
-    form,
-  );
+  // Fall back to initialValues when the watch is still undefined (first render
+  // before the form publishes its state, or transient undefineds during the
+  // dict-suggestion show/hide lifecycle) so conditional sections don't blink
+  // out and unmount.
+  const processesPersonalData =
+    Form.useWatch("processes_personal_data", form) ??
+    initialValues.processes_personal_data;
+  const exemptFromPrivacyRegulations =
+    Form.useWatch("exempt_from_privacy_regulations", form) ??
+    initialValues.exempt_from_privacy_regulations;
+  const usesProfiling =
+    Form.useWatch("uses_profiling", form) ?? initialValues.uses_profiling;
+  const doesInternationalTransfers =
+    Form.useWatch("does_international_transfers", form) ??
+    initialValues.does_international_transfers;
+  const requiresDpas =
+    Form.useWatch("requires_data_protection_assessments", form) ??
+    initialValues.requires_data_protection_assessments;
   const fidesKey = Form.useWatch("fides_key", form);
 
   // Custom field values load asynchronously after the form mounts; once they're

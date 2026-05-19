@@ -37,10 +37,12 @@ const useDictSuggestion = (
   const suggestionsState = useAppSelector(selectSuggestions);
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const preSuggestionRef = useRef<unknown>(undefined);
+  const hasCapturedRef = useRef(false);
 
   useEffect(() => {
     if (suggestionsState === "showing") {
       preSuggestionRef.current = form.getFieldValue(fieldName);
+      hasCapturedRef.current = true;
       if (dictEntry) {
         const suggested = dictField
           ? dictField(dictEntry)
@@ -56,8 +58,13 @@ const useDictSuggestion = (
           form.setFieldValue(fieldName, suggested);
         }
       }
-    } else if (suggestionsState === "hiding") {
+    } else if (suggestionsState === "hiding" && hasCapturedRef.current) {
+      // Only restore when we actually captured a pre-suggestion value;
+      // otherwise we'd overwrite a legitimate initial value with `undefined`
+      // (e.g. when "hiding" fires from clearing the vendor without ever
+      // having shown suggestions).
       form.setFieldValue(fieldName, preSuggestionRef.current);
+      hasCapturedRef.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suggestionsState, dictEntry]);
