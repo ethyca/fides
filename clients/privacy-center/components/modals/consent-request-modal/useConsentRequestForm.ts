@@ -40,9 +40,8 @@ const useConsentRequestForm = ({
   const config = useConfig();
   const identityInputs =
     config.consent?.button.identity_inputs ?? DEFAULT_IDENTITY_INPUTS;
-  const customPrivacyRequestFields =
-    (config.consent?.button.custom_privacy_request_fields ??
-      {}) as Record<string, CustomConfigField>;
+  const customPrivacyRequestFields = (config.consent?.button
+    .custom_privacy_request_fields ?? {}) as Record<string, CustomConfigField>;
   const settings = useSettings();
   const { BASE_64_COOKIE } = settings;
   const toast = useToast();
@@ -63,10 +62,7 @@ const useConsentRequestForm = ({
     searchParams: null, // ConsentRequestForm doesn't use URL params
   });
 
-  const initialValues = useMemo(
-    () => getInitialValues(),
-    [getInitialValues],
-  );
+  const initialValues = useMemo(() => getInitialValues(), [getInitialValues]);
 
   // Build the static portion of the validation schema (identity fields)
   const identityValidationSchema = useMemo(

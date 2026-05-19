@@ -89,6 +89,7 @@ export const useApplicabilitySync = ({
     customPrivacyRequestFields,
     formValues,
   );
+  // eslint-disable-next-line no-param-reassign
   applicableFieldsRef.current = applicableFields;
 
   const prevApplicable = useRef<Set<string>>(applicableFields);
