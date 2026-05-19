@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
-from fastapi import Depends, HTTPException, Request, Response, Security
+from fastapi import BackgroundTasks, Depends, HTTPException, Request, Response, Security
 from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -64,6 +64,7 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
+from fides.api.system_steward_change_hooks import notify_system_stewards_changed
 from fides.api.util.api_router import APIRouter
 from fides.api.util.errors import FidesError, MessageDispatchException
 from fides.api.util.rate_limit import fides_limiter
@@ -341,6 +342,7 @@ def update_managed_systems(
     db: Session = Depends(deps.get_db),
     user_id: str,
     systems: List[FidesKey],
+    background_tasks: BackgroundTasks,
 ) -> List[SystemSchema]:
     """
     Endpoint to override the systems for which a user is "system manager".
@@ -379,11 +381,13 @@ def update_managed_systems(
     for system in retrieved_systems:
         if user not in system.data_stewards:
             user.set_as_system_manager(db, system)
+            notify_system_stewards_changed(background_tasks, system.id)
 
     # Removing systems for which the user in no longer a manager
     for system in user.systems.copy():
         if system not in retrieved_systems:
             user.remove_as_system_manager(db, system)
+            notify_system_stewards_changed(background_tasks, system.id)
 
     return user.systems
 
@@ -473,7 +477,11 @@ async def get_managed_system_details(
     status_code=HTTP_204_NO_CONTENT,
 )
 def remove_user_as_system_manager(
-    *, db: Session = Depends(deps.get_db), user_id: str, system_key: FidesKey
+    *,
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+    system_key: FidesKey,
+    background_tasks: BackgroundTasks,
 ) -> None:
     """
     Endpoint to remove user as system manager from the given system
@@ -488,6 +496,7 @@ def remove_user_as_system_manager(
         )
 
     user.remove_as_system_manager(db, system)
+    notify_system_stewards_changed(background_tasks, system.id)
     logger.info("Removed user {} as system manager of {}", user_id, system.fides_key)
 
 

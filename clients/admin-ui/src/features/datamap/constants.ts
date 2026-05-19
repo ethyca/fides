@@ -4,6 +4,15 @@
 
 export const CELL_SIZE = 20;
 
+/**
+ * Width (in pixels) of the spatial datamap's right-side drawer. Mirrors the
+ * default width applied by fidesui's `CustomDrawer` HOC, and is consumed by
+ * `DatamapGraph` to offset the graph viewport when the drawer is open so the
+ * selected node stays visible. Keep in sync with `CustomDrawer`'s default if
+ * that ever changes.
+ */
+export const DATAMAP_DRAWER_WIDTH = 480;
+
 export const DATA_CATEGORY_COLUMN_ID = "unioned_data_categories";
 
 export enum ExportFormat {

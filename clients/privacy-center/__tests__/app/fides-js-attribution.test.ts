@@ -20,14 +20,8 @@ describe("fides-js attribution config", () => {
     process.env = originalEnv;
   });
 
-  it("does not include attribution fields when ATTRIBUTION_ENABLED is false", () => {
+  it("defaults to true when ATTRIBUTION_ENABLED is not set", () => {
     delete process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED;
-    const settings = getClientSettings();
-    expect(settings.ATTRIBUTION_ENABLED).toBe(false);
-  });
-
-  it("includes attribution fields when ATTRIBUTION_ENABLED is true", () => {
-    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "true";
     const settings = getClientSettings();
     expect(settings.ATTRIBUTION_ENABLED).toBe(true);
     expect(settings.ATTRIBUTION_ANCHOR_TEXT).toBe(
@@ -37,6 +31,12 @@ describe("fides-js attribution config", () => {
       DEFAULT_ATTRIBUTION_DESTINATION_URL,
     );
     expect(settings.ATTRIBUTION_NOFOLLOW).toBe(false);
+  });
+
+  it("does not include attribution fields when ATTRIBUTION_ENABLED is false", () => {
+    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "false";
+    const settings = getClientSettings();
+    expect(settings.ATTRIBUTION_ENABLED).toBe(false);
   });
 
   it("includes custom attribution values when overridden", () => {
@@ -81,18 +81,18 @@ describe("fides-js handler attribution config building", () => {
     process.env = originalEnv;
   });
 
-  it("produces undefined attribution when disabled", () => {
+  it("produces attribution object with defaults when not set", () => {
     delete process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED;
-    expect(buildAttributionOptions(getClientSettings())).toBeUndefined();
-  });
-
-  it("produces attribution object with defaults when enabled", () => {
-    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "true";
     expect(buildAttributionOptions(getClientSettings())).toEqual({
       anchorText: DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
       destinationUrl: DEFAULT_ATTRIBUTION_DESTINATION_URL,
       nofollow: false,
     });
+  });
+
+  it("produces undefined attribution when explicitly disabled", () => {
+    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "false";
+    expect(buildAttributionOptions(getClientSettings())).toBeUndefined();
   });
 
   it("produces attribution object with custom values when overridden", () => {
@@ -108,16 +108,8 @@ describe("fides-js handler attribution config building", () => {
     });
   });
 
-  it("serializes cleanly to JSON without attribution when disabled", () => {
+  it("serializes attribution to JSON by default when not set", () => {
     delete process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED;
-    const attribution = buildAttributionOptions(getClientSettings());
-    const options = { attribution, otherField: true };
-    const parsed = JSON.parse(JSON.stringify(options));
-    expect(parsed).not.toHaveProperty("attribution");
-  });
-
-  it("serializes attribution to JSON when enabled", () => {
-    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "true";
     const attribution = buildAttributionOptions(getClientSettings());
     const options = { attribution, otherField: true };
     const parsed = JSON.parse(JSON.stringify(options));
@@ -126,6 +118,14 @@ describe("fides-js handler attribution config building", () => {
       destinationUrl: DEFAULT_ATTRIBUTION_DESTINATION_URL,
       nofollow: false,
     });
+  });
+
+  it("serializes cleanly to JSON without attribution when explicitly disabled", () => {
+    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "false";
+    const attribution = buildAttributionOptions(getClientSettings());
+    const options = { attribution, otherField: true };
+    const parsed = JSON.parse(JSON.stringify(options));
+    expect(parsed).not.toHaveProperty("attribution");
   });
 });
 

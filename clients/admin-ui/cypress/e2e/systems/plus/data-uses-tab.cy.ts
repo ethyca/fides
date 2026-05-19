@@ -49,17 +49,15 @@ describe("System Data Uses Tab", () => {
     cy.getByTestId("row-functional.service.improve").click();
 
     // Check state of available inputs
-    cy.getByTestId("controlled-select-data_categories")
-      .find("input")
-      .should("be.disabled");
-    cy.getByTestId("controlled-select-data_subjects")
+    cy.getByTestId("input-data_categories").find("input").should("be.disabled");
+    cy.getByTestId("input-data_subjects")
       .find("input")
       .should("not.be.disabled");
     cy.getByTestId("input-impact_assessment_location").should("not.exist");
     cy.getByTestId("input-processes_special_category_data").should(
       "not.be.disabled",
     );
-    cy.getByTestId("controlled-select-dataset_references")
+    cy.getByTestId("input-dataset_references")
       .find("input")
       .should("not.be.disabled");
     cy.getByTestId("input-data_shared_with_third_parties").click();
@@ -82,13 +80,13 @@ describe("System Data Uses Tab", () => {
     cy.getByTestId("row-functional.service.improve").click();
 
     // Check state of available inputs
-    cy.getByTestId("controlled-select-data_categories")
+    cy.getByTestId("input-data_categories")
       .find("input")
       .should("not.be.disabled");
-    cy.getByTestId("controlled-select-data_subjects")
+    cy.getByTestId("input-data_subjects")
       .find("input")
       .should("not.be.disabled");
-    cy.getByTestId("controlled-select-legal_basis_for_processing").antSelect(
+    cy.getByTestId("input-legal_basis_for_processing").antSelect(
       "Legitimate interests",
     );
     cy.getByTestId("input-impact_assessment_location").should(
@@ -97,7 +95,7 @@ describe("System Data Uses Tab", () => {
     cy.getByTestId("input-processes_special_category_data").should(
       "not.be.disabled",
     );
-    cy.getByTestId("controlled-select-dataset_references")
+    cy.getByTestId("input-dataset_references")
       .find("input")
       .should("not.be.disabled");
     cy.getByTestId("input-data_shared_with_third_parties").click();
@@ -125,8 +123,6 @@ describe("System Data Uses Tab", () => {
     cy.getAntTab("Data uses").click();
 
     cy.getByTestId("row-functional.service.improve").click();
-    cy.getByTestId("controlled-select-data_use")
-      .find("input")
-      .should("be.disabled");
+    cy.getByTestId("input-data_use").find("input").should("be.disabled");
   });
 });
