@@ -63,7 +63,9 @@ def build_filtered_results_for_storage(
                 fides_connector_datasets,
             )
         )
-        merge_storage_data(filtered_results, manual_data_for_storage, storage_attachments)
+        merge_storage_data(
+            filtered_results, manual_data_for_storage, storage_attachments
+        )
         rule_filtered_results[rule.key] = filtered_results
 
     return rule_filtered_results
