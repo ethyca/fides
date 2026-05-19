@@ -272,9 +272,7 @@ const PrivacyNoticeForm = ({
             >
               <Switch
                 data-testid="input-att_exempt"
-                disabled={
-                  consentMechanism === ConsentMechanism.NOTICE_ONLY
-                }
+                disabled={consentMechanism === ConsentMechanism.NOTICE_ONLY}
               />
             </Form.Item>
             <PrivacyNoticeLocationDisplay
