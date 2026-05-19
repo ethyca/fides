@@ -33,6 +33,8 @@ import PrivacyDeclarationStep from "~/features/system/privacy-declarations/Priva
 import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
 import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
+import { AWS_CONNECTION_TYPES } from "~/features/system/tabs/system-resources/constants";
+import SystemResourcesTable from "~/features/system/tabs/system-resources/SystemResourcesTable";
 import { SystemResponse } from "~/types/api";
 
 import useOAuthStatusHandler from "./useOAuthStatusHandler";
@@ -43,6 +45,7 @@ enum SystemTabKeys {
   DATA_FLOW = "data-flow",
   INTEGRATIONS = "integrations",
   ASSETS = "assets",
+  RESOURCES = "resources",
   HISTORY = "history",
 }
 
@@ -272,6 +275,22 @@ const useSystemFormTabs = ({
       key: "assets",
       children: activeSystem ? (
         <SystemAssetsTable system={activeSystem} />
+      ) : null,
+      disabled: !activeSystem,
+    });
+  }
+
+  const hasAwsConnection = !!activeSystem?.connection_configs?.some((c) =>
+    AWS_CONNECTION_TYPES.has(c.connection_type),
+  );
+  const demoOverride = router.query.showResources === "1";
+
+  if (isPlusEnabled && (hasAwsConnection || demoOverride)) {
+    tabData.push({
+      label: "Resources",
+      key: "resources",
+      children: activeSystem ? (
+        <SystemResourcesTable system={activeSystem} />
       ) : null,
       disabled: !activeSystem,
     });
