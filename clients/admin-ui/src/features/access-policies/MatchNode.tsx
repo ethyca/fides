@@ -10,17 +10,12 @@ import {
   Text,
 } from "fidesui";
 
-import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
-import DataSubjectSelect from "~/features/common/dropdown/DataSubjectSelect";
-import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
-import SystemGroupSelect from "~/features/common/dropdown/SystemGroupSelect";
-import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
-
+import ConditionValuesField from "./ConditionValuesField";
 import { CONDITION_OPERATOR_OPTIONS } from "./constants";
 import { usePolicyTaxonomyOptions } from "./hooks/usePolicyTaxonomyOptions";
 import styles from "./MatchNode.module.scss";
 import NodeActions from "./NodeActions";
-import { ConditionOperator, ConditionProperty } from "./types";
+import { ConditionOperator } from "./types";
 
 export interface ConditionNodeData extends Record<string, unknown> {
   property?: string;
@@ -41,76 +36,6 @@ export interface ConditionNodeData extends Record<string, unknown> {
 }
 
 export type ConditionNodeType = Node<ConditionNodeData, "conditionNode">;
-
-const renderValuesSelect = (
-  property: string | undefined,
-  values: string[] | undefined,
-  onChange: (values: string[]) => void,
-) => {
-  if (!property) {
-    return (
-      <Select
-        disabled
-        placeholder="Select a taxonomy first"
-        className="w-full"
-        aria-label="Select values"
-        data-testid="condition-values-disabled"
-      />
-    );
-  }
-
-  const commonProps = {
-    selectedTaxonomies: values,
-    value: values,
-    onChange: (v: unknown) => onChange(v as string[]),
-    mode: "multiple" as const,
-    maxTagCount: 1 as const,
-  };
-
-  switch (property) {
-    case ConditionProperty.DATA_USE:
-      return (
-        <DataUseSelect
-          {...commonProps}
-          placeholder="Select data uses"
-          data-testid="condition-values-data-use"
-        />
-      );
-    case ConditionProperty.DATA_CATEGORIES:
-      return (
-        <DataCategorySelect
-          {...commonProps}
-          placeholder="Select data categories"
-          data-testid="condition-values-data-category"
-        />
-      );
-    case ConditionProperty.DATA_SUBJECTS:
-      return (
-        <DataSubjectSelect
-          {...commonProps}
-          placeholder="Select data subjects"
-          data-testid="condition-values-data-subject"
-        />
-      );
-    case ConditionProperty.SYSTEM_GROUP:
-      return (
-        <SystemGroupSelect
-          {...commonProps}
-          placeholder="Select system groups"
-          data-testid="condition-values-system-group"
-        />
-      );
-    default:
-      return (
-        <CustomTaxonomySelect
-          {...commonProps}
-          taxonomyKey={property}
-          placeholder="Select values"
-          data-testid="condition-values-custom"
-        />
-      );
-  }
-};
 
 const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
   const { options, labelByKey } = usePolicyTaxonomyOptions();
@@ -200,9 +125,11 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
             />
           </Form.Item>
           <Form.Item label={valuesLabel} className="mb-0">
-            {renderValuesSelect(data.property, data.values, (values) =>
-              data.onValuesChange?.(values),
-            )}
+            <ConditionValuesField
+              property={data.property}
+              values={data.values}
+              onChange={(values) => data.onValuesChange?.(values)}
+            />
           </Form.Item>
         </Form>
       </div>

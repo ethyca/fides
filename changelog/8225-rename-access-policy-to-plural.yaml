@@ -1,0 +1,4 @@
+type: Changed
+description: Rename frontend API calls from `/access-policy` to `/access-policies` to align with REST naming conventions
+pr: 8225
+labels: []

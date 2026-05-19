@@ -35,6 +35,7 @@ const PrivacyRequestForm = ({
     handleChange,
     handleSubmit,
     setFieldValue,
+    submitCount,
     touched,
     values,
     isSubmitting,
@@ -180,9 +181,11 @@ const PrivacyRequestForm = ({
                 key={key}
                 id={key}
                 validateStatus={
-                  touched[key] && !!errors[key] ? "error" : undefined
+                  (touched[key] || submitCount > 0) && !!errors[key]
+                    ? "error"
+                    : undefined
                 }
-                help={touched[key] && errors[key]}
+                help={(touched[key] || submitCount > 0) && errors[key]}
                 required={item.required !== false}
                 label={item.label}
                 htmlFor={key}

@@ -120,6 +120,14 @@ def valid_process_consent_webhook_override(
     return ConsentWebhookResult()
 
 
+def valid_refresh_consent_webhook_token_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    new_token: str,
+) -> bool:
+    return True
+
+
 def valid_polling_status_bool_override(
     client: AuthenticatedClient,
     param_values: Dict[str, Any],
@@ -558,6 +566,18 @@ class TestSaasRequestOverrideFactory:
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
             SaaSRequestOverrideFactory.get_override(f_id_2, SaaSRequestType.READ)
         assert f"Custom SaaS override '{f_id_2}' does not exist." in str(exc.value)
+
+    def test_register_refresh_consent_webhook_token(self):
+        f_id = uuid()
+        register(f_id, SaaSRequestType.REFRESH_CONSENT_WEBHOOK_TOKEN)(
+            valid_refresh_consent_webhook_token_override
+        )
+        assert (
+            valid_refresh_consent_webhook_token_override
+            == SaaSRequestOverrideFactory.get_override(
+                f_id, SaaSRequestType.REFRESH_CONSENT_WEBHOOK_TOKEN
+            )
+        )
 
     def test_register_polling_status_with_bool_return(self):
         """
