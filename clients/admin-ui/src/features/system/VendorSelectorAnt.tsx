@@ -69,10 +69,6 @@ export interface VendorSelectorAntProps {
 /**
  * antd-Form-native vendor name typeahead. Drop-in inside any antd `Form`
  * that exposes `name: string` and `vendor_id?: string` on its values.
- *
- * Forked from `VendorSelector.tsx`, which is still consumed by the
- * Formik-based `AddNewSystemModal` and `SystemInformationForm`. When those
- * migrate, swap their imports here and delete the Formik original.
  */
 const VendorSelectorAnt = ({
   label,

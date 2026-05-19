@@ -1,5 +1,4 @@
-import { useModal } from "fidesui";
-import { useFormikContext } from "formik";
+import { Form, useModal } from "fidesui";
 import { createRef, MutableRefObject, useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -83,23 +82,23 @@ type FormGuardProps = {
   name: string;
 };
 export const FormGuard = ({ id, name }: FormGuardProps) => {
-  const { dirty } = useFormikContext();
+  const form = Form.useFormInstance();
+  // useWatch re-renders this component on any field change so isFieldsTouched stays current
+  Form.useWatch([], form);
   const dispatch = useAppDispatch();
+  const isDirty = form.isFieldsTouched();
 
   useEffect(() => {
-    // Provide info on active form
     dispatch(registerForm({ id, name }));
 
     return () => {
-      // When un-rendered, remove from shared state.
       dispatch(unregisterForm({ id }));
     };
   }, [dispatch, id, name]);
 
   useEffect(() => {
-    // Update shared state whenever the dirty state changes.
-    dispatch(updateDirtyFormState({ id, isDirty: dirty }));
-  }, [dirty, dispatch, id]);
+    dispatch(updateDirtyFormState({ id, isDirty }));
+  }, [isDirty, dispatch, id]);
 
   return null;
 };

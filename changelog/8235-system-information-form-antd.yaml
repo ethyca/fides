@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated the System information form (system identity, data processing, cookie, and administrative sections) from Formik/Chakra to antd
+pr: 8235
+labels: []
