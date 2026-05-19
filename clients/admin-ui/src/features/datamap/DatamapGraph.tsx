@@ -13,6 +13,7 @@ import {
 } from "@xyflow/react";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
+import { DATAMAP_DRAWER_WIDTH } from "~/features/datamap/constants";
 import DatamapSystemNode from "~/features/datamap/DatamapSystemNode";
 import { useDatamapGraph } from "~/features/datamap/hooks/useDatamapGraph";
 import { SpatialData } from "~/features/datamap/types";
@@ -84,31 +85,22 @@ const DatamapGraph = ({
 
   // Pan view to keep selected node visible when drawer opens/closes
   useEffect(() => {
-    if (selectedSystemId && nodes.length > 0) {
+    if (selectedSystemId) {
       // Wait for the drawer animation to complete (drawer has 500ms animation)
       setTimeout(() => {
-        const selectedNode = nodes.find((node) => node.id === selectedSystemId);
+        // Read the node off the ReactFlow instance rather than the local
+        // `nodes` array so this effect doesn't need `nodes` in its deps — a
+        // dependency that re-fires on every selection toggle and previously
+        // produced a feedback loop with `setViewport` below.
+        const selectedNode = reactFlowInstance.getNode(selectedSystemId);
         if (!selectedNode) {
           return;
         }
 
         const viewport = reactFlowInstance.getViewport();
         const reactFlowBounds = reactFlowRef.current?.getBoundingClientRect();
-        const drawerElement = document.querySelector(
-          '[data-testid="datamap-drawer"]',
-        );
 
         if (!reactFlowBounds) {
-          fidesDebugger(
-            "DatamapGraph: ReactFlow bounds not available for viewport management",
-          );
-          return;
-        }
-
-        if (!drawerElement) {
-          fidesDebugger(
-            "DatamapGraph: Drawer element not found for viewport management",
-          );
           return;
         }
 
@@ -117,12 +109,9 @@ const DatamapGraph = ({
           originalViewportRef.current = { ...viewport };
         }
 
-        // Get actual drawer width from the DOM
-        const drawerBounds = drawerElement.getBoundingClientRect();
-        const drawerWidth = drawerBounds.width;
         const nodeScreenX =
           selectedNode.position.x * viewport.zoom + viewport.x;
-        const availableWidth = reactFlowBounds.width - drawerWidth;
+        const availableWidth = reactFlowBounds.width - DATAMAP_DRAWER_WIDTH;
 
         // Check if the selected node is covered by the drawer
         if (nodeScreenX > availableWidth - 100) {
@@ -184,7 +173,7 @@ const DatamapGraph = ({
         }
       }, 100);
     }
-  }, [selectedSystemId, nodes, reactFlowInstance, reactFlowRef]);
+  }, [selectedSystemId, reactFlowInstance]);
 
   // Handle node selection
   const onNodeClick = useCallback(
