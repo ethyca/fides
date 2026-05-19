@@ -1,14 +1,20 @@
 import { Flex, Select, Tag, Text } from "fidesui";
 import { ReactNode, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import DataSubjectSelect from "~/features/common/dropdown/DataSubjectSelect";
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import SystemGroupSelect from "~/features/common/dropdown/SystemGroupSelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import {
+  selectSystemGroupsAsTaxonomyEntities,
+  useGetAllSystemGroupsQuery,
+} from "~/features/system/system-groups.slice";
 import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
+import { useGetTaxonomyQuery } from "~/features/taxonomy/taxonomy.slice";
 
-import { ConditionProperty } from "./types";
+import { BUILT_IN_TAXONOMY_KEYS, ConditionProperty } from "./types";
 
 interface ConditionValuesFieldProps {
   property: string | undefined;
@@ -27,6 +33,17 @@ const ConditionValuesField = ({
     getDataCategoryDisplayName,
     getDataSubjectDisplayName,
   } = useTaxonomies();
+
+  useGetAllSystemGroupsQuery();
+  const systemGroups = useAppSelector(selectSystemGroupsAsTaxonomyEntities);
+
+  const isCustomTaxonomy =
+    !!property &&
+    !BUILT_IN_TAXONOMY_KEYS.includes(property as ConditionProperty);
+  const { data: customTaxonomyItems = [] } = useGetTaxonomyQuery(
+    property ?? "",
+    { skip: !isCustomTaxonomy },
+  );
 
   if (!property) {
     return (
@@ -50,8 +67,14 @@ const ConditionValuesField = ({
         return getDataCategoryDisplayName(value);
       case ConditionProperty.DATA_SUBJECTS:
         return getDataSubjectDisplayName(value);
-      default:
-        return value;
+      case ConditionProperty.SYSTEM_GROUP: {
+        const group = systemGroups.find((g) => g.fides_key === value);
+        return group?.name ?? value;
+      }
+      default: {
+        const item = customTaxonomyItems.find((t) => t.fides_key === value);
+        return item?.name ?? value;
+      }
     }
   };
 
