@@ -74,7 +74,7 @@ export const IntegrationDetailPanel = ({
             <Text strong>System</Text>
             <Text>
               {data.system.name}
-              {data.system.data_uses.length > 0 && (
+              {data.system.data_uses && data.system.data_uses.length > 0 && (
                 <>
                   {" · "}
                   {data.system.data_uses.map(getDataUseDisplayName).join(", ")}
