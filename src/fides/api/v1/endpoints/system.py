@@ -1,6 +1,6 @@
 from typing import Annotated, Dict, List, Literal, Optional, Union
 
-from fastapi import Depends, HTTPException, Query, Response, Security
+from fastapi import BackgroundTasks, Depends, HTTPException, Query, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -57,6 +57,7 @@ from fides.api.schemas.system import (
     BasicSystemResponse,
     SystemResponse,
 )
+from fides.api.system_steward_change_hooks import notify_system_stewards_changed
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     delete_connection_config,
@@ -402,6 +403,7 @@ async def system_bulk_delete(
 )
 async def bulk_assign_steward(
     data: AssignStewardRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(deps.get_db),
 ) -> Dict:
     """Assign the given `data_steward` (username) as a system manager for the list of `system_keys`.
@@ -467,6 +469,7 @@ async def bulk_assign_steward(
     for system in systems:
         if user not in system.data_stewards:
             user.set_as_system_manager(db, system)
+            notify_system_stewards_changed(background_tasks, system.id)
             updated_count += 1
 
     return {
