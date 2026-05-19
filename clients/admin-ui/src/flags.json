@@ -147,6 +147,13 @@
     "test": false,
     "production": false
   },
+  "formBuilder": {
+    "label": "Form builder",
+    "description": "Visual drag-and-drop form builder for privacy center request forms",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "accessPackages": {
     "label": "Access packages",
     "description": "Data-use-organized access packages with review workflow",
