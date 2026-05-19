@@ -170,7 +170,7 @@ export const FormBuilderPage = ({
         node?.focus();
       });
     },
-    [builder],
+    [builder.spec, builder.setSpec],
   );
 
   const handleSelectField = useCallback((elementId: string) => {
@@ -184,7 +184,7 @@ export const FormBuilderPage = ({
       }
       builder.setSpec(updateFieldMutation(builder.spec, elementId, props));
     },
-    [builder],
+    [builder.spec, builder.setSpec],
   );
 
   const handleRemoveField = useCallback(
@@ -197,7 +197,7 @@ export const FormBuilderPage = ({
         current === elementId ? null : current,
       );
     },
-    [builder],
+    [builder.spec, builder.setSpec],
   );
 
   const handleReorderFields = useCallback(
@@ -207,7 +207,7 @@ export const FormBuilderPage = ({
       }
       builder.setSpec(reorderFieldsMutation(builder.spec, newOrder));
     },
-    [builder],
+    [builder.spec, builder.setSpec],
   );
 
   const handleUpdateVisibility = useCallback(
@@ -219,7 +219,7 @@ export const FormBuilderPage = ({
         setFieldVisibilityMutation(builder.spec, elementId, visible),
       );
     },
-    [builder],
+    [builder.spec, builder.setSpec],
   );
 
   // Dirty = current spec differs from the spec the page loaded with.
