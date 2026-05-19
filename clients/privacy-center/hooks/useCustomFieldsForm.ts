@@ -1,7 +1,6 @@
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { isFieldVisible } from "~/common/visibility";
 import { selectUserLocation } from "~/features/consent/consent.slice";
 import { CustomConfigField } from "~/types/config";
 
@@ -64,68 +63,21 @@ export const useCustomFieldsForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => {
-            const { label, required } = field;
-            const fieldType = field.field_type;
-            const visibilityRules = field.visible_when;
+          .map(([key, { label, required, field_type }]) => {
             const isRequired = required !== false;
-            const hasVisibilityRules =
-              Array.isArray(visibilityRules) && visibilityRules.length > 0;
-            const requiredMessage = `${label} is required`;
-            // When the field has visibility rules, gate the required check on
-            // the current sibling values: invisible ⇒ not required; visible ⇒
-            // existing required logic applies.
-            const requiredTest = (
-              base: Yup.AnySchema,
-              isFilled: (v: unknown) => boolean,
-            ) =>
-              hasVisibilityRules
-                ? base.test(
-                    "required-when-visible",
-                    requiredMessage,
-                    function requiredWhenVisible(value) {
-                      const parent = (this.parent ?? {}) as Record<
-                        string,
-                        unknown
-                      >;
-                      if (
-                        !isFieldVisible(
-                          { visible_when: visibilityRules },
-                          parent,
-                        )
-                      ) {
-                        return true;
-                      }
-                      if (!isRequired) {
-                        return true;
-                      }
-                      return isFilled(value);
-                    },
-                  )
-                : base;
-            if (fieldType === "multiselect") {
-              const arr = Yup.array();
-              if (hasVisibilityRules) {
-                return [
-                  key,
-                  requiredTest(arr, (v) => Array.isArray(v) && v.length > 0),
-                ];
-              }
+            if (field_type === "multiselect") {
               return [
                 key,
-                isRequired ? arr.min(1, requiredMessage) : arr.notRequired(),
-              ];
-            }
-            const str = Yup.string();
-            if (hasVisibilityRules) {
-              return [
-                key,
-                requiredTest(str, (v) => typeof v === "string" && v.length > 0),
+                isRequired
+                  ? Yup.array().min(1, `${label} is required`)
+                  : Yup.array().notRequired(),
               ];
             }
             return [
               key,
-              isRequired ? str.required(requiredMessage) : str.notRequired(),
+              isRequired
+                ? Yup.string().required(`${label} is required`)
+                : Yup.string().notRequired(),
             ];
           }),
       ),

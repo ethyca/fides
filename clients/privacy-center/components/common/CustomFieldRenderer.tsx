@@ -1,10 +1,9 @@
-import { Input, LocationSelect, Radio, Select } from "fidesui";
+import { Input, LocationSelect, Select } from "fidesui";
 import { ReactNode } from "react";
 
 import {
   CustomLocationField,
   CustomMultiSelectField,
-  CustomRadioField,
   CustomSelectField,
   CustomTextField,
   ICustomField,
@@ -26,11 +25,6 @@ interface ICustomSelectFieldProps extends CustomSelectField, ICustomFieldProps {
   onChange: (value: string) => void;
 }
 
-interface ICustomRadioFieldProps extends CustomRadioField, ICustomFieldProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
 interface ICustomMultiSelectFieldProps
   extends CustomMultiSelectField, ICustomFieldProps {
   value: Array<string>;
@@ -46,7 +40,6 @@ interface ICustomLocationFieldProps
 export type CustomFieldRendererProps =
   | ICustomTextFieldProps
   | ICustomSelectFieldProps
-  | ICustomRadioFieldProps
   | ICustomMultiSelectFieldProps
   | ICustomLocationFieldProps;
 
@@ -63,7 +56,7 @@ const CustomFieldRenderer = ({
         <Select
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
-          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
+          placeholder={`Select ${label.toLowerCase()}`}
           value={props.value}
           onChange={(selectedValue) => {
             props.onChange(selectedValue);
@@ -95,31 +88,13 @@ const CustomFieldRenderer = ({
         />
       );
 
-    case "radio":
-      return (
-        <Radio.Group
-          id={fieldKey}
-          data-testid={`radio-${fieldKey}`}
-          value={props.value !== "" ? props.value : undefined}
-          onChange={(e) => props.onChange(e.target.value)}
-          onBlur={onBlur}
-          options={props.options?.map((option: string) => ({
-            label: option,
-            value: option,
-          }))}
-          aria-label={label}
-          aria-describedby={`${fieldKey}-error`}
-          aria-required={required !== false}
-        />
-      );
-
     case "multiselect":
       return (
         <Select
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
           mode="multiple"
-          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
+          placeholder={`Select ${label.toLowerCase()}`}
           value={props.value}
           onChange={props.onChange}
           onBlur={onBlur}
@@ -153,7 +128,7 @@ const CustomFieldRenderer = ({
         <LocationSelect
           id={fieldKey}
           data-testid={`location-select-${fieldKey}`}
-          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
+          placeholder={`Select ${label.toLowerCase()}`}
           value={props.value !== "" ? props.value : undefined}
           onChange={props.onChange}
           onBlur={onBlur}
@@ -170,7 +145,7 @@ const CustomFieldRenderer = ({
         <Input
           id={fieldKey}
           name={fieldKey}
-          placeholder={props.placeholder ?? label}
+          placeholder={label}
           onChange={(e) => props.onChange(e.target.value)}
           onBlur={onBlur}
           value={props.value}
