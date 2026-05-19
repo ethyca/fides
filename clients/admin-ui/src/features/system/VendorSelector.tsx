@@ -264,8 +264,18 @@ const VendorSelector = ({
         option and the UI flips from Select → Input, and "vendor_id" has no
         visible Form.Item at all.
       */}
+      {/*
+        `input-name` is the public testid used by Cypress to assert on the
+        system-name field's existence and disabled state. It rides on the
+        always-mounted hidden Input so the testid is stable across the
+        typeahead → text-input mode flip.
+      */}
       <Form.Item name="name" rules={nameRules} noStyle>
-        <Input type="hidden" />
+        <Input
+          type="hidden"
+          data-testid="input-name"
+          disabled={nameFieldLockedForGVL}
+        />
       </Form.Item>
       <Form.Item name="vendor_id" noStyle>
         <Input type="hidden" />

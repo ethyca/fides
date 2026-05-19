@@ -47,6 +47,8 @@ export const CustomFieldsList = ({
             !definition.allow_list_id &&
             definition.field_type === LegacyAllowedTypes.STRING;
 
+          const testNameSegment = `customFieldValues.${definition.id}`;
+
           if (isFreeText) {
             return (
               <Form.Item
@@ -55,7 +57,10 @@ export const CustomFieldsList = ({
                 label={definition.name}
                 tooltip={definition.description}
               >
-                <Input aria-label={definition.name} />
+                <Input
+                  aria-label={definition.name}
+                  data-testid={`input-${testNameSegment}`}
+                />
               </Form.Item>
             );
           }
@@ -82,6 +87,7 @@ export const CustomFieldsList = ({
                 mode={isMulti ? "multiple" : undefined}
                 options={allowList.options}
                 className="w-full"
+                data-testid={`controlled-select-${testNameSegment}`}
               />
             </Form.Item>
           );
