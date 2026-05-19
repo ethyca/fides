@@ -9,7 +9,7 @@ import {
 
 import type { ComponentType } from "./catalog";
 import { ChatPane } from "./ChatPane";
-import { stableJson } from "./drift";
+import { stableJson } from "./utils";
 import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
 import { jsonSpecToPcShape } from "./jsonSpecToPcShape";
 import { pcShapeToJsonSpec } from "./pcShapeToJsonSpec";
