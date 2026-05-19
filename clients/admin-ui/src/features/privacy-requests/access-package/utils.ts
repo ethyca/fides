@@ -1,4 +1,6 @@
-import { AccessPackageEntry, RedactionEntry, RedactionType } from "./types";
+import { RedactionEntry, RedactionType } from "~/types/api";
+
+import { AccessPackageEntry } from "./types";
 
 /**
  * Stable key for a redactable target. Used as the Table rowKey for

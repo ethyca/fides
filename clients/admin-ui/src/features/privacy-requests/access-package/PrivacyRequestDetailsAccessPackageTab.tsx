@@ -19,7 +19,7 @@ import {
 import { useCallback, useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestStatus, RedactionType } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { PrivacyRequestEntity } from "../types";
@@ -29,11 +29,7 @@ import {
   useGetAccessPackageQuery,
   useUpdateAccessPackageRedactionsMutation,
 } from "./access-package.slice";
-import {
-  AccessPackageCategory,
-  AccessPackageEntry,
-  RedactionType,
-} from "./types";
+import { AccessPackageCategory, AccessPackageEntry } from "./types";
 import {
   entryToRedaction,
   redactionKey,

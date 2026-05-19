@@ -1,68 +1,75 @@
 /**
- * Local types for the access package API responses.
+ * Access package types consumed by the admin UI.
  *
- * These mirror the fidesplus Pydantic schemas. Once the OpenAPI types are
- * generated from the fidesplus routes, these can be replaced with generated
- * imports + local overrides (to mark list fields as required).
+ * Where the generated OpenAPI types match the consumer's expectations, we
+ * re-export them directly. Where the backend's Pydantic schemas mark list
+ * fields as `Optional[list[...]] = None` (even though the response always
+ * includes them in practice), we override locally so the UI can rely on
+ * required values without `?? []` fallbacks scattered everywhere.
  */
 
-export enum RedactionType {
-  REDACT = "redact",
-  REMOVE_FIELD = "remove_field",
-  REMOVE_RECORD = "remove_record",
-}
+import type {
+  AccessPackageCategory as GeneratedAccessPackageCategory,
+  AccessPackageDataUse as GeneratedAccessPackageDataUse,
+  AccessPackageEntry as GeneratedAccessPackageEntry,
+  AccessPackageOther as GeneratedAccessPackageOther,
+  AttachmentResponse,
+  RedactionEntry,
+} from "~/types/api";
 
-export interface RedactionEntry {
-  source: string;
-  record_index: number;
-  /**
-   * Field path to redact. Null only when `type` is `REMOVE_RECORD`, which
-   * targets the entire record rather than a single field. This UI never
-   * emits null itself (it only creates REDACT-type entries from field rows),
-   * but it must preserve null entries returned by the API.
-   */
-  field_path: string | null;
-  type: RedactionType;
-}
-
-export interface RedactionsRequest {
-  redactions: RedactionEntry[];
-}
-
-export interface AccessPackageEntry {
-  source: string;
-  system?: string | null;
-  system_name?: string | null;
-  record_index: number;
-  field_path: string;
-  value?: unknown;
+/**
+ * Override: `redacted` is required. The backend always populates it.
+ */
+export interface AccessPackageEntry extends Omit<
+  GeneratedAccessPackageEntry,
+  "redacted"
+> {
   redacted: boolean;
 }
 
-export interface AccessPackageCategory {
-  fides_key: string;
-  name: string;
+/**
+ * Override: `entries` is required. The backend always returns the list,
+ * possibly empty.
+ */
+export interface AccessPackageCategory extends Omit<
+  GeneratedAccessPackageCategory,
+  "entries"
+> {
   entries: AccessPackageEntry[];
 }
 
-export interface AccessPackageDataUse {
-  fides_key: string;
+/**
+ * Override: `description` and `categories` are required.
+ */
+export interface AccessPackageDataUse extends Omit<
+  GeneratedAccessPackageDataUse,
+  "description" | "categories"
+> {
+  description: string;
+  categories: AccessPackageCategory[];
+}
+
+/**
+ * Override: `name`, `description`, and `categories` are required.
+ */
+export interface AccessPackageOther extends Omit<
+  GeneratedAccessPackageOther,
+  "name" | "description" | "categories"
+> {
   name: string;
   description: string;
   categories: AccessPackageCategory[];
 }
 
-export interface AccessPackageOther {
-  name: string;
-  description: string;
-  categories: AccessPackageCategory[];
-}
-
-export interface AttachmentResponse {
-  file_name: string;
-  retrieved_attachment_size?: number | null;
-}
-
+/**
+ * Override of the generated `AccessPackageResponse`:
+ * - tightens `redactions`, `data_uses`, and `attachments` from optional to
+ *   required
+ * - replaces the generated `attachments: Array<unknown>` with the real
+ *   `AttachmentResponse` shape from `~/types/api`
+ * - uses the local (tightened) `AccessPackageDataUse` / `AccessPackageOther`
+ *   so consumers don't have to guard against missing `categories`/`entries`
+ */
 export interface AccessPackageResponse {
   redactions: RedactionEntry[];
   data_uses: AccessPackageDataUse[];

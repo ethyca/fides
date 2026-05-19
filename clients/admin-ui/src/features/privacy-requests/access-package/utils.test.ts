@@ -1,4 +1,6 @@
-import { AccessPackageEntry, RedactionType } from "./types";
+import { RedactionType } from "~/types/api";
+
+import { AccessPackageEntry } from "./types";
 import {
   entryToRedaction,
   redactionKey,
