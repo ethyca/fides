@@ -13,7 +13,7 @@ import {
   useMessage,
 } from "fidesui";
 import { isEqual } from "lodash";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
@@ -239,7 +239,23 @@ const SystemInformationForm = ({
   );
   const fidesKey = Form.useWatch("fides_key", form);
 
-  const handleSubmit = async (values: FormValues) => {
+  // Custom field values load asynchronously after the form mounts; once they're
+  // available, push them into the form so the registered Form.Items pick them
+  // up. Only relevant in edit mode (create mode has no pre-existing values).
+  useEffect(() => {
+    if (passedInSystem && !customFields.isLoading) {
+      form.setFieldsValue({
+        customFieldValues: customFields.customFieldValues,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customFields.isLoading, customFields.customFieldValues]);
+
+  const handleSubmit = async (submittedValues: FormValues) => {
+    // antd's onFinish only includes registered Form.Item fields; merge with
+    // initialValues so non-rendered fields (privacy_declarations,
+    // system_type, etc.) make it into the payload.
+    const values: FormValues = { ...initialValues, ...submittedValues };
     let dictionaryDeclarations;
     if (values.vendor_id && values.privacy_declarations.length === 0) {
       const dataUseQueryResult = await getDictionaryDataUseTrigger({
@@ -513,7 +529,7 @@ const SystemInformationForm = ({
                     ? initialValues.tags.map((s) => ({ value: s, label: s }))
                     : []
                 }
-                data-testid="input-tags"
+                data-testid="controlled-select-tags"
               />
             </Form.Item>
             {systemGroupsEnabled && (
@@ -526,7 +542,7 @@ const SystemInformationForm = ({
                   mode="multiple"
                   aria-label="System groups"
                   options={systemGroupOptions}
-                  data-testid="input-system_groups"
+                  data-testid="controlled-select-system_groups"
                 />
               </Form.Item>
             )}
@@ -543,7 +559,7 @@ const SystemInformationForm = ({
                 aria-label="Dataset references"
                 options={datasetSelectOptions}
                 optionRender={DatasetSelectOption}
-                data-testid="input-dataset_references"
+                data-testid="controlled-select-dataset_references"
               />
             </Form.Item>
           </SystemFormInputGroup>
@@ -573,16 +589,6 @@ const SystemInformationForm = ({
                         label="Reason for exemption"
                         tooltip="Why is this system exempt from privacy regulation?"
                         required={exemptFromPrivacyRegulations}
-                        rules={
-                          exemptFromPrivacyRegulations
-                            ? [
-                                {
-                                  required: true,
-                                  message: "Reason for exemption is required",
-                                },
-                              ]
-                            : undefined
-                        }
                       >
                         <Input
                           disabled={lockedForGVL}
@@ -609,24 +615,13 @@ const SystemInformationForm = ({
                           label="Legal basis for profiling"
                           tooltip="What is the legal basis under which profiling is performed?"
                           required={usesProfiling}
-                          rules={
-                            usesProfiling
-                              ? [
-                                  {
-                                    required: true,
-                                    message:
-                                      "Legal basis for profiling is required",
-                                  },
-                                ]
-                              : undefined
-                          }
                         >
                           <Select
                             mode="multiple"
                             aria-label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
                             disabled={lockedForGVL}
-                            data-testid="input-legal_basis_for_profiling"
+                            data-testid="controlled-select-legal_basis_for_profiling"
                           />
                         </Form.Item>
                       </div>
@@ -646,24 +641,13 @@ const SystemInformationForm = ({
                           label="Legal basis for transfer"
                           tooltip="What is the legal basis under which the data is transferred?"
                           required={doesInternationalTransfers}
-                          rules={
-                            doesInternationalTransfers
-                              ? [
-                                  {
-                                    required: true,
-                                    message:
-                                      "Legal basis for transfer is required",
-                                  },
-                                ]
-                              : undefined
-                          }
                         >
                           <Select
                             mode="multiple"
                             aria-label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
                             disabled={lockedForGVL}
-                            data-testid="input-legal_basis_for_transfers"
+                            data-testid="controlled-select-legal_basis_for_transfers"
                           />
                         </Form.Item>
                       </div>
@@ -692,16 +676,6 @@ const SystemInformationForm = ({
                           label="DPIA/DPA location"
                           tooltip="Where is the DPA/DPIA stored?"
                           required={requiresDpas}
-                          rules={
-                            requiresDpas
-                              ? [
-                                  {
-                                    required: true,
-                                    message: "DPIA/DPA location is required",
-                                  },
-                                ]
-                              : undefined
-                          }
                         >
                           <Input
                             disabled={lockedForGVL}
@@ -762,7 +736,7 @@ const SystemInformationForm = ({
                         .includes(input.toLowerCase())
                     }
                     placeholder="Select data stewards"
-                    data-testid="input-data_stewards"
+                    data-testid="controlled-select-data_stewards"
                   />
                 </Form.Item>
                 <DictSuggestionTextInput
@@ -808,7 +782,7 @@ const SystemInformationForm = ({
                     disabled={
                       !processesPersonalData || exemptFromPrivacyRegulations
                     }
-                    data-testid="input-responsibility"
+                    data-testid="controlled-select-responsibility"
                   />
                 </Form.Item>
                 <DictSuggestionTextInput
