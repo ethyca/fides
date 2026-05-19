@@ -51,7 +51,10 @@ export const usePrivacyRequestComments = (privacyRequestId: string) => {
         return {
           author,
           date: new Date(comment.created_at),
-          type: ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
+          type:
+            comment.user_id === null && comment.username !== "root_user"
+              ? ActivityTimelineItemTypeEnum.INTERNAL_AUTOMATION_COMMENT
+              : ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
           showViewLog: false,
           description: comment.comment_text,
           isError: false,

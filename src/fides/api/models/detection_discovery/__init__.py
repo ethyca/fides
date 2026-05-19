@@ -16,6 +16,7 @@ from .monitor_task import (
     MonitorTaskType,
     TaskRunType,
     create_monitor_task_with_execution_log,
+    is_monitor_task_paused,
     update_monitor_task_with_execution_log,
 )
 from .staged_resource_error import StagedResourceError
@@ -37,5 +38,6 @@ __all__ = [
     "MonitorTaskType",
     "TaskRunType",
     "create_monitor_task_with_execution_log",
+    "is_monitor_task_paused",
     "update_monitor_task_with_execution_log",
 ]

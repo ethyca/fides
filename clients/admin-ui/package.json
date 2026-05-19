@@ -84,7 +84,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@ant-design/cli": "^6.3.7",
+    "@ant-design/cli": "^6.4.3",
     "@hey-api/openapi-ts": "^0.88.2",
     "@jest/globals": "^29.7.0",
     "@next/bundle-analyzer": "^16.2.0",

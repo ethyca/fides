@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import BackgroundTasks, Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -16,6 +16,7 @@ from fides.api.schemas.user_permission import (
     UserPermissionsEdit,
     UserPermissionsResponse,
 )
+from fides.api.system_steward_change_hooks import notify_system_stewards_changed
 from fides.api.util.api_router import APIRouter
 from fides.common import urn_registry as urls
 from fides.common.scope_registry import (
@@ -97,6 +98,7 @@ async def update_user_permissions(
     user_id: str,
     authorization: str = Security(oauth2_scheme),
     permissions: UserPermissionsEdit,
+    background_tasks: BackgroundTasks,
 ) -> FidesUserPermissions:
     """Update a user's role(s).  The UI assigns one role at a time, but multiple
     roles are technically supported.
@@ -128,6 +130,7 @@ async def update_user_permissions(
                 system.fides_key,
             )
             user.remove_as_system_manager(db, system)
+            notify_system_stewards_changed(background_tasks, system.id)
 
     return updated_user_perms
 

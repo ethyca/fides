@@ -18,17 +18,8 @@ import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";
 import { InProgressMonitorTaskItem } from "./InProgressMonitorTaskItem";
 
-// Helper function to format status names for display
-const formatStatusForDisplay = (
-  status: ExecutionLogStatus | string,
-): string => {
-  // Special case: "paused" should display as "Awaiting Processing"
-  if (status === "paused") {
-    return "Awaiting Processing";
-  }
-
-  return status.split("_").map(capitalize).join(" ");
-};
+const formatStatusForDisplay = (status: ExecutionLogStatus | string): string =>
+  status.split("_").map(capitalize).join(" ");
 
 export const InProgressMonitorTasksList = ({
   filters,

@@ -1,7 +1,4 @@
-import {
-  ChakraStack as Stack,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
+import { Flex } from "fidesui";
 import { useEffect, useState } from "react";
 
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
@@ -24,28 +21,30 @@ const PrivacyDeclarationFormTab = ({
   includeCustomFields,
   ...dataProps
 }: Props & DataProps) => {
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const [currentDeclaration, setCurrentDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
+  const [isDirty, setIsDirty] = useState(false);
 
   const { createDataUse, updateDataUse, deleteDataUse } =
     useSystemDataUseCrud(system);
 
   const handleCloseForm = () => {
-    onClose();
+    setIsOpen(false);
     setCurrentDeclaration(undefined);
+    setIsDirty(false);
   };
 
   const handleOpenNewForm = () => {
-    onOpen();
+    setIsOpen(true);
     setCurrentDeclaration(undefined);
   };
 
   const handleOpenEditForm = (
     declarationToEdit: PrivacyDeclarationResponse,
   ) => {
-    onOpen();
+    setIsOpen(true);
     setCurrentDeclaration(declarationToEdit);
   };
 
@@ -57,13 +56,15 @@ const PrivacyDeclarationFormTab = ({
     return createDataUse(values);
   };
 
-  // Reset the new form when the system changes (i.e. when clicking on a new datamap node)
+  // Reset modal state when the system changes (e.g. switching datamap nodes)
   useEffect(() => {
-    onClose();
-  }, [onClose, system.fides_key]);
+    setIsOpen(false);
+    setCurrentDeclaration(undefined);
+    setIsDirty(false);
+  }, [system.fides_key]);
 
   return (
-    <Stack spacing={6} data-testid="data-use-tab">
+    <Flex vertical gap="large" data-testid="data-use-tab">
       {system.privacy_declarations.length === 0 ? (
         <EmptyTableState
           title="You don't have a data use set up for this system yet."
@@ -84,16 +85,18 @@ const PrivacyDeclarationFormTab = ({
         isOpen={isOpen}
         onClose={handleCloseForm}
         heading="Configure data use"
+        getIsDirty={() => isDirty}
       >
         <PrivacyDeclarationForm
           initialValues={currentDeclaration}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
+          onDirtyChange={setIsDirty}
           includeCustomFields={includeCustomFields}
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>
-    </Stack>
+    </Flex>
   );
 };
 

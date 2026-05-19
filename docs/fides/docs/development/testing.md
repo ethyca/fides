@@ -75,8 +75,8 @@ pytest --collect-only
 To run a subset of tests, provide a filename or directory; to match a specific test name, use the `-k` flag:
 
 ```bash
-# Run all tests in the tests/ctl/ directory that contain the word "api" in their name
-pytest tests/ctl/ -k api
+# Run all tests in the tests/fides/ctl/ directory that contain the word "api" in their name
+pytest tests/fides/ctl/ -k api
 ```
 
 The `--sw` flag will exit `pytest` the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.

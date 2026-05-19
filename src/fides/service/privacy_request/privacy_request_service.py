@@ -55,6 +55,9 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
+    get_pre_restart_cleanup,
+)
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
@@ -1308,6 +1311,12 @@ def _process_privacy_request_restart(
             "Restarting failed privacy request '{}' from the beginning",
             privacy_request.id,
         )
+
+    # Clean up any access review state so the request enters review fresh
+    if privacy_request.status == PrivacyRequestStatus.awaiting_access_review:
+        cleanup = get_pre_restart_cleanup()
+        if cleanup:
+            cleanup(privacy_request.id, db)
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)

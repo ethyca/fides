@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from loguru import logger
 from sqlalchemy import create_engine
@@ -26,6 +26,7 @@ def get_db_engine(
     keepalives_interval: int | None = None,
     keepalives_count: int | None = None,
     pool_pre_ping: bool = True,
+    pool_recycle: Optional[int] = None,
     disable_pooling: bool = False,
 ) -> Engine:
     """Return a database engine.
@@ -90,6 +91,8 @@ def get_db_engine(
         engine_args["pool_pre_ping"] = pool_pre_ping
         engine_args["pool_size"] = pool_size
         engine_args["max_overflow"] = max_overflow
+        if pool_recycle is not None:
+            engine_args["pool_recycle"] = pool_recycle
 
     return create_engine(database_uri, **engine_args)
 
