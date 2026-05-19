@@ -10243,16 +10243,20 @@ class TestImportHistoricalPrivacyRequests:
         policy,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
-        records = [
-            {
+        records = []
+        for status_value in ("complete", "denied", "canceled", "error"):
+            record = {
                 "identity": {"email": f"user-{status_value}@example.com"},
                 "policy_key": policy.key,
                 "status": status_value,
                 "requested_at": "2024-01-15T10:00:00.000Z",
                 "finished_processing_at": "2024-01-20T10:00:00.000Z",
             }
-            for status_value in ("complete", "denied", "canceled", "error")
-        ]
+            # `denial_reason` is required by the schema when status is "denied".
+            if status_value == "denied":
+                record["denial_reason"] = "Bulk import test denial"
+            records.append(record)
+
         resp = api_client.post(url, headers=auth_header, json=records)
         assert resp.status_code == 200
 
