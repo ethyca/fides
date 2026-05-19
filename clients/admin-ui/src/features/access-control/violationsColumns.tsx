@@ -17,13 +17,13 @@ export const getViolationsColumns =
   (): ColumnsType<PolicyViolationAggregate> => [
     {
       title: "Policy",
-      dataIndex: "policy",
+      dataIndex: "policy_label",
       key: "policy",
       render: (value: string | null) => value || "—",
     },
     {
       title: "Control",
-      dataIndex: "control",
+      dataIndex: "control_label",
       key: "control",
       render: (value: string | null) => value || "—",
     },
