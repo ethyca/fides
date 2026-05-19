@@ -80,7 +80,7 @@ const describeDropped = (
     case "unknown_component":
       return `Unknown component ${d.type} on "${fieldLabel(spec, d.elementId)}" — won't render outside the builder.`;
     default:
-      return `Unsupported feature (${(d as { kind: string }).kind})`;
+      return "Unsupported feature";
   }
 };
 
