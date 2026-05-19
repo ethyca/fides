@@ -147,6 +147,13 @@
     "test": false,
     "production": false
   },
+  "dsrTraversalVisualizer": {
+    "label": "DSR traversal visualizer",
+    "description": "Preview the DSR traversal graph for a property before requests run",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "formBuilder": {
     "label": "Form builder",
     "description": "Visual drag-and-drop form builder for privacy center request forms",
