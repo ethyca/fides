@@ -13,6 +13,7 @@ export interface ActionFormValues {
 interface ActionEditModalProps {
   open: boolean;
   initial: ActionFormValues | null;
+  existingKeys?: string[];
   onOk: (values: ActionFormValues) => void;
   onCancel: () => void;
 }
@@ -20,6 +21,7 @@ interface ActionEditModalProps {
 export const ActionEditModal = ({
   open,
   initial,
+  existingKeys = [],
   onOk,
   onCancel,
 }: ActionEditModalProps) => {
@@ -45,6 +47,11 @@ export const ActionEditModal = ({
     }
     return options;
   }, [policiesData, initialPolicyKey, isLoadingPolicies]);
+
+  // When adding, hide policies that already have an action
+  const filteredOptions = initial
+    ? policyOptions
+    : policyOptions.filter((o) => !existingKeys.includes(o.value));
 
   const isStalePolicy =
     !!initialPolicyKey &&
@@ -76,8 +83,9 @@ export const ActionEditModal = ({
           }
         >
           <Select
-            options={policyOptions}
+            options={filteredOptions}
             loading={isLoadingPolicies}
+            disabled={!!initial}
             showSearch
             optionFilterProp="label"
             placeholder="Select a policy"

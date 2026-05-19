@@ -52,25 +52,30 @@ export const PrivacyCenterConfigSection = ({
       (a) => a.policy_key !== policyKey,
     );
     const nextConfig = { ...current, actions: nextActions };
-    onChange?.(nextConfig);
-    await onDeleteImmediately?.(nextConfig);
+    try {
+      await onDeleteImmediately?.(nextConfig);
+      onChange?.(nextConfig);
+    } catch {
+      // error toast already shown by the callback
+    }
   };
 
   const handleOk = async (action: ActionFormValues) => {
     const current = value ?? { actions: [] };
     const existingActions = current.actions ?? [];
-    const isUpdate = existingActions.some(
-      (a) => a.policy_key === action.policy_key,
-    );
-    const nextActions = isUpdate
+    const nextActions = editing
       ? existingActions.map((a) =>
-          a.policy_key === action.policy_key ? { ...a, ...action } : a,
+          a.policy_key === editing.policy_key ? { ...a, ...action } : a,
         )
       : [...existingActions, action];
     const nextConfig = { ...current, actions: nextActions };
-    onChange?.(nextConfig);
-    await onSaveImmediately?.(nextConfig);
-    setOpen(false);
+    try {
+      await onSaveImmediately?.(nextConfig);
+      onChange?.(nextConfig);
+      setOpen(false);
+    } catch {
+      // error toast already shown by the callback
+    }
   };
 
   if (!isInitialized) {
@@ -150,6 +155,7 @@ export const PrivacyCenterConfigSection = ({
       <ActionEditModal
         open={open}
         initial={editing}
+        existingKeys={(value?.actions ?? []).map((a) => a.policy_key)}
         onCancel={() => setOpen(false)}
         onOk={handleOk}
       />

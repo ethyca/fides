@@ -42,6 +42,7 @@ const EditPropertyPage: NextPage = () => {
     });
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
+      throw new Error(getErrorMessage(result.error));
     }
   };
 

@@ -1,5 +1,6 @@
 import { Button, Icons, List, Space, Typography, useModal } from "fidesui";
 import Link from "next/link";
+import { useMemo } from "react";
 
 import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 
@@ -29,12 +30,15 @@ export const ActionsTable = ({
 }: ActionsTableProps) => {
   const modal = useModal();
   const { data: policiesPage } = useGetPoliciesQuery();
-  const policyNameByKey: Record<string, string> = {};
-  policiesPage?.items?.forEach((p) => {
-    if (p.key) {
-      policyNameByKey[p.key] = p.name ?? p.key;
-    }
-  });
+  const policyNameByKey = useMemo(() => {
+    const map: Record<string, string> = {};
+    policiesPage?.items?.forEach((p) => {
+      if (p.key) {
+        map[p.key] = p.name ?? p.key;
+      }
+    });
+    return map;
+  }, [policiesPage]);
 
   const handleDeleteClick = (action: ActionFormValues) => {
     modal.confirm({

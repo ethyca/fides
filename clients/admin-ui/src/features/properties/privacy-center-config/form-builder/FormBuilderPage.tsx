@@ -80,7 +80,7 @@ const describeDropped = (
     case "unknown_component":
       return `Unknown component ${d.type} on "${fieldLabel(spec, d.elementId)}" — won't render outside the builder.`;
     default:
-      return JSON.stringify(d);
+      return `Unsupported feature (${(d as { kind: string }).kind})`;
   }
 };
 
@@ -284,20 +284,21 @@ export const FormBuilderPage = ({
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
 
-  const droppedSummary: DroppedFeature[] = useMemo(
-    () => (builder.spec ? jsonSpecToPcShape(builder.spec).droppedFeatures : []),
+  const mapResult = useMemo(
+    () => (builder.spec ? jsonSpecToPcShape(builder.spec) : null),
     [builder.spec],
   );
+  const droppedSummary: DroppedFeature[] = mapResult?.droppedFeatures ?? [];
 
   if (!action) {
     return <Alert type="error" title="Action not found on property." />;
   }
 
   const persist = async () => {
-    if (!builder.spec) {
+    if (!mapResult) {
       return;
     }
-    const result = jsonSpecToPcShape(builder.spec);
+    const result = mapResult;
     if (result.errors.length > 0) {
       message.error("Form has validation errors — fix before saving.");
       return;
@@ -340,11 +341,10 @@ export const FormBuilderPage = ({
   };
 
   const handleSave = () => {
-    if (!builder.spec) {
+    if (!mapResult) {
       return;
     }
-    const result = jsonSpecToPcShape(builder.spec);
-    if (result.droppedFeatures.length > 0) {
+    if (mapResult.droppedFeatures.length > 0) {
       setConfirmingDropped(true);
       return;
     }

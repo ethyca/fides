@@ -29,7 +29,7 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space orientation="vertical" style={{ width: "100%" }}>
       <Space wrap>
         {value.map((path) => (
           <Tag key={path} closable onClose={() => handleRemove(path)}>
