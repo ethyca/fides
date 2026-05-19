@@ -1,4 +1,4 @@
-import { Flex, Select, Tag } from "fidesui";
+import { Flex, Select, Tag, Text } from "fidesui";
 import { ReactNode, useState } from "react";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -122,7 +122,12 @@ const ConditionValuesField = ({
           closeButtonLabel="Remove value"
           data-testid={`condition-value-${value}`}
         >
-          {getDisplayName(value)}
+          <Text
+            ellipsis={{ tooltip: true }}
+            style={{ color: "inherit", maxWidth: 200 }}
+          >
+            {getDisplayName(value)}
+          </Text>
         </Tag>
       ))}
       <Tag
