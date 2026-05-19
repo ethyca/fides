@@ -1,0 +1,4 @@
+type: Fixed
+description: Removed a stale `fidesDebugger` reference in the data lineage graph
+pr: 8227
+labels: []

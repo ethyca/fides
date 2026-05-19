@@ -225,6 +225,62 @@ describe("Consent settings", () => {
       cy.getByTestId("consent-description").contains("When you use our");
     });
 
+    describe("HTML in heading and description", () => {
+      const HTML_TITLE = "Manage <strong>your</strong> consent";
+      const HTML_DESCRIPTION =
+        "Review <em>your</em> consent preferences <strong>now</strong>";
+
+      const overrideConfigWithHtml = () => {
+        cy.fixture("config/config_consent.json").then((config) => {
+          cy.dispatch({
+            type: "config/loadConfig",
+            payload: {
+              ...config,
+              consent: {
+                ...config.consent,
+                page: {
+                  ...config.consent.page,
+                  title: HTML_TITLE,
+                  description: HTML_DESCRIPTION,
+                },
+              },
+            },
+          });
+        });
+      };
+
+      it("renders HTML when ALLOW_HTML_DESCRIPTION is true", () => {
+        cy.overrideSettings({
+          IS_OVERLAY_ENABLED: false,
+          ALLOW_HTML_DESCRIPTION: true,
+        });
+        overrideConfigWithHtml();
+
+        cy.getByTestId("consent-heading")
+          .find("strong")
+          .should("contain", "your");
+        cy.getByTestId("description").find("em").should("contain", "your");
+        cy.getByTestId("description").find("strong").should("contain", "now");
+      });
+
+      it("escapes HTML when ALLOW_HTML_DESCRIPTION is false", () => {
+        cy.overrideSettings({
+          IS_OVERLAY_ENABLED: false,
+          ALLOW_HTML_DESCRIPTION: false,
+        });
+        overrideConfigWithHtml();
+
+        cy.getByTestId("consent-heading")
+          .should("contain", HTML_TITLE)
+          .find("strong")
+          .should("not.exist");
+        cy.getByTestId("description")
+          .should("contain", HTML_DESCRIPTION)
+          .find("em")
+          .should("not.exist");
+      });
+    });
+
     it("lets the user update their consent", () => {
       cy.getByTestId("consent");
 

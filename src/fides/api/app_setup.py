@@ -59,6 +59,7 @@ from fides.api.v1.exception_handlers import (
     ExceptionHandlers,
     response_validation_error_handler,
 )
+from fides.common.engine_creators import db_cred_provider
 from fides.common.session_management import get_api_session, get_autoclose_db_session
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
@@ -205,12 +206,13 @@ async def run_database_startup(app: FastAPI) -> None:
     application webserver.
     """
 
-    if not CONFIG.database.sync_database_uri:
+    database_url = db_cred_provider.get_database_url()
+    if not database_url:
         raise FidesError("No database uri provided")
 
     if CONFIG.database.automigrate:
         try:
-            configure_db(CONFIG.database.sync_database_uri)
+            configure_db(database_url)
             if not CONFIG.test_mode:
                 with get_autoclose_db_session() as session:
                     seed_db(session)

@@ -1,0 +1,4 @@
+type: Changed
+description: Cmd+K search now always opens as a centered modal regardless of navbar state
+pr: 8202
+labels: []

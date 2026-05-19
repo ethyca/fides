@@ -1,5 +1,4 @@
-import { Button, ChakraVStack as VStack, Spin } from "fidesui";
-import { FieldArray, useFormikContext } from "formik";
+import { Button, Card, Flex, Form, Icons, Select, Spin } from "fidesui";
 import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -14,7 +13,6 @@ import {
 } from "~/features/plus/plus.slice";
 import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 
-import { ControlledSelect } from "../common/form/ControlledSelect";
 import {
   CONSENT_USE_OPTIONS,
   EMPTY_DECLARATION,
@@ -22,74 +20,94 @@ import {
   MinimalPrivacyDeclaration,
 } from "./constants";
 
-const DataUseBlock = ({
-  index,
-  disabled,
-}: {
+interface DataUseBlockProps {
   index: number;
   disabled?: boolean;
-}) => {
+}
+
+const DataUseBlock = ({ index, disabled }: DataUseBlockProps) => {
   useGetAllDataUsesQuery();
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
 
-  const { values } = useFormikContext<FormValues>();
+  const consentUse = Form.useWatch<string | undefined>([
+    "privacy_declarations",
+    index,
+    "consent_use",
+  ]);
 
   const detailedDataUseOptions = allDataUseOptions.filter(
-    (o) =>
-      o.value.split(".")[0] === values.privacy_declarations[index].consent_use,
+    (o) => o.value.split(".")[0] === consentUse,
   );
 
   return (
-    <VStack
-      width="100%"
-      borderRadius="4px"
-      border="1px solid"
-      borderColor="gray.200"
-      spacing={4}
-      p={4}
-    >
-      <ControlledSelect
-        label="Consent category"
-        tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
-        name={`privacy_declarations.${index}.consent_use`}
-        options={CONSENT_USE_OPTIONS}
-        layout="stacked"
-        isRequired
-        disabled={disabled}
-      />
-      <ControlledSelect
-        allowClear
-        label="Detailed consent category (optional)"
-        tooltip="Select a more specific consent category"
-        name={`privacy_declarations.${index}.data_use`}
-        options={detailedDataUseOptions}
-        layout="stacked"
-        disabled={!values.privacy_declarations[index].consent_use || disabled}
-      />
-      <ControlledSelect
-        mode="tags"
-        label="Cookie names"
-        name={`privacy_declarations.${index}.cookieNames`}
-        options={[]}
-        layout="stacked"
-        disabled={disabled}
-        className="w-full"
-      />
-    </VStack>
+    <Card size="small">
+      <Flex vertical gap="middle">
+        <Form.Item
+          label="Consent category"
+          tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
+          name={[index, "consent_use"]}
+          required
+          rules={[{ required: true, message: "Consent category is required" }]}
+          className="mb-0"
+        >
+          <Select
+            options={CONSENT_USE_OPTIONS}
+            disabled={disabled}
+            aria-label="Consent category"
+            data-testid={`select-consent-use-${index}`}
+          />
+        </Form.Item>
+        <Form.Item
+          label="Detailed consent category (optional)"
+          tooltip="Select a more specific consent category"
+          name={[index, "data_use"]}
+          className="mb-0"
+        >
+          <Select
+            allowClear
+            options={detailedDataUseOptions}
+            disabled={!consentUse || disabled}
+            aria-label="Detailed consent category"
+            data-testid={`select-data-use-${index}`}
+          />
+        </Form.Item>
+        <Form.Item
+          label="Cookie names"
+          name={[index, "cookieNames"]}
+          className="mb-0"
+        >
+          <Select
+            mode="tags"
+            options={[]}
+            disabled={disabled}
+            placeholder="Select..."
+            className="w-full"
+            aria-label="Cookie names"
+            data-testid={`select-cookies-${index}`}
+          />
+        </Form.Item>
+      </Flex>
+    </Card>
   );
 };
+
+interface DataUsesFormProps {
+  showSuggestions: boolean;
+  isCreate: boolean;
+  disabled?: boolean;
+}
 
 const DataUsesForm = ({
   showSuggestions,
   isCreate,
   disabled,
-}: {
-  showSuggestions: boolean;
-  isCreate: boolean;
-  disabled?: boolean;
-}) => {
-  const { values, setFieldValue } = useFormikContext<FormValues>();
-  const { vendor_id: vendorId } = values;
+}: DataUsesFormProps) => {
+  const form = Form.useFormInstance<FormValues>();
+  const vendorId = Form.useWatch<string | undefined>("vendor_id", form);
+  const privacyDeclarations = Form.useWatch<
+    MinimalPrivacyDeclaration[] | undefined
+  >("privacy_declarations", form);
+
   const { isLoading } = useGetDictionaryDataUsesQuery(
     { vendor_id: vendorId as string },
     { skip: !showSuggestions || vendorId === null || vendorId === undefined },
@@ -97,62 +115,65 @@ const DataUsesForm = ({
   const dictDataUses = useAppSelector(selectDictDataUses(vendorId || ""));
 
   useEffect(() => {
-    if (showSuggestions && values.vendor_id && dictDataUses?.length) {
+    if (showSuggestions && vendorId && dictDataUses?.length) {
       const declarations: MinimalPrivacyDeclaration[] = dictDataUses
         .filter((du) => dataUseIsConsentUse(du.data_use))
-        .map((d) => transformDictDataUseToDeclaration(d))
-        .map((d) => ({
-          name: d.name ?? "",
-          consent_use: d.data_use.split(".")[0],
-          data_use: d.data_use,
-          data_categories: d.data_categories,
-        }));
-      setFieldValue("privacy_declarations", declarations);
+        .map((d) => {
+          const transformed = transformDictDataUseToDeclaration(d);
+          const cookies = (d.cookies ?? []).map((c) => ({
+            name: c.name,
+            domain: c.domain,
+            path: c.path ?? null,
+          }));
+          return {
+            name: transformed.name ?? "",
+            consent_use: transformed.data_use.split(".")[0],
+            data_use: transformed.data_use,
+            data_categories: transformed.data_categories,
+            cookies,
+            cookieNames: cookies.map((c) => c.name),
+          };
+        });
+      form.setFieldValue("privacy_declarations", declarations);
     } else if (isCreate) {
-      setFieldValue("privacy_declarations", [EMPTY_DECLARATION]);
+      form.setFieldValue("privacy_declarations", [EMPTY_DECLARATION]);
     }
-  }, [
-    showSuggestions,
-    isCreate,
-    values.vendor_id,
-    dictDataUses,
-    setFieldValue,
-  ]);
+  }, [showSuggestions, isCreate, vendorId, dictDataUses, form]);
 
+  const lastDeclaration = privacyDeclarations?.[privacyDeclarations.length - 1];
   const lastDataUseIsEmpty =
-    values.privacy_declarations[values.privacy_declarations.length - 1]
-      ?.data_use === EMPTY_DECLARATION.data_use &&
-    values.privacy_declarations[values.privacy_declarations.length - 1]
-      ?.consent_use === EMPTY_DECLARATION.consent_use;
+    lastDeclaration?.data_use === EMPTY_DECLARATION.data_use &&
+    lastDeclaration?.consent_use === EMPTY_DECLARATION.consent_use;
 
   if (isLoading) {
     return <Spin size="small" />;
   }
 
   return (
-    <FieldArray
-      name="privacy_declarations"
-      render={(arrayHelpers) => (
-        <>
-          {values.privacy_declarations.map((declaration, idx) => (
+    <Form.List name="privacy_declarations">
+      {(fields, { add }) => (
+        <Flex vertical gap="middle" align="stretch">
+          {fields.map((field) => (
             <DataUseBlock
-              key={declaration.data_use || idx}
-              index={idx}
+              key={field.key}
+              index={field.name}
               disabled={disabled}
             />
           ))}
-          <Button
-            onClick={() => arrayHelpers.push(EMPTY_DECLARATION)}
-            size="small"
-            type="text"
-            disabled={disabled || lastDataUseIsEmpty}
-            data-testid="add-data-use-btn"
-          >
-            Add data use +
-          </Button>
-        </>
+          <Flex justify="flex-start">
+            <Button
+              onClick={() => add(EMPTY_DECLARATION)}
+              size="small"
+              icon={<Icons.Add />}
+              disabled={disabled || lastDataUseIsEmpty}
+              data-testid="add-data-use-btn"
+            >
+              Add data use
+            </Button>
+          </Flex>
+        </Flex>
       )}
-    />
+    </Form.List>
   );
 };
 

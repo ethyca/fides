@@ -81,11 +81,11 @@ EXTERNAL_DATASTORE_CONFIG = {
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
-OPS_TEST_DIR = "tests/ops/"
+OPS_TEST_DIR = "tests/fides/ops/"
 OPS_API_TEST_DIRS = [
     f"{OPS_TEST_DIR}api/",
 ]
-API_TEST_DIR = "tests/api/"
+API_TEST_DIR = "tests/fides/api/"
 
 
 def run_infrastructure(

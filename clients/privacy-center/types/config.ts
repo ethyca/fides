@@ -48,14 +48,23 @@ export interface CustomLocationField extends ICustomField {
   ip_geolocation_hint?: boolean;
 }
 
+export interface CustomDateField extends ICustomField {
+  default_value?: string | null;
+  field_type: "date";
+  min?: string | null; // ISO 8601 date string (YYYY-MM-DD)
+  max?: string | null; // ISO 8601 date string (YYYY-MM-DD)
+}
+
 export type CustomConfigField =
   | CustomTextField
   | CustomSelectField
   | CustomMultiSelectField
-  | CustomLocationField;
+  | CustomLocationField
+  | CustomDateField;
 export type CustomIdentityField =
   | CustomTextField
   | CustomSelectField
+  | CustomDateField
   | (CustomLocationField & {
       required: true;
     });

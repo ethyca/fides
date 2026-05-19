@@ -1,4 +1,14 @@
-import { Button, Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
+import {
+  Button,
+  Flex,
+  Form,
+  Icons,
+  Input,
+  Space,
+  Tooltip,
+  Typography,
+} from "fidesui";
+import { useState } from "react";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures, useFlags } from "~/features/common/features";
@@ -6,12 +16,14 @@ import { RouterLink } from "~/features/common/nav/RouterLink";
 import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
+import { formatIsoDate } from "~/features/common/utils";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { useGetPropertyByIdQuery } from "~/features/properties/property.slice";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ClipboardButton from "../common/ClipboardButton";
 import RequestAttachments from "./attachments/RequestAttachments";
+import RelatedRequestsDrawer from "./events-and-logs/RelatedRequestsDrawer";
 import RequestJiraTickets from "./jira-tickets/RequestJiraTickets";
 import RequestCustomFields from "./RequestCustomFields";
 import RequestDetailsRow from "./RequestDetailsRow";
@@ -37,6 +49,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
     subjectRequest.property_id!,
     { skip: !hasPlus || !subjectRequest.property_id },
   );
+
+  const [isRelatedRequestsDrawerOpen, setIsRelatedRequestsDrawerOpen] =
+    useState(false);
 
   return (
     <div>
@@ -91,16 +106,30 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         {Object.entries(identity)
           .filter(([, { value }]) => value !== null)
           .map(([key, { value = "", label }]) => {
-            const text = `${value}${!identityVerifiedAt ? " (Unverified)" : ""}`;
+            const displayValue = formatIsoDate(value);
+            const text = `${displayValue}${!identityVerifiedAt ? " (Unverified)" : ""}`;
 
             return (
               <RequestDetailsRow
                 label={`Subject ${label.toLocaleLowerCase()}`}
                 key={key}
               >
-                <Tooltip title={text} trigger="click">
-                  <Typography.Text ellipsis>{text}</Typography.Text>
-                </Tooltip>
+                <Flex align="center" gap={4} className="min-w-0">
+                  <Tooltip title={text} trigger="click">
+                    <Typography.Text ellipsis>{text}</Typography.Text>
+                  </Tooltip>
+                  <Tooltip title="View related requests for this subject">
+                    <Button
+                      type="text"
+                      size="small"
+                      // eslint-disable-next-line react/jsx-pascal-case
+                      icon={<Icons.DocumentMultiple_01 />}
+                      aria-label="View related requests for this subject"
+                      data-testid="view-related-requests-btn"
+                      onClick={() => setIsRelatedRequestsDrawerOpen(true)}
+                    />
+                  </Tooltip>
+                </Flex>
               </RequestDetailsRow>
             );
           })}
@@ -135,6 +164,11 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
       {hasPlus && jiraIntegration && (
         <RequestJiraTickets subjectRequest={subjectRequest} />
       )}
+      <RelatedRequestsDrawer
+        isOpen={isRelatedRequestsDrawerOpen}
+        onClose={() => setIsRelatedRequestsDrawerOpen(false)}
+        privacyRequest={subjectRequest}
+      />
     </div>
   );
 };

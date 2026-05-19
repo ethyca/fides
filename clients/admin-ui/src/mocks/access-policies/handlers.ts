@@ -24,8 +24,8 @@ export const accessPoliciesHandlers = () => {
   const controls: Control[] = [...mockControls];
 
   return [
-    // GET /api/v1/plus/access-policy - list all
-    rest.get(`${apiBase}/plus/access-policy`, (req, res, ctx) => {
+    // GET /api/v1/plus/access-policies - list all
+    rest.get(`${apiBase}/plus/access-policies`, (req, res, ctx) => {
       const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
       const size = parseInt(req.url.searchParams.get("size") ?? "50", 10);
 
@@ -44,9 +44,9 @@ export const accessPoliciesHandlers = () => {
       );
     }),
 
-    // GET /api/v1/plus/access-policy/presets/industries - available industries
+    // GET /api/v1/plus/access-policies/presets/industries - available industries
     rest.get(
-      `${apiBase}/plus/access-policy/presets/industries`,
+      `${apiBase}/plus/access-policies/presets/industries`,
       (_req, res, ctx) =>
         res(
           ctx.status(200),
@@ -59,17 +59,19 @@ export const accessPoliciesHandlers = () => {
         ),
     ),
 
-    // GET /api/v1/plus/access-policy/presets/config - saved config
-    rest.get(`${apiBase}/plus/access-policy/presets/config`, (_req, res, ctx) =>
-      res(
-        ctx.status(200),
-        ctx.json({ industry: "fintech", geographies: ["eea", "us"] }),
-      ),
+    // GET /api/v1/plus/access-policies/presets/config - saved config
+    rest.get(
+      `${apiBase}/plus/access-policies/presets/config`,
+      (_req, res, ctx) =>
+        res(
+          ctx.status(200),
+          ctx.json({ industry: "fintech", geographies: ["eea", "us"] }),
+        ),
     ),
 
-    // GET /api/v1/plus/access-policy/presets/data-uses - data uses by industry + geography
+    // GET /api/v1/plus/access-policies/presets/data-uses - data uses by industry + geography
     rest.get(
-      `${apiBase}/plus/access-policy/presets/data-uses`,
+      `${apiBase}/plus/access-policies/presets/data-uses`,
       (req, res, ctx) => {
         const industry = req.url.searchParams.get("industry") ?? "";
         const geographies = req.url.searchParams.getAll("geographies");
@@ -85,9 +87,9 @@ export const accessPoliciesHandlers = () => {
       },
     ),
 
-    // POST /api/v1/plus/access-policy/presets/generate - generate policies from onboarding
+    // POST /api/v1/plus/access-policies/presets/generate - generate policies from onboarding
     rest.post(
-      `${apiBase}/plus/access-policy/presets/generate`,
+      `${apiBase}/plus/access-policies/presets/generate`,
       (_req, res, ctx) => {
         // Push generated policies into the mutable array so the list view picks them up
         const generated = generatedPoliciesForIndustry();
@@ -188,8 +190,8 @@ export const accessPoliciesHandlers = () => {
       return res(ctx.status(204));
     }),
 
-    // GET /api/v1/plus/access-policy/:id - get single
-    rest.get(`${apiBase}/plus/access-policy/:id`, (req, res, ctx) => {
+    // GET /api/v1/plus/access-policies/:id - get single
+    rest.get(`${apiBase}/plus/access-policies/:id`, (req, res, ctx) => {
       const { id } = req.params;
       const policy = policies.find((p) => p.id === id);
 
@@ -203,8 +205,8 @@ export const accessPoliciesHandlers = () => {
       return res(ctx.status(200), ctx.json(policy));
     }),
 
-    // POST /api/v1/plus/access-policy - create
-    rest.post(`${apiBase}/plus/access-policy`, async (req, res, ctx) => {
+    // POST /api/v1/plus/access-policies - create
+    rest.post(`${apiBase}/plus/access-policies`, async (req, res, ctx) => {
       const body = await req.json();
       const newPolicy: AccessPolicy = {
         ...body,
@@ -216,9 +218,9 @@ export const accessPoliciesHandlers = () => {
       return res(ctx.status(201), ctx.json(newPolicy));
     }),
 
-    // POST /api/v1/plus/access-policy/:id/reorder - reorder
+    // POST /api/v1/plus/access-policies/:id/reorder - reorder
     rest.post(
-      `${apiBase}/plus/access-policy/:id/reorder`,
+      `${apiBase}/plus/access-policies/:id/reorder`,
       async (req, res, ctx) => {
         const { id } = req.params;
         const body = await req.json();
@@ -264,8 +266,8 @@ export const accessPoliciesHandlers = () => {
       },
     ),
 
-    // PATCH /api/v1/plus/access-policy/:id - partial update
-    rest.patch(`${apiBase}/plus/access-policy/:id`, async (req, res, ctx) => {
+    // PATCH /api/v1/plus/access-policies/:id - partial update
+    rest.patch(`${apiBase}/plus/access-policies/:id`, async (req, res, ctx) => {
       const { id } = req.params;
       const index = policies.findIndex((p) => p.id === id);
 
@@ -286,8 +288,8 @@ export const accessPoliciesHandlers = () => {
       return res(ctx.status(200), ctx.json(policies[index]));
     }),
 
-    // DELETE /api/v1/plus/access-policy/:id - delete
-    rest.delete(`${apiBase}/plus/access-policy/:id`, (req, res, ctx) => {
+    // DELETE /api/v1/plus/access-policies/:id - delete
+    rest.delete(`${apiBase}/plus/access-policies/:id`, (req, res, ctx) => {
       const { id } = req.params;
       const index = policies.findIndex((p) => p.id === id);
 
