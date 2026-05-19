@@ -45,6 +45,14 @@ export const formatDate = (
     options?.showTime === false ? "MM/dd/yy" : "MMMM d, y, hh:mm:ss aaa z",
   );
 
+export const formatIsoDate = (value: unknown): string => {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split("-");
+    return `${m}/${d}/${y}`;
+  }
+  return String(value ?? "");
+};
+
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
 

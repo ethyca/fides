@@ -1,8 +1,9 @@
 import classNames from "classnames";
 import { Flex, formatIsoLocation, isoStringToEntry, List } from "fidesui";
-import { isArray, toString } from "lodash";
+import { isArray } from "lodash";
 import React from "react";
 
+import { formatIsoDate } from "~/features/common/utils";
 import { PrivacyRequestResponseExtended } from "~/types/api";
 
 import { RequestTableActions } from "../../RequestTableActions";
@@ -98,15 +99,15 @@ export const ListItem = ({
                 <LabeledText
                   key={identity.key}
                   label={identity.label}
-                  copyValue={String(identity.value ?? "")}
+                  copyValue={formatIsoDate(identity.value)}
                 >
-                  {String(identity.value ?? "")}
+                  {formatIsoDate(identity.value)}
                 </LabeledText>
               ))}
               {customFields.map((field) => {
                 const valueString = isArray(field.value)
                   ? field.value.join(" - ")
-                  : toString(field.value);
+                  : formatIsoDate(field.value);
                 return (
                   <LabeledText
                     key={field.key}

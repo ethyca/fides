@@ -819,6 +819,8 @@ AUDIT_LOG_DISPLAY_NAMES = {
     "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
     "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
     "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
+    "access_package_approved": "Access package approved",
+    "access_package_redacted": "Access package redactions updated",
 }
 
 
