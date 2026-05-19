@@ -137,7 +137,7 @@ def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
         "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
-        "tests/lib/",
+        "tests/fides/lib/",
     )
     session.run(*run_command, external=True)
 
@@ -202,7 +202,7 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
             *pytest_config.report_config.args,
             "-m",
             "external",
-            "tests/ctl",
+            "tests/fides/ctl",
             "--tb=no",
         )
         session.run(*run_command, external=True)
@@ -225,7 +225,7 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
             "/opt/fides/bin/python",
             "pytest",
             *local_pytest_config.args,
-            "tests/ctl/",
+            "tests/fides/ctl/",
             "-m",
             mark,
             "--full-trace",
@@ -296,7 +296,7 @@ def pytest_ops(
             run_tests=True,
             analytics_opt_out=True,
             datastores=[],
-            pytest_path=f"{OPS_TEST_DIR} tests/integration/",
+            pytest_path=f"{OPS_TEST_DIR} tests/fides/integration/",
             split_args=split_args,
         )
     elif mark == "external_datastores":
@@ -497,13 +497,13 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
-        "tests/common/",
-        "tests/config/",
-        "tests/service/",
-        "tests/system_integration_link/",
-        "tests/task/",
-        "tests/unit/",
-        "tests/util/",
+        "tests/fides/common/",
+        "tests/fides/config/",
+        "tests/fides/service/",
+        "tests/fides/system_integration_link/",
+        "tests/fides/task/",
+        "tests/fides/unit/",
+        "tests/fides/util/",
         "-m",
         "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
     )
@@ -562,11 +562,11 @@ def pytest_misc_integration(
             "/opt/fides/bin/python",
             "pytest",
             *pytest_config.args,
-            "tests/qa/",
-            "tests/service/",
-            "tests/system_integration_link/",
-            "tests/task/",
-            "tests/util/",
+            "tests/fides/qa/",
+            "tests/fides/service/",
+            "tests/fides/system_integration_link/",
+            "tests/fides/task/",
+            "tests/fides/util/",
             "-m",
             mark,
         )
@@ -578,5 +578,5 @@ def pytest_misc_integration(
             run_tests=True,
             analytics_opt_out=True,
             datastores=["postgres", "bigquery", "snowflake"],
-            pytest_path="tests/qa/ tests/service/ tests/system_integration_link/ tests/task/ tests/util/",
+            pytest_path="tests/fides/qa/ tests/fides/service/ tests/fides/system_integration_link/ tests/fides/task/ tests/fides/util/",
         )

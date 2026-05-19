@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from loguru import logger
 from sqlalchemy import create_engine
@@ -11,6 +11,7 @@ from sqlalchemy.pool import NullPool
 
 from fides.api.common_exceptions import MissingConfig
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
+from fides.common.engine_creators import SYNC_DIALECT_URL, make_sync_creator
 from fides.config import FidesConfig
 
 
@@ -25,6 +26,7 @@ def get_db_engine(
     keepalives_interval: int | None = None,
     keepalives_count: int | None = None,
     pool_pre_ping: bool = True,
+    pool_recycle: Optional[int] = None,
     disable_pooling: bool = False,
 ) -> Engine:
     """Return a database engine.
@@ -58,7 +60,7 @@ def get_db_engine(
                 "pass them as connect_args to the creator instead"
             )
         engine_args["creator"] = creator
-        database_uri = "postgresql+psycopg2://"
+        database_uri = SYNC_DIALECT_URL
     else:
         # URI-based path.
         if not config and not database_uri:
@@ -89,24 +91,26 @@ def get_db_engine(
         engine_args["pool_pre_ping"] = pool_pre_ping
         engine_args["pool_size"] = pool_size
         engine_args["max_overflow"] = max_overflow
+        if pool_recycle is not None:
+            engine_args["pool_recycle"] = pool_recycle
 
     return create_engine(database_uri, **engine_args)
 
 
 def get_db_session(
-    config: FidesConfig,
+    config: FidesConfig,  # TODO: remove — no longer used, all callers pass CONFIG
     autocommit: bool = False,
     autoflush: bool = False,
     engine: Engine | None = None,
 ) -> sessionmaker:
     """Return a database SessionLocal."""
-    if not config.database.sqlalchemy_database_uri:
-        raise MissingConfig("No database uri available in the config")
+    if engine is None:
+        engine = get_db_engine(creator=make_sync_creator())
 
     return sessionmaker(
         autocommit=autocommit,
         autoflush=autoflush,
-        bind=engine or get_db_engine(config=config),
+        bind=engine,
         class_=ExtendedSession,
     )
 

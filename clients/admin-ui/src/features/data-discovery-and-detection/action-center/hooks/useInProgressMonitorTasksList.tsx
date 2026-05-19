@@ -21,7 +21,6 @@ export const useInProgressMonitorTasksList = ({
     () => [
       ExecutionLogStatus.PENDING,
       ExecutionLogStatus.IN_PROCESSING,
-      ExecutionLogStatus.PAUSED,
       ExecutionLogStatus.RETRYING,
       ExecutionLogStatus.ERROR,
     ],
@@ -74,7 +73,6 @@ export const useInProgressMonitorTasksList = ({
   }, [defaultStatusFilters, resetPagination]);
 
   // All possible status values from ExecutionLogStatus enum
-  // Note: awaiting_processing displays as "Awaiting Processing" but maps to "paused" in the API
   const allPossibleStatuses: ExecutionLogStatus[] = [
     ExecutionLogStatus.PENDING,
     ExecutionLogStatus.IN_PROCESSING,

@@ -45,7 +45,7 @@ class AWSSecretsManagerProvider(SecretProvider):
 
     def __init__(
         self,
-        region_name: str,
+        region_name: Optional[str] = None,
         cache_ttl_seconds: float = 300.0,
         cache_stale_ttl_seconds: float = 1800.0,
         circuit_breaker_cooldown_seconds: float = 30.0,

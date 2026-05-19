@@ -1,15 +1,4 @@
-import {
-  Button,
-  ChakraTable as Table,
-  ChakraTbody as Tbody,
-  ChakraTd as Td,
-  ChakraText as Text,
-  ChakraTh as Th,
-  ChakraThead as Thead,
-  ChakraTr as Tr,
-  Icons,
-} from "fidesui";
-import { useFormikContext } from "formik";
+import { Button, Icons, Table, Text } from "fidesui";
 import React from "react";
 
 import { DataFlow, System } from "~/types/api";
@@ -17,59 +6,48 @@ import { DataFlow, System } from "~/types/api";
 type Props = {
   systems: System[];
   dataFlows: DataFlow[];
-  onDataFlowSystemChange: (systems: DataFlow[]) => void;
+  onDelete: (system: System) => void;
 };
 
 export const DataFlowSystemsDeleteTable = ({
   systems,
   dataFlows,
-  onDataFlowSystemChange,
+  onDelete,
 }: Props) => {
-  const { setFieldValue } = useFormikContext();
-
   const dataFlowKeys = dataFlows.map((f) => f.fides_key);
-
-  const onDelete = (dataFlow: System) => {
-    const updatedDataFlows = dataFlows.filter(
-      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key,
-    );
-    setFieldValue("dataFlowSystems", updatedDataFlows);
-    onDataFlowSystemChange(updatedDataFlows);
-  };
+  const dataSource = systems.filter((system) =>
+    dataFlowKeys.includes(system.fides_key),
+  );
 
   return (
-    <Table size="sm" data-testid="assign-systems-delete-table">
-      <Thead>
-        <Tr>
-          <Th>System</Th>
-          <Th />
-        </Tr>
-      </Thead>
-      <Tbody>
-        {systems
-          .filter((system) => dataFlowKeys.includes(system.fides_key))
-          .map((system) => (
-            <Tr
-              key={system.fides_key}
-              _hover={{ bg: "gray.50" }}
-              data-testid={`row-${system.fides_key}`}
-            >
-              <Td>
-                <Text fontSize="xs" lineHeight={4} fontWeight="medium">
-                  {system.name}
-                </Text>
-              </Td>
-              <Td textAlign="end">
-                <Button
-                  aria-label="Unassign data flow from system"
-                  icon={<Icons.TrashCan />}
-                  onClick={() => onDelete(system)}
-                  data-testid="unassign-btn"
-                />
-              </Td>
-            </Tr>
-          ))}
-      </Tbody>
-    </Table>
+    <Table
+      size="small"
+      dataSource={dataSource}
+      rowKey="fides_key"
+      pagination={false}
+      data-testid="assign-systems-delete-table"
+      columns={[
+        {
+          title: "System",
+          dataIndex: "name",
+          render: (name: string) => (
+            <Text className="text-xs font-medium leading-4">{name}</Text>
+          ),
+        },
+        {
+          title: "",
+          key: "actions",
+          align: "right" as const,
+          render: (_: unknown, system: System) => (
+            <Button
+              aria-label="Unassign data flow from system"
+              icon={<Icons.TrashCan />}
+              onClick={() => onDelete(system)}
+              data-testid="unassign-btn"
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
