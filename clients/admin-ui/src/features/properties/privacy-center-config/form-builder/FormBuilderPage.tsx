@@ -9,7 +9,6 @@ import {
 
 import type { ComponentType } from "./catalog";
 import { ChatPane } from "./ChatPane";
-import { stableJson } from "./utils";
 import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
 import { jsonSpecToPcShape } from "./jsonSpecToPcShape";
 import { pcShapeToJsonSpec } from "./pcShapeToJsonSpec";
@@ -24,6 +23,7 @@ import {
 } from "./specMutations";
 import type { DroppedFeature, JsonRenderSpec, PcCustomFields } from "./types";
 import { useFormBuilder } from "./useFormBuilder";
+import { stableJson } from "./utils";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
@@ -170,6 +170,7 @@ export const FormBuilderPage = ({
         node?.focus();
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps intentionally use builder.spec and builder.setSpec for stable references
     [builder.spec, builder.setSpec],
   );
 
@@ -184,6 +185,7 @@ export const FormBuilderPage = ({
       }
       builder.setSpec(updateFieldMutation(builder.spec, elementId, props));
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps intentionally use builder.spec and builder.setSpec for stable references
     [builder.spec, builder.setSpec],
   );
 
@@ -197,6 +199,7 @@ export const FormBuilderPage = ({
         current === elementId ? null : current,
       );
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps intentionally use builder.spec and builder.setSpec for stable references
     [builder.spec, builder.setSpec],
   );
 
@@ -207,6 +210,7 @@ export const FormBuilderPage = ({
       }
       builder.setSpec(reorderFieldsMutation(builder.spec, newOrder));
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps intentionally use builder.spec and builder.setSpec for stable references
     [builder.spec, builder.setSpec],
   );
 
@@ -219,6 +223,7 @@ export const FormBuilderPage = ({
         setFieldVisibilityMutation(builder.spec, elementId, visible),
       );
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps intentionally use builder.spec and builder.setSpec for stable references
     [builder.spec, builder.setSpec],
   );
 
@@ -280,8 +285,7 @@ export const FormBuilderPage = ({
   }, [isDirty]);
 
   const droppedSummary: DroppedFeature[] = useMemo(
-    () =>
-      builder.spec ? jsonSpecToPcShape(builder.spec).droppedFeatures : [],
+    () => (builder.spec ? jsonSpecToPcShape(builder.spec).droppedFeatures : []),
     [builder.spec],
   );
 
@@ -322,12 +326,12 @@ export const FormBuilderPage = ({
       message.success("Saved");
       baselineRef.current = builder.spec;
     } catch (err: unknown) {
-      const detail =
-        typeof err === "string"
-          ? err
-          : err instanceof Error
-            ? err.message
-            : undefined;
+      let detail: string | undefined;
+      if (typeof err === "string") {
+        detail = err;
+      } else if (err instanceof Error) {
+        detail = err.message;
+      }
       message.error(detail ? `Failed to save: ${detail}` : "Failed to save");
     } finally {
       setSaving(false);

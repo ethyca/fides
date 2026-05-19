@@ -27,9 +27,9 @@ const FormBuilderRoute: NextPage = () => {
     skip: !id,
   });
   const [updateProperty] = useUpdatePropertyMutation();
-  const matchedAction = (
-    property?.privacy_center_config?.actions ?? []
-  ).find((a) => a?.policy_key === actionPolicyKey);
+  const matchedAction = (property?.privacy_center_config?.actions ?? []).find(
+    (a) => a?.policy_key === actionPolicyKey,
+  );
   const breadcrumbTitle = matchedAction?.title || actionPolicyKey;
 
   const handleSave = async ({
