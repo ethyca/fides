@@ -162,7 +162,6 @@ const sourceValueMode = (
   if (
     match.type !== "Select" &&
     match.type !== "MultiSelect" &&
-    match.type !== "Radio" &&
     match.type !== "Location"
   ) {
     return { kind: "free_text" };

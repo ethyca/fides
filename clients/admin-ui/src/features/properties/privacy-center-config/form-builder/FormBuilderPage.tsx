@@ -139,9 +139,9 @@ export const FormBuilderPage = ({
 
   // Tracks the "last known clean" spec for dirty-checking. Updated on
   // initial load and after each successful save so isDirty resets to false.
-  const baselineRef = useRef(initialSpec);
+  const [baseline, setBaseline] = useState(initialSpec);
   useEffect(() => {
-    baselineRef.current = initialSpec;
+    setBaseline(initialSpec);
   }, [initialSpec]);
 
   const [confirmingDropped, setConfirmingDropped] = useState(false);
@@ -230,8 +230,8 @@ export const FormBuilderPage = ({
   // Dirty = current spec differs from the spec the page loaded with.
   // Compare via stable JSON so reordered keys don't flag false-positives.
   const isDirty = useMemo(
-    () => stableJson(builder.spec) !== stableJson(baselineRef.current),
-    [builder.spec],
+    () => stableJson(builder.spec) !== stableJson(baseline),
+    [builder.spec, baseline],
   );
 
   // Block Next.js navigation away when the form is dirty.
@@ -324,7 +324,7 @@ export const FormBuilderPage = ({
         fieldOrder: result.fieldOrder,
       });
       message.success("Saved");
-      baselineRef.current = builder.spec;
+      setBaseline(builder.spec);
     } catch (err: unknown) {
       let detail: string | undefined;
       if (typeof err === "string") {

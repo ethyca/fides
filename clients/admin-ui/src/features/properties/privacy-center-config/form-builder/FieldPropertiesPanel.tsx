@@ -450,8 +450,7 @@ export const FieldPropertiesPanel = ({
             )}
 
             {(componentType === "Select" ||
-              componentType === "MultiSelect" ||
-              componentType === "Radio") && (
+              componentType === "MultiSelect") && (
               <>
                 <Form.Item
                   label="Options"

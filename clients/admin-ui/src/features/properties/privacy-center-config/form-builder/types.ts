@@ -2,7 +2,6 @@ export type PcFieldType =
   | "text"
   | "select"
   | "multiselect"
-  | "radio"
   | "location";
 
 export type VisibilityOperator = "eq" | "ne" | "set" | "empty" | "contains";
@@ -33,12 +32,6 @@ export interface PcSelectField extends PcFieldBase {
   default_value?: string | null;
 }
 
-export interface PcRadioField extends PcFieldBase {
-  field_type: "radio";
-  options: string[];
-  default_value?: string | null;
-}
-
 export interface PcMultiSelectField extends PcFieldBase {
   field_type: "multiselect";
   options: string[];
@@ -54,7 +47,6 @@ export interface PcLocationField extends PcFieldBase {
 export type PcCustomField =
   | PcTextField
   | PcSelectField
-  | PcRadioField
   | PcMultiSelectField
   | PcLocationField;
 
