@@ -10,7 +10,7 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import Image from "~/features/common/Image";
+import EthycaLogo from "~/features/common/logos/EthycaLogo";
 
 import styles from "./ChatPane.module.scss";
 import type { ChatMessage, Status } from "./useFormBuilder";
@@ -25,21 +25,12 @@ interface ChatPaneProps {
   disabledReason?: string;
 }
 
-const BuilderLogoMark = ({ size = 20 }: { size?: number }) => (
-  <Image
-    src="/images/logomark-ethyca.svg"
-    alt="Ethyca"
-    width={size}
-    height={size}
-  />
-);
-
 const BuilderAvatar = () => (
   <Avatar
     shape="square"
     size="medium"
     className={styles.builderAvatar}
-    icon={<BuilderLogoMark size={15} />}
+    icon={<EthycaLogo size={15} />}
   />
 );
 
