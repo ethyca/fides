@@ -1,6 +1,58 @@
 import type { Node } from "@xyflow/react";
 
-import type { TraversalPreviewResponse as GeneratedTraversalPreviewResponse } from "~/types/api/models/TraversalPreviewResponse";
+import {
+  ActionStatus,
+  type Assignee,
+  type CollectionDetail as GeneratedCollectionDetail,
+  type DatasetDetail as GeneratedDatasetDetail,
+  type FieldDetail as GeneratedFieldDetail,
+  type IdentityRoot,
+  type IntegrationNode,
+  type ManualTaskCondition,
+  type ManualTaskField as ManualTaskFieldDetail,
+  type ManualTaskNode,
+  type PreviewEdge,
+  type PrivacyCenterFormRef,
+  Reachability,
+  type SystemRef,
+  type TraversalPreviewResponse as GeneratedTraversalPreviewResponse,
+} from "~/types/api";
+
+// Re-export generated types so callers can keep importing from this feature
+// without reaching into ~/types/api/models.
+export { ActionStatus, Reachability };
+export type {
+  Assignee,
+  ManualTaskCondition,
+  ManualTaskFieldDetail,
+  PreviewEdge,
+  PrivacyCenterFormRef,
+  SystemRef,
+};
+
+// Tighten optional list fields that the backend always emits via Pydantic
+// `default_factory=list`. OpenAPI marks them optional because of the default,
+// but they're guaranteed at runtime.
+export interface FieldDetail extends Omit<
+  GeneratedFieldDetail,
+  "data_categories"
+> {
+  data_categories: string[];
+}
+
+export interface CollectionDetail extends Omit<
+  GeneratedCollectionDetail,
+  "fields"
+> {
+  fields: FieldDetail[];
+}
+
+export interface DatasetDetail extends Omit<
+  GeneratedDatasetDetail,
+  "collections"
+> {
+  collections: CollectionDetail[];
+}
 
 export enum LaneId {
   IDENTITY = "identity",
@@ -9,93 +61,46 @@ export enum LaneId {
   SKIPPED = "skipped",
 }
 
+// Narrowed locally: the traversal preview only supports access + erasure.
+// The generated ActionType also includes CONSENT and UPDATE, which the
+// visualizer's action toggle does not expose.
 export enum ActionType {
   ACCESS = "access",
   ERASURE = "erasure",
 }
 
-export enum Reachability {
-  REACHABLE = "reachable",
-  UNREACHABLE = "unreachable",
-  REQUIRES_MANUAL_IDENTITY = "requires_manual_identity",
-}
-
-export enum ActionStatus {
-  ACTIVE = "active",
-  SKIPPED = "skipped",
-}
-
-export interface FieldDetail {
-  name: string;
-  data_categories: string[];
-  is_identity: boolean;
-}
-
-export interface CollectionDetail {
-  name: string;
-  fields: FieldDetail[];
-}
-
-export interface DatasetDetail {
-  fides_key: string;
-  collections: CollectionDetail[];
-}
-
-export interface SystemRef {
-  fides_key: string;
-  name: string;
-  data_use?: string;
-}
-
-export interface IntegrationNodeData extends Record<string, unknown> {
-  id: string;
-  connection_key: string;
-  connector_type: string;
-  saas_type?: string | null;
-  system?: SystemRef;
-  reachability: Reachability;
-  action_status: ActionStatus;
-  collection_count: { traversed: number; total: number };
+// React Flow's `Node<T>` requires the data type to extend
+// `Record<string, unknown>`, so each *Data interface wraps the generated
+// schema with that mix-in. The wrapper also tightens list fields that the
+// backend always emits (Pydantic `default_factory=list`) but OpenAPI marks
+// optional. `stage_via` is an admin-ui-only derived field (plain-English
+// upstream system name for stage 2+ cards) and isn't on the backend payload.
+export interface IntegrationNodeData
+  extends
+    Omit<IntegrationNode, "data_categories" | "datasets">,
+    Record<string, unknown> {
   data_categories: string[];
   datasets: DatasetDetail[];
-  /** Optional plain-English upstream system name, populated for stage 2+ cards. */
   stage_via?: string | null;
 }
 
-export interface ManualTaskFieldDetail {
-  name: string;
-  type: string;
-  label?: string | null;
-  help_text?: string | null;
-  required?: boolean;
-}
-
-export interface ManualTaskNodeData extends Record<string, unknown> {
-  id: string;
-  name: string;
-  assignees: { type: "user" | "team"; name: string }[];
+export interface ManualTaskNodeData
+  extends
+    Omit<ManualTaskNode, "assignees" | "fields" | "conditions" | "gates">,
+    Record<string, unknown> {
+  assignees: Assignee[];
   fields: ManualTaskFieldDetail[];
-  conditions: { summary: string; expression: string }[];
+  conditions: ManualTaskCondition[];
   gates: string[];
 }
 
-export interface PrivacyCenterFormRef {
-  id: string;
-  name: string;
-  url_path: string;
-}
-
-export interface IdentityRootData extends Record<string, unknown> {
+export interface IdentityRootData
+  extends
+    Omit<IdentityRoot, "id" | "identity_types" | "privacy_center_forms">,
+    Record<string, unknown> {
   id: "identity-root";
   identity_types: string[];
   privacy_center_forms: PrivacyCenterFormRef[];
-}
-
-export interface PreviewEdge {
-  source: string;
-  target: string;
-  kind: "depends_on" | "gates";
-  dep_count?: number;
 }
 
 export interface TraversalPreviewResponse extends Omit<
