@@ -1,5 +1,7 @@
 import glob
+import os
 import re
+import subprocess
 from hashlib import sha1
 from os import getenv
 from os.path import isfile
@@ -143,26 +145,22 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
     Checks to see if the local repo has unstaged changes.
     Can also specify a directory to check.
     """
+    if not os.path.exists(".git"):
+        print("No git repo detected at '.git', skipping git check...")
+        return False
 
     try:
-        from git.repo import Repo
-        from git.repo.fun import is_git_dir
-    except ImportError:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", dir_to_check],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError:
         print("Git executable not detected, skipping git check...")
         return False
 
-    git_dir_path = ".git/"
-    if not is_git_dir(git_dir_path):
-        print(f"No git repo detected at '{git_dir_path}', skipping git check...")
-        return False
-
-    repo = Repo()
-    git_session = repo.git()
-
-    dirty_phrases = ["Changes not staged for commit:", "Untracked files:"]
-    git_status = git_session.status(dir_to_check).split("\n")
-    is_dirty = any(phrase in git_status for phrase in dirty_phrases)
-    return is_dirty
+    return bool(result.stdout.strip())
 
 
 def write_credentials_file(credentials: Credentials, credentials_path: str) -> str:
