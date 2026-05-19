@@ -34,6 +34,7 @@ const FieldWrapper = ({
   children: React.ReactNode;
 }) => {
   if (!elementId) {
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <>{children}</>;
   }
   return <span data-element-id={elementId}>{children}</span>;

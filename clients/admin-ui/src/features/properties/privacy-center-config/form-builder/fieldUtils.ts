@@ -27,7 +27,7 @@ export const stableValueKey = (v: unknown) => JSON.stringify(v ?? null);
  *
  * If the end user has typed something different, we leave their value alone.
  */
-export const useDefaultValueSeed = <T,>(
+export const useDefaultValueSeed = <T>(
   value: T | undefined,
   setValue: (next: T) => void,
   defaultValue: T | undefined,

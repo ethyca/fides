@@ -98,7 +98,9 @@ export async function* streamChatTurn(
       detail = `${detail.slice(0, MAX_BODY_LENGTH)}…`;
     }
     const suffix = detail ? `: ${detail}` : "";
-    throw new Error(`Form builder chat failed: HTTP ${response.status}${suffix}`);
+    throw new Error(
+      `Form builder chat failed: HTTP ${response.status}${suffix}`,
+    );
   }
 
   yield* parseSseStream(response.body);
