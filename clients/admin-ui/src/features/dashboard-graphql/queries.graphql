@@ -1,4 +1,4 @@
-query DashboardPosture {
+query DashboardOverview($trendPeriod: TrendPeriod! = thirty_days) {
   posture {
     score
     band
@@ -13,10 +13,7 @@ query DashboardPosture {
       band
     }
   }
-}
-
-query DashboardTrends($period: TrendPeriod! = thirty_days) {
-  trends(period: $period) {
+  trends(period: $trendPeriod) {
     period
     metrics {
       key
@@ -26,9 +23,6 @@ query DashboardTrends($period: TrendPeriod! = thirty_days) {
       diff
     }
   }
-}
-
-query DashboardSystemCoverage {
   systemCoverage {
     totalSystems
     fullyClassified
@@ -37,9 +31,6 @@ query DashboardSystemCoverage {
     withoutSteward
     coveragePercentage
   }
-}
-
-query DashboardPrivacyRequests {
   privacyRequests {
     activeCount
     overdueCount
@@ -53,6 +44,23 @@ query DashboardPrivacyRequests {
       onTrack
       approaching
       overdue
+    }
+  }
+  astralis {
+    activeConversations
+    completedAssessments
+    awaitingResponse
+    risksIdentified
+  }
+  ... @defer(label: "agentBriefing") {
+    agentBriefing {
+      briefing
+      quickActions {
+        label
+        actionType
+        severity
+        actionData
+      }
     }
   }
 }
@@ -78,27 +86,6 @@ query DashboardPriorityActions(
     page
     size
     pages
-  }
-}
-
-query DashboardAstralis {
-  astralis {
-    activeConversations
-    completedAssessments
-    awaitingResponse
-    risksIdentified
-  }
-}
-
-query DashboardAgentBriefing {
-  agentBriefing {
-    briefing
-    quickActions {
-      label
-      actionType
-      severity
-      actionData
-    }
   }
 }
 

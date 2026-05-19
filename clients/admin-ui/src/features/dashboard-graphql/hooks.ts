@@ -1,35 +1,36 @@
 /**
  * Drop-in GraphQL replacements for the dashboard RTK Query hooks (Apollo).
  *
+ * The six static read-only cards share **one** combined `DashboardOverview`
+ * query with `@defer` on `agentBriefing`. Apollo deduplicates concurrent
+ * `useQuery(DashboardOverviewDocument)` calls with identical variables into
+ * a single network request, so all six hooks below issue exactly one POST
+ * — verify in DevTools → Network. The slow LLM-backed `agentBriefing`
+ * arrives in a second `multipart/mixed` chunk and re-renders only the
+ * banner; the rest of the dashboard paints from the initial chunk.
+ *
+ * `priorityActions` and `activityFeed` keep their own per-card queries —
+ * their interactive variables (dimension filter, infinite-scroll
+ * pagination) make them poor combined-query candidates.
+ *
  * Each hook keeps the exact name, call signature, and return shape of its
- * counterpart in ~/features/dashboard/dashboard.slice, and maps the
+ * counterpart in ~/features/dashboard/dashboard.slice and maps the
  * camelCase GraphQL response back onto the existing snake_case
- * ~/features/dashboard/types interfaces. That keeps every card component
- * unchanged except for its import path.
+ * ~/features/dashboard/types interfaces. Cards change by one import line.
  *
- * The mapped result is memoised on the raw query data. Apollo returns a
- * stable `data` reference until the result actually changes, so the mapped
- * object identity is stable too — without this, consumers that key effects
- * on `data` (e.g. useInfiniteActivityFeed) re-fire setState every render
- * and React throws "Maximum update depth exceeded".
- *
- * Per-card queries (not one combined query) on purpose: preserves
- * independent auth failure and progressive per-card loading, matching the
- * REST behaviour. dashboard.slice.ts is intentionally left in place
- * (mutations stay on RTK; other consumers/tests may import it).
+ * The mapped result is memoised on the raw query slice. Apollo returns a
+ * stable `data` reference until the result changes, so the mapped object
+ * identity is stable too — without this, consumers that key effects on
+ * `data` (e.g. useInfiniteActivityFeed) re-fire setState every render and
+ * React throws "Maximum update depth exceeded".
  */
 import { useQuery } from "@apollo/client";
 import { useMemo } from "react";
 
 import {
   DashboardActivityFeedDocument,
-  DashboardAgentBriefingDocument,
-  DashboardAstralisDocument,
-  DashboardPostureDocument,
+  DashboardOverviewDocument,
   DashboardPriorityActionsDocument,
-  DashboardPrivacyRequestsDocument,
-  DashboardSystemCoverageDocument,
-  DashboardTrendsDocument,
   TrendPeriod as GqlTrendPeriod,
 } from "~/__generated__/graphql/graphql";
 import type {
@@ -58,8 +59,17 @@ const TREND_PERIOD_TO_GQL: Record<TrendPeriod, GqlTrendPeriod> = {
   [TrendPeriod.NINETY_DAYS]: GqlTrendPeriod.NinetyDays,
 };
 
+// All six static hooks call the combined query with the same default
+// trendPeriod so Apollo merges them into one request. The trends hook
+// accepts a `period` param for drop-in parity; passing a non-default
+// period would (correctly) refetch the whole combined query.
+const useDashboardOverview = (period: TrendPeriod = TrendPeriod.THIRTY_DAYS) =>
+  useQuery(DashboardOverviewDocument, {
+    variables: { trendPeriod: TREND_PERIOD_TO_GQL[period] },
+  });
+
 export const useGetAgentBriefingQuery = () => {
-  const { data, loading } = useQuery(DashboardAgentBriefingDocument);
+  const { data } = useDashboardOverview();
   const briefing = data?.agentBriefing;
   const mapped = useMemo<AgentBriefingResponse | undefined>(
     () =>
@@ -76,11 +86,13 @@ export const useGetAgentBriefingQuery = () => {
         : undefined,
     [briefing],
   );
-  return { data: mapped, isLoading: loading };
+  // agentBriefing is @defer'd — it stays absent until the second multipart
+  // chunk arrives, so the dashboard renders without waiting on it.
+  return { data: mapped, isLoading: !briefing };
 };
 
 export const useGetDashboardPostureQuery = () => {
-  const { data, loading } = useQuery(DashboardPostureDocument);
+  const { data, loading } = useDashboardOverview();
   const p = data?.posture;
   const mapped = useMemo<PostureResponse | undefined>(
     () =>
@@ -102,11 +114,11 @@ export const useGetDashboardPostureQuery = () => {
         : undefined,
     [p],
   );
-  return { data: mapped, isLoading: loading };
+  return { data: mapped, isLoading: loading && !p };
 };
 
 export const useGetSystemCoverageQuery = () => {
-  const { data, loading } = useQuery(DashboardSystemCoverageDocument);
+  const { data, loading } = useDashboardOverview();
   const c = data?.systemCoverage;
   const mapped = useMemo<SystemCoverageResponse | undefined>(
     () =>
@@ -122,11 +134,11 @@ export const useGetSystemCoverageQuery = () => {
         : undefined,
     [c],
   );
-  return { data: mapped, isLoading: loading };
+  return { data: mapped, isLoading: loading && !c };
 };
 
 export const useGetPrivacyRequestsQuery = () => {
-  const { data, loading } = useQuery(DashboardPrivacyRequestsDocument);
+  const { data, loading } = useDashboardOverview();
   const pr = data?.privacyRequests;
   const mapped = useMemo<PrivacyRequestsResponse | undefined>(
     () =>
@@ -153,11 +165,11 @@ export const useGetPrivacyRequestsQuery = () => {
         : undefined,
     [pr],
   );
-  return { data: mapped, isLoading: loading };
+  return { data: mapped, isLoading: loading && !pr };
 };
 
 export const useGetAstralisQuery = () => {
-  const { data, loading } = useQuery(DashboardAstralisDocument);
+  const { data, loading } = useDashboardOverview();
   const a = data?.astralis;
   const mapped = useMemo<AstralisResponse | undefined>(
     () =>
@@ -171,7 +183,7 @@ export const useGetAstralisQuery = () => {
         : undefined,
     [a],
   );
-  return { data: mapped, isLoading: loading };
+  return { data: mapped, isLoading: loading && !a };
 };
 
 export const useGetDashboardTrendsQuery = ({
@@ -179,9 +191,7 @@ export const useGetDashboardTrendsQuery = ({
 }: {
   period: TrendPeriod;
 }) => {
-  const { data, loading } = useQuery(DashboardTrendsDocument, {
-    variables: { period: TREND_PERIOD_TO_GQL[period] },
-  });
+  const { data, loading } = useDashboardOverview(period);
   const t = data?.trends;
   const mapped = useMemo<TrendsResponse | undefined>(
     () =>
@@ -202,7 +212,7 @@ export const useGetDashboardTrendsQuery = ({
         : undefined,
     [t],
   );
-  return { data: mapped, isLoading: loading };
+  return { data: mapped, isLoading: loading && !t };
 };
 
 interface PriorityActionsParams {
