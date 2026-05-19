@@ -373,34 +373,38 @@ describe("NavSearch", () => {
   });
 
   describe("keyboard shortcuts", () => {
-    // jsdom has no Mac navigator, so isMac is false and only Ctrl+K is bound
-    it("opens search on Ctrl+K", async () => {
+    // jsdom has no Mac navigator, so isMac is false and only Ctrl+K is bound.
+    // Ctrl+K opens the centered modal (not the inline autocomplete).
+    it("opens the modal on Ctrl+K", async () => {
       const NavSearch = getNavSearch();
       render(<NavSearch groups={MOCK_GROUPS} />);
 
       fireEvent.keyDown(document, { key: "k", ctrlKey: true });
 
       await waitFor(() => {
-        expect(getAutoCompleteProps().open).toBe(true);
+        expect(screen.getByTestId("mock-modal")).toBeInTheDocument();
+        expect(
+          screen.getByTestId("nav-search-modal-input"),
+        ).toBeInTheDocument();
       });
     });
 
-    it("does not open on Cmd+K in non-Mac environment", () => {
+    it("does not open the modal on Cmd+K in non-Mac environment", () => {
       const NavSearch = getNavSearch();
       render(<NavSearch groups={MOCK_GROUPS} />);
 
       fireEvent.keyDown(document, { key: "k", metaKey: true });
 
-      expect(getAutoCompleteProps().open).toBeFalsy();
+      expect(screen.queryByTestId("mock-modal")).not.toBeInTheDocument();
     });
 
-    it("does not open on K without modifier key", () => {
+    it("does not open the modal on K without modifier key", () => {
       const NavSearch = getNavSearch();
       render(<NavSearch groups={MOCK_GROUPS} />);
 
       fireEvent.keyDown(document, { key: "k" });
 
-      expect(getAutoCompleteProps().open).toBeFalsy();
+      expect(screen.queryByTestId("mock-modal")).not.toBeInTheDocument();
     });
   });
 

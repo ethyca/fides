@@ -13,8 +13,9 @@ ENV_PREFIX = "FIDES__SECRETS__"
 class AWSSecretsManagerSettings(FidesSettings):
     """Configuration for the AWS Secrets Manager provider."""
 
-    region: str = Field(
-        description="AWS region for Secrets Manager.",
+    region: Optional[str] = Field(
+        default=None,
+        description="AWS region for Secrets Manager. If not set, uses the standard boto3 resolution chain (AWS_DEFAULT_REGION env var, ~/.aws/config profile, or EC2/EKS instance metadata).",
     )
     cache_ttl_seconds: float = Field(
         default=900.0,
