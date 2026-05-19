@@ -2,6 +2,7 @@
 
 import { ActionType } from "./ActionType";
 import { ColumnSort } from "./ColumnSort";
+import { PrivacyRequestSource } from "./PrivacyRequestSource";
 import { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 
 /**
@@ -76,6 +77,10 @@ export type PrivacyRequestFilter = {
    * Action Type
    */
   action_type?: ActionType | Array<ActionType> | null;
+  /**
+   * Source
+   */
+  source?: PrivacyRequestSource | Array<PrivacyRequestSource> | null;
   /**
    * Verbose
    */

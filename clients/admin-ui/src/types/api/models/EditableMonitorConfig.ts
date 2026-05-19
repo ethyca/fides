@@ -82,4 +82,5 @@ export type EditableMonitorConfig = {
    * List of user IDs to set as stewards for this monitor
    */
   stewards?: Array<string>;
+  inherit_system_stewards?: boolean | null;
 };

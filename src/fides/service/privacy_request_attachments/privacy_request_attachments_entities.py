@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 
 from fides.api.models.attachment import (
     AttachmentUserProvided,
@@ -19,7 +20,7 @@ class AttachmentUserProvidedRecord:
     status: AttachmentUserProvidedStatus
     created_at: datetime
     field_name: str
-    property_id: str
+    property_id: Optional[str]
     policy_key: str
 
     @classmethod
