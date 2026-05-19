@@ -8,8 +8,13 @@ import styles from "./CustomTypography.module.scss";
 type TextSize = "sm" | "default" | "lg";
 type HeadingSize = 1 | 2 | 3 | 4 | 5;
 
+type TextVariant = "monoLabel";
+
 interface CustomTypographyTextProps {
   size?: TextSize;
+
+  /** Applies a named typographic style. `"monoLabel"` renders uppercase monospace with letter-spacing. */
+  variant?: TextVariant;
 
   // If true, the text will inherit the color and text decoration from the parent
   unStyled?: boolean;
@@ -49,6 +54,7 @@ const CustomTitle = ({ headingSize, ...props }: CustomTypographyTitleProps) => (
 
 const CustomText = ({
   size,
+  variant,
   unStyled,
   className,
   ...props
@@ -57,6 +63,7 @@ const CustomText = ({
   <Typography.Text
     className={classNames(getTextSizeClassName(size), className, {
       [styles.unStyled]: unStyled,
+      [styles.monoLabel]: variant === "monoLabel",
     })}
     {...props}
   />
@@ -82,7 +89,7 @@ type LinkVariant = "primary" | "default";
 const CustomLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<typeof Typography.Link> &
-    CustomTypographyTextProps & { variant?: LinkVariant }
+    Omit<CustomTypographyTextProps, "variant"> & { variant?: LinkVariant }
 >(({ size, variant, unStyled, className, ...props }, ref) => (
   <Typography.Link
     ref={ref}

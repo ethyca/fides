@@ -1,0 +1,13 @@
+.container {
+  margin-bottom: 16px;
+}
+
+.tabs {
+  :global(.ant-tabs-nav) {
+    margin-bottom: 0;
+  }
+}
+
+.searchInput {
+  width: 200px;
+}

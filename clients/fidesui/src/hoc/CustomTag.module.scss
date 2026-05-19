@@ -26,6 +26,13 @@
   --fidesui-padding-xxs: 0; //we're using gap instead
 }
 
+.subtle {
+  background: transparent !important;
+  border: none !important;
+  text-decoration: underline;
+  padding-inline: 0 !important;
+}
+
 .buttonTag {
   border-radius: var(--fidesui-border-radius-sm);
   &:hover,

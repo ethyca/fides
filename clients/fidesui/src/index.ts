@@ -363,6 +363,8 @@ export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
 export { TagList } from "./components/data-display/TagList";
+export type { SegmentedProgressProps } from "./components/data-display/SegmentedProgress";
+export { SegmentedProgress } from "./components/data-display/SegmentedProgress";
 
 // Export animation components
 export type {

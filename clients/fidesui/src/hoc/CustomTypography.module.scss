@@ -44,6 +44,14 @@
   font-size: var(--fidesui-font-size-heading-5) !important;
 }
 
+// Mono label — uppercase monospace with letter-spacing
+.monoLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--fidesui-font-family-code) !important;
+  font-size: var(--fidesui-font-size-sm) !important;
+}
+
 // Primary color link
 .primaryColorLink {
   color: var(--fides-color-primary) !important;

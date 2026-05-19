@@ -1,4 +1,4 @@
-.cardWrapper {
+.card {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -10,26 +10,52 @@
   }
 }
 
-.cardComplete {
-  border-left: 4px solid var(--fidesui-color-success);
-}
-
-.completeContainer {
-  border-radius: var(--fidesui-border-radius-lg);
-  padding: var(--fidesui-padding-sm);
-  background-color: color-mix(
-    in srgb,
-    var(--fidesui-color-success) 10%,
-    transparent
-  );
-}
-
 .titleLink {
   --fidesui-color-link: var(--fidesui-color-text);
   --fidesui-color-link-hover: var(--fidesui-color-text-secondary);
   --fidesui-color-link-active: var(--fidesui-color-text);
 }
 
-.textWithTags {
-  line-height: 2em;
+.statusBadge {
+  white-space: nowrap;
+}
+
+.statusDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.riskDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.systemAvatar {
+  flex-shrink: 0;
+  font-size: 12px !important;
+}
+
+.templateSubtitle {
+  color: var(--fidesui-brand-terracotta) !important;
+  font-weight: 600;
+  text-transform: none !important;
+}
+
+.dataCategoriesBlock {
+  line-height: 1.4;
+}
+
+.dataCategoryLine {
+  padding: 2px 0;
+  border-bottom: 1px solid var(--fidesui-neutral-200);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
 }

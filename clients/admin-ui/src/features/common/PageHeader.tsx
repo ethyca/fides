@@ -1,10 +1,12 @@
-import { Flex, Title } from "fidesui";
+import { Flex, Paragraph, Title } from "fidesui";
 import { ComponentProps, ReactNode } from "react";
 
 import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";
 
 interface PageHeaderProps extends ComponentProps<"div"> {
   heading?: ReactNode;
+  /** Optional description text rendered below the heading. */
+  description?: ReactNode;
   breadcrumbItems?: NextBreadcrumbProps["items"];
   isSticky?: boolean;
   rightContent?: ReactNode;
@@ -24,6 +26,7 @@ interface PageHeaderProps extends ComponentProps<"div"> {
  */
 const PageHeader = ({
   heading,
+  description,
   breadcrumbItems,
   isSticky = true,
   children,
@@ -72,6 +75,16 @@ const PageHeader = ({
         <div data-testid="page-header-right-content">{rightContent}</div>
       )}
     </Flex>
+
+    {description && (
+      <Paragraph
+        type="secondary"
+        className={children || breadcrumbItems ? "pb-2" : undefined}
+        style={{ maxWidth: 600 }}
+      >
+        {description}
+      </Paragraph>
+    )}
 
     {!!breadcrumbItems && (
       <NextBreadcrumb

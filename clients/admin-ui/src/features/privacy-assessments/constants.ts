@@ -59,6 +59,20 @@ export const FREQUENCY_OPTIONS = [
   { label: "Yearly (Jan 1st)", value: "yearly", cron: "0 9 1 1 *" },
 ];
 
+export const STATUS_BADGE_LABELS: Record<AssessmentStatus, string> = {
+  [AssessmentStatus.IN_PROGRESS]: "Needs input",
+  [AssessmentStatus.COMPLETED]: "Signed",
+  [AssessmentStatus.OUTDATED]: "Out of date",
+  [AssessmentStatus.GENERATING]: "Agent · Drafting",
+};
+
+export const STATUS_BADGE_COLORS: Record<AssessmentStatus, string> = {
+  [AssessmentStatus.IN_PROGRESS]: "var(--fidesui-color-warning)",
+  [AssessmentStatus.COMPLETED]: "var(--fidesui-color-success)",
+  [AssessmentStatus.OUTDATED]: "var(--fidesui-color-error)",
+  [AssessmentStatus.GENERATING]: "var(--fidesui-brand-minos)",
+};
+
 export const SOURCE_TYPE_LABELS: Record<string, string> = {
   system: "System",
   privacy_declaration: "Privacy declaration",

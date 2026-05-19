@@ -1,17 +1,10 @@
-import classNames from "classnames";
 import {
   Avatar,
   Button,
   Card,
-  CUSTOM_TAG_COLOR,
-  Divider,
   Flex,
-  Icons,
-  Paragraph,
-  Progress,
+  SegmentedProgress,
   Spin,
-  Tag,
-  TagList,
   Text,
   Typography,
 } from "fidesui";
@@ -19,174 +12,176 @@ import {
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
-import { formatDate } from "~/features/common/utils";
 
 import styles from "./AssessmentCard.module.scss";
 import {
-  ASSESSMENT_STATUS_LABELS,
+  RISK_LEVEL_DOT_COLORS,
   RISK_LEVEL_LABELS,
-  RISK_TAG_COLORS,
+  STATUS_BADGE_COLORS,
+  STATUS_BADGE_LABELS,
 } from "./constants";
 import { AssessmentStatus, PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;
 
-type TextType = React.ComponentProps<typeof Typography.Text>["type"];
-
-function getStatusTextType(status: AssessmentStatus): TextType {
-  if (status === AssessmentStatus.COMPLETED) {
-    return "success";
-  }
-  if (status === AssessmentStatus.OUTDATED) {
-    return "danger";
-  }
-  return "secondary";
-}
-
 interface AssessmentCardProps {
   assessment: PrivacyAssessmentResponse;
+  /** The data-use category label for the top-left monoLabel. */
+  categoryLabel?: string;
   onClick: () => void;
 }
 
 export const AssessmentCard = ({
   assessment,
+  categoryLabel,
   onClick,
 }: AssessmentCardProps) => {
   const { getDataCategoryDisplayName } = useTaxonomies();
 
-  // Do not assume defaults for missing values; show "N/A" when absent
   const riskLevel = assessment.risk_level ?? null;
   const status = assessment.status ?? null;
   const completeness = assessment.completeness ?? 0;
-
-  const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : "N/A";
-  const statusLabel = status ? ASSESSMENT_STATUS_LABELS[status] : "N/A";
   const isGenerating = status === AssessmentStatus.GENERATING;
   const isComplete = status === AssessmentStatus.COMPLETED;
-  const completionDate =
-    isComplete && assessment.updated_at
-      ? `Completed on ${formatDate(assessment.updated_at, { showTime: false })}`
-      : statusLabel;
 
-  const titleText = assessment.template_name ?? assessment.name;
+  const statusLabel = status ? STATUS_BADGE_LABELS[status] : null;
+  const statusColor = status ? STATUS_BADGE_COLORS[status] : undefined;
+  const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : null;
+  const riskDotColor = riskLevel ? RISK_LEVEL_DOT_COLORS[riskLevel] : undefined;
+
+  const systemName = assessment.system_name ?? "Unknown system";
+  const systemInitial = systemName.charAt(0).toUpperCase();
+
+  // Derive a regulation/region subtitle from the template name
+  // e.g., "GDPR Data Protection Impact Assessment (DPIA)" → "GDPR DPIA"
+  const templateName = assessment.template_name ?? assessment.name;
+
+  // The list API only provides completeness as a percentage, not discrete counts.
+  // Use a fixed segment count to approximate the segmented bar.
+  const PROGRESS_SEGMENTS = 20;
+  const filledSegments = Math.round((completeness / 100) * PROGRESS_SEGMENTS);
+
+  const actionLabel = isGenerating ? null : isComplete ? "View" : "Resume";
+
+  // Data categories as display items
+  const dataCategories = (assessment.data_categories ?? []).map((key) => ({
+    key,
+    label: getDataCategoryDisplayName(key),
+  }));
 
   return (
-    <Card
-      className={classNames(styles.cardWrapper, {
-        [styles.cardComplete]: isComplete,
-      })}
-    >
-      <Flex vertical gap="small" justify="space-between" className="flex-1">
-        <div>
-          <Title level={3} className={`!mb-1 ${styles.titleLink}`}>
-            {isGenerating ? (
-              titleText
-            ) : (
-              <RouterLink
-                unstyled
-                href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
-              >
-                {titleText}
-              </RouterLink>
-            )}
-          </Title>
-          {assessment.system_name && (
-            <Text type="secondary" size="sm" className="block">
-              {assessment.system_name}
+    <Card variant="borderless" className={styles.card}>
+      <Flex vertical gap={12} className="flex-1">
+        {/* Top row: category label + status badge */}
+        <Flex justify="space-between" align="center">
+          {categoryLabel && (
+            <Text variant="monoLabel" type="secondary">
+              {categoryLabel}
             </Text>
           )}
-          <div className={styles.textWithTags}>
-            {(assessment.data_categories ?? []).length > 0 ? (
-              <TagList
-                tags={(assessment.data_categories ?? []).map((key) => ({
-                  value: key,
-                  label: getDataCategoryDisplayName(key),
-                }))}
-                maxTags={1}
-                expandable
+          {statusLabel && (
+            <Flex align="center" gap={6} className={styles.statusBadge}>
+              <span
+                className={styles.statusDot}
+                style={{ backgroundColor: statusColor }}
               />
-            ) : (
-              <Tag>0 data categories</Tag>
-            )}
-          </div>
-          {riskLevel && (
-            <div>
-              <Tag
-                color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}
-              >
-                {`${riskLabel} risk`}
-              </Tag>
-            </div>
+              <Text variant="monoLabel" size="sm">
+                {statusLabel}
+              </Text>
+            </Flex>
           )}
-        </div>
-        <div>
-          <Divider className="my-3" />
+        </Flex>
+
+        {/* System row: avatar + name + template subtitle */}
+        <Flex gap={8} align="flex-start">
+          <Avatar shape="square" size={24} className={styles.systemAvatar}>
+            {systemInitial}
+          </Avatar>
           <div>
-            {isGenerating && (
-              <Flex align="center" justify="center" gap="small">
-                <div>
-                  <Spin size="small" />
-                </div>
-                <Text type="secondary" size="sm">
-                  Generating this assessment
-                </Text>
-              </Flex>
-            )}
-            {isComplete && (
-              <Flex
-                justify="space-between"
-                align="center"
-                className={styles.completeContainer}
-              >
-                <Flex align="center" gap="medium">
-                  <Avatar
-                    shape="circle"
-                    size={28}
-                    icon={<Icons.Checkmark size={14} />}
-                    style={{ backgroundColor: "var(--fidesui-color-success)" }}
-                  />
-                  <div>
-                    <Text strong type="success" size="sm">
-                      Completed
-                    </Text>
-                    <Paragraph type="secondary" size="sm">
-                      {completionDate}
-                    </Paragraph>
-                  </div>
-                </Flex>
-                <Button type="link" className="p-0" onClick={onClick}>
-                  View
-                </Button>
-              </Flex>
-            )}
-            {!isGenerating && !isComplete && (
-              <>
-                <div>
-                  <Text strong size="sm">
-                    {Math.round(completeness)}%
-                  </Text>
-                  <Text type="secondary" size="sm">
-                    {" "}
-                    of questions answered
-                  </Text>
-                </div>
-                <Progress
-                  percent={completeness}
-                  showInfo={false}
-                  size="small"
-                />
-                <Flex justify="space-between" align="center" className="mt-1">
-                  <Text type={getStatusTextType(status)} size="sm">
-                    {statusLabel}
-                  </Text>
-                  <Button type="link" className="p-0" onClick={onClick}>
-                    Resume
-                  </Button>
-                </Flex>
-              </>
+            <Title level={3} className="!m-0">
+              {isGenerating ? (
+                systemName
+              ) : (
+                <RouterLink
+                  unstyled
+                  href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
+                  className={styles.titleLink}
+                >
+                  {systemName}
+                </RouterLink>
+              )}
+            </Title>
+            <Text variant="monoLabel" size="sm" className={styles.templateSubtitle}>
+              {templateName}
+            </Text>
+          </div>
+        </Flex>
+
+        {/* Data categories as text lines */}
+        {dataCategories.length > 0 && (
+          <div className={styles.dataCategoriesBlock}>
+            {dataCategories.slice(0, 3).map((cat) => (
+              <div key={cat.key} className={styles.dataCategoryLine}>
+                <Text size="sm">{cat.label}</Text>
+              </div>
+            ))}
+            {dataCategories.length > 3 && (
+              <Text size="sm" type="secondary">
+                +{dataCategories.length - 3} more
+              </Text>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Risk level */}
+        {riskLabel && (
+          <Flex align="center" gap={6}>
+            <span
+              className={styles.riskDot}
+              style={{ backgroundColor: riskDotColor }}
+            />
+            <Text variant="monoLabel" size="sm" style={{ color: riskDotColor }}>
+              {riskLabel} risk
+            </Text>
+          </Flex>
+        )}
+
+        {/* Spacer to push progress to bottom */}
+        <div className="flex-1" />
+
+        {/* Progress section */}
+        {isGenerating ? (
+          <Flex align="center" justify="center" gap="small" className="py-2">
+            <Spin size="small" />
+            <Text type="secondary" size="sm">
+              Generating this assessment
+            </Text>
+          </Flex>
+        ) : (
+          <div>
+            <Flex justify="space-between" align="center" className="mb-1">
+              <Text variant="monoLabel" type="secondary" size="sm">
+                Questions answered
+              </Text>
+              <Text variant="monoLabel" size="sm">
+                {Math.round(completeness)}%
+              </Text>
+            </Flex>
+            <SegmentedProgress
+              total={PROGRESS_SEGMENTS}
+              filled={filledSegments}
+            />
+          </div>
+        )}
+
+        {/* Bottom row: action button */}
+        {actionLabel && (
+          <Flex justify="flex-end" align="center">
+            <Button type="link" className="p-0" onClick={onClick}>
+              {actionLabel} →
+            </Button>
+          </Flex>
+        )}
       </Flex>
     </Card>
   );

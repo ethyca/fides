@@ -32,6 +32,8 @@ export interface CustomTagProps extends Omit<TagProps, "color"> {
   addable?: boolean;
   hasSparkle?: boolean;
   closeButtonLabel?: string;
+  /** Renders the tag with no background/border, just underlined text. */
+  subtle?: boolean;
 }
 
 // Colors that need light text and border
@@ -51,6 +53,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         className,
         addable,
         hasSparkle,
+        subtle,
         closeButtonLabel = "Remove",
         ...props
       },
@@ -117,7 +120,8 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
             : undefined,
           ...style,
         },
-        className: `${styles.tag} ${className ?? ""}`.trim(),
+        className:
+          `${styles.tag} ${subtle ? styles.subtle : ""} ${className ?? ""}`.trim(),
         // Default to outlined (bordered) to preserve v5 appearance.
         // Brand-color tags that explicitly opted out of the border keep "filled".
         variant: retainDefaultBorder || !brandColor ? "outlined" : "filled",

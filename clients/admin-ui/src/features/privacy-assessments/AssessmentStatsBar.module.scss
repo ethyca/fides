@@ -1,0 +1,26 @@
+.container {
+  padding-top: 8px;
+}
+
+.cell {
+  flex: 1;
+  border-right: 1px solid var(--fidesui-neutral-200);
+  padding: 8px 16px;
+
+  &:first-child {
+    padding-left: 0;
+  }
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.value {
+  font-family: var(--fidesui-font-family-code);
+  font-size: 44px;
+  font-weight: normal;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--fidesui-color-text);
+}

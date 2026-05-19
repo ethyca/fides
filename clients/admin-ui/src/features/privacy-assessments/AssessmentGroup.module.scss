@@ -1,0 +1,39 @@
+.rowNumber {
+  font-family: var(--fidesui-font-family-code);
+  font-size: var(--fidesui-font-size-lg);
+  min-width: 24px;
+}
+
+.statCell {
+  text-align: right;
+}
+
+.statValue {
+  display: block;
+  font-family: var(--fidesui-font-family-code);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.overflowCard {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+}
+
+.overflowNumber {
+  font-family: var(--fidesui-font-family-code);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+}

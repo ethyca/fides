@@ -1,21 +1,75 @@
 import { Button, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  AssessmentFilterKey,
+  AssessmentFilters,
   AssessmentGroup,
+  AssessmentGroupResponse,
   AssessmentSettingsModal,
+  AssessmentStatsBar,
   AssessmentTaskStatusIndicator,
+  AssessmentStatus,
   EmptyState,
   GenerateAssessmentsModal,
+  RiskLevel,
   useGetPrivacyAssessmentsQuery,
+  ViewMode,
 } from "~/features/privacy-assessments";
+
+function filterGroups(
+  groups: AssessmentGroupResponse[],
+  filter: AssessmentFilterKey,
+  search: string,
+): AssessmentGroupResponse[] {
+  return groups
+    .map((group) => {
+      let assessments = group.assessments ?? [];
+
+      // Apply status/risk filter
+      if (filter === "needs_input") {
+        assessments = assessments.filter(
+          (a) => a.status === AssessmentStatus.IN_PROGRESS,
+        );
+      } else if (filter === "agent_drafting") {
+        assessments = assessments.filter(
+          (a) => a.status === AssessmentStatus.GENERATING,
+        );
+      } else if (filter === "high_risk") {
+        assessments = assessments.filter(
+          (a) => a.risk_level === RiskLevel.HIGH,
+        );
+      } else if (filter === "signed") {
+        assessments = assessments.filter(
+          (a) => a.status === AssessmentStatus.COMPLETED,
+        );
+      }
+
+      // Apply search
+      if (search) {
+        const q = search.toLowerCase();
+        assessments = assessments.filter(
+          (a) =>
+            (a.name ?? "").toLowerCase().includes(q) ||
+            (a.system_name ?? "").toLowerCase().includes(q) ||
+            (a.template_name ?? "").toLowerCase().includes(q),
+        );
+      }
+
+      return { ...group, assessments };
+    })
+    .filter((group) => (group.assessments ?? []).length > 0);
+}
 
 const PrivacyAssessmentsPage: NextPage = () => {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<AssessmentFilterKey>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const {
     data: assessmentsData,
@@ -26,6 +80,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
 
   const groups = assessmentsData?.items ?? [];
   const hasAssessments = groups.length > 0;
+
+  const filteredGroups = useMemo(
+    () => filterGroups(groups, activeFilter, searchQuery),
+    [groups, activeFilter, searchQuery],
+  );
 
   if (isLoading) {
     return (
@@ -58,6 +117,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
     <Layout title="Privacy assessments">
       <PageHeader
         heading="Privacy assessments"
+        description="A running record of DPIAs, risk assessments, and transfer evaluations — grouped by the system they evaluate. The Fides agent drafts; you review and sign."
         rightContent={
           <Space align="center">
             <AssessmentTaskStatusIndicator
@@ -84,10 +144,23 @@ const PrivacyAssessmentsPage: NextPage = () => {
         <EmptyState onRunAssessment={() => setGenerateModalOpen(true)} />
       ) : (
         <div className="py-6">
-          <Space orientation="vertical" size="large" className="w-full">
-            {groups.map((group, i) => (
+          <AssessmentStatsBar groups={groups} />
+          <div className="mt-4">
+            <AssessmentFilters
+              groups={groups}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          </div>
+          <Space orientation="vertical" size="large" className="w-full mt-2">
+            {filteredGroups.map((group, i) => (
               <AssessmentGroup
                 key={group.data_use ?? `uncategorized-${i}`}
+                index={i}
                 dataUseName={group.data_use_name}
                 systemCount={group.system_count}
                 assessments={group.assessments}

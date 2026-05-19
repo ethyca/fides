@@ -1,0 +1,21 @@
+.track {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  width: 100%;
+}
+
+.block {
+  flex: 1;
+  height: 4px;
+  border-radius: 1px;
+  min-width: 2px;
+}
+
+.filled {
+  background-color: var(--fidesui-color-text);
+}
+
+.empty {
+  background-color: var(--fidesui-neutral-200);
+}

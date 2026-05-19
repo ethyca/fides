@@ -1,7 +1,9 @@
 export * from "./AnswerStatusTags";
 export * from "./AssessmentCard";
+export * from "./AssessmentFilters";
 export * from "./AssessmentDetail";
 export * from "./AssessmentGroup";
+export * from "./AssessmentStatsBar";
 export { default as AssessmentSettingsModal } from "./AssessmentSettingsModal";
 export * from "./AssessmentTaskPopoverContent";
 export * from "./AssessmentTaskStatusIndicator";
