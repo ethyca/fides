@@ -30,7 +30,7 @@ const stage1Integrations: IntegrationNodeData[] = [
     system: {
       fides_key: "users_db",
       name: "Customer Database",
-      data_use: "essential.service",
+      data_uses: ["essential.service"],
     },
     reachability: Reachability.REACHABLE,
     action_status: ActionStatus.ACTIVE,
@@ -72,7 +72,7 @@ const stage1Integrations: IntegrationNodeData[] = [
     system: {
       fides_key: "stripe",
       name: "Stripe",
-      data_use: "essential.service.payment_processing",
+      data_uses: ["essential.service.payment_processing"],
     },
     reachability: Reachability.REACHABLE,
     action_status: ActionStatus.ACTIVE,
@@ -119,7 +119,7 @@ const stage1Integrations: IntegrationNodeData[] = [
     system: {
       fides_key: "salesforce",
       name: "Salesforce CRM",
-      data_use: "marketing.advertising",
+      data_uses: ["marketing.advertising"],
     },
     reachability: Reachability.REACHABLE,
     action_status: ActionStatus.ACTIVE,
@@ -153,7 +153,7 @@ const stage2Integrations: IntegrationNodeData[] = [
     system: {
       fides_key: "warehouse",
       name: "Analytics Warehouse",
-      data_use: "analytics",
+      data_uses: ["analytics"],
     },
     reachability: Reachability.REACHABLE,
     action_status: ActionStatus.ACTIVE,
@@ -194,7 +194,7 @@ const stage2Integrations: IntegrationNodeData[] = [
     system: {
       fides_key: "mailchimp",
       name: "Mailchimp",
-      data_use: "marketing.advertising",
+      data_uses: ["marketing.advertising"],
     },
     reachability: Reachability.REACHABLE,
     action_status: ActionStatus.ACTIVE,
@@ -227,7 +227,7 @@ const gatedIntegration: IntegrationNodeData = {
   system: {
     fides_key: "legal_archive",
     name: "Legal Archive",
-    data_use: "essential.legal_obligation",
+    data_uses: ["essential.legal_obligation"],
   },
   reachability: Reachability.REACHABLE,
   action_status: ActionStatus.ACTIVE,

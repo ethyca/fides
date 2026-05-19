@@ -13,7 +13,7 @@ export type SystemRef = {
    */
   name: string;
   /**
-   * Data Use
+   * Data Uses
    */
-  data_use?: string | null;
+  data_uses?: Array<string>;
 };

@@ -38,7 +38,7 @@ class DatasetDetail(FidesSchema):
 class SystemRef(FidesSchema):
     fides_key: str
     name: str
-    data_use: str | None = None
+    data_uses: list[str] = Field(default_factory=list)
 
 
 class CollectionCount(FidesSchema):
