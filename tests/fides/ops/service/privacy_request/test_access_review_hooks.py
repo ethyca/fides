@@ -1,14 +1,17 @@
 """Tests for access_review_hooks — gate logic with DB-backed fixtures."""
 
+from unittest.mock import patch
+
 import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.access_review_hooks import (
-    check_access_review_gate,
+    should_wait_for_access_review,
 )
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
@@ -18,7 +21,9 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry i
     set_dsr_report_builder,
     set_pre_restart_cleanup,
     set_review_approved_callback,
-    set_review_gate_callback,
+)
+from fides.service.privacy_request.privacy_request_service import (
+    _process_privacy_request_restart,
 )
 
 
@@ -30,12 +35,11 @@ def _reset_registry():
     set_access_review_required(False)
     set_review_approved_callback(None)
     set_pre_restart_cleanup(None)
-    set_review_gate_callback(None)
 
 
 def _run_gate(db: Session, policy: Policy, privacy_request: PrivacyRequest) -> bool:
     """Run the access review gate with minimal arguments."""
-    return check_access_review_gate(
+    return should_wait_for_access_review(
         session=db,
         policy=policy,
         access_result={},
@@ -80,13 +84,13 @@ class TestCheckAccessReviewGate:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
 
-    def test_pauses_without_gate_callback(
+    def test_pauses_request(
         self,
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
     ):
-        """Gate pauses the request even when no gate callback is registered."""
+        """Gate pauses the request: saves results, sets status, returns True."""
         set_access_review_required(True)
 
         assert _run_gate(db, policy, privacy_request) is True
@@ -94,19 +98,60 @@ class TestCheckAccessReviewGate:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
 
-    def test_pauses_request_with_gate_callback(
-        self,
-        db: Session,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-    ):
-        """Gate fires: saves results, calls gate callback, sets status, returns True."""
-        set_access_review_required(True)
-        gate_calls = []
-        set_review_gate_callback(lambda pr_id, session: gate_calls.append(pr_id))
 
-        assert _run_gate(db, policy, privacy_request) is True
-        assert gate_calls == [privacy_request.id]
+_QUEUE_PR = (
+    "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
+)
+
+
+class TestRestartCleanup:
+    """Verify _process_privacy_request_restart cleans up review state."""
+
+    @patch(_QUEUE_PR)
+    def test_cleanup_called_on_restart_from_awaiting_review(
+        self, mock_queue, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Cleanup callback fires before status transitions to in_processing."""
+        privacy_request.status = PrivacyRequestStatus.awaiting_access_review
+        privacy_request.save(db=db)
+
+        cleanup_calls: list[str] = []
+        set_pre_restart_cleanup(lambda pr_id, session: cleanup_calls.append(pr_id))
+
+        _process_privacy_request_restart(privacy_request, CurrentStep.upload_access, db)
+
+        assert cleanup_calls == [privacy_request.id]
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        mock_queue.assert_called_once()
+
+    @patch(_QUEUE_PR)
+    def test_restart_without_cleanup_callback(
+        self, mock_queue, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Restart works when no cleanup callback is registered."""
+        privacy_request.status = PrivacyRequestStatus.awaiting_access_review
+        privacy_request.save(db=db)
+
+        _process_privacy_request_restart(privacy_request, CurrentStep.upload_access, db)
 
         db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        mock_queue.assert_called_once()
+
+    @patch(_QUEUE_PR)
+    def test_cleanup_not_called_for_other_statuses(
+        self, mock_queue, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Cleanup only fires for awaiting_access_review, not other error states."""
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db=db)
+
+        cleanup_calls: list[str] = []
+        set_pre_restart_cleanup(lambda pr_id, session: cleanup_calls.append(pr_id))
+
+        _process_privacy_request_restart(privacy_request, None, db)
+
+        assert cleanup_calls == []
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing

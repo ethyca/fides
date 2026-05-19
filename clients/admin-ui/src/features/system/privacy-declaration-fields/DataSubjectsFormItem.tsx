@@ -6,27 +6,30 @@ interface DataSubjectsFormItemProps {
   allDataSubjects: DataSubject[];
   disabled?: boolean;
   required?: boolean;
+  tooltip?: string;
 }
+
+const DEFAULT_TOOLTIP =
+  "Whose data are you processing? This could be customers, employees or any other type of user in your system.";
 
 export const DataSubjectsFormItem = ({
   allDataSubjects,
   disabled,
   required,
+  tooltip = DEFAULT_TOOLTIP,
 }: DataSubjectsFormItemProps) => (
   <Form.Item
     name="data_subjects"
     label="Data subjects"
-    tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
+    tooltip={tooltip}
     rules={
       required
         ? [
             {
-              validator: (_, value: string[] | undefined) =>
-                value && value.length > 0
-                  ? Promise.resolve()
-                  : Promise.reject(
-                      new Error("Must assign at least one data subject"),
-                    ),
+              required: true,
+              type: "array",
+              min: 1,
+              message: "Must assign at least one data subject",
             },
           ]
         : undefined
