@@ -11,7 +11,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.access_review_hooks import (
-    check_access_review_gate,
+    should_wait_for_access_review,
 )
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
@@ -31,7 +31,7 @@ from fides.service.privacy_request.privacy_request_service import (
 def _reset_registry():
     """Reset all registry state after each test."""
     yield
-    set_dsr_report_builder(DSRReportBuilder)  # type: ignore[arg-type]
+    set_dsr_report_builder(DSRReportBuilder)
     set_access_review_required(False)
     set_review_approved_callback(None)
     set_pre_restart_cleanup(None)
@@ -39,7 +39,7 @@ def _reset_registry():
 
 def _run_gate(db: Session, policy: Policy, privacy_request: PrivacyRequest) -> bool:
     """Run the access review gate with minimal arguments."""
-    return check_access_review_gate(
+    return should_wait_for_access_review(
         session=db,
         policy=policy,
         access_result={},

@@ -1,8 +1,11 @@
 """Tests for dsr_report_builder_registry defaults and set/get behavior."""
 
+from io import BytesIO
+
 import pytest
 
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+    BaseDSRReportBuilder,
     DSRReportBuilder,
 )
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
@@ -21,7 +24,7 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry i
 def _reset_registry():
     """Reset all registry state after each test."""
     yield
-    set_dsr_report_builder(DSRReportBuilder)  # type: ignore[arg-type]
+    set_dsr_report_builder(DSRReportBuilder)
     set_access_review_required(False)
     set_review_approved_callback(None)
     set_pre_restart_cleanup(None)
@@ -32,19 +35,21 @@ class TestBuilderRegistry:
         assert get_dsr_report_builder() is DSRReportBuilder
 
     def test_set_and_get_builder(self):
-        replacement = type(
-            "AccessPackageReportBuilder",
-            (),
-            {
-                "used_filenames_per_dataset": {},
-                "processed_attachments": {},
-                "generate": lambda self: None,
-                "generate_json": lambda self: None,
-                "generate_csv": lambda self: None,
-            },
-        )
-        set_dsr_report_builder(replacement)
-        assert get_dsr_report_builder() is replacement
+        class FakeBuilder(BaseDSRReportBuilder):
+            used_filenames_per_dataset: dict = {}
+            processed_attachments: dict = {}
+
+            def generate(self) -> BytesIO:
+                return BytesIO()
+
+            def generate_json(self) -> BytesIO:
+                return BytesIO()
+
+            def generate_csv(self) -> BytesIO:
+                return BytesIO()
+
+        set_dsr_report_builder(FakeBuilder)
+        assert get_dsr_report_builder() is FakeBuilder
 
 
 class TestReviewRequired:

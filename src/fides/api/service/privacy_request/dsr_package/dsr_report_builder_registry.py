@@ -5,51 +5,31 @@ with a custom implementation (e.g. AccessPackageReportBuilder) at startup,
 and to register callbacks for the access review workflow.
 """
 
-from io import BytesIO
-from typing import Callable, Optional, Protocol, runtime_checkable
+from typing import Callable, Optional
 
 from sqlalchemy.orm import Session
 
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+    BaseDSRReportBuilder,
     DSRReportBuilder,
 )
 
-
-@runtime_checkable
-class DSRReportBuilderProtocol(Protocol):
-    """Contract for DSR report builders registered via this registry.
-
-    The default DSRReportBuilder only implements generate() (HTML).
-    Custom builders (e.g. AccessPackageReportBuilder) must implement
-    all three format methods.
-    """
-
-    used_filenames_per_dataset: dict[str, set[str]]
-    processed_attachments: dict[tuple[str, str], str]
-
-    def generate(self) -> BytesIO: ...
-    def generate_json(self) -> BytesIO: ...
-    def generate_csv(self) -> BytesIO: ...
-
-
-_dsr_report_builder_cls: type = DSRReportBuilder
+_dsr_report_builder_cls: type[BaseDSRReportBuilder] = DSRReportBuilder
 _review_required: bool = False
 _review_approved_callback: Optional[Callable[[str, Session], bool]] = None
 _pre_restart_cleanup: Optional[Callable[[str, Session], None]] = None
 
 
-def get_dsr_report_builder() -> type:
+def get_dsr_report_builder() -> type[BaseDSRReportBuilder]:
     """Return the current DSR report builder class."""
     return _dsr_report_builder_cls
 
 
-def set_dsr_report_builder(cls: type[DSRReportBuilderProtocol]) -> None:
+def set_dsr_report_builder(cls: type[BaseDSRReportBuilder]) -> None:
     """Replace the DSR report builder class used for package generation.
 
-    Custom builders must satisfy DSRReportBuilderProtocol (generate,
-    generate_json, generate_csv). The default DSRReportBuilder only
-    implements generate() and is exempt — it never enters the custom
-    builder branch in storage.py.
+    Custom builders must inherit from BaseDSRReportBuilder and implement
+    generate(), generate_json(), and generate_csv().
     """
     global _dsr_report_builder_cls
     _dsr_report_builder_cls = cls

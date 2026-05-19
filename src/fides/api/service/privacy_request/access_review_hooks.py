@@ -1,4 +1,4 @@
-"""Access review gate and helpers for the access package review workflow.
+"""Access review hooks and shared filtering for the access package workflow.
 
 Called from request_runner_service.py during the upload_access checkpoint.
 Fidesplus registers callbacks via the dsr_report_builder_registry that
@@ -23,25 +23,19 @@ from fides.api.task.filter_results import filter_data_categories
 from fides.api.util.collection_util import Row
 
 
-def _save_filtered_results_for_review(
-    session: Session,
+def build_filtered_results_for_storage(
     policy: Policy,
     access_result: dict[str, list[Row]],
     dataset_graph: DatasetGraph,
-    privacy_request: PrivacyRequest,
     manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]],
     fides_connector_datasets: set[str],
-) -> None:
-    """Save filtered access results for admin review without uploading.
+    storage_attachments: list[dict[str, Any]] | None = None,
+) -> dict[str, dict[str, list[dict[str, Optional[Any]]]]]:
+    """Filter access results by each rule's target categories and merge storage data.
 
-    Runs the same filter logic as upload_and_save_access_results but only
-    persists to filtered_final_upload — no upload, no URL generation.
-    This allows the admin to preview and redact data via the API before
-    approving the package for delivery.
+    Shared by both the review path (save for preview) and the upload path
+    (save after upload). Ensures consistent filtering logic across both.
     """
-    if not policy.get_rules_for_action(action_type=ActionType.access):
-        return
-
     rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
     for rule in policy.get_rules_for_action(action_type=ActionType.access):
         target_categories: set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
@@ -55,12 +49,14 @@ def _save_filtered_results_for_review(
             )
         )
         filtered_results.update(manual_data_for_storage)
+        if storage_attachments:
+            filtered_results["attachments"] = storage_attachments
         rule_filtered_results[rule.key] = filtered_results
 
-    privacy_request.save_filtered_access_results(session, rule_filtered_results)
+    return rule_filtered_results
 
 
-def check_access_review_gate(
+def should_wait_for_access_review(
     session: Session,
     policy: Policy,
     access_result: dict[str, list[Row]],
@@ -68,6 +64,7 @@ def check_access_review_gate(
     privacy_request: PrivacyRequest,
     manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]],
     fides_connector_datasets: set[str],
+    storage_attachments: list[dict[str, Any]] | None = None,
 ) -> bool:
     """Check whether this request should pause for access package review.
 
@@ -87,15 +84,15 @@ def check_access_review_gate(
         return False
 
     # Save filtered results so the preview endpoint has data
-    _save_filtered_results_for_review(
-        session,
+    rule_filtered_results = build_filtered_results_for_storage(
         policy,
         access_result,
         dataset_graph,
-        privacy_request,
         manual_data_for_storage,
         fides_connector_datasets,
+        storage_attachments,
     )
+    privacy_request.save_filtered_access_results(session, rule_filtered_results)
 
     privacy_request.status = PrivacyRequestStatus.awaiting_access_review
     privacy_request.save(db=session)
