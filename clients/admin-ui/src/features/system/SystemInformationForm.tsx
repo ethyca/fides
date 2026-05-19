@@ -72,7 +72,7 @@ import {
   legalBasisForTransferOptions,
   responsibilityOptions,
 } from "~/features/system/SystemInformationFormSelectOptions";
-import VendorSelectorAnt from "~/features/system/VendorSelectorAnt";
+import VendorSelector from "~/features/system/VendorSelector";
 import {
   useGetAllUsersQuery,
   useRemoveUserManagedSystemMutation,
@@ -459,7 +459,7 @@ const SystemInformationForm = ({
 
           <SystemFormInputGroup heading="System details">
             {features.dictionaryService ? (
-              <VendorSelectorAnt
+              <VendorSelector
                 label="System name"
                 options={dictionaryOptions}
                 onVendorSelected={handleVendorSelected}
@@ -864,7 +864,7 @@ const SystemInformationForm = ({
         <div className="mt-6">
           <Form.Item shouldUpdate noStyle>
             {() => {
-              // Deep-compare instead of form.isFieldsTouched(): VendorSelectorAnt
+              // Deep-compare instead of form.isFieldsTouched(): VendorSelector
               // and the dict-suggestion fields commit values via setFieldsValue,
               // which doesn't mark fields as touched.
               const isDirty = !isEqual(

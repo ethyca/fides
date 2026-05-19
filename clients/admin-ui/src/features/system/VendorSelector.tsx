@@ -52,7 +52,7 @@ const CompassButton = ({
   );
 };
 
-export interface VendorSelectorAntProps {
+export interface VendorSelectorProps {
   label: string;
   isCreate: boolean;
   lockedForGVL: boolean;
@@ -70,7 +70,7 @@ export interface VendorSelectorAntProps {
  * antd-Form-native vendor name typeahead. Drop-in inside any antd `Form`
  * that exposes `name: string` and `vendor_id?: string` on its values.
  */
-const VendorSelectorAnt = ({
+const VendorSelector = ({
   label,
   isCreate,
   lockedForGVL,
@@ -78,7 +78,7 @@ const VendorSelectorAnt = ({
   isLoading,
   onVendorSelected,
   nameRules,
-}: VendorSelectorAntProps) => {
+}: VendorSelectorProps) => {
   const form = Form.useFormInstance();
   const dictSuggestionsState = useAppSelector(selectSuggestions);
   const name = Form.useWatch<string | undefined>("name", form);
@@ -282,4 +282,4 @@ const VendorSelectorAnt = ({
   );
 };
 
-export default VendorSelectorAnt;
+export default VendorSelector;
