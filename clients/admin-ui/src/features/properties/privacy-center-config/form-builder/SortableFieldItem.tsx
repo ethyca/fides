@@ -54,6 +54,7 @@ export const SortableFieldItem = ({
   };
 
   return (
+    /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- listitem with click/keyboard handlers is intentional for field selection */
     <div
       ref={setNodeRef}
       style={style}
@@ -100,5 +101,6 @@ export const SortableFieldItem = ({
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
     </div>
+    /* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */
   );
 };

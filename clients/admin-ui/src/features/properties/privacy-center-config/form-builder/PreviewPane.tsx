@@ -19,9 +19,9 @@ import React from "react";
 
 import type { ComponentType } from "./catalog";
 import { catalog } from "./catalog";
-import type { JsonRenderSpec } from "./types";
 import { registry } from "./registry";
 import { SortableFieldItem } from "./SortableFieldItem";
+import type { JsonRenderSpec } from "./types";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
