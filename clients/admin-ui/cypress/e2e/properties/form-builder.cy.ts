@@ -95,7 +95,7 @@ describe("Privacy center form builder", () => {
     cy.findByPlaceholderText(/tell the builder/i).type("Add an email field");
 
     // Send the message — after streaming the spec should appear in the preview
-    cy.findByRole("button", { name: /^send$/i }).click();
+    cy.get(".ant-sender-actions-btn").click();
     cy.wait("@chatTurn");
 
     // The registry renders a Form.Item whose label is the field's label prop
@@ -154,7 +154,7 @@ describe("Privacy center form builder", () => {
     cy.findByPlaceholderText(/tell the builder/i).type(
       "Add a reason field between email and phone",
     );
-    cy.findByRole("button", { name: /^send$/i }).click();
+    cy.get(".ant-sender-actions-btn").click();
     cy.wait("@chatTurn");
 
     cy.findByRole("button", { name: /^save$/i }).click();
@@ -203,7 +203,7 @@ describe("Privacy center form builder", () => {
     cy.findByPlaceholderText(/tell the builder/i).type(
       "Add state field visible only when country is US",
     );
-    cy.findByRole("button", { name: /^send$/i }).click();
+    cy.get(".ant-sender-actions-btn").click();
     cy.wait("@chatTurn");
 
     // The email field always renders (no visibility condition).
