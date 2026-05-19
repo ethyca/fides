@@ -776,6 +776,7 @@ class PrivacyRequestService:
         except Exception as exc:
             if privacy_request is not None:
                 try:
+                    self.db.rollback()
                     self.db.query(AuditLog).filter(
                         AuditLog.privacy_request_id == privacy_request.id
                     ).delete(synchronize_session=False)
