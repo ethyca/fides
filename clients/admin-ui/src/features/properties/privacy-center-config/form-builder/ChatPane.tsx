@@ -12,8 +12,8 @@ import { useMemo, useState } from "react";
 
 import Image from "~/features/common/Image";
 
-import type { ChatMessage, Status } from "./useFormBuilder";
 import styles from "./ChatPane.module.scss";
+import type { ChatMessage, Status } from "./useFormBuilder";
 
 interface ChatPaneProps {
   messages: ChatMessage[];

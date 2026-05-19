@@ -6,10 +6,13 @@ import { ChatPane } from "../ChatPane";
 // Bubble.List uses IntersectionObserver for autoScroll; jsdom doesn't provide it.
 beforeAll(() => {
   global.IntersectionObserver = class IntersectionObserver {
+    // eslint-disable-next-line class-methods-use-this
     observe() {}
 
+    // eslint-disable-next-line class-methods-use-this
     unobserve() {}
 
+    // eslint-disable-next-line class-methods-use-this
     disconnect() {}
   } as unknown as typeof globalThis.IntersectionObserver;
 });
@@ -25,9 +28,7 @@ describe("ChatPane", () => {
         onAbort={jest.fn()}
       />,
     );
-    expect(
-      screen.getByText(/describe the form you want/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/describe the form you want/i)).toBeInTheDocument();
   });
 
   it("renders messages via Bubble components", () => {
@@ -44,9 +45,7 @@ describe("ChatPane", () => {
       />,
     );
     expect(screen.getByText("Add an email field")).toBeInTheDocument();
-    expect(
-      screen.getByText("Updated the form (1 field)."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Updated the form (1 field).")).toBeInTheDocument();
   });
 
   it("renders an error banner when error is set", () => {
@@ -74,9 +73,7 @@ describe("ChatPane", () => {
         onAbort={jest.fn()}
       />,
     );
-    expect(
-      screen.getByText(/LLM provider not configured/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/LLM provider not configured/)).toBeInTheDocument();
   });
 
   it("calls onSend with the typed text", async () => {
