@@ -1,8 +1,12 @@
 from typing import Optional
 
+from fastapi import BackgroundTasks
 from loguru import logger
 from sqlalchemy.orm import Session
 
+from fides.api.system_connection_config_link_change_hooks import (
+    notify_system_connection_config_link_changed,
+)
 from fides.common.session_management import (
     with_optional_sync_readonly_session,
     with_optional_sync_session,
@@ -51,11 +55,22 @@ class SystemIntegrationLinkService:
         links: list[SystemLinkInput],
         *,
         session: Session,
+        background_tasks: Optional[BackgroundTasks] = None,
     ) -> list[SystemIntegrationLinkEntity]:
         """Idempotent replace: the provided list becomes the complete set of links
         for this connection. Any existing links not in the new set are removed.
 
         Currently limited to MAX_LINKS_PER_CONNECTION total links per integration.
+
+        When ``background_tasks`` is provided and the call actually mutated
+        rows (i.e. there were prior links or new links to set), fires the
+        system-connection-config-link-change hooks so consumers (e.g.
+        fidesplus's inheritance propagation) can react. The no-op case —
+        ``set_links([])`` when no links previously existed — does not fire.
+        Note: re-setting an identical link is treated as a mutation (the
+        implementation does delete-and-recreate), so the hook fires even
+        though the logical set is unchanged; tolerable because consumers
+        are expected to be idempotent.
         """
         connection_config = self._repo.resolve_connection_config(
             connection_key, session=session
@@ -74,6 +89,10 @@ class SystemIntegrationLinkService:
             if not system:
                 raise SystemNotFoundError(link_spec.system_fides_key)
             system_map[link_spec.system_fides_key] = system
+
+        had_existing_links = bool(
+            self._repo.get_links_for_connection(connection_config.id, session=session)
+        )
 
         self._repo.delete_all_links_for_connection(
             connection_config.id, session=session
@@ -94,6 +113,11 @@ class SystemIntegrationLinkService:
             len(results),
             connection_key,
         )
+
+        if background_tasks is not None and (had_existing_links or results):
+            notify_system_connection_config_link_changed(
+                background_tasks, connection_config.id
+            )
         return results
 
     @with_optional_sync_session
@@ -103,7 +127,13 @@ class SystemIntegrationLinkService:
         system_fides_key: str,
         *,
         session: Session,
+        background_tasks: Optional[BackgroundTasks] = None,
     ) -> None:
+        """Delete a single system↔connection-config link.
+
+        When ``background_tasks`` is provided and the link existed (i.e. the
+        delete actually removed a row), fires the link-change hooks.
+        """
         connection_config = self._repo.resolve_connection_config(
             connection_key, session=session
         )
@@ -127,3 +157,8 @@ class SystemIntegrationLinkService:
             connection_key,
             system_fides_key,
         )
+
+        if background_tasks is not None:
+            notify_system_connection_config_link_changed(
+                background_tasks, connection_config.id
+            )

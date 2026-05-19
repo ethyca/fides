@@ -1,0 +1,4 @@
+type: Security
+description: Bump click 8.1.7 to 8.1.8 and pydantic 2.12.4 to 2.12.5
+pr: 8178
+labels: []

@@ -31,6 +31,7 @@ from fides.api.tasks import (
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
+from fides.common.cache.monitor_task_store import MonitorTaskCacheStore
 from fides.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
@@ -335,6 +336,11 @@ def get_dsr_cache_store(dsr_id: str) -> DSRCacheStore:
         get_redis_cache_manager(),
         default_ttl_seconds=CONFIG.redis.default_ttl_seconds,
     )
+
+
+def get_monitor_task_cache_store() -> MonitorTaskCacheStore:
+    """Return a MonitorTaskCacheStore backed by the default Redis connection."""
+    return MonitorTaskCacheStore(get_cache())
 
 
 def get_read_only_cache() -> FidesopsRedis:

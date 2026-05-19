@@ -466,6 +466,7 @@ def get_request_status(
     external_id: Optional[str] = None,
     location: Optional[str] = None,
     action_type: Optional[ActionType] = None,
+    source: Optional[List[PrivacyRequestSource]] = FastAPIQuery(default=None),  # type:ignore
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     include_custom_privacy_request_fields: Optional[bool] = False,
@@ -503,6 +504,7 @@ def get_request_status(
         external_id=external_id,
         location=location,
         action_type=action_type,
+        source=source,
         verbose=verbose,
         include_identities=include_identities,
         include_custom_privacy_request_fields=include_custom_privacy_request_fields,
