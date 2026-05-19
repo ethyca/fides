@@ -23,6 +23,22 @@ from fides.api.task.filter_results import filter_data_categories
 from fides.api.util.collection_util import Row
 
 
+def merge_storage_data(
+    filtered_results: dict[str, list[dict[str, Optional[Any]]]],
+    manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]],
+    storage_attachments: list[dict[str, Any]] | None = None,
+) -> None:
+    """Merge manual data and attachments into filtered results for storage.
+
+    Mutates filtered_results in place. Used by both the review path
+    (build_filtered_results_for_storage) and the upload path
+    (upload_and_save_access_results) to ensure consistent storage merging.
+    """
+    filtered_results.update(manual_data_for_storage)
+    if storage_attachments:
+        filtered_results["attachments"] = storage_attachments
+
+
 def build_filtered_results_for_storage(
     policy: Policy,
     access_result: dict[str, list[Row]],
@@ -33,8 +49,7 @@ def build_filtered_results_for_storage(
 ) -> dict[str, dict[str, list[dict[str, Optional[Any]]]]]:
     """Filter access results by each rule's target categories and merge storage data.
 
-    Shared by both the review path (save for preview) and the upload path
-    (save after upload). Ensures consistent filtering logic across both.
+    Used by the review path to save filtered results for admin preview.
     """
     rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
     for rule in policy.get_rules_for_action(action_type=ActionType.access):
@@ -48,9 +63,7 @@ def build_filtered_results_for_storage(
                 fides_connector_datasets,
             )
         )
-        filtered_results.update(manual_data_for_storage)
-        if storage_attachments:
-            filtered_results["attachments"] = storage_attachments
+        merge_storage_data(filtered_results, manual_data_for_storage, storage_attachments)
         rule_filtered_results[rule.key] = filtered_results
 
     return rule_filtered_results

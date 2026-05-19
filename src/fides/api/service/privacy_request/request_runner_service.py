@@ -70,7 +70,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     message_send_enabled,
 )
 from fides.api.service.privacy_request.access_review_hooks import (
-    build_filtered_results_for_storage,
+    merge_storage_data,
     should_wait_for_access_review,
 )
 from fides.api.service.privacy_request.attachment_handling import (
@@ -378,7 +378,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     if not access_result:
         logger.info("No results returned for access request")
 
-    # Upload per-rule results
+    rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
@@ -392,6 +392,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
                 fides_connector_datasets,
             )
         )
+        # Deepcopy before any mutation — upload and storage diverge here
         results_to_upload = deepcopy(filtered_results)
         results_to_upload.update(manual_data_access_results.manual_data_for_upload)
 
@@ -406,15 +407,13 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         )
         download_urls.extend(rule_download_urls)
 
-    # Build storage results using shared filtering logic
-    rule_filtered_results = build_filtered_results_for_storage(
-        policy,
-        access_result,
-        dataset_graph,
-        manual_data_access_results.manual_data_for_storage,
-        fides_connector_datasets,
-        storage_attachments,
-    )
+        # Build storage results on the original (not the upload copy)
+        merge_storage_data(
+            filtered_results,
+            manual_data_access_results.manual_data_for_storage,
+            storage_attachments,
+        )
+        rule_filtered_results[rule.key] = filtered_results
 
     save_access_results(session, privacy_request, download_urls, rule_filtered_results)
     return download_urls
