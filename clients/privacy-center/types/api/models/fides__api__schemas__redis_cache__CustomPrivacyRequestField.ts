@@ -7,6 +7,5 @@
  */
 export type fides__api__schemas__redis_cache__CustomPrivacyRequestField = {
   label: string;
-  value?: (boolean | number | string | null);
+  value?: boolean | number | string | null;
 };
-

@@ -148,9 +148,7 @@ export const validateConfig = (
 
   const invalidFieldMessages = (config.actions ?? []).flatMap((action) => {
     const messages: string[] = [];
-    const fields = Object.entries(
-      action.custom_privacy_request_fields || {},
-    );
+    const fields = Object.entries(action.custom_privacy_request_fields || {});
 
     /*
       Validate that hidden fields must have a default_value or a query_param_key
