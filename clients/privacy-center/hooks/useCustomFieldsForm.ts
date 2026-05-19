@@ -2,8 +2,9 @@ import { UploadFile } from "fidesui";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import { dateFieldValidation } from "~/components/modals/validation";
 import { selectUserLocation } from "~/features/consent/consent.slice";
-import { CustomConfigField } from "~/types/config";
+import { CustomConfigField, CustomDateField } from "~/types/config";
 
 interface UseCustomFieldsFormProps {
   customPrivacyRequestFields: Record<string, CustomConfigField>;
@@ -124,6 +125,15 @@ export const useCustomFieldsForm = ({
                 }
                 return [key, fileSchema];
               }
+              case "date":
+                return [
+                  key,
+                  dateFieldValidation(
+                    field as CustomDateField,
+                    label,
+                    isRequired,
+                  ),
+                ];
               default:
                 return [
                   key,

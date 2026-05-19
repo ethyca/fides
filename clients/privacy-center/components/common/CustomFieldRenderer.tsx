@@ -1,6 +1,8 @@
+import dayjs from "dayjs";
 import {
   Button,
   Checkbox,
+  DatePicker,
   Input,
   LocationSelect,
   Select,
@@ -12,6 +14,7 @@ import { ReactNode } from "react";
 import {
   CustomCheckboxField,
   CustomCheckboxGroupField,
+  CustomDateField,
   CustomFileUploadField,
   CustomLocationField,
   CustomMultiSelectField,
@@ -73,6 +76,11 @@ interface ICustomLocationFieldProps
   onChange: (value: string) => void;
 }
 
+interface ICustomDateFieldProps extends CustomDateField, ICustomFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
 export type CustomFieldRendererProps =
   | ICustomTextFieldProps
   | ICustomSelectFieldProps
@@ -81,7 +89,8 @@ export type CustomFieldRendererProps =
   | ICustomCheckboxGroupFieldProps
   | ICustomTextareaFieldProps
   | ICustomFileUploadFieldProps
-  | ICustomLocationFieldProps;
+  | ICustomLocationFieldProps
+  | ICustomDateFieldProps;
 
 const CustomFieldRenderer = ({
   fieldKey,
@@ -248,6 +257,27 @@ const CustomFieldRenderer = ({
           aria-describedby={`${fieldKey}-error`}
           aria-required={required !== false}
         />
+      );
+
+    case "date":
+      return (
+        <div data-testid={`date-${fieldKey}`}>
+          <DatePicker
+            id={fieldKey}
+            placeholder={label}
+            value={props.value ? dayjs(props.value, "YYYY-MM-DD") : null}
+            onChange={(date) =>
+              props.onChange(date ? date.format("YYYY-MM-DD") : "")
+            }
+            onBlur={onBlur}
+            format="MM/DD/YYYY"
+            getPopupContainer={() => document.body}
+            aria-label={label}
+            aria-describedby={`${fieldKey}-error`}
+            aria-required={required !== false}
+            className="w-full"
+          />
+        </div>
       );
 
     case "text":
