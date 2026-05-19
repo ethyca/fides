@@ -6,7 +6,7 @@
  * features, retention period). Validation lives on each Form.Item's `rules` array — no Yup.
  */
 
-import { Button, Card, Flex, Form, Input, Select, Switch } from "fidesui";
+import { Button, Card, Flex, Form, Input, Select, Spin, Switch } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -131,7 +131,7 @@ export const PrivacyDeclarationForm = ({
   const { specialCategoryLegalBasisOptions } =
     useSpecialCategoryLegalBasisOptions();
 
-  const { customFieldValues, upsertCustomFields } = useCustomFields({
+  const { customFieldValues, upsertCustomFields, isLoading } = useCustomFields({
     resourceType: LegacyResourceTypes.PRIVACY_DECLARATION,
     resourceFidesKey: privacyDeclarationId,
   });
@@ -164,6 +164,14 @@ export const PrivacyDeclarationForm = ({
       }
     }
   };
+
+  if (isEditing && isLoading) {
+    return (
+      <Flex justify="center" align="center" className="py-8">
+        <Spin />
+      </Flex>
+    );
+  }
 
   return (
     <Form
