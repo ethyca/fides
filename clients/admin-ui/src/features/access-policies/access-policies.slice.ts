@@ -40,7 +40,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     >({
       query: ({ page = 1, size = 50 } = {}) => ({
         method: "GET",
-        url: "plus/access-policy",
+        url: "plus/access-policies",
         params: { page, size },
       }),
       providesTags: () => ["Access Policies"],
@@ -48,14 +48,14 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     getAccessPolicy: build.query<AccessPolicy, string>({
       query: (id) => ({
         method: "GET",
-        url: `plus/access-policy/${id}`,
+        url: `plus/access-policies/${id}`,
       }),
       providesTags: (_result, _error, id) => [{ type: "Access Policies", id }],
     }),
     createAccessPolicy: build.mutation<AccessPolicy, Partial<AccessPolicy>>({
       query: (body) => ({
         method: "POST",
-        url: "plus/access-policy",
+        url: "plus/access-policies",
         body,
       }),
       invalidatesTags: ["Access Policies"],
@@ -66,7 +66,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     >({
       query: ({ id, ...body }) => ({
         method: "PATCH",
-        url: `plus/access-policy/${id}`,
+        url: `plus/access-policies/${id}`,
         body,
       }),
       invalidatesTags: (_result, _error, { id }) => [
@@ -77,7 +77,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     deleteAccessPolicy: build.mutation<void, string>({
       query: (id) => ({
         method: "DELETE",
-        url: `plus/access-policy/${id}`,
+        url: `plus/access-policies/${id}`,
       }),
       invalidatesTags: ["Access Policies"],
     }),
@@ -87,7 +87,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     >({
       query: ({ id, insert_after_id }) => ({
         method: "POST",
-        url: `plus/access-policy/${id}/reorder`,
+        url: `plus/access-policies/${id}/reorder`,
         body: { insert_after_id },
       }),
       invalidatesTags: ["Access Policies"],
@@ -138,7 +138,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     getOnboardingIndustries: build.query<OnboardingIndustriesResponse, void>({
       query: () => ({
         method: "GET",
-        url: "plus/access-policy/presets/industries",
+        url: "plus/access-policies/presets/industries",
       }),
     }),
     getOnboardingDataUses: build.query<
@@ -151,20 +151,20 @@ const accessPoliciesApi = baseApi.injectEndpoints({
         geographies.forEach((g) => params.append("geographies", g));
         return {
           method: "GET",
-          url: `plus/access-policy/presets/data-uses?${params.toString()}`,
+          url: `plus/access-policies/presets/data-uses?${params.toString()}`,
         };
       },
     }),
     getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
       query: () => ({
         method: "GET",
-        url: "plus/access-policy/presets/config",
+        url: "plus/access-policies/presets/config",
       }),
     }),
     generatePolicies: build.mutation<GeneratePoliciesResponse, FormData>({
       query: (formData) => ({
         method: "POST",
-        url: "plus/access-policy/presets/generate",
+        url: "plus/access-policies/presets/generate",
         body: formData,
       }),
       invalidatesTags: ["Access Policies"],
