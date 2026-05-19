@@ -1,4 +1,4 @@
-import { Button, Icons, Input, Radio, Select, Space } from "fidesui";
+import { Button, Card, Icons, Input, Radio, Select, Space } from "fidesui";
 import dynamic from "next/dynamic";
 
 import type { JsonRenderSpec } from "./types";
@@ -201,7 +201,7 @@ export const VisibilityEditor = ({
   const isAlwaysShow = rows.length === 0;
 
   return (
-    <Space orientation="vertical" style={{ width: "100%" }}>
+    <Space orientation="vertical" className="w-full">
       <Radio.Group
         value={isAlwaysShow ? "always" : "conditional"}
         onChange={(e) => {
@@ -218,7 +218,7 @@ export const VisibilityEditor = ({
         data-testid="visibility-mode"
       />
       {!isAlwaysShow && (
-        <Space orientation="vertical" style={{ width: "100%" }}>
+        <Space orientation="vertical" className="w-full">
           {rows.map((row, idx) => {
             const valueMode = sourceValueMode(spec, row.fieldName);
             const needsValue = OPERATORS_NEEDING_VALUE.includes(row.operator);
@@ -226,26 +226,12 @@ export const VisibilityEditor = ({
             // editing a row doesn't shuffle others.
             const rowKey = `${idx}-${row.fieldName || "_"}-${row.operator}`;
             return (
-              <div
-                key={rowKey}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  padding: 8,
-                  border: "1px solid var(--fidesui-neutral-100)",
-                  borderRadius: 4,
-                }}
-              >
-                <Space
-                  orientation="vertical"
-                  style={{ width: "100%" }}
-                  size="small"
-                >
+              <Card key={rowKey} size="small">
+                <Space orientation="vertical" className="w-full" size="small">
                   <Select
                     aria-label="Source field"
                     placeholder="Field"
-                    style={{ width: "100%" }}
+                    className="w-full"
                     value={row.fieldName || undefined}
                     onChange={(v) => updateRow(idx, { fieldName: v })}
                     options={fieldOptions}
@@ -253,7 +239,7 @@ export const VisibilityEditor = ({
                   />
                   <Select
                     aria-label="Operator"
-                    style={{ width: "100%" }}
+                    className="w-full"
                     value={row.operator}
                     onChange={(v) => updateRow(idx, { operator: v })}
                     options={(Object.keys(OPERATOR_LABELS) as Operator[]).map(
@@ -265,7 +251,7 @@ export const VisibilityEditor = ({
                     <Select
                       aria-label="Value"
                       placeholder="Value"
-                      style={{ width: "100%" }}
+                      className="w-full"
                       value={row.value || undefined}
                       onChange={(v) => updateRow(idx, { value: v })}
                       options={valueMode.values.map((o) => ({
@@ -279,7 +265,7 @@ export const VisibilityEditor = ({
                     <LocationSelect
                       aria-label="Value"
                       placeholder="Value"
-                      style={{ width: "100%" }}
+                      className="w-full"
                       value={row.value || undefined}
                       onChange={(v: string) => updateRow(idx, { value: v })}
                       data-testid={`visibility-value-${idx}`}
@@ -289,7 +275,7 @@ export const VisibilityEditor = ({
                     <Input
                       aria-label="Value"
                       placeholder="Value"
-                      style={{ width: "100%" }}
+                      className="w-full"
                       value={row.value}
                       onChange={(e) =>
                         updateRow(idx, { value: e.target.value })
@@ -305,11 +291,11 @@ export const VisibilityEditor = ({
                   onClick={() => removeRow(idx)}
                   aria-label="Remove condition"
                   data-testid={`visibility-remove-${idx}`}
-                  style={{ alignSelf: "flex-end" }}
+                  className="self-end"
                 >
                   Remove condition
                 </Button>
-              </div>
+              </Card>
             );
           })}
           <Button

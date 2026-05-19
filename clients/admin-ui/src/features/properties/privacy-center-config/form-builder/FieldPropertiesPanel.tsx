@@ -1,45 +1,31 @@
 import {
   Alert,
   Button,
+  Flex,
   Form,
   Icons,
   Input,
   Select,
-  Space,
   Switch,
+  Typography,
   useModal,
 } from "fidesui";
 import snakeCase from "lodash.snakecase";
 import { useEffect, useRef, useState } from "react";
 
-import type { ComponentType } from "./catalog";
-import type { JsonRenderSpec } from "./types";
+import { OptionsEditor } from "./OptionsEditor";
+import type {
+  EditableType,
+  FieldPropertiesPanelProps,
+  FormValues,
+  JsonRenderSpec,
+} from "./types";
 import {
   type ConditionRow,
   rowsToVisible,
   VisibilityEditor,
   visibleToRows,
 } from "./VisibilityEditor";
-
-interface FieldPropertiesPanelProps {
-  spec: JsonRenderSpec | null;
-  selectedElementId: string | null;
-  onUpdateField: (elementId: string, props: Record<string, unknown>) => void;
-  onRemoveField: (elementId: string) => void;
-  onUpdateVisibility: (elementId: string, visible: unknown | undefined) => void;
-}
-
-type EditableType = Exclude<ComponentType, "Form">;
-
-const panelStyle: React.CSSProperties = {
-  height: "100%",
-  display: "flex",
-  flexDirection: "column",
-  padding: 16,
-  overflowY: "auto",
-};
-
-type FormValues = Record<string, unknown>;
 
 const stripUndefined = (
   values: Record<string, unknown>,
@@ -53,61 +39,10 @@ const stripUndefined = (
   return result;
 };
 
-// Editor for a list of string options. Used by Select / MultiSelect / Location.
-const OptionsEditor = ({
-  value = [],
-  onChange,
-  minItems = 1,
-}: {
-  value?: string[];
-  onChange?: (next: string[]) => void;
-  /** Minimum number of options to keep. Below this, remove is disabled. */
-  minItems?: number;
-}) => {
-  const setItem = (idx: number, next: string) => {
-    const copy = [...value];
-    copy[idx] = next;
-    onChange?.(copy);
-  };
-  const remove = (idx: number) => {
-    onChange?.(value.filter((_, i) => i !== idx));
-  };
-  const append = () => {
-    onChange?.([...value, `Option ${value.length + 1}`]);
-  };
-  return (
-    <Space orientation="vertical" style={{ width: "100%" }}>
-      {value.map((opt, idx) => (
-        <Space.Compact
-          // eslint-disable-next-line react/no-array-index-key
-          key={idx}
-          style={{ width: "100%" }}
-        >
-          <Input
-            value={opt}
-            onChange={(e) => setItem(idx, e.target.value)}
-            data-testid={`option-input-${idx}`}
-          />
-          <Button
-            onClick={() => remove(idx)}
-            disabled={value.length <= minItems}
-            data-testid={`option-remove-${idx}`}
-            icon={<Icons.TrashCan />}
-            aria-label={`Remove option ${idx + 1}`}
-          />
-        </Space.Compact>
-      ))}
-      <Button onClick={append} block data-testid="option-add">
-        + Add option
-      </Button>
-    </Space>
-  );
-};
-
 const EmptyState = () => (
-  <div style={panelStyle}>
+  <Flex vertical className="h-full overflow-y-auto p-4">
     <Alert type="info" title="Select a field to edit its properties." />
-  </div>
+  </Flex>
 );
 
 export const FieldPropertiesPanel = ({
@@ -303,17 +238,15 @@ export const FieldPropertiesPanel = ({
   };
 
   return (
-    <div style={panelStyle} data-testid="field-properties-panel">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
-          marginBottom: 16,
-        }}
-      >
-        <h3 style={{ margin: 0 }}>{componentType} field</h3>
+    <Flex
+      vertical
+      className="h-full overflow-y-auto p-4"
+      data-testid="field-properties-panel"
+    >
+      <Flex align="center" justify="space-between" gap="small" className="mb-4">
+        <Typography.Title level={5} className="m-0">
+          {componentType} field
+        </Typography.Title>
         <Button
           type="text"
           icon={<Icons.TrashCan />}
@@ -321,7 +254,7 @@ export const FieldPropertiesPanel = ({
           aria-label="Remove field"
           data-testid="remove-field-button"
         />
-      </div>
+      </Flex>
       <Form
         form={form}
         layout="vertical"
@@ -334,7 +267,7 @@ export const FieldPropertiesPanel = ({
               type="info"
               title="Identity field"
               description="This field maps to a built-in privacy center identity input. Its label and field key are fixed and cannot be customized."
-              style={{ marginBottom: 16 }}
+              className="mb-4"
             />
             <Form.Item
               label="Required"
@@ -556,6 +489,6 @@ export const FieldPropertiesPanel = ({
           </>
         )}
       </Form>
-    </div>
+    </Flex>
   );
 };

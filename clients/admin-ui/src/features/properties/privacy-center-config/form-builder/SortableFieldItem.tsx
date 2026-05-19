@@ -1,7 +1,10 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import classNames from "classnames";
 import { Icons } from "fidesui";
 import React from "react";
+
+import moduleStyles from "./SortableFieldItem.module.scss";
 
 interface SortableFieldItemProps {
   id: string;
@@ -9,27 +12,6 @@ interface SortableFieldItemProps {
   onSelect: (id: string) => void;
   children: React.ReactNode;
 }
-
-const containerStyle = (selected: boolean): React.CSSProperties => ({
-  display: "flex",
-  alignItems: "flex-start",
-  gap: 4,
-  padding: "4px 8px 8px 4px",
-  marginBottom: 4,
-  borderRadius: 4,
-  border: selected
-    ? "1px solid var(--fidesui-color-primary)"
-    : "1px solid transparent",
-  background: selected ? "var(--fidesui-color-primary-bg)" : "transparent",
-  cursor: "pointer",
-});
-
-const handleStyle: React.CSSProperties = {
-  cursor: "grab",
-  display: "flex",
-  alignItems: "center",
-  touchAction: "none",
-};
 
 export const SortableFieldItem = ({
   id,
@@ -46,22 +28,24 @@ export const SortableFieldItem = ({
     isDragging,
   } = useSortable({ id });
 
-  const style: React.CSSProperties = {
-    ...containerStyle(selected),
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
   return (
     /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- listitem with click/keyboard handlers is intentional for field selection */
     <div
       ref={setNodeRef}
-      style={style}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+      }}
       // Edit-mode chrome: zero out Form.Item margin since the card itself
       // provides the vertical rhythm. Preview mode renders without this
       // wrapper so fields keep their natural form-item spacing.
-      className="[&_.ant-form-item]:!mb-0"
+      className={classNames(
+        moduleStyles.container,
+        { [moduleStyles.selected]: selected },
+        "flex items-start gap-1 px-2 pb-2 pl-1 pt-1 mb-1 rounded",
+        "[&_.ant-form-item]:!mb-0",
+      )}
       data-element-id={id}
       data-testid={`sortable-field-${id}`}
       role="listitem"
@@ -89,7 +73,7 @@ export const SortableFieldItem = ({
       }}
     >
       <span
-        style={handleStyle}
+        className={classNames(moduleStyles.handle, "flex items-center")}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...attributes}
         // eslint-disable-next-line react/jsx-props-no-spreading
@@ -99,7 +83,7 @@ export const SortableFieldItem = ({
       >
         <Icons.Draggable size={20} color="var(--fidesui-neutral-400)" />
       </span>
-      <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
     /* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */
   );

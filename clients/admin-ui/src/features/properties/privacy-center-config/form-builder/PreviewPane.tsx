@@ -14,11 +14,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { JSONUIProvider, Renderer } from "@json-render/react";
-import { Button, Dropdown, Empty, Form, Switch, Typography } from "fidesui";
+import { Button, Empty, Flex, Form, Switch, Typography } from "fidesui";
 import React from "react";
 
+import { AddFieldButton } from "./AddFieldButton";
 import type { ComponentType } from "./catalog";
-import { catalog } from "./catalog";
+import styles from "./PreviewPane.module.scss";
 import { registry } from "./registry";
 import { SortableFieldItem } from "./SortableFieldItem";
 import type { JsonRenderSpec } from "./types";
@@ -62,128 +63,6 @@ interface PreviewPaneProps {
   previewMode?: PreviewMode;
   onPreviewModeChange?: (next: PreviewMode) => void;
 }
-
-const wrapperStyle: React.CSSProperties = {
-  height: "100%",
-  display: "flex",
-  flexDirection: "column",
-  minHeight: 0,
-};
-
-const toolbarStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 16px",
-  background: "#f5f5f5",
-  borderTop: "1px solid var(--fidesui-color-border)",
-  flexShrink: 0,
-  minHeight: 48,
-};
-
-const toolbarSideStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-};
-
-const canvasStyle: React.CSSProperties = {
-  background: "#f5f5f5",
-  width: "100%",
-  flex: 1,
-  minHeight: 0,
-  padding: 32,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  overflowY: "auto",
-};
-
-const formCardStyle: React.CSSProperties = {
-  background: "white",
-  width: "100%",
-  maxWidth: 360,
-  padding: 32,
-  borderRadius: 4,
-  boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
-};
-
-const FIELD_TYPE_LABELS: Record<EditableComponentType, string> = {
-  Text: "Text input",
-  Select: "Single-select dropdown",
-  MultiSelect: "Multi-select dropdown",
-  Location: "Location picker",
-  Email: "Email",
-  Name: "Name",
-  Phone: "Phone",
-};
-
-// Fixed element IDs for identity types — used to detect duplicates in the spec.
-const IDENTITY_ELEMENT_IDS: Partial<Record<EditableComponentType, string>> = {
-  Email: "f_email",
-  Name: "f_name",
-  Phone: "f_phone",
-};
-
-// Identity types in the canonical PC render order (Name → Email → Phone).
-const IDENTITY_TYPES_ORDERED: EditableComponentType[] = [
-  "Name",
-  "Email",
-  "Phone",
-];
-const IDENTITY_TYPE_SET = new Set<string>(IDENTITY_TYPES_ORDERED);
-
-// Custom (non-identity) types in alphabetical order.
-const CUSTOM_TYPES_ORDERED: EditableComponentType[] = (
-  Object.keys(catalog.components).filter(
-    (k) => k !== "Form" && !IDENTITY_TYPE_SET.has(k),
-  ) as EditableComponentType[]
-).sort();
-
-const AddFieldButton = ({
-  onAddField,
-  spec,
-}: {
-  onAddField: (type: EditableComponentType) => void;
-  spec: JsonRenderSpec | null;
-}) => {
-  const availableIdentity = IDENTITY_TYPES_ORDERED.filter((type) => {
-    const fixedId = IDENTITY_ELEMENT_IDS[type];
-    return !fixedId || !spec?.elements[fixedId];
-  });
-
-  const identityItems = availableIdentity.map((type) => ({
-    key: type,
-    label: <strong>{FIELD_TYPE_LABELS[type]}</strong>,
-  }));
-
-  const customItems = CUSTOM_TYPES_ORDERED.map((type) => ({
-    key: type,
-    label: FIELD_TYPE_LABELS[type],
-  }));
-
-  const items = [
-    ...identityItems,
-    ...(identityItems.length > 0 && customItems.length > 0
-      ? [{ type: "divider" as const }]
-      : []),
-    ...customItems,
-  ];
-
-  return (
-    <Dropdown
-      menu={{
-        items,
-        onClick: ({ key }) => onAddField(key as EditableComponentType),
-      }}
-    >
-      <Button data-testid="add-field-button" type="dashed" block>
-        + Add field
-      </Button>
-    </Dropdown>
-  );
-};
 
 // Build a single-element spec for one field so the Renderer can render
 // it in isolation. visible/watch are stripped because Edit mode shows
@@ -244,9 +123,9 @@ export const PreviewPane = ({
   };
 
   const renderEditCanvas = () => (
-    <div style={formCardStyle}>
+    <div className={styles.formCard}>
       {hasFields && spec ? (
-        <Form layout="vertical" style={{ marginBottom: 16 }}>
+        <Form layout="vertical" className="mb-4">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -280,7 +159,7 @@ export const PreviewPane = ({
       ) : (
         <Empty
           description="No fields yet. Add one below or chat with the builder."
-          style={{ marginBottom: 16 }}
+          className="mb-4"
         />
       )}
       <AddFieldButton onAddField={onAddField} spec={spec} />
@@ -324,13 +203,11 @@ export const PreviewPane = ({
   const cancelLabel = actionCopy?.cancelButtonText || "Cancel";
 
   const renderPreviewCanvas = () => (
-    <div style={formCardStyle}>
+    <div className={styles.formCard}>
       {(description || subtext.length > 0) && (
-        <div style={{ marginBottom: 16 }}>
+        <Flex vertical className="mb-4">
           {description && (
-            <Typography.Paragraph
-              style={{ marginBottom: subtext.length ? 8 : 0 }}
-            >
+            <Typography.Paragraph className={subtext.length ? "mb-2" : "m-0"}>
               {description}
             </Typography.Paragraph>
           )}
@@ -339,12 +216,12 @@ export const PreviewPane = ({
               // eslint-disable-next-line react/no-array-index-key
               key={i}
               type="secondary"
-              style={{ marginBottom: i === subtext.length - 1 ? 0 : 8 }}
+              className={i === subtext.length - 1 ? "m-0" : "mb-2"}
             >
               {line}
             </Typography.Paragraph>
           ))}
-        </div>
+        </Flex>
       )}
       {hasFields && previewSpec ? (
         <JSONUIProvider registry={registry}>
@@ -353,24 +230,24 @@ export const PreviewPane = ({
       ) : (
         <Empty description="No fields yet. Switch to Edit to add one." />
       )}
-      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+      <Flex gap="small" className="mt-4">
         <Button block disabled>
           {cancelLabel}
         </Button>
         <Button type="primary" block disabled>
           {confirmLabel}
         </Button>
-      </div>
+      </Flex>
     </div>
   );
 
   return (
-    <div style={wrapperStyle}>
-      <div style={canvasStyle}>
+    <Flex vertical className="h-full min-h-0">
+      <div className={styles.canvas}>
         {previewMode === "edit" ? renderEditCanvas() : renderPreviewCanvas()}
       </div>
-      <div style={toolbarStyle} data-testid="preview-toolbar">
-        <div style={toolbarSideStyle}>
+      <div className={styles.toolbar} data-testid="preview-toolbar">
+        <Flex align="center" gap="small">
           <Typography.Text>Preview mode</Typography.Text>
           <Switch
             checked={previewMode === "preview"}
@@ -380,9 +257,11 @@ export const PreviewPane = ({
             data-testid="preview-mode-toggle"
             aria-label="Toggle preview mode"
           />
-        </div>
-        <div style={toolbarSideStyle}>{actions}</div>
+        </Flex>
+        <Flex align="center" gap="small">
+          {actions}
+        </Flex>
       </div>
-    </div>
+    </Flex>
   );
 };

@@ -1,3 +1,5 @@
+import type { ComponentType } from "./catalog";
+
 export type PcFieldType =
   | "text"
   | "select"
@@ -88,3 +90,15 @@ export interface JsonRenderSpec {
   root: string;
   elements: Record<string, JsonRenderElement>;
 }
+
+export interface FieldPropertiesPanelProps {
+  spec: JsonRenderSpec | null;
+  selectedElementId: string | null;
+  onUpdateField: (elementId: string, props: Record<string, unknown>) => void;
+  onRemoveField: (elementId: string) => void;
+  onUpdateVisibility: (elementId: string, visible: unknown | undefined) => void;
+}
+
+export type EditableType = Exclude<ComponentType, "Form">;
+
+export type FormValues = Record<string, unknown>;
