@@ -17,7 +17,6 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
     get_review_approved_callback,
-    get_review_gate_callback,
     is_access_review_required,
 )
 from fides.api.task.filter_results import filter_data_categories
@@ -40,6 +39,9 @@ def _save_filtered_results_for_review(
     This allows the admin to preview and redact data via the API before
     approving the package for delivery.
     """
+    if not policy.get_rules_for_action(action_type=ActionType.access):
+        return
+
     rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
     for rule in policy.get_rules_for_action(action_type=ActionType.access):
         target_categories: set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
@@ -94,11 +96,6 @@ def check_access_review_gate(
         manual_data_for_storage,
         fides_connector_datasets,
     )
-
-    # Create the review row via fidesplus callback
-    gate_callback = get_review_gate_callback()
-    if gate_callback:
-        gate_callback(privacy_request.id, session)
 
     privacy_request.status = PrivacyRequestStatus.awaiting_access_review
     privacy_request.save(db=session)

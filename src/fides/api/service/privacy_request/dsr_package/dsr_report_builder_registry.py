@@ -36,7 +36,6 @@ _dsr_report_builder_cls: type = DSRReportBuilder
 _review_required: bool = False
 _review_approved_callback: Optional[Callable[[str, Session], bool]] = None
 _pre_restart_cleanup: Optional[Callable[[str, Session], None]] = None
-_review_gate_callback: Optional[Callable[[str, Session], None]] = None
 
 
 def get_dsr_report_builder() -> type:
@@ -44,7 +43,7 @@ def get_dsr_report_builder() -> type:
     return _dsr_report_builder_cls
 
 
-def set_dsr_report_builder(cls: type) -> None:
+def set_dsr_report_builder(cls: type[DSRReportBuilderProtocol]) -> None:
     """Replace the DSR report builder class used for package generation.
 
     Custom builders must satisfy DSRReportBuilderProtocol (generate,
@@ -97,18 +96,3 @@ def set_pre_restart_cleanup(callback: Callable[[str, Session], None] | None) -> 
     """Register (or clear) a cleanup callback for access review state on restart."""
     global _pre_restart_cleanup
     _pre_restart_cleanup = callback
-
-
-def get_review_gate_callback() -> Optional[Callable[[str, Session], None]]:
-    """Return the callback that creates the review row and sets status.
-
-    The callback receives (privacy_request_id, session) and is responsible
-    for creating the AccessPackageReview row.
-    """
-    return _review_gate_callback
-
-
-def set_review_gate_callback(callback: Callable[[str, Session], None] | None) -> None:
-    """Register (or clear) the callback that creates the review row when the gate fires."""
-    global _review_gate_callback
-    _review_gate_callback = callback

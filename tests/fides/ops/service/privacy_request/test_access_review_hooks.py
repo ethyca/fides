@@ -21,7 +21,6 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry i
     set_dsr_report_builder,
     set_pre_restart_cleanup,
     set_review_approved_callback,
-    set_review_gate_callback,
 )
 from fides.service.privacy_request.privacy_request_service import (
     _process_privacy_request_restart,
@@ -32,11 +31,10 @@ from fides.service.privacy_request.privacy_request_service import (
 def _reset_registry():
     """Reset all registry state after each test."""
     yield
-    set_dsr_report_builder(DSRReportBuilder)
+    set_dsr_report_builder(DSRReportBuilder)  # type: ignore[arg-type]
     set_access_review_required(False)
     set_review_approved_callback(None)
     set_pre_restart_cleanup(None)
-    set_review_gate_callback(None)
 
 
 def _run_gate(db: Session, policy: Policy, privacy_request: PrivacyRequest) -> bool:
@@ -86,13 +84,13 @@ class TestCheckAccessReviewGate:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
 
-    def test_pauses_without_gate_callback(
+    def test_pauses_request(
         self,
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
     ):
-        """Gate pauses the request even when no gate callback is registered."""
+        """Gate pauses the request: saves results, sets status, returns True."""
         set_access_review_required(True)
 
         assert _run_gate(db, policy, privacy_request) is True
@@ -100,25 +98,10 @@ class TestCheckAccessReviewGate:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
 
-    def test_pauses_request_with_gate_callback(
-        self,
-        db: Session,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-    ):
-        """Gate fires: saves results, calls gate callback, sets status, returns True."""
-        set_access_review_required(True)
-        gate_calls = []
-        set_review_gate_callback(lambda pr_id, session: gate_calls.append(pr_id))
 
-        assert _run_gate(db, policy, privacy_request) is True
-        assert gate_calls == [privacy_request.id]
-
-        db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.awaiting_access_review
-
-
-_QUEUE_PR = "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
+_QUEUE_PR = (
+    "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
+)
 
 
 class TestRestartCleanup:
@@ -135,9 +118,7 @@ class TestRestartCleanup:
         cleanup_calls: list[str] = []
         set_pre_restart_cleanup(lambda pr_id, session: cleanup_calls.append(pr_id))
 
-        _process_privacy_request_restart(
-            privacy_request, CurrentStep.upload_access, db
-        )
+        _process_privacy_request_restart(privacy_request, CurrentStep.upload_access, db)
 
         assert cleanup_calls == [privacy_request.id]
         db.refresh(privacy_request)
@@ -152,9 +133,7 @@ class TestRestartCleanup:
         privacy_request.status = PrivacyRequestStatus.awaiting_access_review
         privacy_request.save(db=db)
 
-        _process_privacy_request_restart(
-            privacy_request, CurrentStep.upload_access, db
-        )
+        _process_privacy_request_restart(privacy_request, CurrentStep.upload_access, db)
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing

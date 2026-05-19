@@ -9,13 +9,11 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry i
     get_dsr_report_builder,
     get_pre_restart_cleanup,
     get_review_approved_callback,
-    get_review_gate_callback,
     is_access_review_required,
     set_access_review_required,
     set_dsr_report_builder,
     set_pre_restart_cleanup,
     set_review_approved_callback,
-    set_review_gate_callback,
 )
 
 
@@ -23,11 +21,10 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry i
 def _reset_registry():
     """Reset all registry state after each test."""
     yield
-    set_dsr_report_builder(DSRReportBuilder)
+    set_dsr_report_builder(DSRReportBuilder)  # type: ignore[arg-type]
     set_access_review_required(False)
     set_review_approved_callback(None)
     set_pre_restart_cleanup(None)
-    set_review_gate_callback(None)
 
 
 class TestBuilderRegistry:
@@ -35,7 +32,17 @@ class TestBuilderRegistry:
         assert get_dsr_report_builder() is DSRReportBuilder
 
     def test_set_and_get_builder(self):
-        replacement = type("AccessPackageReportBuilder", (), {})
+        replacement = type(
+            "AccessPackageReportBuilder",
+            (),
+            {
+                "used_filenames_per_dataset": {},
+                "processed_attachments": {},
+                "generate": lambda self: None,
+                "generate_json": lambda self: None,
+                "generate_csv": lambda self: None,
+            },
+        )
         set_dsr_report_builder(replacement)
         assert get_dsr_report_builder() is replacement
 
@@ -57,12 +64,8 @@ def _cleanup_callback(pr_id: str, session: object) -> None:
     pass
 
 
-def _gate_callback(pr_id: str, session: object) -> None:
-    pass
-
-
 class TestCallbackRegistry:
-    """All three callback slots follow the same get/set pattern."""
+    """Both callback slots follow the same get/set pattern."""
 
     @pytest.mark.parametrize(
         "getter,setter,callback",
@@ -73,9 +76,8 @@ class TestCallbackRegistry:
                 _approved_callback,
             ),
             (get_pre_restart_cleanup, set_pre_restart_cleanup, _cleanup_callback),
-            (get_review_gate_callback, set_review_gate_callback, _gate_callback),
         ],
-        ids=["review_approved", "pre_restart_cleanup", "review_gate"],
+        ids=["review_approved", "pre_restart_cleanup"],
     )
     def test_default_is_none(self, getter, setter, callback):
         assert getter() is None
@@ -89,9 +91,8 @@ class TestCallbackRegistry:
                 _approved_callback,
             ),
             (get_pre_restart_cleanup, set_pre_restart_cleanup, _cleanup_callback),
-            (get_review_gate_callback, set_review_gate_callback, _gate_callback),
         ],
-        ids=["review_approved", "pre_restart_cleanup", "review_gate"],
+        ids=["review_approved", "pre_restart_cleanup"],
     )
     def test_set_and_get(self, getter, setter, callback):
         setter(callback)
