@@ -2,8 +2,9 @@ import { useCallback } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import { dateFieldValidation } from "~/components/modals/validation";
 import { selectUserLocation } from "~/features/consent/consent.slice";
-import { CustomConfigField } from "~/types/config";
+import { CustomConfigField, CustomDateField } from "~/types/config";
 
 interface UseCustomFieldsFormProps {
   customPrivacyRequestFields: Record<string, CustomConfigField>;
@@ -30,14 +31,21 @@ export const buildCustomFieldsValidationSchema = (
           }
           return true;
         })
-        .map(([key, { label, required, field_type }]) => {
+        .map(([key, field]) => {
+          const { label, required, field_type: fieldType } = field;
           const isRequired = required !== false;
-          if (field_type === "multiselect") {
+          if (fieldType === "multiselect") {
             return [
               key,
               isRequired
                 ? Yup.array().min(1, `${label} is required`)
                 : Yup.array().notRequired(),
+            ];
+          }
+          if (fieldType === "date") {
+            return [
+              key,
+              dateFieldValidation(field as CustomDateField, label, isRequired),
             ];
           }
           return [

@@ -1,0 +1,22 @@
+{
+  "title": "Cypress Test Privacy Center",
+  "description": "Test DSR with date of birth identity field (with min constraint)",
+  "logo_path": "/logo.svg",
+  "actions": [
+    {
+      "policy_key": "default_access_policy",
+      "icon_path": "/download.svg",
+      "title": "Access your data",
+      "description": "We will provide you a report of all your personal data.",
+      "identity_inputs": {
+        "email": "required",
+        "date_of_birth": {
+          "label": "Date of Birth",
+          "field_type": "date",
+          "required": true,
+          "min": "1900-01-01"
+        }
+      }
+    }
+  ]
+}

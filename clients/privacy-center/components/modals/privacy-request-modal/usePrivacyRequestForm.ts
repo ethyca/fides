@@ -9,6 +9,7 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { ModalViews } from "~/components/modals/types";
 import {
+  dateFieldValidation,
   emailValidation,
   nameValidation,
   phoneValidation,
@@ -88,10 +89,7 @@ const usePrivacyRequestForm = ({
     searchParams,
   });
 
-  const initialValues = useMemo(
-    () => getInitialValues(),
-    [getInitialValues],
-  );
+  const initialValues = useMemo(() => getInitialValues(), [getInitialValues]);
 
   // Build the static portion of the validation schema (identity fields)
   const identityValidationSchema = useMemo(
@@ -120,9 +118,22 @@ const usePrivacyRequestForm = ({
         ),
         ...Object.fromEntries(
           Object.entries(customIdentityFields).flatMap(([key, value]) => {
-            return value
-              ? [[key, Yup.string().required(`${value.label} is required`)]]
-              : [];
+            if (!value) {
+              return [];
+            }
+            if (value.field_type === "date") {
+              return [
+                [
+                  key,
+                  dateFieldValidation(
+                    value,
+                    value.label,
+                    value.required !== false,
+                  ),
+                ],
+              ];
+            }
+            return [[key, Yup.string().required(`${value.label} is required`)]];
           }),
         ),
       }),

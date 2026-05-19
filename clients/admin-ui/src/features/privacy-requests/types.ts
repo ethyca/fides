@@ -239,6 +239,7 @@ export interface ConfigMessagingSecretsRequest {
 export enum ActivityTimelineItemTypeEnum {
   REQUEST_UPDATE = "Request update",
   INTERNAL_COMMENT = "Internal comment",
+  INTERNAL_AUTOMATION_COMMENT = "Internal automation comment",
   MANUAL_TASK = "Manual task",
 }
 
@@ -248,6 +249,8 @@ export const TimelineItemColorMap: Record<
 > = {
   [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: CUSTOM_TAG_COLOR.DEFAULT,
   [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: CUSTOM_TAG_COLOR.MARBLE,
+  [ActivityTimelineItemTypeEnum.INTERNAL_AUTOMATION_COMMENT]:
+    CUSTOM_TAG_COLOR.MARBLE,
   [ActivityTimelineItemTypeEnum.MANUAL_TASK]: CUSTOM_TAG_COLOR.NECTAR,
 };
 
