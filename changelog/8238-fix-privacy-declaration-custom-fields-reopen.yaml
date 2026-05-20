@@ -1,4 +1,0 @@
-type: Fixed
-description: Privacy declaration custom field values now repopulate when re-opening a saved declaration after the antd Form migration.
-pr: 8238
-labels: []

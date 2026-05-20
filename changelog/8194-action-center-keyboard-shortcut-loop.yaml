@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed infinite render loop when using keyboard shortcuts in the Action Center
-pr: 8194
-labels: []
