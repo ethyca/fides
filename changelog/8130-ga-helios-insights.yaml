@@ -1,4 +1,0 @@
-type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: GA helios insights feature
-pr: 8130 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

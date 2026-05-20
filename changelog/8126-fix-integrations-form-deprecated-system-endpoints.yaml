@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed SaaS integration creation and edit flows on the new Integrations page by routing off deprecated system-scoped connection endpoints.
-pr: 8126
-labels: []
