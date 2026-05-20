@@ -1,19 +1,21 @@
+import { skipToken } from "@reduxjs/toolkit/query";
 import {
   Card,
   ColumnsType,
   Empty,
-  Space,
+  Flex,
   Table,
   Tag,
   Typography,
 } from "fidesui";
-import NextLink from "next/link";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
-  INTEGRATION_MANAGEMENT_ROUTE,
-  SYSTEM_ROUTE,
+  EDIT_SYSTEM_ROUTE,
+  INTEGRATION_DETAIL_ROUTE,
 } from "~/features/common/nav/routes";
 import { EditableMonitorConfig, System } from "~/types/api";
 
@@ -23,7 +25,7 @@ import {
   useGetUserMonitorsQuery,
 } from "./user-management.slice";
 
-const { Title, Text, Link } = Typography;
+const { Title, Text } = Typography;
 
 // TODO: Replace with the real docs URL once the "Updating monitor stewardship"
 // page is published. This tab is read-only; updates to a steward's monitor
@@ -35,14 +37,9 @@ const StewardshipTab = () => {
   const activeUserId = useAppSelector(selectActiveUserId);
 
   const { data: systems = [], isLoading: systemsLoading } =
-    useGetUserManagedSystemsQuery(activeUserId as string, {
-      skip: !activeUserId,
-    });
+    useGetUserManagedSystemsQuery(activeUserId ?? skipToken);
   const { data: monitors = [], isLoading: monitorsLoading } =
-    useGetUserMonitorsQuery(
-      { id: activeUserId as string },
-      { skip: !activeUserId },
-    );
+    useGetUserMonitorsQuery(activeUserId ? { id: activeUserId } : skipToken);
 
   const systemColumns: ColumnsType<System> = [
     {
@@ -50,9 +47,9 @@ const StewardshipTab = () => {
       dataIndex: "name",
       key: "name",
       render: (name: string | undefined, record) => (
-        <NextLink href={`${SYSTEM_ROUTE}/configure/${record.fides_key}`}>
+        <RouterLink href={EDIT_SYSTEM_ROUTE.replace("[id]", record.fides_key)}>
           {name ?? record.fides_key}
-        </NextLink>
+        </RouterLink>
       ),
     },
     {
@@ -74,9 +71,9 @@ const StewardshipTab = () => {
       dataIndex: "connection_config_key",
       key: "connection_config_key",
       render: (key: string) => (
-        <NextLink href={`${INTEGRATION_MANAGEMENT_ROUTE}/${key}`}>
+        <RouterLink href={INTEGRATION_DETAIL_ROUTE.replace("[id]", key)}>
           {key}
-        </NextLink>
+        </RouterLink>
       ),
     },
     {
@@ -94,9 +91,9 @@ const StewardshipTab = () => {
   ];
 
   return (
-    <Space
-      direction="vertical"
-      size="large"
+    <Flex
+      vertical
+      gap="large"
       className="w-full p-4 md:w-4/5 xl:w-3/4"
       data-testid="stewardship-tab"
     >
@@ -142,13 +139,7 @@ const StewardshipTab = () => {
         <Text type="secondary" className="mb-3 block">
           Discovery monitors where this user is assigned as a steward. To change
           which monitors a steward is assigned to, see the{" "}
-          <Link
-            href={MONITOR_STEWARDSHIP_DOCS_URL}
-            target="_blank"
-            rel="nofollow"
-          >
-            documentation
-          </Link>
+          <DocsLink href={MONITOR_STEWARDSHIP_DOCS_URL}>documentation</DocsLink>
           .
         </Text>
         <Table<EditableMonitorConfig>
@@ -168,7 +159,7 @@ const StewardshipTab = () => {
           }
         />
       </Card>
-    </Space>
+    </Flex>
   );
 };
 
