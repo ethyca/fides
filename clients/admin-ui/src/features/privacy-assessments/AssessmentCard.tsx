@@ -12,6 +12,9 @@ import {
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
+import ConnectionTypeLogo, {
+  connectionLogoFromAssessment,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 
 import styles from "./AssessmentCard.module.scss";
 import {
@@ -55,6 +58,7 @@ export const AssessmentCard = ({
 
   const systemName = assessment.system_name ?? "Unknown system";
   const systemInitial = systemName.charAt(0).toUpperCase();
+  const connectionLogo = connectionLogoFromAssessment(assessment);
 
   // Derive a regulation/region subtitle from the template name
   // e.g., "GDPR Data Protection Impact Assessment (DPIA)" → "GDPR DPIA"
@@ -98,9 +102,17 @@ export const AssessmentCard = ({
 
         {/* System row: avatar + name + template subtitle */}
         <Flex gap={8} align="flex-start">
-          <Avatar shape="square" size={24} className={styles.systemAvatar}>
-            {systemInitial}
-          </Avatar>
+          {connectionLogo ? (
+            <ConnectionTypeLogo
+              data={connectionLogo}
+              size={24}
+              className={styles.systemAvatar}
+            />
+          ) : (
+            <Avatar shape="square" size={24} className={styles.systemAvatar}>
+              {systemInitial}
+            </Avatar>
+          )}
           <div>
             <Title level={3} className="!m-0">
               {isGenerating ? (

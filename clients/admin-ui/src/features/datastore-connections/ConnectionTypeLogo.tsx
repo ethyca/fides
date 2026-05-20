@@ -101,6 +101,30 @@ export const connectionLogoFromKey = (key: string): ConnectionLogoSource => ({
   key,
 });
 
+type AssessmentLogoSource = {
+  system_name?: string | null;
+  system_fides_key?: string | null;
+  system_connection_type?: string | null;
+  system_saas_type?: string | null;
+  system_website_url?: string | null;
+};
+
+export const connectionLogoFromAssessment = (
+  assessment: AssessmentLogoSource,
+): ConnectionLogoSource | null => {
+  if (!assessment.system_connection_type) {
+    return null;
+  }
+  return {
+    kind: ConnectionLogoKind.CONNECTION,
+    connectionType: assessment.system_connection_type as ConnectionTypeModel,
+    name: assessment.system_name ?? null,
+    key: assessment.system_fides_key ?? null,
+    saasType: assessment.system_saas_type ?? null,
+    websiteUrl: assessment.system_website_url ?? null,
+  };
+};
+
 const isWebsite = (connectionType: ConnectionTypeModel) =>
   connectionType === ConnectionTypeModel.WEBSITE ||
   connectionType === ConnectionTypeModel.TEST_WEBSITE;

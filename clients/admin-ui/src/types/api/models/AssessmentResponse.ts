@@ -43,6 +43,18 @@ export type AssessmentResponse = {
    */
   system_name?: string | null;
   /**
+   * System Connection Type
+   */
+  system_connection_type?: string | null;
+  /**
+   * System Saas Type
+   */
+  system_saas_type?: string | null;
+  /**
+   * System Website Url
+   */
+  system_website_url?: string | null;
+  /**
    * Declaration Id
    */
   declaration_id?: string | null;
