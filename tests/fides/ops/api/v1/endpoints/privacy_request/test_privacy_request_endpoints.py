@@ -10582,10 +10582,12 @@ class TestImportHistoricalPrivacyRequests:
         db,
         url,
         policy,
+        application_user,
     ):
         """Imported denied records get a synthesized `denied` AuditLog row
         carrying the denial reason; the CSV download surfaces it via
-        `audit_log WHERE action='denied'`."""
+        `audit_log WHERE action='denied'`. The reviewer identifier is
+        resolved to a `FidesUser` so the row's `user_id` is the matched id."""
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
         record = {
             "identity": {"email": "denied-import@example.com"},
@@ -10594,7 +10596,7 @@ class TestImportHistoricalPrivacyRequests:
             "requested_at": "2024-01-15T10:00:00.000Z",
             "finished_processing_at": "2024-01-20T10:00:00.000Z",
             "reviewed_at": "2024-01-16T10:00:00.000Z",
-            "reviewed_by": "external-reviewer@example.com",
+            "reviewed_by": application_user.email_address,
             "denial_reason": "Insufficient proof of identity",
         }
         resp = api_client.post(url, headers=auth_header, json=[record])
@@ -10612,7 +10614,7 @@ class TestImportHistoricalPrivacyRequests:
             log for log in audit_logs if log.action == AuditLogAction.denied
         )
         assert denied_log.message == "Insufficient proof of identity"
-        assert denied_log.user_id == "external-reviewer@example.com"
+        assert denied_log.user_id == application_user.id
 
         for log in audit_logs:
             log.delete(db=db)
@@ -10684,7 +10686,7 @@ class TestImportHistoricalPrivacyRequests:
             log.delete(db=db)
         pr.delete(db=db)
 
-    def test_import_unresolved_reviewed_by_falls_back_to_audit_log_only(
+    def test_import_unresolved_reviewed_by_drops_reviewer_attribution(
         self,
         api_client: TestClient,
         generate_auth_header,
@@ -10692,11 +10694,12 @@ class TestImportHistoricalPrivacyRequests:
         url,
         policy,
     ):
-        """When `reviewed_by` does not match any FidesUser, the FK is left
-        NULL and the raw identifier is carried into the synthesized audit
-        log's `user_id` for traceability."""
+        """When `reviewed_by` does not match any FidesUser on a non-denied
+        import, the FK is left NULL and no synthesized lifecycle AuditLog row
+        is written — only the `imported` marker. The raw identifier is not
+        stuffed into `audit_log.user_id`; customers should pre-create the
+        relevant `FidesUser` records to preserve reviewer attribution."""
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
-        ghost_identifier = "ghost-reviewer@example.com"
         record = {
             "identity": {"email": "ghost-import@example.com"},
             "policy_key": policy.key,
@@ -10704,7 +10707,7 @@ class TestImportHistoricalPrivacyRequests:
             "requested_at": "2024-01-15T10:00:00.000Z",
             "finished_processing_at": "2024-01-20T10:00:00.000Z",
             "reviewed_at": "2024-01-16T10:00:00.000Z",
-            "reviewed_by": ghost_identifier,
+            "reviewed_by": "ghost-reviewer@example.com",
         }
         resp = api_client.post(url, headers=auth_header, json=[record])
         assert resp.status_code == 200
@@ -10713,18 +10716,12 @@ class TestImportHistoricalPrivacyRequests:
         pr = PrivacyRequest.get(db=db, object_id=pr_id)
         assert pr.reviewed_by is None
 
-        approved_log = AuditLog.filter(
-            db=db,
-            conditions=(
-                (AuditLog.privacy_request_id == pr_id)
-                & (AuditLog.action == AuditLogAction.approved)
-            ),
-        ).first()
-        assert approved_log is not None
-        assert approved_log.user_id == ghost_identifier
-
-        for log in AuditLog.filter(
+        audit_logs: List[AuditLog] = AuditLog.filter(
             db=db, conditions=(AuditLog.privacy_request_id == pr_id)
-        ).all():
+        ).all()
+        actions = [log.action for log in audit_logs]
+        assert actions == [AuditLogAction.imported]
+
+        for log in audit_logs:
             log.delete(db=db)
         pr.delete(db=db)

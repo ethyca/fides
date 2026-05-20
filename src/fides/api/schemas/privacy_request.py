@@ -368,8 +368,10 @@ class HistoricalPrivacyRequestImport(FidesSchema):
     `FidesUser` by `email_address` and then `username`; if a match is found, the
     underlying `privacyrequest.reviewed_by` foreign key is populated so the CSV
     download and the response `reviewer` field surface the user. If no match is
-    found, the foreign key is left NULL and the raw identifier is carried into
-    the synthesized lifecycle `AuditLog.user_id` for traceability.
+    found the foreign key is left NULL and reviewer attribution is dropped for
+    non-denied imports — pre-create the relevant `FidesUser` records in the
+    destination deployment to preserve attribution. Denied imports still record
+    the supplied `denial_reason` regardless of whether the reviewer resolves.
 
     `denial_reason` is required when `status == denied` so the CSV "Denial
     Reason" column (which reads from the `denied` `AuditLog.message`) populates

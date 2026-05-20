@@ -717,12 +717,6 @@ class PrivacyRequestService:
         if resolved_reviewer_id is not None:
             kwargs["reviewed_by"] = resolved_reviewer_id
 
-        # Carry either the resolved FidesUser id or the raw identifier from
-        # the source deployment into the lifecycle AuditLog's `user_id` (the
-        # column is plain string with no FK), so the activity timeline retains
-        # reviewer traceability even when no local user matches.
-        lifecycle_user_id = resolved_reviewer_id or record.reviewed_by
-
         # Each `Base.create` call commits independently (see
         # `OrmWrappedFidesBase.persist_obj`). To avoid leaving an orphan
         # PrivacyRequest row if `persist_identity` or `AuditLog.create` fails,
@@ -748,25 +742,32 @@ class PrivacyRequestService:
             # Synthesize a lifecycle AuditLog row so the CSV "Denial Reason"
             # column (sourced from `audit_log.message` where `action='denied'`)
             # and the activity timeline reflect the historical event from the
-            # source deployment. Skip when the caller supplied no reviewer for
-            # non-denied statuses; the schema requires `denial_reason` for
-            # denied imports.
+            # source deployment. For denied imports the row is always written
+            # because `denial_reason` carries compliance value regardless of
+            # whether the original reviewer can be resolved locally. For
+            # non-denied statuses the row is only written when the reviewer
+            # resolves to a local FidesUser — without an identifiable actor
+            # there is no compliance signal worth recording beyond the
+            # `imported` marker, and stuffing the raw payload identifier into
+            # `audit_log.user_id` would overload that column's semantics.
+            # Pre-create FidesUsers in the destination to preserve reviewer
+            # attribution for imported approved/canceled/error records.
             if record.status == PrivacyRequestStatus.denied:
                 AuditLog.create(
                     db=self.db,
                     data={
                         "privacy_request_id": privacy_request.id,
-                        "user_id": lifecycle_user_id,
+                        "user_id": resolved_reviewer_id,
                         "action": AuditLogAction.denied,
                         "message": record.denial_reason,
                     },
                 )
-            elif record.reviewed_by is not None:
+            elif resolved_reviewer_id is not None:
                 AuditLog.create(
                     db=self.db,
                     data={
                         "privacy_request_id": privacy_request.id,
-                        "user_id": lifecycle_user_id,
+                        "user_id": resolved_reviewer_id,
                         "action": AuditLogAction.approved,
                         "message": None,
                     },
