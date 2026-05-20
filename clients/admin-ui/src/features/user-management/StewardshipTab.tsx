@@ -23,7 +23,13 @@ import {
   useGetUserMonitorsQuery,
 } from "./user-management.slice";
 
-const { Title, Text } = Typography;
+const { Title, Text, Link } = Typography;
+
+// TODO: Replace with the real docs URL once the "Updating monitor stewardship"
+// page is published. This tab is read-only; updates to a steward's monitor
+// assignments happen on the monitor itself, which the docs page will cover.
+const MONITOR_STEWARDSHIP_DOCS_URL =
+  "https://ethyca.com/docs/user-guides/monitors/stewardship";
 
 const StewardshipTab = () => {
   const activeUserId = useAppSelector(selectActiveUserId);
@@ -91,7 +97,7 @@ const StewardshipTab = () => {
     <Space
       direction="vertical"
       size="large"
-      className="w-full p-4 md:w-[80%] xl:w-3/4"
+      className="w-full p-4 md:w-4/5 xl:w-3/4"
       data-testid="stewardship-tab"
     >
       <Card
@@ -134,7 +140,16 @@ const StewardshipTab = () => {
         data-testid="stewardship-monitors-card"
       >
         <Text type="secondary" className="mb-3 block">
-          Discovery monitors where this user is assigned as a steward.
+          Discovery monitors where this user is assigned as a steward. To change
+          which monitors a steward is assigned to, see the{" "}
+          <Link
+            href={MONITOR_STEWARDSHIP_DOCS_URL}
+            target="_blank"
+            rel="nofollow"
+          >
+            documentation
+          </Link>
+          .
         </Text>
         <Table<EditableMonitorConfig>
           size="small"
