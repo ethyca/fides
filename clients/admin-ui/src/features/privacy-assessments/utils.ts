@@ -1,5 +1,6 @@
 import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
 import type {
+  AnswerSourceBreakdown,
   AssessmentFilterKey,
   AssessmentTaskResponse,
   EvidenceItem,
@@ -189,4 +190,51 @@ export const assessmentMatchesFilter = (
     default:
       return false;
   }
+};
+
+/**
+ * UI buckets used by the progress-bar segments and the legend. The backend
+ * has four ``AnswerSource`` values; we fold them into three display buckets:
+ *
+ * - ``agent`` — ``system`` + ``ai_analysis`` (everything the agent produced
+ *   on its own, whether deterministic or LLM-derived)
+ * - ``slack`` — ``team_input`` (answers gathered from SMEs via Slack)
+ * - ``manual`` — ``user_input`` (direct human edits in the UI)
+ *
+ * Use this single helper for both the segments array and the legend so the
+ * two surfaces always show consistent counts.
+ */
+export type AnswerSourceBucket = "agent" | "slack" | "manual";
+
+export interface GroupedAnswerCounts {
+  agent: number;
+  slack: number;
+  manual: number;
+}
+
+export const groupAnswersBySource = (
+  breakdown: AnswerSourceBreakdown | null | undefined,
+): GroupedAnswerCounts => ({
+  agent: (breakdown?.system ?? 0) + (breakdown?.ai_analysis ?? 0),
+  slack: breakdown?.team_input ?? 0,
+  manual: breakdown?.user_input ?? 0,
+});
+
+/**
+ * Token colours for each bucket. Reuses existing fidesui tokens — terracotta
+ * for the Slack channel (matches the brand accent), neutral-500 for the
+ * agent's mid-gray (closest to the prototype's ``rgba(43,46,53,0.55)``), and
+ * the canonical text colour for manual entries. Promote to dedicated
+ * provenance tokens if these reappear outside the assessments page.
+ */
+export const ANSWER_SOURCE_BUCKET_COLORS: Record<AnswerSourceBucket, string> = {
+  agent: "var(--fidesui-neutral-500)",
+  slack: "var(--fidesui-brand-terracotta)",
+  manual: "var(--fidesui-color-text)",
+};
+
+export const ANSWER_SOURCE_BUCKET_LABELS: Record<AnswerSourceBucket, string> = {
+  agent: "Agent",
+  slack: "Slack",
+  manual: "Manual",
 };

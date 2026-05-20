@@ -3,6 +3,7 @@ export * from "./AssessmentCard";
 export * from "./AssessmentDetail";
 export * from "./AssessmentFilters";
 export * from "./AssessmentGroup";
+export * from "./AssessmentProgressLegend";
 export { default as AssessmentSettingsModal } from "./AssessmentSettingsModal";
 export * from "./AssessmentStatsBar";
 export * from "./AssessmentTaskPopoverContent";

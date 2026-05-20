@@ -37,6 +37,7 @@ export type * from "./models/AllowListUpdate";
 export type * from "./models/AllowedActionsResponse";
 export * from "./models/AllowedTypes";
 export * from "./models/ApplicationStatus";
+export type * from "./models/AnswerSourceBreakdown";
 export type * from "./models/ApprovalProgress";
 export type * from "./models/AssessmentGroupResponse";
 export type * from "./models/AssessmentResponse";

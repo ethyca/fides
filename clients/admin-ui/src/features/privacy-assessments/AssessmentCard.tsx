@@ -17,6 +17,7 @@ import ConnectionTypeLogo, {
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 
 import styles from "./AssessmentCard.module.scss";
+import { AssessmentProgressLegend } from "./AssessmentProgressLegend";
 import {
   RISK_LEVEL_DOT_COLORS,
   RISK_LEVEL_LABELS,
@@ -29,7 +30,11 @@ import {
   PrivacyAssessmentResponse,
   RiskLevel,
 } from "./types";
-import { deriveAssessmentStatus } from "./utils";
+import {
+  ANSWER_SOURCE_BUCKET_COLORS,
+  deriveAssessmentStatus,
+  groupAnswersBySource,
+} from "./utils";
 
 const { Title } = Typography;
 
@@ -73,10 +78,26 @@ export const AssessmentCard = ({
   // e.g., "GDPR Data Protection Impact Assessment (DPIA)" → "GDPR DPIA"
   const templateName = assessment.template_name ?? assessment.name;
 
-  // The list API only provides completeness as a percentage, not discrete counts.
-  // Use a fixed segment count to approximate the segmented bar.
-  const PROGRESS_SEGMENTS = 20;
-  const filledSegments = Math.round((completeness / 100) * PROGRESS_SEGMENTS);
+  // Use the per-source breakdown when the backend supplies it; the
+  // bar shows one coloured run per Agent / Slack / Manual bucket.
+  // ``total_questions`` is the bar's denominator; ``completeness`` is still
+  // shown as the percentage label.
+  const groupedAnswers = groupAnswersBySource(assessment.answered_by);
+  const totalQuestions = assessment.total_questions ?? 0;
+  const progressSegments = [
+    {
+      color: ANSWER_SOURCE_BUCKET_COLORS.agent,
+      count: groupedAnswers.agent,
+    },
+    {
+      color: ANSWER_SOURCE_BUCKET_COLORS.slack,
+      count: groupedAnswers.slack,
+    },
+    {
+      color: ANSWER_SOURCE_BUCKET_COLORS.manual,
+      count: groupedAnswers.manual,
+    },
+  ];
 
   let actionLabel = "Resume";
   if (isComplete || isGenerating) {
@@ -224,13 +245,16 @@ export const AssessmentCard = ({
           </Flex>
           <SegmentedProgress
             loading={isGenerating}
-            total={PROGRESS_SEGMENTS}
-            filled={filledSegments}
+            total={totalQuestions}
+            segments={progressSegments}
           />
+          <Flex justify="flex-start" align="center" className="mt-2">
+            <AssessmentProgressLegend breakdown={groupedAnswers} compact />
+          </Flex>
         </div>
 
         {/* Bottom row: action button */}
-        <Flex justify="flex-end" align="center">
+        <Flex justify="flex-end" align="center" className="mt-[-30px]">
           <Button type="link" className="p-0" onClick={onClick}>
             {actionLabel} →
           </Button>

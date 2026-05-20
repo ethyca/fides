@@ -1,9 +1,12 @@
 import {
+  AnswerSourceBreakdown,
   AssessmentResponse as GeneratedAssessmentResponse,
   CreateAssessmentTaskRequest,
   Page_AssessmentTaskResponse_,
   TemplateResponse,
 } from "~/types/api";
+
+export type { AnswerSourceBreakdown };
 
 export enum RiskLevel {
   HIGH = "high",
