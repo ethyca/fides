@@ -36,7 +36,6 @@ const PrivacyRequestForm = ({
     handleChange,
     handleSubmit,
     setFieldValue,
-    submitCount,
     touched,
     values,
     isSubmitting,
