@@ -1,0 +1,20 @@
+.indicator {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.pulsating {
+  animation: fidesIndicatorPulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes fidesIndicatorPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+}

@@ -2,6 +2,7 @@ import {
   Avatar,
   Button,
   Card,
+  FidesIndicator,
   Flex,
   SegmentedProgress,
   Spin,
@@ -94,11 +95,17 @@ export const AssessmentCard = ({
           )}
           {statusLabel && (
             <Flex align="center" gap={6} className={styles.statusBadge}>
-              <span
-                className={styles.statusDot}
-                style={{ backgroundColor: statusColor }}
+              <FidesIndicator
+                color={statusColor}
+                pulsating={status === AssessmentStatus.GENERATING}
+                className="mb-0.5"
               />
-              <Text variant="monoLabel" size="sm" strong>
+              <Text
+                variant="monoLabel"
+                size="sm"
+                strong
+                style={{ color: statusColor }}
+              >
                 {statusLabel}
               </Text>
             </Flex>
@@ -162,15 +169,9 @@ export const AssessmentCard = ({
         {/* Risk level */}
         {riskLabel && (
           <Flex align="center" gap={6}>
-            <span
-              className={styles.riskDot}
-              style={{
-                backgroundColor: riskDotColor,
-                boxShadow:
-                  riskLevel === RiskLevel.HIGH
-                    ? `0 0 6px ${riskDotColor}`
-                    : undefined,
-              }}
+            <FidesIndicator
+              color={riskDotColor}
+              glowing={riskLevel === RiskLevel.HIGH}
             />
             <Text
               variant="monoLabel"

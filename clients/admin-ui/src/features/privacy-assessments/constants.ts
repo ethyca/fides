@@ -67,10 +67,10 @@ export const STATUS_BADGE_LABELS: Record<AssessmentStatus, string> = {
 };
 
 export const STATUS_BADGE_COLORS: Record<AssessmentStatus, string> = {
-  [AssessmentStatus.IN_PROGRESS]: "var(--fidesui-color-warning)",
+  [AssessmentStatus.IN_PROGRESS]: "var(--fidesui-brand-minos)",
   [AssessmentStatus.COMPLETED]: "var(--fidesui-color-success)",
   [AssessmentStatus.OUTDATED]: "var(--fidesui-color-error)",
-  [AssessmentStatus.GENERATING]: "var(--fidesui-brand-minos)",
+  [AssessmentStatus.GENERATING]: "var(--fidesui-brand-terracotta)",
 };
 
 export const SOURCE_TYPE_LABELS: Record<string, string> = {

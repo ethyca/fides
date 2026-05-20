@@ -118,20 +118,27 @@ export const RequestInputModal = ({
         </Text>
       </Flex>
 
-      <Checkbox.Group
-        value={selectedIds}
-        onChange={(values) => setSelectedIds(values as string[])}
-        className="w-full"
+      <Space
+        orientation="vertical"
+        size="small"
+        className={classNames("w-full", styles.questionList)}
       >
-        <Space
-          orientation="vertical"
-          size="small"
-          className={classNames("w-full", styles.questionList)}
-        >
-          {questions.map((question) => (
+        {questions.map((question) => {
+          const isSelected = selectedIds.includes(question.question_id);
+          return (
             <div key={question.question_id} className={styles.questionRow}>
               <Flex align="flex-start" gap="small">
-                <Checkbox value={question.question_id} className="mt-0.5" />
+                <Checkbox
+                  checked={isSelected}
+                  onChange={(e) =>
+                    setSelectedIds((prev) =>
+                      e.target.checked
+                        ? [...prev, question.question_id]
+                        : prev.filter((id) => id !== question.question_id),
+                    )
+                  }
+                  className="mt-0.5"
+                />
                 <div className="min-w-0 flex-1">
                   <Space orientation="vertical" size={4} className="w-full">
                     <Text>
@@ -144,9 +151,9 @@ export const RequestInputModal = ({
                 </div>
               </Flex>
             </div>
-          ))}
-        </Space>
-      </Checkbox.Group>
+          );
+        })}
+      </Space>
     </Modal>
   );
 };

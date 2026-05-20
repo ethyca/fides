@@ -1,5 +1,13 @@
 import classNames from "classnames";
-import { Flex, Icons, Popover, Spin, Text, useNotification } from "fidesui";
+import {
+  FidesIndicator,
+  Flex,
+  Icons,
+  Popover,
+  Spin,
+  Text,
+  useNotification,
+} from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -149,14 +157,7 @@ export const AssessmentTaskStatusIndicator = ({
     if (lastCompletedDate) {
       return (
         <Flex align="center" gap={8}>
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              display: "inline-block",
-              backgroundColor: "var(--fidesui-color-success)",
-            }}
-          />
+          <FidesIndicator color="var(--fidesui-color-success)" size={6} />
           <Text
             type="secondary"
             size="sm"
