@@ -46,7 +46,7 @@ export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
           handleAdd();
         }}
       />
-      {error && <Alert type="error" message={error} closable />}
+      {error && <Alert type="error" title={error} closable />}
     </Space>
   );
 };

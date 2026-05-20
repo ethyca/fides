@@ -1,4 +1,11 @@
-import { Alert, Button, Modal, Splitter, useMessage } from "fidesui";
+import {
+  Alert,
+  Button,
+  Modal,
+  Splitter,
+  Typography,
+  useMessage,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -435,11 +442,11 @@ export const FormBuilderPage = ({
         onCancel={() => setConfirmingDropped(false)}
         okText="Save anyway"
       >
-        <p>
+        <Typography.Paragraph>
           The privacy center renderer doesn&apos;t support these features yet.
           They&apos;ll stay in the builder preview, but won&apos;t reach end
           users on save:
-        </p>
+        </Typography.Paragraph>
         <ul>
           {droppedSummary.map((d, idx) => (
             // eslint-disable-next-line react/no-array-index-key
