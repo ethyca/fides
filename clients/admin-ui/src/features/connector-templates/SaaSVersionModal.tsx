@@ -1,23 +1,40 @@
 import { Button, Flex, Modal, Spin, Tabs, Text } from "fidesui";
 import React from "react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
+import { Editor } from "~/features/common/yaml/helpers";
 
 import {
   useGetConnectorTemplateVersionConfigQuery,
   useGetConnectorTemplateVersionDatasetQuery,
 } from "./connector-template.slice";
 
+const EditorWithCopy = ({ yaml }: { yaml: string }) => (
+  <div style={{ position: "relative" }}>
+    <Editor
+      defaultLanguage="yaml"
+      value={yaml}
+      height="60vh"
+      options={{
+        readOnly: true,
+        minimap: { enabled: false },
+        fontSize: 13,
+        fontFamily: "Menlo",
+        scrollBeyondLastLine: false,
+      }}
+      theme="light"
+    />
+    <div style={{ position: "absolute", right: 8, top: 8, zIndex: 10 }}>
+      <ClipboardButton copyText={yaml} size="small" />
+    </div>
+  </div>
+);
+
 interface SaaSVersionContentProps {
   connectorType: string;
   version: string;
 }
-
-const YamlBlock = ({ yaml }: { yaml: string | undefined }) => (
-  <pre className="max-h-[60vh] overflow-auto whitespace-pre rounded-md bg-gray-50 p-3 text-xs">
-    {yaml}
-  </pre>
-);
 
 const SaaSVersionContent = ({
   connectorType,
@@ -44,13 +61,14 @@ const SaaSVersionContent = ({
       );
     }
     if (configError) {
+      return <Text type="danger">Could not load version config.</Text>;
+    }
+    if (!configYaml) {
       return (
-        <Text type="danger" className="text-sm">
-          Could not load version config.
-        </Text>
+        <Text type="secondary">No config available for this version.</Text>
       );
     }
-    return <YamlBlock yaml={configYaml} />;
+    return <EditorWithCopy yaml={configYaml} />;
   };
 
   const renderDataset = () => {
@@ -63,19 +81,15 @@ const SaaSVersionContent = ({
     }
     if (datasetError) {
       return (
-        <Text type="danger" className="text-sm">
-          Could not load dataset for this version.
-        </Text>
+        <Text type="danger">Could not load dataset for this version.</Text>
       );
     }
     if (!datasetYaml) {
       return (
-        <Text type="secondary" className="text-sm">
-          No dataset available for this version.
-        </Text>
+        <Text type="secondary">No dataset available for this version.</Text>
       );
     }
-    return <YamlBlock yaml={datasetYaml} />;
+    return <EditorWithCopy yaml={datasetYaml} />;
   };
 
   const tabItems = [

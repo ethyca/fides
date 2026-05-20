@@ -11,12 +11,6 @@ jest.mock("query-string", () => ({
   __esModule: true,
   default: { stringify: jest.fn(), parse: jest.fn() },
 }));
-jest.mock("react-dnd", () => ({
-  useDrag: jest.fn(() => [{}, jest.fn()]),
-  useDrop: jest.fn(() => [{}, jest.fn()]),
-  DndProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-
 // Mock nuqs
 // eslint-disable-next-line global-require
 jest.mock("nuqs", () => require("../../utils/nuqs-mock").nuqsMock);

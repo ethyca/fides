@@ -1,7 +1,9 @@
-import { Input, LocationSelect, Select } from "fidesui";
+import dayjs from "dayjs";
+import { DatePicker, Input, LocationSelect, Select } from "fidesui";
 import { ReactNode } from "react";
 
 import {
+  CustomDateField,
   CustomLocationField,
   CustomMultiSelectField,
   CustomSelectField,
@@ -37,11 +39,17 @@ interface ICustomLocationFieldProps
   onChange: (value: string) => void;
 }
 
+interface ICustomDateFieldProps extends CustomDateField, ICustomFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
 export type CustomFieldRendererProps =
   | ICustomTextFieldProps
   | ICustomSelectFieldProps
   | ICustomMultiSelectFieldProps
-  | ICustomLocationFieldProps;
+  | ICustomLocationFieldProps
+  | ICustomDateFieldProps;
 
 const CustomFieldRenderer = ({
   fieldKey,
@@ -56,7 +64,7 @@ const CustomFieldRenderer = ({
         <Select
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
-          placeholder={`Select ${label.toLowerCase()}`}
+          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
           value={props.value}
           onChange={(selectedValue) => {
             props.onChange(selectedValue);
@@ -94,7 +102,7 @@ const CustomFieldRenderer = ({
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
           mode="multiple"
-          placeholder={`Select ${label.toLowerCase()}`}
+          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
           value={props.value}
           onChange={props.onChange}
           onBlur={onBlur}
@@ -128,7 +136,7 @@ const CustomFieldRenderer = ({
         <LocationSelect
           id={fieldKey}
           data-testid={`location-select-${fieldKey}`}
-          placeholder={`Select ${label.toLowerCase()}`}
+          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
           value={props.value !== "" ? props.value : undefined}
           onChange={props.onChange}
           onBlur={onBlur}
@@ -139,13 +147,34 @@ const CustomFieldRenderer = ({
         />
       );
 
+    case "date":
+      return (
+        <div data-testid={`date-${fieldKey}`}>
+          <DatePicker
+            id={fieldKey}
+            placeholder={label}
+            value={props.value ? dayjs(props.value, "YYYY-MM-DD") : null}
+            onChange={(date) =>
+              props.onChange(date ? date.format("YYYY-MM-DD") : "")
+            }
+            onBlur={onBlur}
+            format="MM/DD/YYYY"
+            getPopupContainer={() => document.body}
+            aria-label={label}
+            aria-describedby={`${fieldKey}-error`}
+            aria-required={required !== false}
+            style={{ width: "100%" }}
+          />
+        </div>
+      );
+
     case "text":
     default:
       return (
         <Input
           id={fieldKey}
           name={fieldKey}
-          placeholder={label}
+          placeholder={props.placeholder ?? label}
           onChange={(e) => props.onChange(e.target.value)}
           onBlur={onBlur}
           value={props.value}

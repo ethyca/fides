@@ -233,7 +233,7 @@ class AttachmentUserProvided(Base):
     # promotion. Intentionally non-FK so audit rows survive config rename/delete
     # between upload and submission.
     field_name = Column(String, nullable=False)
-    property_id = Column(String, nullable=False)
+    property_id = Column(String, nullable=True)
     policy_key = Column(String, nullable=False)
 
     __table_args__ = (

@@ -1,6 +1,21 @@
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Flex } from "fidesui";
 import produce from "immer";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { DraggableColumnListItem } from "./DraggableColumnListItem";
 
@@ -12,8 +27,8 @@ export type DraggableColumn = {
 
 type EditableColumns = {
   columns: DraggableColumn[];
-  moveColumn: (dragIndex: number, hoverIndex: number) => void;
-  setColumnVisible: (index: number, isVisible: boolean) => void;
+  moveColumn: (activeId: string, overId: string) => void;
+  setColumnVisible: (id: string, isVisible: boolean) => void;
 };
 
 export const useEditableColumns = ({
@@ -33,21 +48,23 @@ export const useEditableColumns = ({
     );
   }, [initialColumns]);
 
-  const moveColumn = useCallback((dragIndex: number, hoverIndex: number) => {
-    setColumns((prev: DraggableColumn[]) =>
-      produce(prev, (draft) => {
-        const dragged = draft[dragIndex];
-        draft.splice(dragIndex, 1);
-        draft.splice(hoverIndex, 0, dragged);
-      }),
-    );
+  const moveColumn = useCallback((activeId: string, overId: string) => {
+    setColumns((prev: DraggableColumn[]) => {
+      const oldIndex = prev.findIndex((c) => c.id === activeId);
+      const newIndex = prev.findIndex((c) => c.id === overId);
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return prev;
+      }
+      return arrayMove(prev, oldIndex, newIndex);
+    });
   }, []);
 
-  const setColumnVisible = useCallback((index: number, isVisible: boolean) => {
+  const setColumnVisible = useCallback((id: string, isVisible: boolean) => {
     setColumns((prev: DraggableColumn[]) =>
       produce(prev, (draft) => {
-        if (draft[index]) {
-          draft[index].isVisible = isVisible;
+        const target = draft.find((c) => c.id === id);
+        if (target) {
+          target.isVisible = isVisible;
         }
       }),
     );
@@ -68,18 +85,43 @@ type DraggableColumnListProps = {
 export const DraggableColumnList = ({
   columns,
   columnEditor,
-}: DraggableColumnListProps) => (
-  <Flex vertical className="w-full">
-    {columns.map((column, index) => (
-      <DraggableColumnListItem
-        id={column.id}
-        index={index}
-        isVisible={column.isVisible}
-        key={column.id}
-        moveColumn={columnEditor.moveColumn}
-        setColumnVisible={columnEditor.setColumnVisible}
-        text={column.displayText}
-      />
-    ))}
-  </Flex>
-);
+}: DraggableColumnListProps) => {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const items = useMemo(() => columns.map((c) => c.id), [columns]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) {
+      return;
+    }
+    columnEditor.moveColumn(String(active.id), String(over.id));
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={items} strategy={verticalListSortingStrategy}>
+        <Flex vertical className="w-full">
+          {columns.map((column) => (
+            <DraggableColumnListItem
+              id={column.id}
+              isVisible={column.isVisible}
+              key={column.id}
+              setColumnVisible={columnEditor.setColumnVisible}
+              text={column.displayText}
+            />
+          ))}
+        </Flex>
+      </SortableContext>
+    </DndContext>
+  );
+};

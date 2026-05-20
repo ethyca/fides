@@ -321,6 +321,7 @@ describe("Privacy notices", () => {
         consent_mechanism: "opt_in",
         enforcement_level: "frontend",
         has_gpc_flag: true,
+        att_exempt: false,
         data_uses: ["analytics"],
         notice_key: "my_notice",
         disabled: true,

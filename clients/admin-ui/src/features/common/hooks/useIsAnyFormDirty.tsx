@@ -81,9 +81,23 @@ export const useIsAnyFormDirty = () => {
 type FormGuardProps = {
   id: string;
   name: string;
+  /**
+   * Optional explicit dirty flag for non-Formik forms (antd Form, custom
+   * state, etc). When omitted, FormGuard falls back to reading `dirty`
+   * from FormikContext, which is the original behavior.
+   */
+  isDirty?: boolean;
 };
-export const FormGuard = ({ id, name }: FormGuardProps) => {
-  const { dirty } = useFormikContext();
+
+const FormGuardWithSlice = ({
+  id,
+  name,
+  dirty,
+}: {
+  id: string;
+  name: string;
+  dirty: boolean;
+}) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -102,4 +116,20 @@ export const FormGuard = ({ id, name }: FormGuardProps) => {
   }, [dirty, dispatch, id]);
 
   return null;
+};
+
+const FormGuardFromFormik = ({ id, name }: { id: string; name: string }) => {
+  const { dirty } = useFormikContext();
+  return <FormGuardWithSlice id={id} name={name} dirty={dirty} />;
+};
+
+export const FormGuard = ({ id, name, isDirty }: FormGuardProps) => {
+  // Two flavours: explicit dirty flag (for antd Form / non-Formik forms)
+  // vs Formik-context-derived (the original behaviour). Keeping them as
+  // separate components avoids calling useFormikContext outside a Formik
+  // provider in the explicit case.
+  if (isDirty !== undefined) {
+    return <FormGuardWithSlice id={id} name={name} dirty={isDirty} />;
+  }
+  return <FormGuardFromFormik id={id} name={name} />;
 };

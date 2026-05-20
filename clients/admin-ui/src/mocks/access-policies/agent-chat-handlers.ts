@@ -58,22 +58,37 @@ export const agentChatHandlers = () => {
     {
       message:
         "I've drafted a policy that denies third-party advertising access to customer contact and identifier data. It matches the `user.contact` and `user.unique_id` data categories against third-party targeted advertising and profiling data uses. Take a look in the editor.",
-      new_policy_yaml: TURN_1_YAML,
+      policy_update: {
+        yaml: TURN_1_YAML,
+        added: [
+          "policy",
+          "action",
+          "condition:data_category",
+          "condition:data_use",
+        ],
+        changed: [],
+        removed: [],
+      },
     },
     {
       message:
         "Added a consent exception: access is allowed when the user has opted in to personalized advertising via the `advertising_opt_in` privacy notice. Without that opt-in, the rule stays DENY.",
-      new_policy_yaml: TURN_2_YAML,
+      policy_update: {
+        yaml: TURN_2_YAML,
+        added: ["constraint:consent:advertising_opt_in"],
+        changed: ["policy", "action"],
+        removed: [],
+      },
     },
     {
       message:
         "The policy now reflects the standard GDPR/CCPA pattern — block third-party advertising by default, allow only with explicit opt-in. Let me know if you want to scope it to a geography (e.g. EEA-only), add more data categories, or tighten the consent requirement.",
-      new_policy_yaml: null,
+      policy_update: null,
     },
   ];
 
   return [
-    rest.post("*/api/v1/plus/access-policy/agent", async (req, res, ctx) => {
+    rest.post("*/api/v1/plus/access-policies/agent", async (req, res, ctx) => {
       const body = await req.json();
       const chatHistoryId =
         (body.chat_history_id as string) ?? crypto.randomUUID();

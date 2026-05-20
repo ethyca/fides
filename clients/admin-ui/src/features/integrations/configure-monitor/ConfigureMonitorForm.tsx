@@ -2,7 +2,15 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { Button, DatePicker, Form, FormInstance, Input, Select } from "fidesui";
+import {
+  Button,
+  DatePicker,
+  Form,
+  FormInstance,
+  Input,
+  Select,
+  Switch,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -33,6 +41,7 @@ interface MonitorConfigFormValues {
   llm_model_override?: string;
   prompt_template?: ClassifyLlmPromptTemplateOptions;
   content_classification_enabled?: boolean;
+  inherit_system_stewards?: boolean;
   stewards?: string[];
 }
 
@@ -130,6 +139,7 @@ const ConfigureMonitorForm = ({
           name: values.name,
           shared_config_id: values.shared_config_id,
           classify_params: classifyParams,
+          inherit_system_stewards: values.inherit_system_stewards,
           stewards: values.stewards,
         }
       : {
@@ -138,6 +148,7 @@ const ConfigureMonitorForm = ({
           shared_config_id: values.shared_config_id,
           connection_config_key: integrationId!,
           classify_params: classifyParams,
+          inherit_system_stewards: values.inherit_system_stewards,
           stewards: values.stewards,
         };
 
@@ -201,8 +212,10 @@ const ConfigureMonitorForm = ({
     content_classification_enabled: !monitorUsesLlmClassifier
       ? monitor?.classify_params?.content_classification_enabled
       : undefined, // for now, content classification is always disabled for LLM classification
-    stewards:
-      monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
+    inherit_system_stewards: isEditing
+      ? monitor?.inherit_system_stewards
+      : true,
+    stewards: monitor?.stewards,
   } as const;
 
   return (
@@ -222,13 +235,28 @@ const ConfigureMonitorForm = ({
       >
         <Input data-testid="input-name" />
       </Form.Item>
-      <Form.Item label="Stewards" name="stewards">
+
+      <Form.Item
+        label="Inherit system stewards"
+        name="inherit_system_stewards"
+        tooltip={`When enabled, stewards assigned to the ${systemData?.name} system will automatically be assigned as a steward of this monitor`}
+      >
+        <Switch data-testid="input-inherit_system_stewards" />
+      </Form.Item>
+      <Form.Item
+        label="Monitor Stewards"
+        name="stewards"
+        tooltip="Assign a steward to own any resources this monitor detects. If the toggle above is enabled, system stewards are added automatically."
+      >
         <Select
           mode="multiple"
           aria-label="Select stewards"
           data-testid="controlled-select-stewards"
           options={dataStewardOptions}
-          optionFilterProp="label"
+          showSearch={{
+            optionFilterProp: "label",
+          }}
+          allowClear
         />
       </Form.Item>
       <Form.Item

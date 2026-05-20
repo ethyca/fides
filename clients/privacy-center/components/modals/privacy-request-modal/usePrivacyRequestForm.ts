@@ -7,8 +7,10 @@ import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { isFieldVisible } from "~/common/visibility";
 import { ModalViews } from "~/components/modals/types";
 import {
+  dateFieldValidation,
   emailValidation,
   nameValidation,
   phoneValidation,
@@ -19,8 +21,15 @@ import { useSettings } from "~/features/common/settings.slice";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
+import {
+  CustomConfigField,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
 import { FormValues, MultiselectFieldValue } from "~/types/forms";
+
+import { buildOrderedFields } from "./buildOrderedFields";
+
+export type { OrderedField } from "./buildOrderedFields";
 
 /**
  *
@@ -85,6 +94,7 @@ const usePrivacyRequestForm = ({
   });
 
   const formik = useFormik<FormValues>({
+    enableReinitialize: true,
     initialValues: {
       ...Object.fromEntries(
         Object.entries({
@@ -135,6 +145,9 @@ const usePrivacyRequestForm = ({
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
                 .filter(([, field]) => field.field_type !== "location")
+                .filter(
+                  ([, field]) => field.hidden || isFieldVisible(field, values),
+                )
                 .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&
@@ -277,14 +290,36 @@ const usePrivacyRequestForm = ({
       ),
       ...Object.fromEntries(
         Object.entries(customIdentityFields).flatMap(([key, value]) => {
-          return value
-            ? [[key, Yup.string().required(`${value.label} is required`)]]
-            : [];
+          if (!value) {
+            return [];
+          }
+          if (value.field_type === "date") {
+            // Respect the required field for dates; text/select identity fields currently
+            // always validate as required regardless of the config setting (pre-existing behavior).
+            return [
+              [
+                key,
+                dateFieldValidation(
+                  value,
+                  value.label,
+                  value.required !== false,
+                ),
+              ],
+            ];
+          }
+          return [[key, Yup.string().required(`${value.label} is required`)]];
         }),
       ),
       ...getValidationSchema().fields,
     }),
   });
+
+  const orderedFields = buildOrderedFields(
+    legacyIdentityFields,
+    customIdentityFields as Record<string, CustomConfigField>,
+    customPrivacyRequestFields,
+    action?.field_order,
+  );
 
   return {
     ...formik,
@@ -292,6 +327,7 @@ const usePrivacyRequestForm = ({
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,
+    orderedFields,
   };
 };
 

@@ -160,6 +160,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
         ],
       },
+      {
+        title: "Request workflows",
+        path: routes.DSR_TRAVERSAL_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "dsrTraversalVisualizer",
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
+      },
     ],
   },
   {
@@ -458,11 +465,6 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Ant design POC",
         path: routes.ANT_POC_ROUTE,
-        scopes: [],
-      },
-      {
-        title: "Fides JS docs",
-        path: routes.FIDES_JS_DOCS,
         scopes: [],
       },
       {

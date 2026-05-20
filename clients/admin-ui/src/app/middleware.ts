@@ -4,9 +4,19 @@ import { getGlobalMessageApi } from "fidesui";
 import { selectApplicationConfig } from "~/features/config-settings/config-settings.slice";
 import { ErrorNotificationMode } from "~/types/api";
 
-const printReduxError = (action: unknown) =>
+const printReduxError = (action: unknown) => {
+  const payload = (action as { payload?: { status?: number; url?: string } })
+    ?.payload;
+  if (payload?.status === 404) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `Admin UI encountered a 404${payload.url ? ` for ${payload.url}` : ""}`,
+    );
+    return;
+  }
   // eslint-disable-next-line no-console
   console.error("Admin UI encountered the following error: ", action);
+};
 
 const errorLoggingFunctions: Record<
   ErrorNotificationMode,

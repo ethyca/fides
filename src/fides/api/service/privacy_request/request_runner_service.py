@@ -69,6 +69,10 @@ from fides.api.service.messaging.message_dispatch_service import (
     dispatch_message,
     message_send_enabled,
 )
+from fides.api.service.privacy_request.access_review_hooks import (
+    merge_storage_data,
+    should_wait_for_access_review,
+)
 from fides.api.service.privacy_request.attachment_handling import (
     get_attachments_content,
     process_attachments_for_upload,
@@ -325,27 +329,16 @@ def save_access_results(
         )
 
 
-@log_context(
-    capture_args={
-        "privacy_request_id": LoggerContextKeys.privacy_request_id,
-    }
-)
-def upload_and_save_access_results(  # pylint: disable=R0912
-    session: Session,
-    policy: Policy,
-    access_result: dict[str, list[Row]],
-    dataset_graph: DatasetGraph,
+def _load_and_process_attachments(
     privacy_request: PrivacyRequest,
-    manual_data_access_results: ManualWebhookResults,
-    fides_connector_datasets: set[str],
-) -> list[str]:
-    """Process the data uploads after the access portion of the privacy request has completed"""
-    download_urls: list[str] = []
-    # Remove manual webhook attachments and request task attachments from the list of attachments
-    # This is done because:
-    # - manual webhook attachments are already included in the manual_data
-    # - manual task submission attachments are already included in the manual_data
-    # - request task attachments (from async polling) are already embedded in the dataset results
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Load and process attachments for upload and storage.
+
+    Filters out manual webhook, manual task submission, and request task
+    attachments (already included in manual_data or dataset results).
+
+    Returns (upload_attachments, storage_attachments).
+    """
     loaded_attachments = [
         attachment
         for attachment in privacy_request.attachments
@@ -360,10 +353,27 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         )
     ]
     attachments = get_attachments_content(loaded_attachments)
-    # Process attachments once for both upload and storage
-    upload_attachments, storage_attachments = process_attachments_for_upload(
-        attachments
-    )
+    return process_attachments_for_upload(attachments)
+
+
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+    }
+)
+def upload_and_save_access_results(  # pylint: disable=R0912
+    session: Session,
+    policy: Policy,
+    access_result: dict[str, list[Row]],
+    dataset_graph: DatasetGraph,
+    privacy_request: PrivacyRequest,
+    manual_data_access_results: ManualWebhookResults,
+    fides_connector_datasets: set[str],
+    upload_attachments: list[dict[str, Any]] | None = None,
+    storage_attachments: list[dict[str, Any]] | None = None,
+) -> list[str]:
+    """Process the data uploads after the access portion of the privacy request has completed"""
+    download_urls: list[str] = []
 
     if not access_result:
         logger.info("No results returned for access request")
@@ -382,7 +392,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
                 fides_connector_datasets,
             )
         )
-        # Create a copy of filtered results to modify for upload
+        # Deepcopy before any mutation — upload and storage diverge here
         results_to_upload = deepcopy(filtered_results)
         results_to_upload.update(manual_data_access_results.manual_data_for_upload)
 
@@ -397,10 +407,12 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         )
         download_urls.extend(rule_download_urls)
 
-        # Create results for storage
-        filtered_results.update(manual_data_access_results.manual_data_for_storage)
-        if storage_attachments:
-            filtered_results["attachments"] = storage_attachments
+        # Build storage results on the original (not the upload copy)
+        merge_storage_data(
+            filtered_results,
+            manual_data_access_results.manual_data_for_storage,
+            storage_attachments,
+        )
         rule_filtered_results[rule.key] = filtered_results
 
     save_access_results(session, privacy_request, download_urls, rule_filtered_results)
@@ -674,6 +686,25 @@ def run_privacy_request(
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
                     )
+
+                    # Load and process attachments for both review and upload paths
+                    upload_attachments, storage_attachments = (
+                        _load_and_process_attachments(privacy_request)
+                    )
+
+                    # Access review gate: save results for preview, then pause
+                    if should_wait_for_access_review(
+                        session,
+                        policy,
+                        filtered_access_results,
+                        dataset_graph,
+                        privacy_request,
+                        manual_webhook_access_results.manual_data_for_storage,
+                        fides_connector_datasets,
+                        storage_attachments,
+                    ):
+                        return
+
                     access_result_urls = upload_and_save_access_results(
                         session,
                         policy,
@@ -682,6 +713,8 @@ def run_privacy_request(
                         privacy_request,
                         manual_webhook_access_results,
                         fides_connector_datasets,
+                        upload_attachments,
+                        storage_attachments,
                     )
 
                 # Erasure CHECKPOINT

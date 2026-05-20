@@ -22,7 +22,6 @@ classifiers = [
 dependencies = [
     "APScheduler==3.9.1.post1",
     "CacheControl~=0.14.4",
-    "GitPython==3.1.41",
     "Jinja2==3.1.6",
     "PyJWT~=2.12.0",
     "PyMySQL==1.1.1",
@@ -40,7 +39,7 @@ dependencies = [
     "celery==5.5.3",
     "certifi==2024.8.30",
     "click-repl~=0.3.0",
-    "click==8.1.7",
+    "click==8.1.8",
     "click-plugins~=1.1.1",
     "click-didyoumean~=0.3.1",
     "click_default_group==1.2.2",
@@ -82,7 +81,7 @@ dependencies = [
     "psycopg2-binary==2.9.11",
     "pyahocorasick==2.1.0",
     "pydantic-settings==2.3.3",
-    "pydantic==2.12.4",
+    "pydantic==2.12.5",
     "pydash~=8.0.2",
     "pygtrie==2.5.0",
     "pyinstrument==4.7.2",
@@ -145,7 +144,7 @@ dev = [
     "debugpy~=1.8.0",
     "Faker==14.1.0",
     "freezegun==1.5.5",
-    "GitPython==3.1.41",
+    "GitPython==3.1.50",
     "moto[s3,secretsmanager,ses]==5.1.22",
     "mypy==1.10.0",
     "nox>=2025.11",
@@ -235,7 +234,7 @@ warn_required_dynamic_aliases = true
 warn_untyped_fields = true
 
 [[tool.mypy.overrides]]
-module = ["tests.*"]
+module = ["tests.fides.*"]
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
@@ -299,7 +298,7 @@ exclude = [
     "_build",
     "build",
     "dist",
-    "tests/data",
+    "tests/fides/data",
     "src/fides/api/alembic/migrations",
 ]
 
@@ -340,7 +339,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore specific rules in test files
-"tests/**/*.py" = [
+"tests/fides/**/*.py" = [
     "ARG",     # Allow unused arguments in tests
     "B",       # Allow some bugbear rules in tests
     "PIE",     # Allow some pie rules in tests
@@ -382,7 +381,7 @@ env = [
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
-testpaths="tests"
+testpaths="tests/fides"
 log_level = "INFO"
 addopts = [
     "-ra",

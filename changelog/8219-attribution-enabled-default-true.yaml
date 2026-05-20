@@ -1,0 +1,4 @@
+type: Changed
+description: Privacy Center attribution link is now enabled by default. Set `FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED=false` to disable.
+pr: 8219
+labels: []

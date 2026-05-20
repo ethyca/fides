@@ -1,5 +1,4 @@
-import { Modal } from "fidesui";
-
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
 type DataUseFormModalProps = {
@@ -9,6 +8,8 @@ type DataUseFormModalProps = {
   isCentered?: boolean;
   testId?: string;
   children: React.ReactNode;
+  /** Evaluated at event time to guard against accidental close of a dirty form. */
+  getIsDirty: () => boolean;
 };
 
 export const PrivacyDeclarationFormModal = ({
@@ -18,10 +19,12 @@ export const PrivacyDeclarationFormModal = ({
   isCentered = false,
   testId = "privacy-declaration-modal",
   children,
+  getIsDirty,
 }: DataUseFormModalProps) => (
-  <Modal
+  <ConfirmCloseModal
     open={isOpen}
-    onCancel={onClose}
+    onClose={onClose}
+    getIsDirty={getIsDirty}
     centered={isCentered}
     destroyOnHidden
     width={MODAL_SIZE.lg}
@@ -30,5 +33,5 @@ export const PrivacyDeclarationFormModal = ({
     footer={null}
   >
     {children}
-  </Modal>
+  </ConfirmCloseModal>
 );
