@@ -148,7 +148,13 @@ export const PrivacyDeclarationForm = ({
   const [form] = Form.useForm<FormValues>();
 
   const handleFinish = async (values: FormValues) => {
-    const declaration = transformFormValueToDeclaration(values);
+    // antd Form only tracks fields with a Form.Item; untracked fields
+    // (`id`, `egress`, `ingress`) are silently dropped from `values`. Merge
+    // them back in from initialValues so updates aren't mistaken for creates.
+    const declaration = transformFormValueToDeclaration({
+      ...initialValues,
+      ...values,
+    });
     const success = await onSubmit(declaration);
     if (success) {
       const matched = success.find(

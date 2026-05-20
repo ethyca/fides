@@ -648,6 +648,29 @@ describe("System management page", () => {
         );
       });
     });
+
+    // Regression guard: the antd migration (#8229) dropped untracked fields
+    // (`id`, `egress`, `ingress`) from form submissions because they aren't
+    // registered as Form.Items. That made every edit look like a create and
+    // collide with the existing declaration's data_use.
+    it("saves edits to an existing declaration without colliding on data_use", () => {
+      cy.getByTestId("row-functional.service.improve")
+        .find('[role="button"]')
+        .click();
+      cy.wait("@getDeclarationCustomFieldDefinitions");
+      cy.wait("@getDeclarationCustomFields");
+      cy.getByTestId("declaration-form").within(() => {
+        cy.findByLabelText("cf decl test").clear().type("Beta custom value");
+        cy.getByTestId("save-btn").click();
+      });
+      cy.wait("@putSystem").then((interception) => {
+        const declarations = interception.request.body.privacy_declarations;
+        expect(declarations).to.have.length(1);
+        expect(declarations[0].id).to.eq(declarationId);
+        expect(declarations[0].data_use).to.eq("functional.service.improve");
+      });
+      cy.shouldShowMessage("success");
+    });
   });
 
   describe("Data flow", () => {
