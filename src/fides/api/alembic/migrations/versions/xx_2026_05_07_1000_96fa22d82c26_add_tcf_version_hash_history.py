@@ -49,7 +49,6 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["privacy_experience_config_id"],
             ["privacyexperienceconfig.id"],
-            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
