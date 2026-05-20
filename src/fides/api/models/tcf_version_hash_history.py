@@ -29,7 +29,8 @@ class TCFVersionHashHistory(Base):
 
     privacy_experience_config_id = Column(
         String(255),
-        ForeignKey("privacyexperienceconfig.id"),
+        ForeignKey("privacyexperienceconfig.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
     )
     previous_hash = Column(String, nullable=True)
