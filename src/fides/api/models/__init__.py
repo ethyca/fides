@@ -3,6 +3,9 @@ from typing import Any, Dict
 from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import Base
+from fides.api.models.mcp_consumer_settings import MCPConsumerSettings  # noqa: F401
+from fides.api.models.mcp_decision import MCPDecision  # noqa: F401
+from fides.api.models.mcp_tool_capability_profile import MCPToolCapabilityProfile  # noqa: F401
 
 
 def update_if_modified(resource: Base, db: Session, *, data: Dict[str, Any]) -> bool:
