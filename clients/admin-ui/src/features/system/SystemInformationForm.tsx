@@ -578,7 +578,7 @@ const SystemInformationForm = ({
                 name="processes_personal_data"
                 label="This system processes personal data"
                 tooltip="Does this system process personal data?"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
               />
             </div>
             <div className="rounded bg-gray-50 p-4">
@@ -587,7 +587,7 @@ const SystemInformationForm = ({
                   name="exempt_from_privacy_regulations"
                   label="This system is exempt from privacy regulations"
                   tooltip="Is this system exempt from privacy regulations?"
-                  disabled={!processesPersonalData || lockedForGVL || undefined}
+                  disabled={!processesPersonalData || lockedForGVL}
                 />
                 {exemptFromPrivacyRegulations && (
                   <div className="mt-4">
@@ -598,7 +598,7 @@ const SystemInformationForm = ({
                       required={exemptFromPrivacyRegulations}
                     >
                       <Input
-                        disabled={lockedForGVL || undefined}
+                        disabled={lockedForGVL}
                         data-testid="input-reason_for_exemption"
                       />
                     </Form.Item>
@@ -613,7 +613,7 @@ const SystemInformationForm = ({
                     name="uses_profiling"
                     label="This system performs profiling"
                     tooltip="Does this system perform profiling that could have a legal effect?"
-                    disabled={lockedForGVL || undefined}
+                    disabled={lockedForGVL}
                   />
                   {usesProfiling && (
                     <div className="mt-4">
@@ -627,7 +627,7 @@ const SystemInformationForm = ({
                           mode="multiple"
                           aria-label="Legal basis for profiling"
                           options={legalBasisForProfilingOptions}
-                          disabled={lockedForGVL || undefined}
+                          disabled={lockedForGVL}
                           data-testid="controlled-select-legal_basis_for_profiling"
                         />
                       </Form.Item>
@@ -639,7 +639,7 @@ const SystemInformationForm = ({
                     name="does_international_transfers"
                     label="This system transfers data"
                     tooltip="Does this system transfer data to other countries or international organizations?"
-                    disabled={lockedForGVL || undefined}
+                    disabled={lockedForGVL}
                   />
                   {doesInternationalTransfers && (
                     <div className="mt-4">
@@ -653,7 +653,7 @@ const SystemInformationForm = ({
                           mode="multiple"
                           aria-label="Legal basis for transfer"
                           options={legalBasisForTransferOptions}
-                          disabled={lockedForGVL || undefined}
+                          disabled={lockedForGVL}
                           data-testid="controlled-select-legal_basis_for_transfers"
                         />
                       </Form.Item>
@@ -672,7 +672,7 @@ const SystemInformationForm = ({
                   >
                     <Switch
                       size="small"
-                      disabled={lockedForGVL || undefined}
+                      disabled={lockedForGVL}
                       data-testid="input-requires_data_protection_assessments"
                     />
                   </Form.Item>
@@ -685,7 +685,7 @@ const SystemInformationForm = ({
                         required={requiresDpas}
                       >
                         <Input
-                          disabled={lockedForGVL || undefined}
+                          disabled={lockedForGVL}
                           data-testid="input-dpa_location"
                         />
                       </Form.Item>
@@ -704,25 +704,25 @@ const SystemInformationForm = ({
                 name="uses_cookies"
                 label="This system uses cookies"
                 tooltip="Does this system use cookies?"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
               />
               <DictSuggestionSwitch
                 name="cookie_refresh"
                 label="This system refreshes cookies"
                 tooltip="Does this system automatically refresh cookies?"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
               />
               <DictSuggestionSwitch
                 name="uses_non_cookie_access"
                 label="This system uses non-cookie trackers"
                 tooltip="Does this system use other types of trackers?"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
               />
               <DictSuggestionNumberInput
                 name="cookie_max_age_seconds"
                 label="Maximum duration (seconds)"
                 tooltip="What is the maximum amount of time a cookie will live?"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
 
@@ -751,7 +751,7 @@ const SystemInformationForm = ({
                 name="privacy_policy"
                 label="Privacy policy URL"
                 tooltip="Where can the privacy policy be located?"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
                 rules={[
                   {
                     type: "url",
@@ -778,9 +778,7 @@ const SystemInformationForm = ({
               >
                 <Input
                   disabled={
-                    !processesPersonalData ||
-                    exemptFromPrivacyRegulations ||
-                    undefined
+                    !processesPersonalData || exemptFromPrivacyRegulations
                   }
                   data-testid="input-administrating_department"
                 />
@@ -795,9 +793,7 @@ const SystemInformationForm = ({
                   aria-label="Responsibility"
                   options={responsibilityOptions}
                   disabled={
-                    !processesPersonalData ||
-                    exemptFromPrivacyRegulations ||
-                    undefined
+                    !processesPersonalData || exemptFromPrivacyRegulations
                   }
                   data-testid="controlled-select-responsibility"
                 />
@@ -807,7 +803,7 @@ const SystemInformationForm = ({
                 id="dpo"
                 label="Legal contact (DPO)"
                 tooltip="What is the official privacy contact information?"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
               />
               <Form.Item
                 name="joint_controller_info"
@@ -816,9 +812,7 @@ const SystemInformationForm = ({
               >
                 <Input
                   disabled={
-                    !processesPersonalData ||
-                    exemptFromPrivacyRegulations ||
-                    undefined
+                    !processesPersonalData || exemptFromPrivacyRegulations
                   }
                   data-testid="input-joint_controller_info"
                 />
@@ -833,7 +827,7 @@ const SystemInformationForm = ({
                 label="Legitimate interest disclosure URL"
                 name="legitimate_interest_disclosure_url"
                 id="legitimate_interest_disclosure_url"
-                disabled={lockedForGVL || undefined}
+                disabled={lockedForGVL}
               />
               <DictSuggestionTextInput
                 label="Vendor deleted date"
