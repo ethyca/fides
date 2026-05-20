@@ -42,6 +42,10 @@ export type PrivacyNoticeUpdate = {
    * Has Gpc Flag
    */
   has_gpc_flag?: boolean | null;
+  /**
+   * Att Exempt
+   */
+  att_exempt?: boolean | null;
   framework?: PrivacyNoticeFramework | null;
   /**
    * Gpp Field Mapping
