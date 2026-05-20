@@ -55,6 +55,18 @@ class DatabaseSettings(FidesSettings):
         description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
     )
 
+    # Pool Recycle (applies to all engines)
+    pool_recycle: Optional[int] = Field(
+        default=None,
+        gt=0,
+        description=(
+            "Number of seconds after which a database connection is automatically "
+            "recycled (closed and replaced). Useful when a connection proxy or "
+            "firewall imposes an idle connection timeout. Set this to a value lower "
+            "than the proxy/DB timeout. When unset (None), connections are never recycled."
+        ),
+    )
+
     # Async Engine Settings
     # Note: We purposely do not include async engine equivalents of the sync engine's
     # keepalives_* settings as they are not supported by asyncpg.

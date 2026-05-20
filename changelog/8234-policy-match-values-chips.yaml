@@ -1,0 +1,4 @@
+type: Changed
+description: Improved UI/UX for selecting many taxonomy values in a policy match block
+pr: 8234
+labels: []

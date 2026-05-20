@@ -1,4 +1,8 @@
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import {
+  ActionType,
+  PrivacyRequestSource,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.APPROVED, "Approved"],
@@ -17,6 +21,7 @@ export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.AWAITING_PRE_APPROVAL, "Awaiting external review"],
   [PrivacyRequestStatus.PRE_APPROVAL_NOT_ELIGIBLE, "Manual review required"],
   [PrivacyRequestStatus.PENDING_EXTERNAL, "Pending external"],
+  [PrivacyRequestStatus.AWAITING_ACCESS_REVIEW, "Awaiting access review"],
 ]);
 
 export const SubjectRequestStatusOptions = [...SubjectRequestStatusMap].map(
@@ -39,6 +44,24 @@ export const SubjectRequestActionTypeOptions = [
   label: value,
   value: key,
 }));
+
+// Dataset Test is intentionally omitted — those are system-internal test runs,
+// not user-facing DSRs, and should not be filterable from the Request Manager UI.
+// The backend still accepts the Dataset Test source for programmatic API use.
+export const SubjectRequestSourceMap = new Map<PrivacyRequestSource, string>([
+  [PrivacyRequestSource.PRIVACY_CENTER, "Privacy Center"],
+  [PrivacyRequestSource.REQUEST_MANAGER, "Request Manager"],
+  [PrivacyRequestSource.CONSENT_WEBHOOK, "Consent Webhook"],
+  [PrivacyRequestSource.FIDES_JS, "Fides.js"],
+  [PrivacyRequestSource.JANUS_SDK, "Mobile SDK"],
+]);
+
+export const SubjectRequestSourceOptions = [...SubjectRequestSourceMap].map(
+  ([key, value]) => ({
+    label: value,
+    value: key,
+  }),
+);
 
 export const messagingProviders = {
   mailgun: "mailgun",

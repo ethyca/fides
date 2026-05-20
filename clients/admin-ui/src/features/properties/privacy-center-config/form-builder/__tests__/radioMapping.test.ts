@@ -1,5 +1,5 @@
-import type { JsonRenderSpec } from "../types";
 import { jsonSpecToPcShape } from "../jsonSpecToPcShape";
+import type { JsonRenderSpec } from "../types";
 
 describe("Radio mapping (legacy PC shape)", () => {
   it("emits field_type=radio for Radio components", () => {

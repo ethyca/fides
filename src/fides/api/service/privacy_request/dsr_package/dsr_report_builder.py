@@ -3,6 +3,7 @@ import json
 import os
 import time as time_module
 import zipfile
+from abc import ABC, abstractmethod
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Optional
@@ -38,8 +39,38 @@ HEADER_COLOR = "#FAFAFA"
 BORDER_COLOR = "#E2E8F0"
 
 
+class BaseDSRReportBuilder(ABC):
+    """Contract for DSR report builders.
+
+    The default DSRReportBuilder produces HTML reports. Custom builders
+    (e.g. AccessPackageReportBuilder) override generate_json/generate_csv
+    to support additional formats via the builder registry.
+    """
+
+    used_filenames_per_dataset: dict[str, set[str]]
+    processed_attachments: dict[tuple[str, str], str]
+    dsr_data: dict[str, Any]
+
+    def __init__(
+        self,
+        privacy_request: "PrivacyRequest",
+        dsr_data: dict[str, Any],
+        enable_streaming: bool = False,
+    ) -> None:
+        """Subclasses must call super().__init__() or set attributes directly."""
+
+    @abstractmethod
+    def generate(self) -> BytesIO: ...
+
+    def generate_json(self) -> BytesIO:
+        raise NotImplementedError(f"{type(self).__name__} does not support JSON format")
+
+    def generate_csv(self) -> BytesIO:
+        raise NotImplementedError(f"{type(self).__name__} does not support CSV format")
+
+
 # pylint: disable=too-many-instance-attributes
-class DSRReportBuilder:
+class DSRReportBuilder(BaseDSRReportBuilder):
     """
     Manages populating HTML templates from the given data and adding the generated
     pages to a zip file in a way that the pages can be navigated between.

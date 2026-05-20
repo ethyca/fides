@@ -10,6 +10,7 @@ import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { isFieldVisible } from "~/common/visibility";
 import { ModalViews } from "~/components/modals/types";
 import {
+  dateFieldValidation,
   emailValidation,
   nameValidation,
   phoneValidation,
@@ -288,9 +289,24 @@ const usePrivacyRequestForm = ({
       ),
       ...Object.fromEntries(
         Object.entries(customIdentityFields).flatMap(([key, value]) => {
-          return value
-            ? [[key, Yup.string().required(`${value.label} is required`)]]
-            : [];
+          if (!value) {
+            return [];
+          }
+          if (value.field_type === "date") {
+            // Respect the required field for dates; text/select identity fields currently
+            // always validate as required regardless of the config setting (pre-existing behavior).
+            return [
+              [
+                key,
+                dateFieldValidation(
+                  value,
+                  value.label,
+                  value.required !== false,
+                ),
+              ],
+            ];
+          }
+          return [[key, Yup.string().required(`${value.label} is required`)]];
         }),
       ),
       ...getValidationSchema().fields,

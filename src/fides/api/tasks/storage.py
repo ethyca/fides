@@ -14,6 +14,9 @@ from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
 )
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
+    get_dsr_report_builder,
+)
 from fides.api.service.storage.gcs import get_gcs_blob
 from fides.api.service.storage.s3 import (
     create_presigned_url_for_s3,
@@ -46,6 +49,31 @@ def write_to_in_memory_buffer(
 
     logger.debug("Writing data to in-memory buffer")
     try:
+        builder_cls = get_dsr_report_builder()
+
+        if builder_cls is not DSRReportBuilder:
+            # Registered builder handles all formats (access packages)
+            builder = builder_cls(
+                privacy_request=privacy_request,
+                dsr_data=data,
+            )
+            if resp_format == ResponseFormat.html.value:
+                return builder.generate()
+            if resp_format == ResponseFormat.json.value:
+                raw_json = builder.generate_json()
+                return BytesIO(
+                    encrypt_access_request_results(
+                        raw_json.getvalue().decode(CONFIG.security.encoding),
+                        privacy_request.id,
+                    ).encode(CONFIG.security.encoding)
+                )
+            if resp_format == ResponseFormat.csv.value:
+                return builder.generate_csv()
+            raise ValueError(
+                f"Unsupported response format '{resp_format}' for custom builder"
+            )
+
+        # Default DSRReportBuilder path
         if resp_format == ResponseFormat.html.value:
             return DSRReportBuilder(
                 privacy_request=privacy_request,

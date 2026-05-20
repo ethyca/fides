@@ -2,8 +2,9 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { isFieldVisible } from "~/common/visibility";
+import { dateFieldValidation } from "~/components/modals/validation";
 import { selectUserLocation } from "~/features/consent/consent.slice";
-import { CustomConfigField } from "~/types/config";
+import { CustomConfigField, CustomDateField } from "~/types/config";
 
 interface UseCustomFieldsFormProps {
   customPrivacyRequestFields: Record<string, CustomConfigField>;
@@ -121,6 +122,16 @@ export const useCustomFieldsForm = ({
               return [
                 key,
                 requiredTest(str, (v) => typeof v === "string" && v.length > 0),
+              ];
+            }
+            if (fieldType === "date") {
+              return [
+                key,
+                dateFieldValidation(
+                  field as CustomDateField,
+                  label,
+                  isRequired,
+                ),
               ];
             }
             return [

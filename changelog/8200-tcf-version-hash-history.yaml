@@ -1,0 +1,4 @@
+type: Added
+description: Add TCF version hash history table to track changes to TCF configuration hashes over time
+pr: 8200
+labels: ["db-migration"]

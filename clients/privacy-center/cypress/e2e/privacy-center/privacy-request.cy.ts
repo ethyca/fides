@@ -513,3 +513,89 @@ describe("Privacy Request Verification Flow", () => {
     cy.url().should("eq", Cypress.config().baseUrl + "/");
   });
 });
+
+describe("Privacy Request with date of birth identity field", () => {
+  beforeEach(() => {
+    cy.intercept("GET", `${API_URL}/id-verification/config`, {
+      body: { identity_verification_required: false },
+    }).as("getVerificationConfig");
+    cy.intercept("POST", `${API_URL}/privacy-request`, {
+      statusCode: 200,
+      fixture: "privacy-request/success",
+    }).as("postPrivacyRequest");
+  });
+
+  it("renders the date of birth field when configured", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request.json").then(() => {
+      cy.getByTestId("privacy-request-form")
+        .find("[data-testid='date-date_of_birth']")
+        .should("be.visible");
+    });
+  });
+
+  it("submits date_of_birth as a LabeledIdentity in the payload", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request.json").then(() => {
+      cy.getByTestId("privacy-request-form").within(() => {
+        cy.get("#email").type("test@example.com");
+        cy.get("[data-testid='date-date_of_birth'] input").type("01/15/1990");
+        cy.get("[data-testid='date-date_of_birth'] input").blur();
+        cy.get("button[type='submit']").click();
+
+        cy.wait("@postPrivacyRequest").then((interception) => {
+          const identity = interception.request.body[0].identity;
+          expect(identity.email).to.equal("test@example.com");
+          expect(identity.date_of_birth.label).to.equal("Date of Birth");
+          expect(identity.date_of_birth.value).to.equal("1990-01-15");
+        });
+      });
+    });
+  });
+
+  it("shows a validation error when date of birth is empty and required", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request.json").then(() => {
+      cy.getByTestId("privacy-request-form").within(() => {
+        cy.get("#email").type("test@example.com");
+        cy.get("button[type='submit']").click();
+        cy.contains("Date of Birth is required").should("be.visible");
+      });
+    });
+  });
+
+  it("shows a validation error when date of birth exceeds the max constraint", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request_max.json").then(() => {
+      cy.getByTestId("privacy-request-form").within(() => {
+        cy.get("#email").type("test@example.com");
+        cy.get("[data-testid='date-date_of_birth'] input").type("01/01/2030");
+        cy.get("[data-testid='date-date_of_birth'] input").blur();
+        cy.get("button[type='submit']").click();
+        cy.contains("Date of Birth must be on or before 2020-01-01").should(
+          "be.visible",
+        );
+      });
+    });
+  });
+
+  it("shows a validation error when date of birth is before the min constraint", () => {
+    cy.visit(`/privacy-request/${ENCODED_ACCESS_POLICY}`);
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.loadConfigFixture("config/config_dob_request_min.json").then(() => {
+      cy.getByTestId("privacy-request-form").within(() => {
+        cy.get("#email").type("test@example.com");
+        cy.get("[data-testid='date-date_of_birth'] input").type("01/01/1800");
+        cy.get("[data-testid='date-date_of_birth'] input").blur();
+        cy.get("button[type='submit']").click();
+        cy.contains("Date of Birth must be on or after 1900-01-01").should(
+          "be.visible",
+        );
+      });
+    });
+  });
+});

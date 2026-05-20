@@ -16,7 +16,7 @@
     "cy:start": "npm run build:test && npm run start",
     "cy:start:dev": "NEXT_PUBLIC_FIDESCTL_API_SERVER=http://localhost:8080 npm run cy:start",
     "dev": "next dev -p 3000",
-    "dev:mock": "echo '\ud83d\udea8 Running with mock API'; NEXT_PUBLIC_MOCK_API=true npm run dev",
+    "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true npm run dev",
     "export": "PROD_EXPORT=true next build",
     "prod-export": "npm run export && npm run copy-export",
     "format": "prettier --write --log-level warn .",
@@ -84,7 +84,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@ant-design/cli": "^6.3.7",
+    "@ant-design/cli": "^6.4.3",
     "@hey-api/openapi-ts": "^0.88.2",
     "@jest/globals": "^29.7.0",
     "@next/bundle-analyzer": "^16.2.0",

@@ -7,6 +7,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import type { PrivacyCenterConfigValue } from "~/features/properties/privacy-center-config/PrivacyCenterConfigSection";
 import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
@@ -23,13 +24,43 @@ const EditPropertyPage: NextPage = () => {
   );
   const [updateProperty] = useUpdatePropertyMutation();
 
+  const saveConfigImmediately = async (
+    nextConfig: PrivacyCenterConfigValue,
+  ) => {
+    if (!data) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+    const { id: _id, messaging_templates: _mt, ...rest } = data;
+    const result = await updateProperty({
+      id: propertyId as string,
+      property: {
+        ...rest,
+        privacy_center_config:
+          nextConfig as unknown as typeof data.privacy_center_config,
+      },
+    });
+    if (isErrorResult(result)) {
+      message.error(getErrorMessage(result.error));
+      throw new Error(getErrorMessage(result.error));
+    }
+  };
+
+  const handleDeleteAction = saveConfigImmediately;
+  const handleSaveAction = saveConfigImmediately;
+
   const handleSubmit = async (values: FormValues) => {
     // We do not support adding messaging templates through the property form. This ensures we do not overwrite
     // previously-configured messaging templates.
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id, messaging_templates, ...updateValues } = values;
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars, no-underscore-dangle
+    const { id: _ignoredId, messaging_templates, ...updateValues } = values;
 
-    const result = await updateProperty({ id: id!, property: updateValues });
+    const result = await updateProperty({
+      id: propertyId as string,
+      property: updateValues as Parameters<
+        typeof updateProperty
+      >[0]["property"],
+    });
 
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
@@ -67,6 +98,8 @@ const EditPropertyPage: NextPage = () => {
           property={data}
           isLoading={isLoading}
           handleSubmit={handleSubmit}
+          onDeleteAction={handleDeleteAction}
+          onSaveAction={handleSaveAction}
         />
       </div>
     </Layout>
