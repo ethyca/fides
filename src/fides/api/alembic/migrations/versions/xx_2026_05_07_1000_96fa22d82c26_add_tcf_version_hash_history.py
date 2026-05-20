@@ -35,7 +35,6 @@ def upgrade() -> None:
         sa.Column(
             "privacy_experience_config_id",
             sa.String(length=255),
-            nullable=True,
         ),
         sa.Column("previous_hash", sa.String(), nullable=True),
         sa.Column("current_hash", sa.String(), nullable=False),
@@ -50,7 +49,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["privacy_experience_config_id"],
             ["privacyexperienceconfig.id"],
-            ondelete="SET NULL",
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
