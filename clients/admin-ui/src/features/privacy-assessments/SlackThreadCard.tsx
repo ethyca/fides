@@ -53,12 +53,7 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                             <Avatar
                               shape="square"
                               className={styles.messageAvatarBot}
-                              icon={
-                                <EthycaLogo
-                                  size={12}
-                                  variant="white"
-                                />
-                              }
+                              icon={<EthycaLogo size={12} variant="white" />}
                             />
                           ) : (
                             <Avatar
