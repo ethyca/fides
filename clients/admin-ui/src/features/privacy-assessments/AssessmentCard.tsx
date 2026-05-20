@@ -90,7 +90,14 @@ export const AssessmentCard = ({
   }));
 
   return (
-    <Card variant="borderless" className={styles.card}>
+    <Card
+      variant="borderless"
+      className={`${styles.card} ${
+        derivedStatus === DerivedAssessmentStatus.IN_PROGRESS
+          ? styles.cardNeedsInput
+          : ""
+      }`}
+    >
       <Flex vertical gap={12} className="flex-1">
         {/* Top row: category label + status badge */}
         <Flex justify="space-between" align="center">
