@@ -50,6 +50,12 @@
   letter-spacing: 0.08em;
   font-family: var(--fidesui-font-family-code) !important;
   font-size: var(--fidesui-font-size-sm) !important;
+
+  // `strong` on a monoLabel renders at medium weight (not the bolder default)
+  // so the label reads as emphasized without becoming heavy.
+  strong {
+    font-weight: 500 !important;
+  }
 }
 
 // Primary color link

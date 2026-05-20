@@ -83,7 +83,7 @@ export const AssessmentGroup = ({
             {rowNumber}
           </Text>
           <div>
-            <Text variant="monoLabel" type="secondary" size="sm">
+            <Text variant="monoLabel" type="secondary" size="sm" strong>
               Privacy · {displayName}
             </Text>
             <Title level={2} className="!m-0">
@@ -169,7 +169,7 @@ export const AssessmentGroup = ({
                 gap={4}
               >
                 <Text className={styles.overflowNumber}>+ {overflowCount}</Text>
-                <Text variant="monoLabel" type="secondary" size="sm">
+                <Text variant="monoLabel" type="secondary" size="sm" strong>
                   More assessments
                 </Text>
                 <Button

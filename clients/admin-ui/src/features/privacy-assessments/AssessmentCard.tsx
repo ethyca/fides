@@ -83,7 +83,7 @@ export const AssessmentCard = ({
         {/* Top row: category label + status badge */}
         <Flex justify="space-between" align="center">
           {categoryLabel && (
-            <Text variant="monoLabel" type="secondary">
+            <Text variant="monoLabel" type="secondary" strong>
               {categoryLabel}
             </Text>
           )}
@@ -93,7 +93,7 @@ export const AssessmentCard = ({
                 className={styles.statusDot}
                 style={{ backgroundColor: statusColor }}
               />
-              <Text variant="monoLabel" size="sm">
+              <Text variant="monoLabel" size="sm" strong>
                 {statusLabel}
               </Text>
             </Flex>
@@ -131,6 +131,7 @@ export const AssessmentCard = ({
               variant="monoLabel"
               size="sm"
               className={styles.templateSubtitle}
+              strong
             >
               {templateName}
             </Text>
@@ -166,7 +167,12 @@ export const AssessmentCard = ({
                     : undefined,
               }}
             />
-            <Text variant="monoLabel" size="sm" style={{ color: riskDotColor }}>
+            <Text
+              variant="monoLabel"
+              size="sm"
+              strong
+              style={{ color: riskDotColor }}
+            >
               {riskLabel} risk
             </Text>
           </Flex>
@@ -186,10 +192,10 @@ export const AssessmentCard = ({
         ) : (
           <div>
             <Flex justify="space-between" align="center" className="mb-1">
-              <Text variant="monoLabel" type="secondary" size="sm">
+              <Text variant="monoLabel" type="secondary" size="sm" strong>
                 Questions answered
               </Text>
-              <Text variant="monoLabel" size="sm">
+              <Text variant="monoLabel" size="sm" strong>
                 {Math.round(completeness)}%
               </Text>
             </Flex>

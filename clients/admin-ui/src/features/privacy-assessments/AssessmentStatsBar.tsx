@@ -73,7 +73,7 @@ export const AssessmentStatsBar = ({ groups }: AssessmentStatsBarProps) => {
       <Flex>
         {stats.map((stat, i) => (
           <div key={stat.label} className={styles.cell}>
-            <Text variant="monoLabel" type="secondary" size="sm">
+            <Text variant="monoLabel" type="secondary" size="sm" strong>
               {stat.label}
             </Text>
             <div
