@@ -73,7 +73,7 @@ export const AssessmentGroup = ({
   const headerCategory = dataUseName?.split(" ")[0] ?? displayName;
 
   return (
-    <div>
+    <div className="mb-8">
       {/* Group header */}
       <Flex
         justify="space-between"
@@ -86,7 +86,12 @@ export const AssessmentGroup = ({
             {rowNumber}
           </Text>
           <div>
-            <Text variant="monoLabel" type="secondary" size="sm" strong>
+            <Text
+              variant="monoLabel"
+              size="sm"
+              strong
+              style={{ color: "var(--fidesui-brand-terracotta)" }}
+            >
               Privacy · {headerCategory}
             </Text>
             <Title level={2} className={`!m-0 ${styles.groupTitle}`}>
