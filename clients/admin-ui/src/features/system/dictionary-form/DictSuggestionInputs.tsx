@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Form, Input, InputNumber, Switch } from "fidesui";
+import { Form, FormRule, Input, InputNumber, Switch } from "fidesui";
 import { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -84,19 +84,22 @@ export const DictSuggestionTextInput = ({
   id,
   dictField,
   placeholder,
-}: TextFieldProps & { placeholder?: string }) => {
+  rules,
+}: TextFieldProps & { placeholder?: string; rules?: FormRule[] }) => {
   const { isShowingSuggestions } = useDictSuggestion(name, dictField);
+  const composedRules: FormRule[] = [
+    ...(isRequired
+      ? [{ required: true, message: `${label} is required` }]
+      : []),
+    ...(rules ?? []),
+  ];
   return (
     <Form.Item
       name={name}
       label={label}
       tooltip={tooltip}
       required={isRequired}
-      rules={
-        isRequired
-          ? [{ required: true, message: `${label} is required` }]
-          : undefined
-      }
+      rules={composedRules.length > 0 ? composedRules : undefined}
     >
       <Input
         id={id || name}

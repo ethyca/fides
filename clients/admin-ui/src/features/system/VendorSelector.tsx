@@ -177,81 +177,104 @@ const VendorSelector = ({
   // Standalone typeahead UI — bypasses Form.Item value injection (Select uses
   // labelInValue, which is shaped { label, value } rather than a plain string).
   // The hidden Form.Item below registers `name` so rules and validation still
-  // apply.
+  // apply; we wrap the visible field in a shouldUpdate render-prop so the
+  // hidden field's validation errors render here too.
   const typeaheadSelect = (
     <Flex vertical align="stretch" gap="small" className="w-full">
-      <Form.Item
-        label={label}
-        tooltip="Enter the system name"
-        required
-        validateStatus={undefined}
-        htmlFor="vendorName"
-        className="mb-0"
-      >
-        <div className="relative">
-          <Select<VendorOption, VendorOption>
-            id="vendorName"
-            labelInValue
-            autoFocus
-            allowClear
-            options={optionsWithCustom}
-            loading={isLoading}
-            filterOption={(value, option) =>
-              filterFunction(value, option) ||
-              !!option?.label.startsWith(NEW_SYSTEM_PREFIX)
-            }
-            optionFilterProp="label"
-            value={selectedOption}
-            placeholder="Enter system name..."
-            aria-label="Select a system"
-            disabled={nameFieldLockedForGVL}
-            onChange={handleChange}
-            onSearch={setSearchParam}
-            onClear={handleClear}
-            onBlur={handleBlur}
-            onInputKeyDown={(e) => {
-              if (searchParam && e.key === "Tab") {
-                handleTabPressed(e);
-              }
-            }}
-            data-testid="vendor-name-select"
-          />
-          <AutosuggestSuffix
-            searchText={searchParam}
-            suggestion={suggestions.length ? suggestions[0].label : ""}
-          />
-        </div>
+      <Form.Item shouldUpdate noStyle>
+        {() => {
+          const errors = form.getFieldError("name");
+          return (
+            <Form.Item
+              label={label}
+              tooltip="Enter the system name"
+              required
+              htmlFor="vendorName"
+              className="mb-0"
+              validateStatus={errors.length > 0 ? "error" : undefined}
+              help={errors[0]}
+            >
+              <div className="relative">
+                <Select<VendorOption, VendorOption>
+                  id="vendorName"
+                  labelInValue
+                  autoFocus
+                  allowClear
+                  options={optionsWithCustom}
+                  loading={isLoading}
+                  filterOption={(value, option) =>
+                    filterFunction(value, option) ||
+                    !!option?.label.startsWith(NEW_SYSTEM_PREFIX)
+                  }
+                  optionFilterProp="label"
+                  value={selectedOption}
+                  placeholder="Enter system name..."
+                  aria-label="Select a system"
+                  disabled={nameFieldLockedForGVL}
+                  status={errors.length > 0 ? "error" : undefined}
+                  onChange={handleChange}
+                  onSearch={setSearchParam}
+                  onClear={handleClear}
+                  onBlur={handleBlur}
+                  onInputKeyDown={(e) => {
+                    if (searchParam && e.key === "Tab") {
+                      handleTabPressed(e);
+                    }
+                  }}
+                  data-testid="vendor-name-select"
+                />
+                <AutosuggestSuffix
+                  searchText={searchParam}
+                  suggestion={suggestions.length ? suggestions[0].label : ""}
+                />
+              </div>
+            </Form.Item>
+          );
+        }}
       </Form.Item>
     </Flex>
   );
 
   const textInput = (
-    <Form.Item
-      label="System name"
-      tooltip="Enter the system name"
-      required
-      htmlFor="vendorNameInput"
-      className="mb-0 w-full"
-    >
-      <Input
-        id="vendorNameInput"
-        value={name ?? ""}
-        onChange={(e) => form.setFieldValue("name", e.target.value)}
-        autoFocus
-        disabled={nameFieldLockedForGVL}
-        suffix={
-          !nameFieldLockedForGVL ? (
-            <Button
-              type="text"
-              size="small"
-              icon={<Icons.Close />}
-              onClick={handleClear}
-              aria-label="Clear vendor name"
-              data-testid="clear-btn"
+    <Form.Item shouldUpdate noStyle>
+      {() => {
+        const errors = form.getFieldError("name");
+        return (
+          <Form.Item
+            label="System name"
+            tooltip="Enter the system name"
+            required
+            htmlFor="vendorNameInput"
+            className="mb-0 w-full"
+            validateStatus={errors.length > 0 ? "error" : undefined}
+            help={errors[0]}
+          >
+            <Input
+              id="vendorNameInput"
+              value={name ?? ""}
+              onChange={(e) => {
+                form.setFieldValue("name", e.target.value);
+                form.validateFields(["name"]).catch(() => {});
+              }}
+              autoFocus
+              disabled={nameFieldLockedForGVL}
+              status={errors.length > 0 ? "error" : undefined}
+              suffix={
+                !nameFieldLockedForGVL ? (
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<Icons.Close />}
+                    onClick={handleClear}
+                    aria-label="Clear vendor name"
+                    data-testid="clear-btn"
+                  />
+                ) : undefined
+              }
             />
-          ) : undefined
-        }
-      />
+          </Form.Item>
+        );
+      }}
     </Form.Item>
   );
 

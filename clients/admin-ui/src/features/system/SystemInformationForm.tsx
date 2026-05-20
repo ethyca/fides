@@ -749,6 +749,12 @@ const SystemInformationForm = ({
                   label="Privacy policy URL"
                   tooltip="Where can the privacy policy be located?"
                   disabled={lockedForGVL}
+                  rules={[
+                    {
+                      type: "url",
+                      message: "Privacy policy must be a valid URL",
+                    },
+                  ]}
                 />
                 <DictSuggestionTextInput
                   id="legal_name"
