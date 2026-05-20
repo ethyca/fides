@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import EthycaLogo from "~/features/common/logos/EthycaLogo";
 
 import styles from "./ChatPane.module.scss";
-import type { ChatMessage, Status } from "./useFormBuilder";
+import type { ChatMessage, Status } from "./types";
 
 interface ChatPaneProps {
   messages: ChatMessage[];
