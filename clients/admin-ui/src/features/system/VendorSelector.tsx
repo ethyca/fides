@@ -201,7 +201,7 @@ const VendorSelector = ({
             tooltip="Enter the system name"
             required
             htmlFor="vendorName"
-            className="mb-0 w-full"
+            className="w-full"
             validateStatus={errors.length > 0 ? "error" : undefined}
             help={errors[0]}
           >
@@ -258,7 +258,7 @@ const VendorSelector = ({
             tooltip="Enter the system name"
             required
             htmlFor="vendorNameInput"
-            className="mb-0 w-full"
+            className="w-full"
             validateStatus={errors.length > 0 ? "error" : undefined}
             help={errors[0]}
           >
