@@ -1,11 +1,7 @@
 import { Divider, Flex, Text } from "fidesui";
 
 import styles from "./AssessmentStatsBar.module.scss";
-import {
-  AssessmentStatus,
-  AssessmentGroupResponse,
-  RiskLevel,
-} from "./types";
+import { AssessmentStatus, AssessmentGroupResponse, RiskLevel } from "./types";
 
 interface AssessmentStatsBarProps {
   groups: AssessmentGroupResponse[];
