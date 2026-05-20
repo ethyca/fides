@@ -1,6 +1,7 @@
 import {
   Alert,
   Button,
+  Flex,
   Modal,
   Splitter,
   Typography,
@@ -17,6 +18,7 @@ import {
 import type { ComponentType } from "./catalog";
 import { ChatPane } from "./ChatPane";
 import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
+import styles from "./FormBuilderPage.module.scss";
 import { jsonSpecToPcShape } from "./jsonSpecToPcShape";
 import { pcShapeToJsonSpec } from "./pcShapeToJsonSpec";
 import { type PreviewMode, PreviewPane } from "./PreviewPane";
@@ -89,22 +91,6 @@ const describeDropped = (
     default:
       return "Unsupported feature";
   }
-};
-
-const rootStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  flex: 1,
-  minHeight: 0,
-  width: "100%",
-};
-
-const splitterStyle: React.CSSProperties = {
-  flex: 1,
-  minHeight: 0,
-  border: "1px solid var(--fidesui-color-border)",
-  borderRadius: 4,
-  overflow: "hidden",
 };
 
 export const FormBuilderPage = ({
@@ -359,13 +345,13 @@ export const FormBuilderPage = ({
   };
 
   return (
-    <div style={rootStyle}>
+    <Flex vertical flex={1} className="min-h-0 w-full">
       <FormGuard
         id={`form-builder-${propertyId}-${actionPolicyKey}`}
         name={`Form editor (${actionPolicyKey})`}
         isDirty={isDirty}
       />
-      <Splitter style={splitterStyle}>
+      <Splitter className={styles.splitter}>
         <Splitter.Panel
           defaultSize="25%"
           min={240}
@@ -454,6 +440,6 @@ export const FormBuilderPage = ({
           ))}
         </ul>
       </Modal>
-    </div>
+    </Flex>
   );
 };
