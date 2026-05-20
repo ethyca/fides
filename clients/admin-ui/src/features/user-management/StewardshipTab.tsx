@@ -27,11 +27,8 @@ import {
 
 const { Title, Text } = Typography;
 
-// TODO: Replace with the real docs URL once the "Updating monitor stewardship"
-// page is published. This tab is read-only; updates to a steward's monitor
-// assignments happen on the monitor itself, which the docs page will cover.
 const MONITOR_STEWARDSHIP_DOCS_URL =
-  "https://ethyca.com/docs/user-guides/monitors/stewardship";
+  "https://ethyca.com/docs/data-mapping/guides/assigning-monitor-stewards";
 
 const StewardshipTab = () => {
   const activeUserId = useAppSelector(selectActiveUserId);
