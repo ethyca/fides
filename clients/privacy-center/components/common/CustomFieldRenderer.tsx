@@ -163,7 +163,7 @@ const CustomFieldRenderer = ({
             aria-label={label}
             aria-describedby={`${fieldKey}-error`}
             aria-required={required !== false}
-            className="w-full"
+            style={{ width: "100%" }}
           />
         </div>
       );
