@@ -179,22 +179,30 @@ const VendorSelector = ({
   // The hidden Form.Item below registers `name` so rules and validation still
   // apply; we wrap the visible field in a shouldUpdate render-prop so the
   // hidden field's validation errors render here too.
+  const compassButton = (
+    <CompassButton
+      active={!!vendorId || hasVendorSuggestions}
+      disabled={!vendorId || dictSuggestionsState === "showing"}
+      onRefreshSuggestions={() => onVendorSelected(vendorId)}
+    />
+  );
+
   const typeaheadSelect = (
-    <Flex vertical align="stretch" gap="small" className="w-full">
-      <Form.Item shouldUpdate noStyle>
-        {() => {
-          const errors = form.getFieldError("name");
-          return (
-            <Form.Item
-              label={label}
-              tooltip="Enter the system name"
-              required
-              htmlFor="vendorName"
-              className="mb-0"
-              validateStatus={errors.length > 0 ? "error" : undefined}
-              help={errors[0]}
-            >
-              <div className="relative">
+    <Form.Item shouldUpdate noStyle>
+      {() => {
+        const errors = form.getFieldError("name");
+        return (
+          <Form.Item
+            label={label}
+            tooltip="Enter the system name"
+            required
+            htmlFor="vendorName"
+            className="mb-0 w-full"
+            validateStatus={errors.length > 0 ? "error" : undefined}
+            help={errors[0]}
+          >
+            <Flex gap="small" align="center">
+              <div className="relative grow">
                 <Select<VendorOption, VendorOption>
                   id="vendorName"
                   labelInValue
@@ -228,11 +236,12 @@ const VendorSelector = ({
                   suggestion={suggestions.length ? suggestions[0].label : ""}
                 />
               </div>
-            </Form.Item>
-          );
-        }}
-      </Form.Item>
-    </Flex>
+              {compassButton}
+            </Flex>
+          </Form.Item>
+        );
+      }}
+    </Form.Item>
   );
 
   const textInput = (
@@ -249,29 +258,32 @@ const VendorSelector = ({
             validateStatus={errors.length > 0 ? "error" : undefined}
             help={errors[0]}
           >
-            <Input
-              id="vendorNameInput"
-              value={name ?? ""}
-              onChange={(e) => {
-                form.setFieldValue("name", e.target.value);
-                form.validateFields(["name"]).catch(() => {});
-              }}
-              autoFocus
-              disabled={nameFieldLockedForGVL}
-              status={errors.length > 0 ? "error" : undefined}
-              suffix={
-                !nameFieldLockedForGVL ? (
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<Icons.Close />}
-                    onClick={handleClear}
-                    aria-label="Clear vendor name"
-                    data-testid="clear-btn"
-                  />
-                ) : undefined
-              }
-            />
+            <Flex gap="small" align="center">
+              <Input
+                id="vendorNameInput"
+                value={name ?? ""}
+                onChange={(e) => {
+                  form.setFieldValue("name", e.target.value);
+                  form.validateFields(["name"]).catch(() => {});
+                }}
+                autoFocus
+                disabled={nameFieldLockedForGVL}
+                status={errors.length > 0 ? "error" : undefined}
+                suffix={
+                  !nameFieldLockedForGVL ? (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<Icons.Close />}
+                      onClick={handleClear}
+                      aria-label="Clear vendor name"
+                      data-testid="clear-btn"
+                    />
+                  ) : undefined
+                }
+              />
+              {compassButton}
+            </Flex>
           </Form.Item>
         );
       }}
@@ -303,14 +315,7 @@ const VendorSelector = ({
       <Form.Item name="vendor_id" noStyle>
         <Input type="hidden" />
       </Form.Item>
-      <Flex align="flex-end" gap="small" className="w-full">
-        {isTypeahead ? typeaheadSelect : textInput}
-        <CompassButton
-          active={!!vendorId || hasVendorSuggestions}
-          disabled={!vendorId || dictSuggestionsState === "showing"}
-          onRefreshSuggestions={() => onVendorSelected(vendorId)}
-        />
-      </Flex>
+      {isTypeahead ? typeaheadSelect : textInput}
     </>
   );
 };
