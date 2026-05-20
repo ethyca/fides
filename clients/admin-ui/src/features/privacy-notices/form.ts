@@ -37,6 +37,7 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   enforcement_level: EnforcementLevel.FRONTEND,
   // When creating, set to disabled to start
   disabled: true,
+  att_exempt: false,
   translations: defaultInitialTranslations,
   children: [],
 };
@@ -53,6 +54,7 @@ export const transformPrivacyNoticeResponseToCreation = (
   notice_key: notice.notice_key,
   disabled: notice.disabled,
   has_gpc_flag: notice.has_gpc_flag,
+  att_exempt: notice.att_exempt,
   id: notice.id,
   internal_description: notice.internal_description,
   translations: notice.translations

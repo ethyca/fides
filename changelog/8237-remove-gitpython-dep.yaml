@@ -1,0 +1,4 @@
+type: Security
+description: Remove GitPython runtime dependency and reimplement git dirty check using stdlib subprocess, eliminating CVE-2026-42215, CVE-2026-42284, and CVE-2026-44243 from the production image
+pr: 8237
+labels: []

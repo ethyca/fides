@@ -45,9 +45,12 @@ export const ActionsTable = ({
       title: "Delete action?",
       content: (
         <span>
-          This will remove <code>{action.title || action.policy_key}</code> and
-          its associated form fields from this property. This change is saved
-          immediately and cannot be undone.
+          This will remove{" "}
+          <Typography.Text code>
+            {action.title || action.policy_key}
+          </Typography.Text>{" "}
+          and its associated form fields from this property. This change is
+          saved immediately and cannot be undone.
         </span>
       ),
       okText: "Delete",

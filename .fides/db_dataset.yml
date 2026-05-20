@@ -3375,6 +3375,34 @@ dataset:
       data_categories: [system]
     - name: vendor_id
       data_categories: [system]
+  - name: cloud_infra_group
+    fields:
+    - name: created_at
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: monitor_config_id
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: system_id
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+  - name: cloud_infra_group_assignment
+    fields:
+    - name: created_at
+      data_categories: [system]
+    - name: group_id
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: promoted
+      data_categories: [system]
+    - name: resource_id
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
   - name: cloud_infra_staged_resource
     fields:
     - name: cloud_account_id

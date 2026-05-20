@@ -586,6 +586,93 @@ describe("System management page", () => {
     });
   });
 
+  describe("Data uses - custom field values on re-open (ENG-3877)", () => {
+    const declarationId = "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff";
+    const definitionId = "id-custom-field-definition-decl-test";
+
+    beforeEach(() => {
+      stubPlus(true);
+
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/custom-metadata/custom-field-definition/resource-type/*",
+        {
+          body: [
+            {
+              name: "cf decl test",
+              description: null,
+              field_type: "string",
+              allow_list_id: null,
+              resource_type: "privacy declaration",
+              field_definition: null,
+              active: true,
+              id: definitionId,
+            },
+          ],
+        },
+      ).as("getDeclarationCustomFieldDefinitions");
+
+      cy.intercept(
+        "GET",
+        `/api/v1/plus/custom-metadata/custom-field/resource/${declarationId}`,
+        {
+          delay: 200,
+          body: [
+            {
+              resource_id: declarationId,
+              custom_field_definition_id: definitionId,
+              value: "Alpha custom value",
+              id: "plu_12485068-aaaa-bbbb-cccc-dddddddddddd",
+            },
+          ],
+        },
+      ).as("getDeclarationCustomFields");
+
+      cy.intercept("/api/v1/system/*", {
+        fixture: "systems/system.json",
+      }).as("getDemoAnalyticsSystem");
+      cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
+      cy.wait("@getDemoAnalyticsSystem");
+    });
+
+    it("repopulates custom field values when re-opening a saved declaration", () => {
+      cy.getByTestId("row-functional.service.improve")
+        .find('[role="button"]')
+        .click();
+      cy.wait("@getDeclarationCustomFieldDefinitions");
+      cy.wait("@getDeclarationCustomFields");
+      cy.getByTestId("declaration-form").within(() => {
+        cy.findByLabelText("cf decl test").should(
+          "have.value",
+          "Alpha custom value",
+        );
+      });
+    });
+
+    // Regression guard: the antd migration (#8229) dropped untracked fields
+    // (`id`, `egress`, `ingress`) from form submissions because they aren't
+    // registered as Form.Items. That made every edit look like a create and
+    // collide with the existing declaration's data_use.
+    it("saves edits to an existing declaration without colliding on data_use", () => {
+      cy.getByTestId("row-functional.service.improve")
+        .find('[role="button"]')
+        .click();
+      cy.wait("@getDeclarationCustomFieldDefinitions");
+      cy.wait("@getDeclarationCustomFields");
+      cy.getByTestId("declaration-form").within(() => {
+        cy.findByLabelText("cf decl test").clear().type("Beta custom value");
+        cy.getByTestId("save-btn").click();
+      });
+      cy.wait("@putSystem").then((interception) => {
+        const declarations = interception.request.body.privacy_declarations;
+        expect(declarations).to.have.length(1);
+        expect(declarations[0].id).to.eq(declarationId);
+        expect(declarations[0].data_use).to.eq("functional.service.improve");
+      });
+      cy.shouldShowMessage("success");
+    });
+  });
+
   describe("Data flow", () => {
     beforeEach(() => {
       stubSystemCrud();
