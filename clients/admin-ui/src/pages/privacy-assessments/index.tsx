@@ -118,23 +118,29 @@ const PrivacyAssessmentsPage: NextPage = () => {
       <PageHeader
         heading="Privacy assessments"
         description="A running record of DPIAs, risk assessments, and transfer evaluations — grouped by the system they evaluate. The Fides agent drafts; you review and sign."
+        size="large"
         rightContent={
           <Space align="center">
             <AssessmentTaskStatusIndicator
               onTaskFinish={refetchAssessments}
               className="mr-2"
             />
-            {hasAssessments && (
-              <Button type="primary" onClick={() => setGenerateModalOpen(true)}>
-                Generate assessments
-              </Button>
-            )}
             <Button
               aria-label="Assessment settings"
               icon={<Icons.Settings />}
+              rounded={false}
               onClick={() => setSettingsModalOpen(true)}
               data-testid="btn-assessment-settings"
             />
+            {hasAssessments && (
+              <Button
+                type="primary"
+                rounded={false}
+                onClick={() => setGenerateModalOpen(true)}
+              >
+                Generate assessments
+              </Button>
+            )}
           </Space>
         }
         isSticky

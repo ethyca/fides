@@ -1,7 +1,11 @@
+import classNames from "classnames";
 import { Flex, Paragraph, Title } from "fidesui";
 import { ComponentProps, ReactNode } from "react";
 
 import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";
+import styles from "./PageHeader.module.scss";
+
+type PageHeaderSize = "default" | "large";
 
 interface PageHeaderProps extends ComponentProps<"div"> {
   heading?: ReactNode;
@@ -10,6 +14,11 @@ interface PageHeaderProps extends ComponentProps<"div"> {
   breadcrumbItems?: NextBreadcrumbProps["items"];
   isSticky?: boolean;
   rightContent?: ReactNode;
+  /**
+   * Visual size of the header title. `large` renders an oversized hero title
+   * (used on landing-style pages like Privacy assessments).
+   */
+  size?: PageHeaderSize;
   children?: ReactNode;
 }
 
@@ -29,6 +38,7 @@ const PageHeader = ({
   description,
   breadcrumbItems,
   isSticky = true,
+  size = "default",
   children,
   rightContent,
   style,
@@ -62,7 +72,10 @@ const PageHeader = ({
     <Flex justify="space-between">
       {typeof heading === "string" ? (
         <Title
-          className={!!breadcrumbItems || !!children ? "pb-4" : undefined}
+          className={classNames(
+            { "pb-4": !!breadcrumbItems || !!children },
+            { [styles.titleLarge]: size === "large" },
+          )}
           level={1}
           data-testid="page-heading"
         >

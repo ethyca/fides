@@ -1,5 +1,6 @@
 export * from "./CustomAlert";
 export * from "./CustomAvatar";
+export * from "./CustomButton";
 export * from "./CustomCard";
 export * from "./CustomDateRangePicker";
 export * from "./CustomDrawer";

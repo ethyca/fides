@@ -174,7 +174,6 @@ export type {
 } from "antd/es/table/interface";
 export type {
   BadgeProps,
-  ButtonProps,
   CheckboxProps,
   CollapseProps,
   DatePickerProps,
@@ -208,7 +207,6 @@ export {
   AutoComplete,
   Badge,
   Breadcrumb,
-  Button,
   Cascader,
   Checkbox,
   Col,
@@ -261,6 +259,7 @@ export type { UploadChangeParam } from "antd/lib/upload";
 export type {
   CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
+  CustomButtonProps as ButtonProps,
   CustomCardProps as CardProps,
   DrawerProps,
   ICustomMultiSelectProps,
@@ -273,6 +272,7 @@ export type {
 export {
   CustomAlert as Alert,
   CustomAvatar as Avatar,
+  CustomButton as Button,
   CustomCard as Card,
   CustomDateRangePicker as DateRangePicker,
   CustomDrawer as Drawer,

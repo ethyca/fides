@@ -148,10 +148,24 @@ export const AssessmentTaskStatusIndicator = ({
     }
     if (lastCompletedDate) {
       return (
-        <Flex align="center" gap="small">
-          <Icons.CheckmarkFilled size={14} />
-          <Text type="secondary" size="sm">
-            Last evaluated {lastAssessmentAgo}
+        <Flex align="center" gap={8}>
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              display: "inline-block",
+              backgroundColor: "var(--fidesui-color-success)",
+            }}
+          />
+          <Text
+            type="secondary"
+            size="sm"
+            style={{
+              fontFamily: "var(--fidesui-font-family-code)",
+              letterSpacing: "0.02em",
+            }}
+          >
+            Last evaluation · {lastAssessmentAgo}
           </Text>
         </Flex>
       );
