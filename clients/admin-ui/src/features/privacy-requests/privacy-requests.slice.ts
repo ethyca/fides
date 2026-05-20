@@ -325,7 +325,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
           request_ids: [id],
         },
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     bulkApproveRequest: build.mutation<
       { succeeded: string[]; failed: any[] },
@@ -336,7 +336,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     bulkRetry: build.mutation<BulkPostPrivacyRequests, string[]>({
       query: (values) => ({
@@ -344,7 +344,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body: values,
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     denyRequest: build.mutation<PrivacyRequestEntity, DenyPrivacyRequest>({
       query: ({ id, reason }) => ({
@@ -355,7 +355,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
           reason,
         },
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     bulkDenyRequest: build.mutation<
       { succeeded: string[]; failed: any[] },
@@ -366,7 +366,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     softDeleteRequest: build.mutation<
       PrivacyRequestEntity,
@@ -376,7 +376,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${id}/soft-delete`,
         method: "POST",
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     bulkSoftDeleteRequest: build.mutation<
       { succeeded: string[]; failed: any[] },
@@ -387,7 +387,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     bulkFinalizeRequest: build.mutation<
       { succeeded: string[]; failed: any[] },
@@ -398,7 +398,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
@@ -469,7 +469,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
           source: PrivacyRequestSource.REQUEST_MANAGER,
         })),
       }),
-      invalidatesTags: () => ["Request"],
+      invalidatesTags: () => ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     getNotification: build.query<PrivacyRequestNotificationInfo, void>({
       // NOTE: This will intentionally return a 404 with `details` if the notification is not yet set.
@@ -508,7 +508,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${privacy_request_id}/resume_from_requires_input`,
         method: "POST",
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     retry: build.mutation<
       PrivacyRequestEntity,
@@ -518,7 +518,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${id}/retry`,
         method: "POST",
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
     saveNotification: build.mutation<any, PrivacyRequestNotificationInfo>({
       query: (params) => ({
@@ -633,7 +633,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/privacy-request/${privacyRequestId}/finalize`,
       }),
-      invalidatesTags: ["Request"],
+      invalidatesTags: ["Request", { type: "Fides Dashboard", id: "actions" }],
     }),
   }),
 });
