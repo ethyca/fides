@@ -1,0 +1,4 @@
+type: Added
+description: Generated TypeScript types for correspondence and notification API contract (ENG-3303).
+pr: 8159
+labels: []

@@ -1,15 +1,4 @@
-import {
-  ChakraBox as Box,
-  ChakraTable as Table,
-  ChakraTbody as Tbody,
-  ChakraTd as Td,
-  ChakraText as Text,
-  ChakraTh as Th,
-  ChakraThead as Thead,
-  ChakraTr as Tr,
-  Switch,
-} from "fidesui";
-import { useFormikContext } from "formik";
+import { Switch, Table, Text } from "fidesui";
 import React from "react";
 
 import { DataFlow, System } from "~/types/api";
@@ -27,71 +16,60 @@ const DataFlowSystemsTable = ({
   onChange,
   flowType,
 }: Props) => {
-  const { setFieldValue } = useFormikContext();
   const handleToggle = (system: System) => {
     const isAssigned = !!dataFlowSystems.find(
       (assigned) => assigned.fides_key === system.fides_key,
     );
     if (isAssigned) {
-      const updatedDataFlows = dataFlowSystems.filter(
-        (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
+      onChange(
+        dataFlowSystems.filter(
+          (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
+        ),
       );
-      setFieldValue("dataFlowSystems", updatedDataFlows);
-      onChange(updatedDataFlows);
     } else {
-      const updatedDataFlows = [
+      onChange([
         ...dataFlowSystems,
         { fides_key: system.fides_key, type: "system" },
-      ];
-
-      setFieldValue("dataFlowSystems", updatedDataFlows);
-      onChange(updatedDataFlows);
+      ]);
     }
   };
 
   return (
-    <Box overflowY="auto" maxHeight="300px">
+    <div className="max-h-[300px] overflow-y-auto">
       <Table
-        size="sm"
+        size="small"
+        dataSource={allSystems}
+        rowKey="fides_key"
+        pagination={false}
         data-testid="assign-systems-table"
-        maxHeight="50vh"
-        overflowY="scroll"
-      >
-        <Thead position="sticky" top={0} background="white" zIndex={1}>
-          <Tr>
-            <Th>System</Th>
-            <Th textAlign="right">Set as {flowType}</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {allSystems.map((system) => {
-            const isAssigned = !!dataFlowSystems.find(
-              (assigned) => assigned.fides_key === system.fides_key,
-            );
-            return (
-              <Tr
-                key={system.fides_key}
-                _hover={{ bg: "gray.50" }}
-                data-testid={`row-${system.fides_key}`}
-              >
-                <Td>
-                  <Text fontSize="xs" lineHeight={4} fontWeight="medium">
-                    {system.name}
-                  </Text>
-                </Td>
-                <Td textAlign="right">
-                  <Switch
-                    checked={isAssigned}
-                    onChange={() => handleToggle(system)}
-                    data-testid="assign-switch"
-                  />
-                </Td>
-              </Tr>
-            );
-          })}
-        </Tbody>
-      </Table>
-    </Box>
+        columns={[
+          {
+            title: "System",
+            dataIndex: "name",
+            render: (name: string) => (
+              <Text className="text-xs font-medium leading-4">{name}</Text>
+            ),
+          },
+          {
+            title: `Set as ${flowType}`,
+            key: "toggle",
+            align: "right" as const,
+            render: (_: unknown, system: System) => {
+              const isAssigned = !!dataFlowSystems.find(
+                (assigned) => assigned.fides_key === system.fides_key,
+              );
+              return (
+                <Switch
+                  checked={isAssigned}
+                  onChange={() => handleToggle(system)}
+                  data-testid="assign-switch"
+                />
+              );
+            },
+          },
+        ]}
+      />
+    </div>
   );
 };
 

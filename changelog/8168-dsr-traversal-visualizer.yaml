@@ -1,0 +1,4 @@
+type: Added
+description: DSR traversal visualizer for previewing how a privacy request will flow through configured integrations (gated behind the `dsrTraversalVisualizer` feature flag)
+pr: 8168
+labels: []

@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, Security
+from fastapi import BackgroundTasks, Depends, HTTPException, Security
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 from fides.api.oauth.utils import verify_oauth_client
@@ -70,6 +70,7 @@ def get_system_links(
 def set_system_links(
     connection_key: str,
     payload: SetSystemLinksRequest,
+    background_tasks: BackgroundTasks,
     service: SystemIntegrationLinkService = Depends(
         get_system_integration_link_service
     ),
@@ -81,6 +82,7 @@ def set_system_links(
                 SystemLinkInput(system_fides_key=link.system_fides_key)
                 for link in payload.links
             ],
+            background_tasks=background_tasks,
         )
     except ConnectionConfigNotFoundError as exc:
         raise HTTPException(
@@ -111,6 +113,7 @@ def set_system_links(
 def delete_system_link(
     connection_key: str,
     system_fides_key: str,
+    background_tasks: BackgroundTasks,
     service: SystemIntegrationLinkService = Depends(
         get_system_integration_link_service
     ),
@@ -119,6 +122,7 @@ def delete_system_link(
         service.delete_link(
             connection_key,
             system_fides_key,
+            background_tasks=background_tasks,
         )
     except ConnectionConfigNotFoundError as exc:
         raise HTTPException(
