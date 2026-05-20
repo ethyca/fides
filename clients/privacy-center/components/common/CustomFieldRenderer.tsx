@@ -64,7 +64,7 @@ const CustomFieldRenderer = ({
         <Select
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
-          placeholder={`Select ${label.toLowerCase()}`}
+          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
           value={props.value}
           onChange={(selectedValue) => {
             props.onChange(selectedValue);
@@ -102,7 +102,7 @@ const CustomFieldRenderer = ({
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
           mode="multiple"
-          placeholder={`Select ${label.toLowerCase()}`}
+          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
           value={props.value}
           onChange={props.onChange}
           onBlur={onBlur}
@@ -136,7 +136,7 @@ const CustomFieldRenderer = ({
         <LocationSelect
           id={fieldKey}
           data-testid={`location-select-${fieldKey}`}
-          placeholder={`Select ${label.toLowerCase()}`}
+          placeholder={props.placeholder ?? `Select ${label.toLowerCase()}`}
           value={props.value !== "" ? props.value : undefined}
           onChange={props.onChange}
           onBlur={onBlur}
@@ -163,7 +163,7 @@ const CustomFieldRenderer = ({
             aria-label={label}
             aria-describedby={`${fieldKey}-error`}
             aria-required={required !== false}
-            className="w-full"
+            style={{ width: "100%" }}
           />
         </div>
       );
@@ -174,7 +174,7 @@ const CustomFieldRenderer = ({
         <Input
           id={fieldKey}
           name={fieldKey}
-          placeholder={label}
+          placeholder={props.placeholder ?? label}
           onChange={(e) => props.onChange(e.target.value)}
           onBlur={onBlur}
           value={props.value}

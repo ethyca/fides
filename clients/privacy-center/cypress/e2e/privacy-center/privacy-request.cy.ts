@@ -561,6 +561,7 @@ describe("Privacy Request with date of birth identity field", () => {
     cy.loadConfigFixture("config/config_dob_request.json").then(() => {
       cy.getByTestId("privacy-request-form").within(() => {
         cy.get("#email").type("test@example.com");
+        cy.get("#date_of_birth").should("exist");
         cy.get("button[type='submit']").click();
         cy.contains("Date of Birth is required").should("be.visible");
       });

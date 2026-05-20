@@ -459,7 +459,15 @@ const SystemInformationForm = ({
       layout="vertical"
       key={passedInSystem?.fides_key ?? "create"}
     >
-      <FormGuard id="SystemInfoTab" name="System Info" />
+      <Form.Item shouldUpdate noStyle>
+        {() => (
+          <FormGuard
+            id="SystemInfoTab"
+            name="System Info"
+            isDirty={!isEqual(form.getFieldsValue(true), initialValues)}
+          />
+        )}
+      </Form.Item>
       {isReadOnly && (
         <Alert
           title="Read-only access"

@@ -1,4 +1,5 @@
-import { Form, useModal } from "fidesui";
+import { useModal } from "fidesui";
+import { useFormikContext } from "formik";
 import { createRef, MutableRefObject, useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -80,13 +81,23 @@ export const useIsAnyFormDirty = () => {
 type FormGuardProps = {
   id: string;
   name: string;
+  /**
+   * Optional explicit dirty flag for non-Formik forms (antd Form, custom
+   * state, etc). When omitted, FormGuard falls back to reading `dirty`
+   * from FormikContext, which is the original behavior.
+   */
+  isDirty?: boolean;
 };
-export const FormGuard = ({ id, name }: FormGuardProps) => {
-  const form = Form.useFormInstance();
-  // useWatch re-renders this component on any field change so isFieldsTouched stays current
-  Form.useWatch([], form);
+const FormGuardWithSlice = ({
+  id,
+  name,
+  dirty,
+}: {
+  id: string;
+  name: string;
+  dirty: boolean;
+}) => {
   const dispatch = useAppDispatch();
-  const isDirty = form.isFieldsTouched();
 
   useEffect(() => {
     dispatch(registerForm({ id, name }));
@@ -97,8 +108,24 @@ export const FormGuard = ({ id, name }: FormGuardProps) => {
   }, [dispatch, id, name]);
 
   useEffect(() => {
-    dispatch(updateDirtyFormState({ id, isDirty }));
-  }, [isDirty, dispatch, id]);
+    dispatch(updateDirtyFormState({ id, isDirty: dirty }));
+  }, [dirty, dispatch, id]);
 
   return null;
+};
+
+const FormGuardFromFormik = ({ id, name }: { id: string; name: string }) => {
+  const { dirty } = useFormikContext();
+  return <FormGuardWithSlice id={id} name={name} dirty={dirty} />;
+};
+
+export const FormGuard = ({ id, name, isDirty }: FormGuardProps) => {
+  // Two flavours: explicit dirty flag (for antd Form / non-Formik forms)
+  // vs Formik-context-derived (the original behaviour). Keeping them as
+  // separate components avoids calling useFormikContext outside a Formik
+  // provider in the explicit case.
+  if (isDirty !== undefined) {
+    return <FormGuardWithSlice id={id} name={name} dirty={isDirty} />;
+  }
+  return <FormGuardFromFormik id={id} name={name} />;
 };

@@ -1,0 +1,4 @@
+type: Added
+description: Stewardship tab on the user detail page that lists the systems and discovery monitors a user is assigned as a steward of.
+pr: 8240
+labels: []
