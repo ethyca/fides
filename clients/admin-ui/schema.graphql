@@ -1,4 +1,7 @@
-directive @defer(if: Boolean, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @defer(
+  if: Boolean
+  label: String
+) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @stream(if: Boolean, label: String, initialCount: Int = 0) on FIELD
 
@@ -56,7 +59,9 @@ enum DashboardActionType {
   pia_update
 }
 
-"""Date with time (isoformat)"""
+"""
+Date with time (isoformat)
+"""
 scalar DateTime
 
 enum DiffDirection {
@@ -68,7 +73,10 @@ enum DiffDirection {
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf).
 """
-scalar JSON @specifiedBy(url: "https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf")
+scalar JSON
+  @specifiedBy(
+    url: "https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf"
+  )
 
 type Posture {
   score: Float!
@@ -135,7 +143,13 @@ type Query {
   activityFeed(page: Int! = 1, size: Int! = 20): ActivityFeedPage!
   privacyRequests: PrivacyRequests!
   systemCoverage: SystemCoverage!
-  priorityActions(page: Int! = 1, size: Int! = 8, action: DashboardActionType = null, status: DashboardActionStatus = null, dimension: String = null): PriorityActionsPage!
+  priorityActions(
+    page: Int! = 1
+    size: Int! = 8
+    action: DashboardActionType = null
+    status: DashboardActionStatus = null
+    dimension: String = null
+  ): PriorityActionsPage!
 }
 
 type QuickAction {
