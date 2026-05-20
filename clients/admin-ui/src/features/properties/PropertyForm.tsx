@@ -104,7 +104,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
   const onFinish = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      await handleSubmit(values);
+      await handleSubmit({ ...values, id: property?.id });
     } finally {
       setIsSubmitting(false);
     }
