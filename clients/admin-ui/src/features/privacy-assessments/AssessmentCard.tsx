@@ -20,7 +20,11 @@ import {
   STATUS_BADGE_COLORS,
   STATUS_BADGE_LABELS,
 } from "./constants";
-import { AssessmentStatus, PrivacyAssessmentResponse } from "./types";
+import {
+  AssessmentStatus,
+  PrivacyAssessmentResponse,
+  RiskLevel,
+} from "./types";
 
 const { Title } = Typography;
 
@@ -111,7 +115,11 @@ export const AssessmentCard = ({
                 </RouterLink>
               )}
             </Title>
-            <Text variant="monoLabel" size="sm" className={styles.templateSubtitle}>
+            <Text
+              variant="monoLabel"
+              size="sm"
+              className={styles.templateSubtitle}
+            >
               {templateName}
             </Text>
           </div>
@@ -138,7 +146,13 @@ export const AssessmentCard = ({
           <Flex align="center" gap={6}>
             <span
               className={styles.riskDot}
-              style={{ backgroundColor: riskDotColor }}
+              style={{
+                backgroundColor: riskDotColor,
+                boxShadow:
+                  riskLevel === RiskLevel.HIGH
+                    ? `0 0 6px ${riskDotColor}`
+                    : undefined,
+              }}
             />
             <Text variant="monoLabel" size="sm" style={{ color: riskDotColor }}>
               {riskLabel} risk
