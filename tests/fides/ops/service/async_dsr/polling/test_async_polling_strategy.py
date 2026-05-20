@@ -1204,9 +1204,7 @@ class TestAsyncPollingStrategy:
         mock_query_config = MagicMock()
         mock_query_config.get_masking_request.return_value = masking_request
         mock_query_config.get_read_requests_by_identity.return_value = []
-        mock_query_config.generate_update_param_values.return_value = {
-            "user_id": "abc"
-        }
+        mock_query_config.generate_update_param_values.return_value = {"user_id": "abc"}
 
         mock_response = Mock(spec=Response)
         mock_response.status_code = 200
