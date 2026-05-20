@@ -143,6 +143,10 @@ const VendorSelector = ({
     const newName = newValue.label.startsWith(NEW_SYSTEM_PREFIX)
       ? newValue.value
       : newValue.label;
+    // Clear searchParam so the synthetic "Create new system" option drops out
+    // of optionsWithCustom — otherwise antd warns that the selected value's
+    // label doesn't match that synthetic option's label.
+    setSearchParam("");
     form.setFieldsValue({ name: newName, vendor_id: newVendorId });
     form.validateFields(["name"]).catch(() => {});
     onVendorSelected(newVendorId);
