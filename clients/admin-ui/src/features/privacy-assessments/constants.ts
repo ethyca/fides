@@ -17,7 +17,7 @@ export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {
   [RiskLevel.HIGH]: "High",
-  [RiskLevel.MEDIUM]: "Med",
+  [RiskLevel.MEDIUM]: "Medium",
   [RiskLevel.LOW]: "Low",
 };
 
