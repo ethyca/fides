@@ -471,10 +471,9 @@ const SystemInformationForm = ({
       )}
       <fieldset disabled={isReadOnly} className="border-0 p-0">
         <Flex vertical className="w-full lg:max-w-[70%]">
-          <Text className="text-sm font-medium">
-            By providing a small amount of additional context for each system we
-            can make reporting and understanding our tech stack much easier for
-            everyone from engineering to legal teams. So let&apos;s do this now.
+          <Text>
+            Adding appropriate detail and context to each system helps everyone
+            understand the tech stack better and makes reporting easier.
           </Text>
 
           <SystemFormInputGroup heading="System details">
