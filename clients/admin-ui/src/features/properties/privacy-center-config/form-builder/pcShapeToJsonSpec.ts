@@ -4,6 +4,7 @@ import type {
   PcCustomFields,
   PcLocationField,
   PcMultiSelectField,
+  PcRadioField,
   PcSelectField,
   PcTextField,
 } from "./types";
@@ -12,6 +13,7 @@ const COMPONENT_FOR_FIELD: Record<PcCustomField["field_type"], string> = {
   text: "Text",
   select: "Select",
   multiselect: "MultiSelect",
+  radio: "Radio",
   location: "Location",
 };
 
@@ -78,6 +80,14 @@ const buildCustomElement = (
       props.options = sel.options;
       if (sel.default_value !== undefined && sel.default_value !== null) {
         props.default_value = sel.default_value;
+      }
+      break;
+    }
+    case "radio": {
+      const rad = field as PcRadioField;
+      props.options = rad.options;
+      if (rad.default_value !== undefined && rad.default_value !== null) {
+        props.default_value = rad.default_value;
       }
       break;
     }

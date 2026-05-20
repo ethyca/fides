@@ -9,6 +9,7 @@ import type {
   PcFieldType,
   PcLocationField,
   PcMultiSelectField,
+  PcRadioField,
   PcSelectField,
   PcTextField,
   ValidationError,
@@ -27,6 +28,7 @@ export type {
   PcFieldType,
   PcLocationField,
   PcMultiSelectField,
+  PcRadioField,
   PcSelectField,
   PcTextField,
   ValidationError,
@@ -41,6 +43,7 @@ const FIELD_TYPE: Record<
   Text: "text",
   Select: "select",
   MultiSelect: "multiselect",
+  Radio: "radio",
   Location: "location",
 };
 
@@ -275,6 +278,18 @@ export function jsonSpecToPcShape(spec: JsonRenderSpec): MapResult {
           select.default_value = props.default_value;
         }
         pcField = select;
+        break;
+      }
+      case "Radio": {
+        const radio: PcRadioField = {
+          ...baseField,
+          field_type: "radio",
+          options: props.options as string[],
+        };
+        if (props.default_value !== undefined && props.default_value !== null) {
+          radio.default_value = props.default_value;
+        }
+        pcField = radio;
         break;
       }
       case "MultiSelect": {

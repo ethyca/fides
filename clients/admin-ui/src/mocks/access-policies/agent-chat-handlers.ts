@@ -88,7 +88,7 @@ export const agentChatHandlers = () => {
   ];
 
   return [
-    rest.post("*/api/v1/plus/access-policy/agent", async (req, res, ctx) => {
+    rest.post("*/api/v1/plus/access-policies/agent", async (req, res, ctx) => {
       const body = await req.json();
       const chatHistoryId =
         (body.chat_history_id as string) ?? crypto.randomUUID();

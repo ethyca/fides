@@ -4,6 +4,7 @@ export type PcFieldType =
   | "text"
   | "select"
   | "multiselect"
+  | "radio"
   | "location";
 
 export type VisibilityOperator = "eq" | "ne" | "set" | "empty" | "contains";
@@ -34,6 +35,12 @@ export interface PcSelectField extends PcFieldBase {
   default_value?: string | null;
 }
 
+export interface PcRadioField extends PcFieldBase {
+  field_type: "radio";
+  options: string[];
+  default_value?: string | null;
+}
+
 export interface PcMultiSelectField extends PcFieldBase {
   field_type: "multiselect";
   options: string[];
@@ -49,6 +56,7 @@ export interface PcLocationField extends PcFieldBase {
 export type PcCustomField =
   | PcTextField
   | PcSelectField
+  | PcRadioField
   | PcMultiSelectField
   | PcLocationField;
 
@@ -102,3 +110,28 @@ export interface FieldPropertiesPanelProps {
 export type EditableType = Exclude<ComponentType, "Form">;
 
 export type FormValues = Record<string, unknown>;
+
+export type ChatRole = "user" | "assistant" | "system";
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
+export type Status = "idle" | "streaming" | "aborted" | "error";
+
+export interface UseFormBuilderInput {
+  propertyId: string;
+  actionPolicyKey: string;
+  initialSpec: JsonRenderSpec | null;
+}
+
+export interface UseFormBuilder {
+  spec: JsonRenderSpec | null;
+  messages: ChatMessage[];
+  status: Status;
+  error: string | null;
+  sendMessage: (text: string) => Promise<void>;
+  abort: () => void;
+  setSpec: (spec: JsonRenderSpec | null) => void;
+}

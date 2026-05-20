@@ -1,10 +1,15 @@
 import { defineRegistry, useStateBinding } from "@json-render/react";
-import { Form, Input, Select } from "fidesui";
+import { Form, Input, Radio, Select } from "fidesui";
 import dynamic from "next/dynamic";
 import React from "react";
 
 import { catalog } from "./catalog";
-import { BaseFieldProps, useDefaultValueSeed } from "./fieldUtils";
+import {
+  BaseFieldProps,
+  FieldWrapper,
+  IdentityFieldProps,
+  useDefaultValueSeed,
+} from "./fieldUtils";
 
 // LocationField pulls in fidesui's LocationSelect, which transitively imports
 // iso-3166 (CJS). Turbopack rejects that on the SSR path with "CJS module
@@ -25,20 +30,6 @@ const PhoneFieldDynamic = dynamic(
 const FormContainer = ({ children }: { children?: React.ReactNode }) => (
   <Form layout="vertical">{children}</Form>
 );
-
-const FieldWrapper = ({
-  elementId,
-  children,
-}: {
-  elementId?: string;
-  children: React.ReactNode;
-}) => {
-  if (!elementId) {
-    // eslint-disable-next-line react/jsx-no-useless-fragment
-    return <>{children}</>;
-  }
-  return <span data-element-id={elementId}>{children}</span>;
-};
 
 // Each field binds its current value to /form/<name> in the json-render
 // state model. In Preview mode this lets visibility conditions react to
@@ -116,11 +107,6 @@ const MultiSelectField = ({ props }: { props: BaseFieldProps }) => {
   );
 };
 
-interface IdentityFieldProps {
-  required: boolean;
-  "data-element-id"?: string;
-}
-
 const EmailField = ({ props }: { props: IdentityFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>("email");
   return (
@@ -156,6 +142,28 @@ const NameField = ({ props }: { props: IdentityFieldProps }) => {
   );
 };
 
+const RadioField = ({ props }: { props: BaseFieldProps }) => {
+  const [value, setValue] = useFieldBinding<string>(props.name);
+  useDefaultValueSeed(
+    value,
+    setValue,
+    props.default_value as string | undefined,
+  );
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label={props.label} required={props.required}>
+        <Radio.Group
+          aria-label={props.label}
+          data-testid={`field-${props.name}`}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
+
 export const { registry } = defineRegistry(catalog.jsonRender, {
   components: {
     Form: ({ children }) => <FormContainer>{children}</FormContainer>,
@@ -164,6 +172,7 @@ export const { registry } = defineRegistry(catalog.jsonRender, {
     MultiSelect: ({ props }) => (
       <MultiSelectField props={props as BaseFieldProps} />
     ),
+    Radio: ({ props }) => <RadioField props={props as BaseFieldProps} />,
     Location: ({ props }) => <LocationField props={props as BaseFieldProps} />,
     Email: ({ props }) => <EmailField props={props as IdentityFieldProps} />,
     Name: ({ props }) => <NameField props={props as IdentityFieldProps} />,

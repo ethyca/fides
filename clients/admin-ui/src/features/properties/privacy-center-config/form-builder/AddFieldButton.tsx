@@ -10,6 +10,7 @@ const FIELD_TYPE_LABELS: Record<EditableComponentType, string> = {
   Text: "Text input",
   Select: "Single-select dropdown",
   MultiSelect: "Multi-select dropdown",
+  Radio: "Radio group",
   Location: "Location picker",
   Email: "Email",
   Name: "Name",

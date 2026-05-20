@@ -51,6 +51,18 @@ const components = {
       .strict(),
     description: "Multi-choice dropdown.",
   },
+  Radio: {
+    props: z
+      .object({
+        ...baseField,
+        placeholder: z.string().optional(),
+        options: z.array(z.string()).min(1),
+        default_value: z.string().nullable().optional(),
+      })
+      .strict(),
+    description:
+      "Single-choice radio group — like Select but with all options visible.",
+  },
   Location: {
     props: z
       .object({

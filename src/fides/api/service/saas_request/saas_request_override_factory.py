@@ -35,6 +35,7 @@ class SaaSRequestType(Enum):
     GET_CONSENTABLE_ITEMS = "get_consentable_items"
     UPDATE_CONSENT = "update_consent"
     PROCESS_CONSENT_WEBHOOK = "process_consent_webhook"
+    REFRESH_CONSENT_WEBHOOK_TOKEN = "refresh_consent_webhook_token"
 
     # Async polling request types
     POLLING_STATUS = "polling_status"
@@ -120,6 +121,8 @@ class SaaSRequestOverrideFactory:
                     validate_update_consent_function(override_function)
                 elif request_type == SaaSRequestType.PROCESS_CONSENT_WEBHOOK:
                     validate_process_consent_webhook_function(override_function)
+                elif request_type == SaaSRequestType.REFRESH_CONSENT_WEBHOOK_TOKEN:
+                    validate_refresh_consent_webhook_token_function(override_function)
                 elif request_type == SaaSRequestType.POLLING_STATUS:
                     validate_polling_status_override_function(override_function)
                 elif request_type == SaaSRequestType.POLLING_RESULT:
@@ -280,6 +283,24 @@ def validate_process_consent_webhook_function(f: Callable) -> None:
     if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS process consent webhook function must declare at least 4 parameters"
+        )
+
+
+def validate_refresh_consent_webhook_token_function(f: Callable) -> None:
+    """
+    Validate the override function for refreshing consent webhook tokens.
+
+    The function must return a bool and declare at least 3 parameters:
+    (client, secrets, new_token).
+    """
+    sig: Signature = signature(f)
+    if sig.return_annotation is not bool:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided refresh consent webhook token function must return a bool"
+        )
+    if len(sig.parameters) < 3:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided refresh consent webhook token function must declare at least 3 parameters"
         )
 
 

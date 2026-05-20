@@ -197,7 +197,7 @@ const loadEnvironmentVariables = () => {
         | "none") || "none",
     // Attribution link options
     ATTRIBUTION_ENABLED:
-      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED === "true", // default: false
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED !== "false", // default: true
     ATTRIBUTION_ANCHOR_TEXT:
       process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT ||
       DEFAULT_ATTRIBUTION_ANCHOR_TEXT,

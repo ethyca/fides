@@ -15,22 +15,22 @@ describe("loadEnvironmentVariables", () => {
   });
 
   describe("ATTRIBUTION_ENABLED", () => {
-    it("defaults to false when not set", () => {
+    it("defaults to true when not set", () => {
       delete process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED;
-      const settings = loadEnvironmentVariables();
-      expect(settings.ATTRIBUTION_ENABLED).toBe(false);
-    });
-
-    it('is true when set to "true"', () => {
-      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "true";
       const settings = loadEnvironmentVariables();
       expect(settings.ATTRIBUTION_ENABLED).toBe(true);
     });
 
-    it("is false for any other value", () => {
-      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "yes";
+    it('is false when set to "false"', () => {
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "false";
       const settings = loadEnvironmentVariables();
       expect(settings.ATTRIBUTION_ENABLED).toBe(false);
+    });
+
+    it("is true for any other value", () => {
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "yes";
+      const settings = loadEnvironmentVariables();
+      expect(settings.ATTRIBUTION_ENABLED).toBe(true);
     });
   });
 
