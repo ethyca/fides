@@ -1,15 +1,8 @@
 import { Flex, Input, Segmented, Text } from "fidesui";
 
 import styles from "./AssessmentFilters.module.scss";
-import { AssessmentGroupResponse, AssessmentStatus, RiskLevel } from "./types";
-
-export type AssessmentFilterKey =
-  | "all"
-  | "needs_input"
-  | "agent_drafting"
-  | "slack"
-  | "high_risk"
-  | "signed";
+import { AssessmentFilterKey, AssessmentGroupResponse } from "./types";
+import { assessmentMatchesFilter } from "./utils";
 
 export type ViewMode = "grid" | "list";
 
@@ -34,23 +27,7 @@ export const AssessmentFilters = ({
 }: AssessmentFiltersProps) => {
   const allAssessments = groups.flatMap((g) => g.assessments ?? []);
 
-  const counts: Record<AssessmentFilterKey, number> = {
-    all: allAssessments.length,
-    needs_input: allAssessments.filter(
-      (a) => a.status === AssessmentStatus.IN_PROGRESS,
-    ).length,
-    agent_drafting: allAssessments.filter(
-      (a) => a.status === AssessmentStatus.GENERATING,
-    ).length,
-    slack: 0, // Not derivable from current API
-    high_risk: allAssessments.filter((a) => a.risk_level === RiskLevel.HIGH)
-      .length,
-    signed: allAssessments.filter(
-      (a) => a.status === AssessmentStatus.COMPLETED,
-    ).length,
-  };
-
-  const filterItems = [
+  const filterItems: { key: AssessmentFilterKey; label: string }[] = [
     { key: "all", label: "All" },
     { key: "needs_input", label: "Needs input" },
     { key: "agent_drafting", label: "Agent drafting" },
@@ -58,6 +35,15 @@ export const AssessmentFilters = ({
     { key: "high_risk", label: "High risk" },
     { key: "signed", label: "Signed" },
   ];
+
+  // Route every chip count through the same predicate the page uses to
+  // actually filter, so the numbers can never disagree with what's on screen.
+  const counts = Object.fromEntries(
+    filterItems.map((item) => [
+      item.key,
+      allAssessments.filter((a) => assessmentMatchesFilter(a, item.key)).length,
+    ]),
+  ) as Record<AssessmentFilterKey, number>;
 
   return (
     <Flex justify="space-between" align="center" className={styles.container}>

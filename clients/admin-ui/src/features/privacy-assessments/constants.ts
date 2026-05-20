@@ -4,6 +4,7 @@ import {
   AnswerSource,
   AnswerStatus,
   AssessmentStatus,
+  DerivedAssessmentStatus,
   RiskLevel,
 } from "./types";
 
@@ -59,18 +60,26 @@ export const FREQUENCY_OPTIONS = [
   { label: "Yearly (Jan 1st)", value: "yearly", cron: "0 9 1 1 *" },
 ];
 
-export const STATUS_BADGE_LABELS: Record<AssessmentStatus, string> = {
-  [AssessmentStatus.IN_PROGRESS]: "Needs input",
-  [AssessmentStatus.COMPLETED]: "Signed",
-  [AssessmentStatus.OUTDATED]: "Out of date",
-  [AssessmentStatus.GENERATING]: "Agent · Drafting",
+/**
+ * Labels keyed by ``DerivedAssessmentStatus`` — see ``deriveAssessmentStatus``
+ * in ``utils.ts`` for the resolution rules.
+ */
+export const STATUS_BADGE_LABELS: Record<DerivedAssessmentStatus, string> = {
+  [DerivedAssessmentStatus.IN_PROGRESS]: "Needs input",
+  [DerivedAssessmentStatus.COMPLETED]: "Signed",
+  [DerivedAssessmentStatus.OUTDATED]: "Out of date",
+  [DerivedAssessmentStatus.GENERATING]: "Agent · Drafting",
+  [DerivedAssessmentStatus.SLACK_GATHERING]: "Slack · Gathering",
+  [DerivedAssessmentStatus.SLACK_STOPPED]: "Slack · Stopped",
 };
 
-export const STATUS_BADGE_COLORS: Record<AssessmentStatus, string> = {
-  [AssessmentStatus.IN_PROGRESS]: "var(--fidesui-brand-minos)",
-  [AssessmentStatus.COMPLETED]: "var(--fidesui-color-success)",
-  [AssessmentStatus.OUTDATED]: "var(--fidesui-color-error)",
-  [AssessmentStatus.GENERATING]: "var(--fidesui-brand-terracotta)",
+export const STATUS_BADGE_COLORS: Record<DerivedAssessmentStatus, string> = {
+  [DerivedAssessmentStatus.IN_PROGRESS]: "var(--fidesui-brand-minos)",
+  [DerivedAssessmentStatus.COMPLETED]: "var(--fidesui-color-success)",
+  [DerivedAssessmentStatus.OUTDATED]: "var(--fidesui-color-error)",
+  [DerivedAssessmentStatus.GENERATING]: "var(--fidesui-brand-terracotta)",
+  [DerivedAssessmentStatus.SLACK_GATHERING]: "var(--fidesui-brand-terracotta)",
+  [DerivedAssessmentStatus.SLACK_STOPPED]: "var(--fidesui-color-warning)",
 };
 
 export const SOURCE_TYPE_LABELS: Record<string, string> = {

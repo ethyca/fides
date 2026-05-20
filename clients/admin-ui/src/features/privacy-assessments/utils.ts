@@ -1,6 +1,17 @@
 import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
-import type { AssessmentTaskResponse, EvidenceItem } from "./types";
-import { EvidenceType } from "./types";
+import type {
+  AssessmentFilterKey,
+  AssessmentTaskResponse,
+  EvidenceItem,
+  PrivacyAssessmentResponse,
+} from "./types";
+import {
+  AssessmentStatus,
+  DerivedAssessmentStatus,
+  EvidenceType,
+  QuestionnaireSessionStatus,
+  RiskLevel,
+} from "./types";
 
 export const getInitials = (name: string) =>
   name
@@ -90,4 +101,92 @@ export const filterEvidence = (
   }
   const lower = query.toLowerCase();
   return items.filter((item) => matchesQuery(item, lower));
+};
+
+type DeriveStatusInput = Pick<
+  PrivacyAssessmentResponse,
+  "status" | "questionnaire_status"
+>;
+
+/**
+ * Resolve the badge value shown on an assessment card from the orthogonal
+ * signals the backend exposes. Priority:
+ *
+ * 1. ``GENERATING`` — initial agent draft pass is in flight.
+ * 2. ``SLACK_GATHERING`` — a Slack questionnaire session is currently open.
+ * 3. ``SLACK_STOPPED`` — a Slack session was abandoned and the assessment
+ *    still needs answers (only overrides ``IN_PROGRESS``; completed / outdated
+ *    assessments don't surface old questionnaire history).
+ * 4. Otherwise mirror ``AssessmentStatus`` 1:1.
+ *
+ * Callers should store the result as ``derivedStatus`` and key off the
+ * ``STATUS_BADGE_*`` records in ``constants.ts``.
+ */
+export const deriveAssessmentStatus = (
+  assessment: DeriveStatusInput,
+): DerivedAssessmentStatus => {
+  if (assessment.status === AssessmentStatus.GENERATING) {
+    return DerivedAssessmentStatus.GENERATING;
+  }
+  if (assessment.questionnaire_status === QuestionnaireSessionStatus.IN_PROGRESS) {
+    return DerivedAssessmentStatus.SLACK_GATHERING;
+  }
+  if (
+    assessment.status === AssessmentStatus.IN_PROGRESS &&
+    assessment.questionnaire_status === QuestionnaireSessionStatus.STOPPED
+  ) {
+    return DerivedAssessmentStatus.SLACK_STOPPED;
+  }
+  switch (assessment.status) {
+    case AssessmentStatus.COMPLETED:
+      return DerivedAssessmentStatus.COMPLETED;
+    case AssessmentStatus.OUTDATED:
+      return DerivedAssessmentStatus.OUTDATED;
+    case AssessmentStatus.IN_PROGRESS:
+    default:
+      return DerivedAssessmentStatus.IN_PROGRESS;
+  }
+};
+
+/**
+ * Single predicate used by both the filter chip counts and the actual
+ * filtering pass on the assessments list. Routing both through here keeps
+ * the visible badge, the chip totals, and the cards on screen consistent.
+ *
+ * Filter semantics:
+ * - ``all`` — always true.
+ * - ``needs_input`` — derived status is ``IN_PROGRESS`` (slack / drafting
+ *   cards have their own chips).
+ * - ``agent_drafting`` — derived status is ``GENERATING``.
+ * - ``slack`` — any Slack-derived state (``SLACK_GATHERING`` or
+ *   ``SLACK_STOPPED``).
+ * - ``high_risk`` — risk level is ``HIGH``, regardless of status.
+ * - ``signed`` — derived status is ``COMPLETED``.
+ */
+export const assessmentMatchesFilter = (
+  assessment: PrivacyAssessmentResponse,
+  filter: AssessmentFilterKey,
+): boolean => {
+  if (filter === "all") {
+    return true;
+  }
+  if (filter === "high_risk") {
+    return assessment.risk_level === RiskLevel.HIGH;
+  }
+  const derived = deriveAssessmentStatus(assessment);
+  switch (filter) {
+    case "needs_input":
+      return derived === DerivedAssessmentStatus.IN_PROGRESS;
+    case "agent_drafting":
+      return derived === DerivedAssessmentStatus.GENERATING;
+    case "slack":
+      return (
+        derived === DerivedAssessmentStatus.SLACK_GATHERING ||
+        derived === DerivedAssessmentStatus.SLACK_STOPPED
+      );
+    case "signed":
+      return derived === DerivedAssessmentStatus.COMPLETED;
+    default:
+      return false;
+  }
 };

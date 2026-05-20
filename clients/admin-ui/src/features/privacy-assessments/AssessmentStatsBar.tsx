@@ -1,7 +1,12 @@
 import { Divider, Flex, Text } from "fidesui";
 
 import styles from "./AssessmentStatsBar.module.scss";
-import { AssessmentGroupResponse, AssessmentStatus, RiskLevel } from "./types";
+import {
+  AssessmentGroupResponse,
+  DerivedAssessmentStatus,
+  RiskLevel,
+} from "./types";
+import { deriveAssessmentStatus } from "./utils";
 
 interface AssessmentStatsBarProps {
   groups: AssessmentGroupResponse[];
@@ -11,27 +16,30 @@ export const AssessmentStatsBar = ({ groups }: AssessmentStatsBarProps) => {
   const allAssessments = groups.flatMap((g) => g.assessments ?? []);
   const total = allAssessments.length;
 
-  const needsInputCount = allAssessments.filter(
-    (a) =>
-      a.status === AssessmentStatus.IN_PROGRESS ||
-      a.status === AssessmentStatus.OUTDATED,
-  ).length;
+  const countsByDerived = new Map<DerivedAssessmentStatus, number>();
+  allAssessments.forEach((a) => {
+    const key = deriveAssessmentStatus(a);
+    countsByDerived.set(key, (countsByDerived.get(key) ?? 0) + 1);
+  });
+  const countOf = (key: DerivedAssessmentStatus) =>
+    countsByDerived.get(key) ?? 0;
 
-  const agentDraftingCount = allAssessments.filter(
-    (a) => a.status === AssessmentStatus.GENERATING,
-  ).length;
+  // "Needs your attention" covers cards waiting on the human reviewer:
+  // ``IN_PROGRESS`` (open answers), ``OUTDATED`` (re-check needed), and
+  // ``SLACK_STOPPED`` (questionnaire bailed, follow-up required).
+  // ``SLACK_GATHERING`` is excluded — the agent is waiting on the SME.
+  const needsInputCount =
+    countOf(DerivedAssessmentStatus.IN_PROGRESS) +
+    countOf(DerivedAssessmentStatus.OUTDATED) +
+    countOf(DerivedAssessmentStatus.SLACK_STOPPED);
+
+  const agentDraftingCount = countOf(DerivedAssessmentStatus.GENERATING);
+  const slackCount = countOf(DerivedAssessmentStatus.SLACK_GATHERING);
+  const signedCount = countOf(DerivedAssessmentStatus.COMPLETED);
 
   const highRiskCount = allAssessments.filter(
     (a) => a.risk_level === RiskLevel.HIGH,
   ).length;
-
-  const signedCount = allAssessments.filter(
-    (a) => a.status === AssessmentStatus.COMPLETED,
-  ).length;
-
-  // Slack gathering isn't directly derivable from current API data,
-  // so we show 0 for now
-  const slackCount = 0;
 
   const stats = [
     {

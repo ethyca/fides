@@ -12,17 +12,16 @@ import { useMemo, useState } from "react";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  assessmentMatchesFilter,
   AssessmentFilterKey,
   AssessmentFilters,
   AssessmentGroup,
   AssessmentGroupResponse,
   AssessmentSettingsModal,
   AssessmentStatsBar,
-  AssessmentStatus,
   AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
-  RiskLevel,
   useGetPrivacyAssessmentsQuery,
   ViewMode,
 } from "~/features/privacy-assessments";
@@ -32,40 +31,20 @@ function filterGroups(
   filter: AssessmentFilterKey,
   search: string,
 ): AssessmentGroupResponse[] {
+  const query = search.trim().toLowerCase();
   return groups
     .map((group) => {
-      let assessments = group.assessments ?? [];
-
-      // Apply status/risk filter
-      if (filter === "needs_input") {
-        assessments = assessments.filter(
-          (a) => a.status === AssessmentStatus.IN_PROGRESS,
-        );
-      } else if (filter === "agent_drafting") {
-        assessments = assessments.filter(
-          (a) => a.status === AssessmentStatus.GENERATING,
-        );
-      } else if (filter === "high_risk") {
-        assessments = assessments.filter(
-          (a) => a.risk_level === RiskLevel.HIGH,
-        );
-      } else if (filter === "signed") {
-        assessments = assessments.filter(
-          (a) => a.status === AssessmentStatus.COMPLETED,
-        );
-      }
-
-      // Apply search
-      if (search) {
-        const q = search.toLowerCase();
+      let assessments = (group.assessments ?? []).filter((a) =>
+        assessmentMatchesFilter(a, filter),
+      );
+      if (query) {
         assessments = assessments.filter(
           (a) =>
-            (a.name ?? "").toLowerCase().includes(q) ||
-            (a.system_name ?? "").toLowerCase().includes(q) ||
-            (a.template_name ?? "").toLowerCase().includes(q),
+            (a.name ?? "").toLowerCase().includes(query) ||
+            (a.system_name ?? "").toLowerCase().includes(query) ||
+            (a.template_name ?? "").toLowerCase().includes(query),
         );
       }
-
       return { ...group, assessments };
     })
     .filter((group) => (group.assessments ?? []).length > 0);

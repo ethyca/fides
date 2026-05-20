@@ -1,6 +1,7 @@
 import {
   AssessmentStatus,
   GroupedAssessmentsResponse,
+  QuestionnaireSessionStatus,
   RiskLevel,
 } from "~/features/privacy-assessments";
 
@@ -47,6 +48,7 @@ export const mockPrivacyAssessmentsResponse: GroupedAssessmentsResponse = {
             "Colorado Privacy Act Data Protection Assessment (DPA)",
           name: "Cookie House BigQuery: Ad performance",
           status: AssessmentStatus.IN_PROGRESS,
+          questionnaire_status: QuestionnaireSessionStatus.STOPPED,
           completeness: 41.7,
           risk_level: RiskLevel.MEDIUM,
           system_fides_key: "cookie_house_bigquery",
@@ -131,6 +133,7 @@ export const mockPrivacyAssessmentsResponse: GroupedAssessmentsResponse = {
           template_name: "GDPR Data Protection Impact Assessment (DPIA)",
           name: "Customer Postgres: Audience segmentation",
           status: AssessmentStatus.IN_PROGRESS,
+          questionnaire_status: QuestionnaireSessionStatus.IN_PROGRESS,
           completeness: 68.3,
           risk_level: RiskLevel.HIGH,
           system_fides_key: "customer_postgres",
@@ -214,6 +217,7 @@ export const mockPrivacyAssessmentsResponse: GroupedAssessmentsResponse = {
           template_name: "GDPR Data Protection Impact Assessment (DPIA)",
           name: "Okta Identity: Authentication",
           status: AssessmentStatus.IN_PROGRESS,
+          questionnaire_status: QuestionnaireSessionStatus.IN_PROGRESS,
           completeness: 33.0,
           risk_level: RiskLevel.HIGH,
           system_fides_key: "okta_identity",
@@ -247,6 +251,7 @@ export const mockPrivacyAssessmentsResponse: GroupedAssessmentsResponse = {
           template_name: "GDPR Data Protection Impact Assessment (DPIA)",
           name: "Redshift Risk Analytics: Fraud signals",
           status: AssessmentStatus.IN_PROGRESS,
+          questionnaire_status: QuestionnaireSessionStatus.STOPPED,
           completeness: 56.7,
           risk_level: RiskLevel.HIGH,
           system_fides_key: "redshift_risk_analytics",

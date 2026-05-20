@@ -26,9 +26,11 @@ import {
 } from "./constants";
 import {
   AssessmentStatus,
+  DerivedAssessmentStatus,
   PrivacyAssessmentResponse,
   RiskLevel,
 } from "./types";
+import { deriveAssessmentStatus } from "./utils";
 
 const { Title } = Typography;
 
@@ -52,8 +54,15 @@ export const AssessmentCard = ({
   const isGenerating = status === AssessmentStatus.GENERATING;
   const isComplete = status === AssessmentStatus.COMPLETED;
 
-  const statusLabel = status ? STATUS_BADGE_LABELS[status] : null;
-  const statusColor = status ? STATUS_BADGE_COLORS[status] : undefined;
+  // Single source of truth for what the badge should show — combines
+  // ``status`` with orthogonal signals (e.g. ``questionnaire_status``).
+  // See ``deriveAssessmentStatus`` for the resolution rules.
+  const derivedStatus = deriveAssessmentStatus(assessment);
+  const statusLabel = STATUS_BADGE_LABELS[derivedStatus];
+  const statusColor = STATUS_BADGE_COLORS[derivedStatus];
+  const isAgentActive =
+    derivedStatus === DerivedAssessmentStatus.GENERATING ||
+    derivedStatus === DerivedAssessmentStatus.SLACK_GATHERING;
   const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : null;
   const riskDotColor = riskLevel ? RISK_LEVEL_DOT_COLORS[riskLevel] : undefined;
 
@@ -97,7 +106,7 @@ export const AssessmentCard = ({
             <Flex align="center" gap={6} className={styles.statusBadge}>
               <FidesIndicator
                 color={statusColor}
-                pulsating={status === AssessmentStatus.GENERATING}
+                pulsating={isAgentActive}
                 className="mb-0.5"
               />
               <Text

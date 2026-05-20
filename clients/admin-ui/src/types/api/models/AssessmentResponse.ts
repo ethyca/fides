@@ -55,6 +55,10 @@ export type AssessmentResponse = {
    */
   system_website_url?: string | null;
   /**
+   * Questionnaire Status
+   */
+  questionnaire_status?: string | null;
+  /**
    * Declaration Id
    */
   declaration_id?: string | null;
