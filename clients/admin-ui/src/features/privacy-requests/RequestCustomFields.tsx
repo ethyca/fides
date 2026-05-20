@@ -1,5 +1,7 @@
 import { Typography } from "fidesui";
 
+import { formatIsoDate } from "~/features/common/utils";
+
 import RequestDetailsRow from "./RequestDetailsRow";
 import { PrivacyRequestEntity } from "./types";
 
@@ -20,7 +22,9 @@ const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
           .map(([key, item]) => (
             <RequestDetailsRow label={item.label} key={key}>
               <Typography.Text>
-                {Array.isArray(item.value) ? item.value.join(", ") : item.value}
+                {Array.isArray(item.value)
+                  ? item.value.join(", ")
+                  : formatIsoDate(item.value)}
               </Typography.Text>
             </RequestDetailsRow>
           ))}

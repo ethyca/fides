@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed Fides.version showing dev decorations instead of the release tag on tagged Docker builds
-pr: 8147
-labels: []

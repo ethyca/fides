@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
-import PrivacyDeclarationManager from "~/features/system/privacy-declarations/PrivacyDeclarationManager";
+import SimplifiedPrivacyDeclarationManager from "~/features/system/privacy-declarations/SimplifiedPrivacyDeclarationManager";
 import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 
 import { SystemInfo } from "./SystemInfo";
@@ -52,7 +52,10 @@ const DatamapDrawer = ({
           </Text>
           <Box borderTop="1px solid" borderColor="gray.200">
             <Box pb={3}>
-              <PrivacyDeclarationManager system={system} {...dataProps} />
+              <SimplifiedPrivacyDeclarationManager
+                system={system}
+                {...dataProps}
+              />
             </Box>
           </Box>
           <Text

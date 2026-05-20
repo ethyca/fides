@@ -623,11 +623,20 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const nodeSizes = useMemo(() => {
     const sizes: Record<string, { width: number; height: number }> = {};
     nodes.forEach((n) => {
-      if (n.type === "conditionNode") {
-        sizes[n.id] = { width: 320, height: 310 };
-      } else if (n.type === "constraintNode") {
-        sizes[n.id] = { width: 320, height: 380 };
+      if (n.type !== "conditionNode" && n.type !== "constraintNode") {
+        return;
       }
+      // Once React Flow has measured the node, use the real DOM height so
+      // condition nodes that grow vertically (e.g. a chip list of many
+      // selected values) don't overlap the next match node below. The
+      // fallback covers the first paint before measurement is available.
+      const measuredHeight = (n as Node & { measured?: { height?: number } })
+        .measured?.height;
+      const fallbackHeight = n.type === "conditionNode" ? 310 : 380;
+      sizes[n.id] = {
+        width: 320,
+        height: measuredHeight ?? fallbackHeight,
+      };
     });
     return sizes;
   }, [nodes]);

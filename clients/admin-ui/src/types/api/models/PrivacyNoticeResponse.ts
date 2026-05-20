@@ -43,6 +43,10 @@ export type PrivacyNoticeResponse = {
    * Has Gpc Flag
    */
   has_gpc_flag: boolean;
+  /**
+   * Att Exempt
+   */
+  att_exempt: boolean;
   framework?: PrivacyNoticeFramework | null;
   default_preference?: UserConsentPreference | null;
   /**

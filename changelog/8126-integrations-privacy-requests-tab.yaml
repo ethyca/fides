@@ -1,4 +1,0 @@
-type: Added
-description: Added a "Privacy requests" tab to the integration detail page with controls to enable/disable the integration for DSR execution and manage linked datasets for database integrations.
-pr: 8126
-labels: []

@@ -1,0 +1,246 @@
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  // React Flow's viewport is a single stacking context (z-index 2) that
+  // contains the pane, edges, and nodes. Lane chrome must render BELOW
+  // everything in that context so cards stay visible on top. The collapse
+  // toggle buttons inside lane chrome are not clickable through the React
+  // Flow pane — that's handled by the toolbar's "Show not touched" switch
+  // for the lane that actually needs hiding. Per-lane collapse via in-canvas
+  // chevrons is a follow-up (would require lane chrome to render as React
+  // Flow node types so it can interleave with the node layer).
+  z-index: 0;
+}
+
+.lane {
+  position: absolute;
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
+  background: var(--fidesui-color-bg-container);
+  padding: 8px 10px;
+  pointer-events: auto;
+  // When a lane's content (cards positioned by React Flow above this layer)
+  // overflows the available viewport height, the lane background does not
+  // need to scroll — React Flow handles pan natively.
+  overflow: visible;
+
+  &.lane-identity {
+    background: var(--fidesui-brand-bg-sandstone);
+    border-color: var(--fidesui-color-border);
+  }
+  &.lane-reach {
+    background: var(--fidesui-color-success-bg);
+    border-color: var(--fidesui-color-success-border);
+  }
+  &.lane-gated {
+    background: var(--fidesui-color-warning-bg);
+    border-color: var(--fidesui-color-warning-border);
+  }
+  &.lane-skipped {
+    background: var(--fidesui-color-fill-quaternary);
+    border-color: var(--fidesui-color-border);
+  }
+
+  // Collapsed lanes shrink to a narrow vertical strip. Restack the header
+  // as a column: count chip on top (just under the floating toggle), then
+  // the rotated label running the rest of the lane height. The visual
+  // chevron in the header is hidden — the floating toggle button at the
+  // lane's top-right takes its place.
+  &.collapsed {
+    padding: 6px 4px;
+
+    .header {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      height: 100%;
+      border-bottom: 0;
+      // Top padding clears the floating toggle button (22px button at
+      // top: 6px + a small gap before the count).
+      padding: 36px 0 8px 0;
+      margin: 0;
+    }
+
+    .count {
+      order: -1;
+    }
+
+    .label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      letter-spacing: 0.16em;
+    }
+
+    .toggle {
+      display: none;
+    }
+  }
+
+  &.outOfFlow {
+    border-style: dashed;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  border-bottom: 1px dashed var(--fidesui-color-border);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.label {
+  flex: 1;
+  cursor: help;
+}
+.count {
+  background: var(--fidesui-color-fill-tertiary);
+  color: var(--fidesui-color-text-secondary);
+  border-radius: 9px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--fidesui-color-text-tertiary);
+  padding: 0 4px;
+}
+
+// Floating click-target layer that sits above React Flow's pane so the
+// per-lane collapse buttons receive clicks. The wrapper itself doesn't
+// capture pointer events (so cards stay clickable through it); only the
+// individual button hit areas do.
+.toggleLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.floatingToggle {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  color: var(--fidesui-color-text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  padding: 0;
+  &:hover {
+    color: var(--fidesui-color-text);
+    border-color: var(--fidesui-color-text-tertiary);
+  }
+}
+
+.stage {
+  // Position is set inline (left/top/width) per stage block.
+  height: 40px; // STAGE_HEADER_HEIGHT
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+.stageLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--fidesui-color-success-text-active);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  pointer-events: auto;
+  cursor: help;
+}
+.stageNum {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--fidesui-color-success);
+  color: var(--fidesui-color-bg-container);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.stageChevron {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--fidesui-color-bg-container);
+  border: 2px solid var(--fidesui-color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fidesui-color-text-tertiary);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  // Centered horizontally on its inline `left` anchor.
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.outOfFlowBadge {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
+  color: var(--fidesui-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rail {
+  position: absolute;
+  height: 2px;
+  background: var(--fidesui-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.chevron {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--fidesui-color-bg-container);
+  border: 2px solid var(--fidesui-color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fidesui-color-text-tertiary);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}

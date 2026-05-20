@@ -4,7 +4,6 @@ import type {
   ActivityFeedParams,
   ActivityFeedResponse,
   AgentBriefingResponse,
-  AstralisResponse,
   PostureResponse,
   PriorityAction,
   PriorityActionsParams,
@@ -66,10 +65,6 @@ const dashboardApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: "Fides Dashboard", id: "trends" }],
     }),
-    getAstralis: build.query<AstralisResponse, void>({
-      query: () => ({ url: "plus/dashboard/astralis" }),
-      providesTags: [{ type: "Fides Dashboard", id: "astralis" }],
-    }),
     getActivityFeed: build.query<
       ActivityFeedResponse,
       ActivityFeedParams | void
@@ -98,7 +93,6 @@ export const {
   useGetPriorityActionsQuery,
   useUpdatePriorityActionMutation,
   useGetDashboardTrendsQuery,
-  useGetAstralisQuery,
   useGetActivityFeedQuery,
   useGetPrivacyRequestsQuery,
   useGetSystemCoverageQuery,
