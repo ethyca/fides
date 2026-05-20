@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed stale dashboard priority actions after privacy request mutations (approve, deny, delete, finalize)
+pr: 8242
+labels: []
