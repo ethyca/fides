@@ -97,11 +97,14 @@ export const CreateSystemGroupForm = ({
         required
         rules={[{ required: true, message: "Name is required" }]}
       >
-        <Input placeholder="Enter system group name" />
+        <Input placeholder="Enter system group name" data-testid="input-name" />
       </Form.Item>
 
       <Form.Item name="description" label="Description">
-        <Input.TextArea placeholder="Enter system group description" />
+        <Input.TextArea
+          placeholder="Enter system group description"
+          data-testid="input-description"
+        />
       </Form.Item>
 
       <Form.Item name="systems" label="Systems">
