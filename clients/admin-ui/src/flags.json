@@ -53,8 +53,8 @@
     "label": "Privacy assessments",
     "description": "Enable privacy assessments feature",
     "development": true,
-    "test": false,
-    "production": false
+    "test": true,
+    "production": true
   },
   "policies": {
     "label": "DSR Policies",
