@@ -52,6 +52,7 @@ class TestAsyncCallbackInputData:
 
         mock_query_config = MagicMock()
         mock_query_config.get_masking_request.return_value = masking_request
+        mock_query_config.get_read_requests_by_identity.return_value = []
 
         mock_client = MagicMock()
 
@@ -159,6 +160,7 @@ class TestAsyncCallbackInputData:
 
         mock_query_config = MagicMock()
         mock_query_config.get_masking_request.return_value = masking_request
+        mock_query_config.get_read_requests_by_identity.return_value = []
 
         mock_client = MagicMock()
 
