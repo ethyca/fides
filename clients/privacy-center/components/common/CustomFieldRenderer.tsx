@@ -1,12 +1,11 @@
 import dayjs from "dayjs";
-import { DatePicker, Input, LocationSelect, Radio, Select } from "fidesui";
+import { DatePicker, Input, LocationSelect, Select } from "fidesui";
 import { ReactNode } from "react";
 
 import {
   CustomDateField,
   CustomLocationField,
   CustomMultiSelectField,
-  CustomRadioField,
   CustomSelectField,
   CustomTextField,
   ICustomField,
@@ -24,11 +23,6 @@ interface ICustomTextFieldProps extends CustomTextField, ICustomFieldProps {
 }
 
 interface ICustomSelectFieldProps extends CustomSelectField, ICustomFieldProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-interface ICustomRadioFieldProps extends CustomRadioField, ICustomFieldProps {
   value: string;
   onChange: (value: string) => void;
 }
@@ -53,7 +47,6 @@ interface ICustomDateFieldProps extends CustomDateField, ICustomFieldProps {
 export type CustomFieldRendererProps =
   | ICustomTextFieldProps
   | ICustomSelectFieldProps
-  | ICustomRadioFieldProps
   | ICustomMultiSelectFieldProps
   | ICustomLocationFieldProps
   | ICustomDateFieldProps;
@@ -97,24 +90,6 @@ const CustomFieldRenderer = ({
             },
           }}
           allowClear
-          aria-label={label}
-          aria-describedby={`${fieldKey}-error`}
-          aria-required={required !== false}
-        />
-      );
-
-    case "radio":
-      return (
-        <Radio.Group
-          id={fieldKey}
-          data-testid={`radio-${fieldKey}`}
-          value={props.value !== "" ? props.value : undefined}
-          onChange={(e) => props.onChange(e.target.value)}
-          onBlur={onBlur}
-          options={props.options?.map((option: string) => ({
-            label: option,
-            value: option,
-          }))}
           aria-label={label}
           aria-describedby={`${fieldKey}-error`}
           aria-required={required !== false}

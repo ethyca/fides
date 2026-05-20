@@ -52,12 +52,6 @@ export interface CustomSelectField extends ICustomField {
   options?: string[];
 }
 
-export interface CustomRadioField extends ICustomField {
-  default_value?: string | null;
-  field_type: "radio";
-  options?: string[];
-}
-
 export interface CustomMultiSelectField extends ICustomField {
   default_value?: string[] | null;
   field_type: "multiselect";
@@ -81,14 +75,12 @@ export interface CustomDateField extends ICustomField {
 export type CustomConfigField =
   | CustomTextField
   | CustomSelectField
-  | CustomRadioField
   | CustomMultiSelectField
   | CustomLocationField
   | CustomDateField;
 export type CustomIdentityField =
   | CustomTextField
   | CustomSelectField
-  | CustomRadioField
   | CustomDateField
   | (CustomLocationField & {
       required: true;
