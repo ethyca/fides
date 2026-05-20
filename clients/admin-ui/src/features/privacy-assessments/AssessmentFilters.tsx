@@ -1,11 +1,7 @@
-import { Flex, Input, Segmented, Tabs, Text } from "fidesui";
+import { Flex, Input, Segmented, Text } from "fidesui";
 
 import styles from "./AssessmentFilters.module.scss";
-import {
-  AssessmentGroupResponse,
-  AssessmentStatus,
-  RiskLevel,
-} from "./types";
+import { AssessmentGroupResponse, AssessmentStatus, RiskLevel } from "./types";
 
 export type AssessmentFilterKey =
   | "all"
@@ -47,9 +43,8 @@ export const AssessmentFilters = ({
       (a) => a.status === AssessmentStatus.GENERATING,
     ).length,
     slack: 0, // Not derivable from current API
-    high_risk: allAssessments.filter(
-      (a) => a.risk_level === RiskLevel.HIGH,
-    ).length,
+    high_risk: allAssessments.filter((a) => a.risk_level === RiskLevel.HIGH)
+      .length,
     signed: allAssessments.filter(
       (a) => a.status === AssessmentStatus.COMPLETED,
     ).length,
@@ -66,13 +61,13 @@ export const AssessmentFilters = ({
 
   return (
     <Flex justify="space-between" align="center" className={styles.container}>
-      <Tabs
-        activeKey={activeFilter}
-        onChange={(key) => onFilterChange(key as AssessmentFilterKey)}
-        items={filterItems.map((item) => ({
-          key: item.key,
+      <Segmented
+        value={activeFilter}
+        onChange={(val) => onFilterChange(val as AssessmentFilterKey)}
+        options={filterItems.map((item) => ({
+          value: item.key,
           label: (
-            <Flex gap={6} align="center">
+            <Flex gap={8} align="baseline">
               <span>{item.label}</span>
               <Text type="secondary" size="sm">
                 {String(counts[item.key as AssessmentFilterKey]).padStart(
@@ -83,8 +78,6 @@ export const AssessmentFilters = ({
             </Flex>
           ),
         }))}
-        size="small"
-        className={styles.tabs}
       />
       <Flex gap={12} align="center">
         <Input
@@ -92,7 +85,6 @@ export const AssessmentFilters = ({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           allowClear
-          size="small"
           className={styles.searchInput}
         />
         <Segmented
@@ -102,7 +94,6 @@ export const AssessmentFilters = ({
             { value: "grid", label: "GRID" },
             { value: "list", label: "LIST" },
           ]}
-          size="small"
         />
       </Flex>
     </Flex>

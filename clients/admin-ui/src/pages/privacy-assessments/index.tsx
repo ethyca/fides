@@ -11,8 +11,8 @@ import {
   AssessmentGroupResponse,
   AssessmentSettingsModal,
   AssessmentStatsBar,
-  AssessmentTaskStatusIndicator,
   AssessmentStatus,
+  AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
   RiskLevel,
@@ -143,7 +143,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
             )}
           </Space>
         }
-        isSticky
+        isSticky={false}
       />
 
       {!hasAssessments ? (
@@ -151,7 +151,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       ) : (
         <div className="py-6">
           <AssessmentStatsBar groups={groups} />
-          <div className="mt-4">
+          <div className="mt-10">
             <AssessmentFilters
               groups={groups}
               activeFilter={activeFilter}
@@ -162,7 +162,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
               onViewModeChange={setViewMode}
             />
           </div>
-          <Space orientation="vertical" size="large" className="w-full mt-2">
+          <Space orientation="vertical" size="large" className="mt-2 w-full">
             {filteredGroups.map((group, i) => (
               <AssessmentGroup
                 key={group.data_use ?? `uncategorized-${i}`}
