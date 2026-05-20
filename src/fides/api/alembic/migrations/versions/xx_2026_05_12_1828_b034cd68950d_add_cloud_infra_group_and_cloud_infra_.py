@@ -1,7 +1,7 @@
 """Add cloud_infra_group and cloud_infra_group_assignment tables
 
 Revision ID: b034cd68950d
-Revises: 9f21507db078
+Revises: 1e07732ff193
 Create Date: 2026-05-12 18:28:03.454740
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'b034cd68950d'
-down_revision = '9f21507db078'
+down_revision = '1e07732ff193'
 branch_labels = None
 depends_on = None
 
