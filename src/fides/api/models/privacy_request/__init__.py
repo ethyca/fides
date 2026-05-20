@@ -1,3 +1,4 @@
+from .access_package_review import AccessPackageReview
 from .consent import Consent, ConsentRequest
 from .execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
@@ -22,6 +23,7 @@ from .webhook import (
 )
 
 __all__ = [
+    "AccessPackageReview",
     "CallbackType",
     "Consent",
     "ConsentRequest",

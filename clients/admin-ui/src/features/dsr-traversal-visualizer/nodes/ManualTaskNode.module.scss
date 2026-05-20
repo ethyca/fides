@@ -1,0 +1,35 @@
+.node {
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-warning);
+  border-radius: var(--fidesui-border-radius-lg);
+}
+
+.avatar {
+  background: var(--fidesui-color-warning-bg-hover) !important;
+  color: var(--fidesui-color-warning-text-active);
+  border-radius: var(--fidesui-border-radius) !important;
+}
+
+.body {
+  border-top: 1px solid var(--fidesui-color-border);
+}
+
+.handle {
+  background: var(--fidesui-color-text-quaternary);
+  border: none;
+  width: 8px;
+  height: 8px;
+}
+
+.metaText {
+  font-size: 12px;
+}
+
+.miniText {
+  font-size: 11px;
+}
+
+.tag {
+  font-size: 10px;
+  margin: 0;
+}

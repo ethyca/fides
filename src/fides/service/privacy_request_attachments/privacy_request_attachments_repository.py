@@ -29,7 +29,7 @@ class AttachmentUserProvidedRepository:
         object_key: str,
         storage_key: str,
         field_name: str,
-        property_id: str,
+        property_id: Optional[str],
         policy_key: str,
         session: Session,
     ) -> AttachmentUserProvidedRecord:

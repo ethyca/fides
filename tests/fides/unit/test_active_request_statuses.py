@@ -18,6 +18,7 @@ class TestActiveRequestStatuses:
             PrivacyRequestStatus.requires_manual_finalization in ACTIVE_REQUEST_STATUSES
         )
         assert PrivacyRequestStatus.pending_external in ACTIVE_REQUEST_STATUSES
+        assert PrivacyRequestStatus.awaiting_access_review in ACTIVE_REQUEST_STATUSES
 
     def test_excludes_terminal_statuses(self):
         assert PrivacyRequestStatus.complete not in ACTIVE_REQUEST_STATUSES

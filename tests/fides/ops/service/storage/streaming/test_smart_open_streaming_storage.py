@@ -984,13 +984,15 @@ class TestSmartOpenStreamingStorageAttachments:
             storage._parse_storage_url(url)
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.DSRReportBuilder"
+        "fides.api.service.storage.streaming.smart_open_streaming_storage.get_dsr_report_builder"
     )
     def test_html_format_upload_uses_redacted_data(
-        self, mock_dsr_builder_class, mock_smart_open_client, mock_privacy_request
+        self, mock_get_builder, mock_smart_open_client, mock_privacy_request
     ):
         """Test that HTML format upload uses redacted data from DSR report builder."""
         # Setup mock DSR report builder
+        mock_dsr_builder_class = MagicMock()
+        mock_get_builder.return_value = mock_dsr_builder_class
         mock_dsr_builder = MagicMock()
         mock_dsr_builder_class.return_value = mock_dsr_builder
 
