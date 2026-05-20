@@ -457,6 +457,9 @@ const SystemInformationForm = ({
       initialValues={initialValues}
       onFinish={handleSubmit}
       layout="vertical"
+      // Propagates to every Form.Item-bound input via antd context, including
+      // the auto-disabled Selects/Inputs/Switches throughout the form.
+      disabled={isReadOnly || undefined}
       key={passedInSystem?.fides_key ?? "create"}
     >
       <FormGuard id="SystemInfoTab" name="System Info" />
@@ -469,381 +472,380 @@ const SystemInformationForm = ({
           className="mb-4"
         />
       )}
-      <fieldset disabled={isReadOnly} className="border-0 p-0">
-        <Flex vertical className="w-full lg:max-w-[70%]">
-          <Text className="text-sm font-medium">
-            By providing a small amount of additional context for each system we
-            can make reporting and understanding our tech stack much easier for
-            everyone from engineering to legal teams. So let&apos;s do this now.
-          </Text>
+      <Flex vertical className="w-full lg:max-w-[70%]">
+        <Text className="text-sm font-medium">
+          By providing a small amount of additional context for each system we
+          can make reporting and understanding our tech stack much easier for
+          everyone from engineering to legal teams. So let&apos;s do this now.
+        </Text>
 
-          <SystemFormInputGroup heading="System details">
-            {features.dictionaryService ? (
-              <VendorSelector
-                label="System name"
-                options={dictionaryOptions}
-                onVendorSelected={handleVendorSelected}
-                isCreate={!passedInSystem}
-                lockedForGVL={lockedForGVL}
-                nameRules={[
-                  { required: true, message: "System name is required" },
-                  nameUniquenessRule,
-                ]}
-              />
-            ) : (
-              <Form.Item
-                name="name"
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                required
-                rules={[
-                  { required: true, message: "System name is required" },
-                  nameUniquenessRule,
-                ]}
-              >
-                <Input id="name" data-testid="input-name" />
-              </Form.Item>
-            )}
-            {passedInSystem?.fides_key && (
-              <Form.Item
-                name="fides_key"
-                label="Unique ID"
-                tooltip="An auto-generated unique ID based on the system name"
-              >
-                <Input id="fides_key" disabled data-testid="input-fides_key" />
-              </Form.Item>
-            )}
-            <DictSuggestionTextArea
-              id="description"
-              name="description"
-              label="Description"
-              tooltip="What services does this system perform?"
+        <SystemFormInputGroup heading="System details">
+          {features.dictionaryService ? (
+            <VendorSelector
+              label="System name"
+              options={dictionaryOptions}
+              onVendorSelected={handleVendorSelected}
+              isCreate={!passedInSystem}
+              lockedForGVL={lockedForGVL}
+              disabled={!!isReadOnly}
+              nameRules={[
+                { required: true, message: "System name is required" },
+                nameUniquenessRule,
+              ]}
             />
+          ) : (
             <Form.Item
-              name="tags"
-              label="System Tags"
-              tooltip="Are there any tags to associate with this system?"
+              name="name"
+              label="System name"
+              tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+              required
+              rules={[
+                { required: true, message: "System name is required" },
+                nameUniquenessRule,
+              ]}
             >
-              <Select
-                id="tags"
-                mode="tags"
-                aria-label="System Tags"
-                options={
-                  initialValues.tags
-                    ? initialValues.tags.map((s) => ({ value: s, label: s }))
-                    : []
-                }
-                data-testid="controlled-select-tags"
-              />
+              <Input id="name" data-testid="input-name" />
             </Form.Item>
-            {systemGroupsEnabled && (
-              <Form.Item
-                name="system_groups"
-                label="System groups"
-                tooltip="Which system groups are associated with this system?"
-              >
-                <Select
-                  mode="multiple"
-                  aria-label="System groups"
-                  options={systemGroupOptions}
-                  data-testid="controlled-select-system_groups"
-                />
-              </Form.Item>
-            )}
-          </SystemFormInputGroup>
-
-          <SystemFormInputGroup heading="Dataset reference">
+          )}
+          {passedInSystem?.fides_key && (
             <Form.Item
-              name="dataset_references"
-              label="Dataset references"
-              tooltip="Is there a dataset configured for this system?"
+              name="fides_key"
+              label="Unique ID"
+              tooltip="An auto-generated unique ID based on the system name"
+            >
+              <Input id="fides_key" disabled data-testid="input-fides_key" />
+            </Form.Item>
+          )}
+          <DictSuggestionTextArea
+            id="description"
+            name="description"
+            label="Description"
+            tooltip="What services does this system perform?"
+          />
+          <Form.Item
+            name="tags"
+            label="System Tags"
+            tooltip="Are there any tags to associate with this system?"
+          >
+            <Select
+              id="tags"
+              mode="tags"
+              aria-label="System Tags"
+              options={
+                initialValues.tags
+                  ? initialValues.tags.map((s) => ({ value: s, label: s }))
+                  : []
+              }
+              data-testid="controlled-select-tags"
+            />
+          </Form.Item>
+          {systemGroupsEnabled && (
+            <Form.Item
+              name="system_groups"
+              label="System groups"
+              tooltip="Which system groups are associated with this system?"
             >
               <Select
                 mode="multiple"
-                aria-label="Dataset references"
-                options={datasetSelectOptions}
-                optionRender={DatasetSelectOption}
-                data-testid="controlled-select-dataset_references"
+                aria-label="System groups"
+                options={systemGroupOptions}
+                data-testid="controlled-select-system_groups"
               />
             </Form.Item>
-          </SystemFormInputGroup>
+          )}
+        </SystemFormInputGroup>
 
-          <SystemFormInputGroup heading="Data processing properties">
-            <Flex vertical>
-              <div className="mb-4">
+        <SystemFormInputGroup heading="Dataset reference">
+          <Form.Item
+            name="dataset_references"
+            label="Dataset references"
+            tooltip="Is there a dataset configured for this system?"
+          >
+            <Select
+              mode="multiple"
+              aria-label="Dataset references"
+              options={datasetSelectOptions}
+              optionRender={DatasetSelectOption}
+              data-testid="controlled-select-dataset_references"
+            />
+          </Form.Item>
+        </SystemFormInputGroup>
+
+        <SystemFormInputGroup heading="Data processing properties">
+          <Flex vertical>
+            <div className="mb-4">
+              <DictSuggestionSwitch
+                name="processes_personal_data"
+                label="This system processes personal data"
+                tooltip="Does this system process personal data?"
+                disabled={lockedForGVL}
+              />
+            </div>
+            <div className="rounded bg-gray-50 p-4">
+              <Flex vertical>
                 <DictSuggestionSwitch
-                  name="processes_personal_data"
-                  label="This system processes personal data"
-                  tooltip="Does this system process personal data?"
-                  disabled={lockedForGVL}
+                  name="exempt_from_privacy_regulations"
+                  label="This system is exempt from privacy regulations"
+                  tooltip="Is this system exempt from privacy regulations?"
+                  disabled={!processesPersonalData || lockedForGVL}
                 />
-              </div>
-              <div className="rounded bg-gray-50 p-4">
+                {exemptFromPrivacyRegulations && (
+                  <div className="mt-4">
+                    <Form.Item
+                      name="reason_for_exemption"
+                      label="Reason for exemption"
+                      tooltip="Why is this system exempt from privacy regulation?"
+                      required={exemptFromPrivacyRegulations}
+                    >
+                      <Input
+                        disabled={lockedForGVL}
+                        data-testid="input-reason_for_exemption"
+                      />
+                    </Form.Item>
+                  </div>
+                )}
+              </Flex>
+            </div>
+            {processesPersonalData && !exemptFromPrivacyRegulations && (
+              <Flex vertical className="mt-4 gap-4">
                 <Flex vertical>
                   <DictSuggestionSwitch
-                    name="exempt_from_privacy_regulations"
-                    label="This system is exempt from privacy regulations"
-                    tooltip="Is this system exempt from privacy regulations?"
-                    disabled={!processesPersonalData || lockedForGVL}
+                    name="uses_profiling"
+                    label="This system performs profiling"
+                    tooltip="Does this system perform profiling that could have a legal effect?"
+                    disabled={lockedForGVL}
                   />
-                  {exemptFromPrivacyRegulations && (
+                  {usesProfiling && (
                     <div className="mt-4">
                       <Form.Item
-                        name="reason_for_exemption"
-                        label="Reason for exemption"
-                        tooltip="Why is this system exempt from privacy regulation?"
-                        required={exemptFromPrivacyRegulations}
+                        name="legal_basis_for_profiling"
+                        label="Legal basis for profiling"
+                        tooltip="What is the legal basis under which profiling is performed?"
+                        required={usesProfiling}
                       >
-                        <Input
+                        <Select
+                          mode="multiple"
+                          aria-label="Legal basis for profiling"
+                          options={legalBasisForProfilingOptions}
                           disabled={lockedForGVL}
-                          data-testid="input-reason_for_exemption"
+                          data-testid="controlled-select-legal_basis_for_profiling"
                         />
                       </Form.Item>
                     </div>
                   )}
                 </Flex>
-              </div>
-              {processesPersonalData && !exemptFromPrivacyRegulations && (
-                <Flex vertical className="mt-4 gap-4">
-                  <Flex vertical>
-                    <DictSuggestionSwitch
-                      name="uses_profiling"
-                      label="This system performs profiling"
-                      tooltip="Does this system perform profiling that could have a legal effect?"
-                      disabled={lockedForGVL}
-                    />
-                    {usesProfiling && (
-                      <div className="mt-4">
-                        <Form.Item
-                          name="legal_basis_for_profiling"
-                          label="Legal basis for profiling"
-                          tooltip="What is the legal basis under which profiling is performed?"
-                          required={usesProfiling}
-                        >
-                          <Select
-                            mode="multiple"
-                            aria-label="Legal basis for profiling"
-                            options={legalBasisForProfilingOptions}
-                            disabled={lockedForGVL}
-                            data-testid="controlled-select-legal_basis_for_profiling"
-                          />
-                        </Form.Item>
-                      </div>
-                    )}
-                  </Flex>
-                  <Flex vertical>
-                    <DictSuggestionSwitch
-                      name="does_international_transfers"
-                      label="This system transfers data"
-                      tooltip="Does this system transfer data to other countries or international organizations?"
-                      disabled={lockedForGVL}
-                    />
-                    {doesInternationalTransfers && (
-                      <div className="mt-4">
-                        <Form.Item
-                          name="legal_basis_for_transfers"
-                          label="Legal basis for transfer"
-                          tooltip="What is the legal basis under which the data is transferred?"
-                          required={doesInternationalTransfers}
-                        >
-                          <Select
-                            mode="multiple"
-                            aria-label="Legal basis for transfer"
-                            options={legalBasisForTransferOptions}
-                            disabled={lockedForGVL}
-                            data-testid="controlled-select-legal_basis_for_transfers"
-                          />
-                        </Form.Item>
-                      </div>
-                    )}
-                  </Flex>
-                  <Flex vertical>
-                    <Form.Item
-                      name="requires_data_protection_assessments"
-                      label="This system requires Data Privacy Assessments"
-                      tooltip="Does this system require (DPA/DPIA) assessments?"
-                      layout="horizontal"
-                      colon={false}
-                      valuePropName="checked"
-                      className="mb-0"
-                    >
-                      <Switch
-                        size="small"
-                        disabled={lockedForGVL}
-                        data-testid="input-requires_data_protection_assessments"
-                      />
-                    </Form.Item>
-                    {requiresDpas && (
-                      <div className="mt-4">
-                        <Form.Item
-                          name="dpa_location"
-                          label="DPIA/DPA location"
-                          tooltip="Where is the DPA/DPIA stored?"
-                          required={requiresDpas}
-                        >
-                          <Input
-                            disabled={lockedForGVL}
-                            data-testid="input-dpa_location"
-                          />
-                        </Form.Item>
-                      </div>
-                    )}
-                  </Flex>
+                <Flex vertical>
+                  <DictSuggestionSwitch
+                    name="does_international_transfers"
+                    label="This system transfers data"
+                    tooltip="Does this system transfer data to other countries or international organizations?"
+                    disabled={lockedForGVL}
+                  />
+                  {doesInternationalTransfers && (
+                    <div className="mt-4">
+                      <Form.Item
+                        name="legal_basis_for_transfers"
+                        label="Legal basis for transfer"
+                        tooltip="What is the legal basis under which the data is transferred?"
+                        required={doesInternationalTransfers}
+                      >
+                        <Select
+                          mode="multiple"
+                          aria-label="Legal basis for transfer"
+                          options={legalBasisForTransferOptions}
+                          disabled={lockedForGVL}
+                          data-testid="controlled-select-legal_basis_for_transfers"
+                        />
+                      </Form.Item>
+                    </div>
+                  )}
                 </Flex>
-              )}
-            </Flex>
-          </SystemFormInputGroup>
+                <Flex vertical>
+                  <Form.Item
+                    name="requires_data_protection_assessments"
+                    label="This system requires Data Privacy Assessments"
+                    tooltip="Does this system require (DPA/DPIA) assessments?"
+                    layout="horizontal"
+                    colon={false}
+                    valuePropName="checked"
+                    className="mb-0"
+                  >
+                    <Switch
+                      size="small"
+                      disabled={lockedForGVL}
+                      data-testid="input-requires_data_protection_assessments"
+                    />
+                  </Form.Item>
+                  {requiresDpas && (
+                    <div className="mt-4">
+                      <Form.Item
+                        name="dpa_location"
+                        label="DPIA/DPA location"
+                        tooltip="Where is the DPA/DPIA stored?"
+                        required={requiresDpas}
+                      >
+                        <Input
+                          disabled={lockedForGVL}
+                          data-testid="input-dpa_location"
+                        />
+                      </Form.Item>
+                    </div>
+                  )}
+                </Flex>
+              </Flex>
+            )}
+          </Flex>
+        </SystemFormInputGroup>
 
-          {processesPersonalData && !exemptFromPrivacyRegulations && (
-            <>
-              <SystemFormInputGroup heading="Cookie properties">
-                <DictSuggestionSwitch
-                  name="uses_cookies"
-                  label="This system uses cookies"
-                  tooltip="Does this system use cookies?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionSwitch
-                  name="cookie_refresh"
-                  label="This system refreshes cookies"
-                  tooltip="Does this system automatically refresh cookies?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionSwitch
-                  name="uses_non_cookie_access"
-                  label="This system uses non-cookie trackers"
-                  tooltip="Does this system use other types of trackers?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionNumberInput
-                  name="cookie_max_age_seconds"
-                  label="Maximum duration (seconds)"
-                  tooltip="What is the maximum amount of time a cookie will live?"
-                  disabled={lockedForGVL}
-                />
-              </SystemFormInputGroup>
+        {processesPersonalData && !exemptFromPrivacyRegulations && (
+          <>
+            <SystemFormInputGroup heading="Cookie properties">
+              <DictSuggestionSwitch
+                name="uses_cookies"
+                label="This system uses cookies"
+                tooltip="Does this system use cookies?"
+                disabled={lockedForGVL}
+              />
+              <DictSuggestionSwitch
+                name="cookie_refresh"
+                label="This system refreshes cookies"
+                tooltip="Does this system automatically refresh cookies?"
+                disabled={lockedForGVL}
+              />
+              <DictSuggestionSwitch
+                name="uses_non_cookie_access"
+                label="This system uses non-cookie trackers"
+                tooltip="Does this system use other types of trackers?"
+                disabled={lockedForGVL}
+              />
+              <DictSuggestionNumberInput
+                name="cookie_max_age_seconds"
+                label="Maximum duration (seconds)"
+                tooltip="What is the maximum amount of time a cookie will live?"
+                disabled={lockedForGVL}
+              />
+            </SystemFormInputGroup>
 
-              <SystemFormInputGroup heading="Administrative properties">
-                <Form.Item
-                  name="data_stewards"
-                  label="Data stewards"
-                  tooltip="Who are the stewards assigned to the system?"
-                >
-                  <Select
-                    mode="multiple"
-                    aria-label="Data stewards"
-                    options={dataStewardOptions}
-                    showSearch
-                    filterOption={(input, option) =>
-                      String(option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    placeholder="Select data stewards"
-                    data-testid="controlled-select-data_stewards"
-                  />
-                </Form.Item>
-                <DictSuggestionTextInput
-                  id="privacy_policy"
-                  name="privacy_policy"
-                  label="Privacy policy URL"
-                  tooltip="Where can the privacy policy be located?"
-                  disabled={lockedForGVL}
-                  rules={[
-                    {
-                      type: "url",
-                      message: "Privacy policy must be a valid URL",
-                    },
-                  ]}
+            <SystemFormInputGroup heading="Administrative properties">
+              <Form.Item
+                name="data_stewards"
+                label="Data stewards"
+                tooltip="Who are the stewards assigned to the system?"
+              >
+                <Select
+                  mode="multiple"
+                  aria-label="Data stewards"
+                  options={dataStewardOptions}
+                  showSearch
+                  filterOption={(input, option) =>
+                    String(option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  placeholder="Select data stewards"
+                  data-testid="controlled-select-data_stewards"
                 />
-                <DictSuggestionTextInput
-                  id="legal_name"
-                  name="legal_name"
-                  label="Legal name"
-                  tooltip="What is the legal name of the business?"
+              </Form.Item>
+              <DictSuggestionTextInput
+                id="privacy_policy"
+                name="privacy_policy"
+                label="Privacy policy URL"
+                tooltip="Where can the privacy policy be located?"
+                disabled={lockedForGVL}
+                rules={[
+                  {
+                    type: "url",
+                    message: "Privacy policy must be a valid URL",
+                  },
+                ]}
+              />
+              <DictSuggestionTextInput
+                id="legal_name"
+                name="legal_name"
+                label="Legal name"
+                tooltip="What is the legal name of the business?"
+              />
+              <DictSuggestionTextArea
+                id="legal_address"
+                name="legal_address"
+                label="Legal address"
+                tooltip="What is the legal address for the business?"
+              />
+              <Form.Item
+                name="administrating_department"
+                label="Department"
+                tooltip="Which department is concerned with this system?"
+              >
+                <Input
+                  disabled={
+                    !processesPersonalData || exemptFromPrivacyRegulations
+                  }
+                  data-testid="input-administrating_department"
                 />
-                <DictSuggestionTextArea
-                  id="legal_address"
-                  name="legal_address"
-                  label="Legal address"
-                  tooltip="What is the legal address for the business?"
+              </Form.Item>
+              <Form.Item
+                name="responsibility"
+                label="Responsibility"
+                tooltip="What is the role of the business with regard to data processing?"
+              >
+                <Select
+                  mode="multiple"
+                  aria-label="Responsibility"
+                  options={responsibilityOptions}
+                  disabled={
+                    !processesPersonalData || exemptFromPrivacyRegulations
+                  }
+                  data-testid="controlled-select-responsibility"
                 />
-                <Form.Item
-                  name="administrating_department"
-                  label="Department"
-                  tooltip="Which department is concerned with this system?"
-                >
-                  <Input
-                    disabled={
-                      !processesPersonalData || exemptFromPrivacyRegulations
-                    }
-                    data-testid="input-administrating_department"
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="responsibility"
-                  label="Responsibility"
-                  tooltip="What is the role of the business with regard to data processing?"
-                >
-                  <Select
-                    mode="multiple"
-                    aria-label="Responsibility"
-                    options={responsibilityOptions}
-                    disabled={
-                      !processesPersonalData || exemptFromPrivacyRegulations
-                    }
-                    data-testid="controlled-select-responsibility"
-                  />
-                </Form.Item>
-                <DictSuggestionTextInput
-                  name="dpo"
-                  id="dpo"
-                  label="Legal contact (DPO)"
-                  tooltip="What is the official privacy contact information?"
-                  disabled={lockedForGVL}
+              </Form.Item>
+              <DictSuggestionTextInput
+                name="dpo"
+                id="dpo"
+                label="Legal contact (DPO)"
+                tooltip="What is the official privacy contact information?"
+                disabled={lockedForGVL}
+              />
+              <Form.Item
+                name="joint_controller_info"
+                label="Joint controller"
+                tooltip="Who are the party or parties that share responsibility for processing data?"
+              >
+                <Input
+                  disabled={
+                    !processesPersonalData || exemptFromPrivacyRegulations
+                  }
+                  data-testid="input-joint_controller_info"
                 />
-                <Form.Item
-                  name="joint_controller_info"
-                  label="Joint controller"
-                  tooltip="Who are the party or parties that share responsibility for processing data?"
-                >
-                  <Input
-                    disabled={
-                      !processesPersonalData || exemptFromPrivacyRegulations
-                    }
-                    data-testid="input-joint_controller_info"
-                  />
-                </Form.Item>
-                <DictSuggestionTextInput
-                  label="Data security practices"
-                  name="data_security_practices"
-                  id="data_security_practices"
-                  tooltip="Which data security practices are employed to keep the data safe?"
-                />
-                <DictSuggestionTextInput
-                  label="Legitimate interest disclosure URL"
-                  name="legitimate_interest_disclosure_url"
-                  id="legitimate_interest_disclosure_url"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionTextInput
-                  label="Vendor deleted date"
-                  name="vendor_deleted_date"
-                  id="vendor_deleted_date"
-                  tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
-                  disabled
-                />
-              </SystemFormInputGroup>
-              {fidesKey ? (
-                <CustomFieldsList
-                  resourceType={LegacyResourceTypes.SYSTEM}
-                  resourceFidesKey={fidesKey}
-                />
-              ) : null}
-            </>
-          )}
-        </Flex>
-      </fieldset>
+              </Form.Item>
+              <DictSuggestionTextInput
+                label="Data security practices"
+                name="data_security_practices"
+                id="data_security_practices"
+                tooltip="Which data security practices are employed to keep the data safe?"
+              />
+              <DictSuggestionTextInput
+                label="Legitimate interest disclosure URL"
+                name="legitimate_interest_disclosure_url"
+                id="legitimate_interest_disclosure_url"
+                disabled={lockedForGVL}
+              />
+              <DictSuggestionTextInput
+                label="Vendor deleted date"
+                name="vendor_deleted_date"
+                id="vendor_deleted_date"
+                tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
+                disabled
+              />
+            </SystemFormInputGroup>
+            {fidesKey ? (
+              <CustomFieldsList
+                resourceType={LegacyResourceTypes.SYSTEM}
+                resourceFidesKey={fidesKey}
+              />
+            ) : null}
+          </>
+        )}
+      </Flex>
       {!isReadOnly && (
         <div className="mt-6">
           <Form.Item shouldUpdate noStyle>

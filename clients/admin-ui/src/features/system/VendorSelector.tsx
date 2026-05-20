@@ -64,6 +64,12 @@ export interface VendorSelectorProps {
    * Forwarded to the wrapped `Form.Item`.
    */
   nameRules?: FormRule[];
+  /**
+   * Disable all controls (Select/Input/Compass). The Form.Item-bound hidden
+   * fields auto-disable via Form's `disabled` context, but the manually
+   * managed visible controls don't, so we plumb this through explicitly.
+   */
+  disabled?: boolean;
 }
 
 /**
@@ -78,6 +84,7 @@ const VendorSelector = ({
   isLoading,
   onVendorSelected,
   nameRules,
+  disabled,
 }: VendorSelectorProps) => {
   const form = Form.useFormInstance();
   const dictSuggestionsState = useAppSelector(selectSuggestions);
@@ -109,7 +116,7 @@ const VendorSelector = ({
   }, [isCreate, options, searchParam]);
 
   const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
-  const nameFieldLockedForGVL = lockedForGVL && !isCreate;
+  const nameFieldLockedForGVL = (lockedForGVL && !isCreate) || !!disabled;
 
   useEffect(() => {
     setIsTypeahead(!name && !vendorId);
@@ -186,7 +193,7 @@ const VendorSelector = ({
   const compassButton = (
     <CompassButton
       active={!!vendorId || hasVendorSuggestions}
-      disabled={!vendorId || dictSuggestionsState === "showing"}
+      disabled={!vendorId || dictSuggestionsState === "showing" || !!disabled}
       onRefreshSuggestions={() => onVendorSelected(vendorId)}
     />
   );
