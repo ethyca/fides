@@ -1,4 +1,11 @@
-import { Button, Icons, Result, Space, Spin } from "fidesui";
+import {
+  Button,
+  Icons,
+  Layout as AntLayout,
+  Result,
+  Space,
+  Spin,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useMemo, useState } from "react";
 
@@ -114,77 +121,85 @@ const PrivacyAssessmentsPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Privacy assessments">
-      <PageHeader
-        heading="Privacy assessments"
-        description="A running record of DPIAs, risk assessments, and transfer evaluations — grouped by the system they evaluate. The Fides agent drafts; you review and sign."
-        size="large"
-        rightContent={
-          <Space align="center">
-            <AssessmentTaskStatusIndicator
-              onTaskFinish={refetchAssessments}
-              className="mr-2"
-            />
-            <Button
-              aria-label="Assessment settings"
-              icon={<Icons.Settings />}
-              rounded={false}
-              onClick={() => setSettingsModalOpen(true)}
-              data-testid="btn-assessment-settings"
-            />
-            {hasAssessments && (
-              <Button
-                type="primary"
-                rounded={false}
-                onClick={() => setGenerateModalOpen(true)}
+    <Layout title="Privacy assessments" padded={false}>
+      <AntLayout>
+        <AntLayout.Content className="overflow-auto px-10 py-6">
+          <PageHeader
+            heading="Privacy assessments"
+            description="A running record of DPIAs, risk assessments, and transfer evaluations — grouped by the system they evaluate. The Fides agent drafts; you review and sign."
+            size="large"
+            rightContent={
+              <Space align="center">
+                <AssessmentTaskStatusIndicator
+                  onTaskFinish={refetchAssessments}
+                  className="mr-2"
+                />
+                <Button
+                  aria-label="Assessment settings"
+                  icon={<Icons.Settings />}
+                  rounded={false}
+                  onClick={() => setSettingsModalOpen(true)}
+                  data-testid="btn-assessment-settings"
+                />
+                {hasAssessments && (
+                  <Button
+                    type="primary"
+                    rounded={false}
+                    onClick={() => setGenerateModalOpen(true)}
+                  >
+                    Generate assessments
+                  </Button>
+                )}
+              </Space>
+            }
+            isSticky={false}
+          />
+
+          {!hasAssessments ? (
+            <EmptyState onRunAssessment={() => setGenerateModalOpen(true)} />
+          ) : (
+            <div className="py-6">
+              <AssessmentStatsBar groups={groups} />
+              <div className="mt-10">
+                <AssessmentFilters
+                  groups={groups}
+                  activeFilter={activeFilter}
+                  onFilterChange={setActiveFilter}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
+              </div>
+              <Space
+                orientation="vertical"
+                size="large"
+                className="mt-2 w-full"
               >
-                Generate assessments
-              </Button>
-            )}
-          </Space>
-        }
-        isSticky={false}
-      />
+                {filteredGroups.map((group, i) => (
+                  <AssessmentGroup
+                    key={group.data_use ?? `uncategorized-${i}`}
+                    index={i}
+                    dataUseName={group.data_use_name}
+                    systemCount={group.system_count}
+                    assessments={group.assessments}
+                  />
+                ))}
+              </Space>
+            </div>
+          )}
 
-      {!hasAssessments ? (
-        <EmptyState onRunAssessment={() => setGenerateModalOpen(true)} />
-      ) : (
-        <div className="py-6">
-          <AssessmentStatsBar groups={groups} />
-          <div className="mt-10">
-            <AssessmentFilters
-              groups={groups}
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-            />
-          </div>
-          <Space orientation="vertical" size="large" className="mt-2 w-full">
-            {filteredGroups.map((group, i) => (
-              <AssessmentGroup
-                key={group.data_use ?? `uncategorized-${i}`}
-                index={i}
-                dataUseName={group.data_use_name}
-                systemCount={group.system_count}
-                assessments={group.assessments}
-              />
-            ))}
-          </Space>
-        </div>
-      )}
+          <GenerateAssessmentsModal
+            open={generateModalOpen}
+            onClose={() => setGenerateModalOpen(false)}
+          />
 
-      <GenerateAssessmentsModal
-        open={generateModalOpen}
-        onClose={() => setGenerateModalOpen(false)}
-      />
-
-      <AssessmentSettingsModal
-        open={settingsModalOpen}
-        onClose={() => setSettingsModalOpen(false)}
-      />
+          <AssessmentSettingsModal
+            open={settingsModalOpen}
+            onClose={() => setSettingsModalOpen(false)}
+          />
+        </AntLayout.Content>
+      </AntLayout>
     </Layout>
   );
 };
