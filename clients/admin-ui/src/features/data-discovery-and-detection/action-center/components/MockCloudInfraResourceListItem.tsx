@@ -1,0 +1,266 @@
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  DefaultOptionType,
+  Flex,
+  Icons,
+  List,
+  Space,
+  Tag,
+  Tooltip,
+} from "fidesui";
+import { MouseEventHandler, useRef, useState } from "react";
+
+import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
+import { LabeledText } from "~/features/privacy-requests/dashboard/list-item/components/LabeledText";
+import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
+import { DiffStatus } from "~/types/api";
+import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
+
+import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "../constants";
+import {
+  getServiceIconUrl,
+  getServiceLabel,
+} from "../utils/cloudInfraServiceInfo";
+
+interface MockCloudInfraResourceListItemProps {
+  item: CloudInfraStagedResource;
+  selected: boolean;
+  onSelect: (urn: string, selected: boolean) => void;
+  assignedSystems: DefaultOptionType[];
+  onAddSystem: (urn: string, system: DefaultOptionType) => void;
+  onRemoveSystem: (
+    urn: string,
+    systemValue: DefaultOptionType["value"],
+  ) => void;
+  onApprove: (urn: string) => void;
+  onIgnore: (urn: string) => void;
+  onRestore: (urn: string) => void;
+  onOpenDetails: (resource: CloudInfraStagedResource) => void;
+}
+
+export const MockCloudInfraResourceListItem = ({
+  item,
+  selected,
+  onSelect,
+  assignedSystems,
+  onAddSystem,
+  onRemoveSystem,
+  onApprove,
+  onIgnore,
+  onRestore,
+  onOpenDetails,
+}: MockCloudInfraResourceListItemProps) => {
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
+  const isOpeningModalRef = useRef(false);
+
+  const name = item.name ?? "Unnamed resource";
+  const serviceLabel = getServiceLabel(item.service);
+  const isMuted = item.diff_status === DiffStatus.MUTED;
+  const isApproved = item.diff_status === DiffStatus.MONITORED;
+  const isRemoved = item.diff_status === DiffStatus.REMOVAL;
+
+  const hasAssigned = assignedSystems.length > 0;
+  const approveDisabled = !hasAssigned || isMuted;
+  let approveTooltip = "Approve";
+  if (!hasAssigned) {
+    approveTooltip = "Assign a system before approving";
+  } else if (isMuted) {
+    approveTooltip = "Restore before approving";
+  }
+
+  const tagEntries = item.tags ? Object.entries(item.tags) : [];
+
+  const onAddNewSystemClick: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.preventDefault();
+    isOpeningModalRef.current = true;
+    setIsNewSystemModalOpen(true);
+  };
+
+  return (
+    <>
+      <List.Item
+        key={item.urn}
+        actions={[
+          <Space key="actions" size="middle">
+            {item.location && <Tag color="default">{item.location}</Tag>}
+            {isMuted ? (
+              <Tooltip title="Restore">
+                <Button
+                  size="small"
+                  icon={<Icons.View />}
+                  aria-label="Restore"
+                  data-testid={`restore-btn-${item.urn}`}
+                  onClick={() => onRestore(item.urn)}
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip title="Ignore">
+                <Button
+                  size="small"
+                  icon={<Icons.ViewOff />}
+                  aria-label="Ignore"
+                  data-testid={`ignore-btn-${item.urn}`}
+                  onClick={() => onIgnore(item.urn)}
+                />
+              </Tooltip>
+            )}
+            <Tooltip title={approveTooltip}>
+              <Button
+                size="small"
+                type={approveDisabled ? "default" : "primary"}
+                icon={<Icons.Checkmark />}
+                aria-label="Approve"
+                disabled={approveDisabled}
+                data-testid={`approve-btn-${item.urn}`}
+                onClick={() => onApprove(item.urn)}
+              />
+            </Tooltip>
+          </Space>,
+        ]}
+      >
+        <List.Item.Meta
+          avatar={
+            <Flex align="center" gap="middle">
+              <Checkbox
+                checked={selected}
+                onChange={(e) => onSelect(item.urn, e.target.checked)}
+                onClick={(e) => e.stopPropagation()}
+                data-testid={`select-${item.urn}`}
+              />
+              <Avatar
+                src={getServiceIconUrl(item.service)}
+                shape="square"
+                icon={
+                  <Icons.Layers
+                    style={{ color: "var(--fidesui-brand-minos)" }}
+                    className="m-1 size-full"
+                  />
+                }
+                className="bg-transparent"
+                alt={name}
+              />
+            </Flex>
+          }
+          title={
+            <Flex gap="small" align="center" wrap="wrap">
+              <button
+                type="button"
+                onClick={() => onOpenDetails(item)}
+                data-testid={`open-details-${item.urn}`}
+                className="cursor-pointer p-0 text-left font-semibold text-[var(--fidesui-minos)] hover:underline"
+              >
+                {name}
+              </button>
+              {item.service && <Tag color="white">{serviceLabel}</Tag>}
+              {isMuted && (
+                <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[DiffStatus.MUTED]}>
+                  Ignored
+                </Tag>
+              )}
+              {isApproved && (
+                <Tag
+                  color={INFRASTRUCTURE_DIFF_STATUS_COLOR[DiffStatus.MONITORED]}
+                >
+                  Approved
+                </Tag>
+              )}
+              {isRemoved && (
+                <Tag
+                  color={INFRASTRUCTURE_DIFF_STATUS_COLOR[DiffStatus.REMOVAL]}
+                >
+                  Removed
+                </Tag>
+              )}
+            </Flex>
+          }
+          description={
+            <Flex vertical gap={8}>
+              {tagEntries.length > 0 && (
+                <Flex gap="middle" wrap="wrap">
+                  {tagEntries.map(([key, value]) => (
+                    <LabeledText key={key} label={key}>
+                      {value}
+                    </LabeledText>
+                  ))}
+                </Flex>
+              )}
+              <Flex
+                align="center"
+                gap="small"
+                wrap="wrap"
+                style={{ minHeight: 32 }}
+              >
+                {isAssigning ? (
+                  <SystemSelect
+                    autoFocus
+                    defaultOpen
+                    placeholder="Search systems..."
+                    style={{ minWidth: 240 }}
+                    onAddSystem={onAddNewSystemClick}
+                    onSelect={(_, option) => {
+                      onAddSystem(item.urn, option);
+                      setIsAssigning(false);
+                    }}
+                    onDropdownVisibleChange={(open) => {
+                      if (open) {
+                        return;
+                      }
+                      setTimeout(() => {
+                        if (isOpeningModalRef.current) {
+                          isOpeningModalRef.current = false;
+                          return;
+                        }
+                        setIsAssigning(false);
+                      }, 0);
+                    }}
+                    data-testid={`system-select-${item.urn}`}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsAssigning(true)}
+                    data-testid={`assign-system-btn-${item.urn}`}
+                    className="inline-flex items-center gap-1 text-xs text-[var(--fidesui-minos)] hover:underline"
+                  >
+                    <Icons.Add size={14} />
+                    {hasAssigned ? "Add system" : "Assign system"}
+                  </button>
+                )}
+                {assignedSystems.map((system) => (
+                  <Tag
+                    key={String(system.value)}
+                    closable
+                    onClose={() => onRemoveSystem(item.urn, system.value)}
+                    data-testid={`assigned-system-${item.urn}-${system.value}`}
+                  >
+                    {system.label}
+                  </Tag>
+                ))}
+              </Flex>
+            </Flex>
+          }
+        />
+      </List.Item>
+      {isNewSystemModalOpen && (
+        <AddNewSystemModal
+          isOpen
+          onClose={() => {
+            setIsNewSystemModalOpen(false);
+            isOpeningModalRef.current = false;
+            setIsAssigning(false);
+          }}
+          onSuccessfulSubmit={(fidesKey, systemName) => {
+            setIsNewSystemModalOpen(false);
+            isOpeningModalRef.current = false;
+            onAddSystem(item.urn, { label: systemName, value: fidesKey });
+            setIsAssigning(false);
+          }}
+          toastOnSuccess
+        />
+      )}
+    </>
+  );
+};

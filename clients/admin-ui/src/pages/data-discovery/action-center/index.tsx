@@ -25,16 +25,16 @@ export const ROOT_ACTION_CENTER_CONFIG = {
 const ActionCenterPage: NextPage = () => {
   const dispatch = useDispatch();
   const { flags } = useFeatures();
-  const { webMonitor: webMonitorEnabled, awsMonitor: awsMonitorEnabled } =
-    flags;
+  const { webMonitor: webMonitorEnabled } = flags;
 
   const [trigger] = useCalcAggregateStatisticsMutation();
 
-  // Build monitor_type filter based on enabled feature flags
+  // Build monitor_type filter based on enabled feature flags.
+  // BE doesn't yet accept CLOUD_INFRASTRUCTURE (returns 422); the AWS row is
+  // injected client-side by MonitorList, so we omit it from the BE request.
   const monitorTypes: APIMonitorType[] = [
     ...(webMonitorEnabled ? [APIMonitorType.WEBSITE] : []),
     APIMonitorType.DATASTORE,
-    ...(awsMonitorEnabled ? [APIMonitorType.CLOUD_INFRASTRUCTURE] : []),
   ];
 
   const { error } = useGetAggregateMonitorResultsQuery({
@@ -59,13 +59,11 @@ const ActionCenterPage: NextPage = () => {
         dispatch(
           monitorFieldUtil.invalidateTags(["Discovery Monitor Results"]),
         );
+        // Skip cloud_infrastructure refresh — BE doesn't accept it yet.
         await Promise.all([
           trigger({ monitor_type: APIMonitorType.INFRASTRUCTURE }),
           trigger({ monitor_type: APIMonitorType.DATASTORE }),
           trigger({ monitor_type: APIMonitorType.WEBSITE }),
-          ...(awsMonitorEnabled
-            ? [trigger({ monitor_type: APIMonitorType.CLOUD_INFRASTRUCTURE })]
-            : []),
         ]);
       }}
     >

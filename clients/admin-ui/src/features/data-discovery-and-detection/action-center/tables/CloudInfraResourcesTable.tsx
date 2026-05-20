@@ -10,6 +10,8 @@ import { CloudInfraResourcesFilters } from "../components/CloudInfraResourcesFil
 import { useCloudInfraFilters } from "../fields/useCloudInfraFilters";
 import RegexToggle from "../forms/RegexToggle";
 import { useCloudInfraMonitorResultsTable } from "../hooks/useCloudInfraMonitorResultsTable";
+import { MOCK_AWS_MONITOR_KEY } from "../mock/awsCloudInfraMock";
+import { MockCloudInfraResourcesTable } from "./MockCloudInfraResourcesTable";
 
 const DEFAULT_STATUS_FILTERS = [DiffStatus.ADDITION, DiffStatus.REMOVAL];
 
@@ -19,16 +21,13 @@ interface CloudInfraResourcesTableProps {
   showApproved?: boolean;
 }
 
-export const CloudInfraResourcesTable = ({
+const RealCloudInfraResourcesTable = ({
   monitorId,
-  showIgnored = false,
-  showApproved = false,
-}: CloudInfraResourcesTableProps) => {
+  showIgnored,
+  showApproved,
+}: Required<CloudInfraResourcesTableProps>) => {
   const cloudInfraFilters = useCloudInfraFilters();
 
-  // Build status filters combining the filter dropdown with page settings toggles.
-  // The dropdown controls which primary statuses to show (addition, removal).
-  // The toggles always add ignored/approved on top.
   const effectiveStatusFilters = useMemo(() => {
     const filters = cloudInfraFilters.statusFilters;
     const statuses = new Set<string>(
@@ -115,5 +114,27 @@ export const CloudInfraResourcesTable = ({
         hideOnSinglePage
       />
     </Flex>
+  );
+};
+
+export const CloudInfraResourcesTable = ({
+  monitorId,
+  showIgnored = false,
+  showApproved = false,
+}: CloudInfraResourcesTableProps) => {
+  if (monitorId === MOCK_AWS_MONITOR_KEY) {
+    return (
+      <MockCloudInfraResourcesTable
+        showIgnored={showIgnored}
+        showApproved={showApproved}
+      />
+    );
+  }
+  return (
+    <RealCloudInfraResourcesTable
+      monitorId={monitorId}
+      showIgnored={showIgnored}
+      showApproved={showApproved}
+    />
   );
 };

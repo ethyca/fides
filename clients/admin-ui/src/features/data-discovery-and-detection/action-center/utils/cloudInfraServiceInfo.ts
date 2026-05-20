@@ -3,9 +3,10 @@ import { CONNECTOR_LOGOS_PATH } from "~/features/datastore-connections/constants
 // Known AWS service types. Unknown services fall back to the raw string label
 // and the Cloud icon. Add new entries here as new AWS integrations are added.
 const SERVICE_INFO: Record<string, { icon: string; label: string }> = {
-  s3: { icon: "S3-resource.svg", label: "S3" },
-  rds: { icon: "RDS-resource.svg", label: "RDS" },
-  dynamodb: { icon: "DynamoDB-resource.svg", label: "DynamoDB" },
+  s3: { icon: "s3.svg", label: "S3" },
+  rds: { icon: "rds.svg", label: "RDS" },
+  dynamodb: { icon: "dynamodb.svg", label: "DynamoDB" },
+  redshift: { icon: "redshift.svg", label: "Redshift" },
 };
 
 export const getServiceIconUrl = (service?: string): string | undefined => {

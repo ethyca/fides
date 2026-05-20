@@ -10,6 +10,10 @@ import { useAntPagination } from "~/features/common/pagination/useAntPagination"
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
+import {
+  MOCK_AWS_MONITOR_KEY,
+  MOCK_AWS_MONITOR_SUMMARY,
+} from "~/features/data-discovery-and-detection/action-center/mock/awsCloudInfraMock";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { useGetUserMonitorsQuery } from "~/features/user-management";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
@@ -77,11 +81,31 @@ const MonitorList = () => {
     },
   });
 
-  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
-    ...(typeof requestData === "object" ? requestData : {}),
-    page: pageIndex,
-    size: pageSize,
-  });
+  const normalizedRequest =
+    typeof requestData === "object" && requestData !== null ? requestData : {};
+
+  // BE doesn't yet accept "cloud_infrastructure" as a monitor_type query value
+  // (returns 422). Strip it from the BE call; the mock row is injected client-side
+  // below. If filtering specifically to cloud_infrastructure, omit the param so
+  // the BE doesn't error — we only want the mock row anyway.
+  const requestedMonitorTypes = normalizedRequest.monitor_type;
+  const beMonitorTypes = requestedMonitorTypes?.filter(
+    (t) => t !== APIMonitorType.CLOUD_INFRASTRUCTURE,
+  );
+  const onlyCloudInfraRequested =
+    !!requestedMonitorTypes?.length && beMonitorTypes?.length === 0;
+
+  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery(
+    {
+      ...normalizedRequest,
+      monitor_type: beMonitorTypes,
+      page: pageIndex,
+      size: pageSize,
+    },
+    {
+      skip: onlyCloudInfraRequested,
+    },
+  );
 
   useEffect(() => {
     if (defaultStewardFilter) {
@@ -100,6 +124,23 @@ const MonitorList = () => {
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
 
+  const monitorTypeFilter =
+    normalizedRequest.monitor_type ?? availableMonitorTypes;
+  const searchFilter = normalizedRequest.search ?? "";
+  const shouldShowMockAws =
+    awsMonitorEnabled &&
+    pageIndex === 1 &&
+    monitorTypeFilter.includes(APIMonitorType.CLOUD_INFRASTRUCTURE) &&
+    !results.some((m) => m.key === MOCK_AWS_MONITOR_KEY) &&
+    (!searchFilter ||
+      MOCK_AWS_MONITOR_SUMMARY.name
+        .toLowerCase()
+        .includes(searchFilter.toLowerCase()));
+
+  const displayResults = shouldShowMockAws
+    ? [MOCK_AWS_MONITOR_SUMMARY, ...results]
+    : results;
+
   return (
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="medium" vertical>
       <MonitorListSearchForm
@@ -113,7 +154,7 @@ const MonitorList = () => {
       <MonitorStats />
       <List
         loading={isLoading}
-        dataSource={results}
+        dataSource={displayResults}
         locale={{
           emptyText: <EmptyMonitorsResult />,
         }}
