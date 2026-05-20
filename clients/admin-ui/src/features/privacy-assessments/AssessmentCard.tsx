@@ -69,7 +69,12 @@ export const AssessmentCard = ({
   const PROGRESS_SEGMENTS = 20;
   const filledSegments = Math.round((completeness / 100) * PROGRESS_SEGMENTS);
 
-  const actionLabel = isGenerating ? null : isComplete ? "View" : "Resume";
+  let actionLabel: string | null = "Resume";
+  if (isGenerating) {
+    actionLabel = null;
+  } else if (isComplete) {
+    actionLabel = "View";
+  }
 
   // Data categories as display items
   const dataCategories = (assessment.data_categories ?? []).map((key) => ({

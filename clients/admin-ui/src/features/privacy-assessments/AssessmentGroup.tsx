@@ -19,7 +19,6 @@ interface AssessmentGroupProps {
   /** Zero-padded row index, e.g., "01" */
   index: number;
   dataUseName: string | null;
-  systemCount: number;
   assessments?: PrivacyAssessmentResponse[];
   /** Max cards to show before overflow. */
   maxVisible?: number;
@@ -29,18 +28,15 @@ function getHighestRisk(
   assessments: PrivacyAssessmentResponse[],
 ): RiskLevel | null {
   const priority = [RiskLevel.HIGH, RiskLevel.MEDIUM, RiskLevel.LOW];
-  for (const level of priority) {
-    if (assessments.some((a) => a.risk_level === level)) {
-      return level;
-    }
-  }
-  return null;
+  return (
+    priority.find((level) => assessments.some((a) => a.risk_level === level)) ??
+    null
+  );
 }
 
 export const AssessmentGroup = ({
   index,
   dataUseName,
-  systemCount,
   assessments = [],
   maxVisible = 4,
 }: AssessmentGroupProps) => {

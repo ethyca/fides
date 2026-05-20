@@ -181,7 +181,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
                     key={group.data_use ?? `uncategorized-${i}`}
                     index={i}
                     dataUseName={group.data_use_name}
-                    systemCount={group.system_count}
                     assessments={group.assessments}
                   />
                 ))}

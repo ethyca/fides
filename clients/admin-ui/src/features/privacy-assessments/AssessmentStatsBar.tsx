@@ -1,7 +1,7 @@
 import { Divider, Flex, Text } from "fidesui";
 
 import styles from "./AssessmentStatsBar.module.scss";
-import { AssessmentStatus, AssessmentGroupResponse, RiskLevel } from "./types";
+import { AssessmentGroupResponse, AssessmentStatus, RiskLevel } from "./types";
 
 interface AssessmentStatsBarProps {
   groups: AssessmentGroupResponse[];
@@ -67,7 +67,7 @@ export const AssessmentStatsBar = ({ groups }: AssessmentStatsBarProps) => {
   return (
     <div className={styles.container}>
       <Flex>
-        {stats.map((stat, i) => (
+        {stats.map((stat) => (
           <div key={stat.label} className={styles.cell}>
             <Text variant="monoLabel" type="secondary" size="sm" strong>
               {stat.label}
@@ -86,7 +86,7 @@ export const AssessmentStatsBar = ({ groups }: AssessmentStatsBarProps) => {
           </div>
         ))}
       </Flex>
-      <Divider className="mt-4 mb-0" />
+      <Divider className="mb-0 mt-4" />
     </div>
   );
 };
