@@ -19,3 +19,18 @@
 .empty {
   background-color: var(--fidesui-neutral-200);
 }
+
+.pulsing {
+  background-color: var(--fidesui-color-text);
+  animation: segmentedProgressPulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes segmentedProgressPulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}

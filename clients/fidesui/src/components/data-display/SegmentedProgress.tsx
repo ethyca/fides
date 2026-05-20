@@ -9,6 +9,12 @@ export interface SegmentedProgressProps {
   total: number;
   /** Number of filled (completed) segments. */
   filled: number;
+  /**
+   * When true, the first not-yet-filled segment pulses to signal that work is
+   * actively in flight (e.g. an agent is generating answers). Has no effect
+   * once every segment is filled.
+   */
+  loading?: boolean;
   className?: string;
 }
 
@@ -20,6 +26,7 @@ export interface SegmentedProgressProps {
 export const SegmentedProgress: React.FC<SegmentedProgressProps> = ({
   total,
   filled,
+  loading = false,
   className,
 }) => {
   if (total <= 0) {
@@ -39,13 +46,17 @@ export const SegmentedProgress: React.FC<SegmentedProgressProps> = ({
       aria-valuenow={filled}
       aria-valuemin={0}
       aria-valuemax={total}
+      aria-busy={loading || undefined}
     >
-      {Array.from({ length: displayTotal }, (_, i) => (
-        <div
-          key={i}
-          className={`${styles.block} ${i < displayFilled ? styles.filled : styles.empty}`}
-        />
-      ))}
+      {Array.from({ length: displayTotal }, (_, i) => {
+        let modifier = styles.empty;
+        if (i < displayFilled) {
+          modifier = styles.filled;
+        } else if (loading && i === displayFilled) {
+          modifier = styles.pulsing;
+        }
+        return <div key={i} className={`${styles.block} ${modifier}`} />;
+      })}
     </div>
   );
 };

@@ -5,7 +5,6 @@ import {
   FidesIndicator,
   Flex,
   SegmentedProgress,
-  Spin,
   Text,
   Typography,
 } from "fidesui";
@@ -79,10 +78,8 @@ export const AssessmentCard = ({
   const PROGRESS_SEGMENTS = 20;
   const filledSegments = Math.round((completeness / 100) * PROGRESS_SEGMENTS);
 
-  let actionLabel: string | null = "Resume";
-  if (isGenerating) {
-    actionLabel = null;
-  } else if (isComplete) {
+  let actionLabel = "Resume";
+  if (isComplete || isGenerating) {
     actionLabel = "View";
   }
 
@@ -175,60 +172,62 @@ export const AssessmentCard = ({
           </div>
         )}
 
-        {/* Risk level */}
-        {riskLabel && (
+        {/* Risk level — placeholder pulse while the agent is still assessing. */}
+        {isGenerating ? (
           <Flex align="center" gap={6}>
             <FidesIndicator
-              color={riskDotColor}
-              glowing={riskLevel === RiskLevel.HIGH}
+              color="var(--fidesui-color-text-secondary)"
+              pulsating
             />
-            <Text
-              variant="monoLabel"
-              size="sm"
-              strong
-              style={{ color: riskDotColor }}
-            >
-              {riskLabel} risk
+            <Text variant="monoLabel" size="sm" strong type="secondary">
+              Assessing risk
             </Text>
           </Flex>
+        ) : (
+          riskLabel && (
+            <Flex align="center" gap={6}>
+              <FidesIndicator
+                color={riskDotColor}
+                glowing={riskLevel === RiskLevel.HIGH}
+              />
+              <Text
+                variant="monoLabel"
+                size="sm"
+                strong
+                style={{ color: riskDotColor }}
+              >
+                {riskLabel} risk
+              </Text>
+            </Flex>
+          )
         )}
 
         {/* Spacer to push progress to bottom */}
         <div className="flex-1" />
 
         {/* Progress section */}
-        {isGenerating ? (
-          <Flex align="center" justify="center" gap="small" className="py-2">
-            <Spin size="small" />
-            <Text type="secondary" size="sm">
-              Generating this assessment
+        <div>
+          <Flex justify="space-between" align="center" className="mb-1">
+            <Text variant="monoLabel" type="secondary" size="sm" strong>
+              Questions answered
+            </Text>
+            <Text variant="monoLabel" size="sm" strong>
+              {Math.round(completeness)}%
             </Text>
           </Flex>
-        ) : (
-          <div>
-            <Flex justify="space-between" align="center" className="mb-1">
-              <Text variant="monoLabel" type="secondary" size="sm" strong>
-                Questions answered
-              </Text>
-              <Text variant="monoLabel" size="sm" strong>
-                {Math.round(completeness)}%
-              </Text>
-            </Flex>
-            <SegmentedProgress
-              total={PROGRESS_SEGMENTS}
-              filled={filledSegments}
-            />
-          </div>
-        )}
+          <SegmentedProgress
+            loading={isGenerating}
+            total={PROGRESS_SEGMENTS}
+            filled={filledSegments}
+          />
+        </div>
 
         {/* Bottom row: action button */}
-        {actionLabel && (
-          <Flex justify="flex-end" align="center">
-            <Button type="link" className="p-0" onClick={onClick}>
-              {actionLabel} →
-            </Button>
-          </Flex>
-        )}
+        <Flex justify="flex-end" align="center">
+          <Button type="link" className="p-0" onClick={onClick}>
+            {actionLabel} →
+          </Button>
+        </Flex>
       </Flex>
     </Card>
   );
