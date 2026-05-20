@@ -1,7 +1,7 @@
 """add imported audit log action
 
 Revision ID: a7d3f8b2c1e9
-Revises: 1e07732ff193
+Revises: b034cd68950d
 Create Date: 2026-04-28 10:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a7d3f8b2c1e9"
-down_revision = "1e07732ff193"
+down_revision = "b034cd68950d"
 branch_labels = None
 depends_on = None
 
