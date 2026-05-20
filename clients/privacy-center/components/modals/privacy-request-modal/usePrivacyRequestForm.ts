@@ -94,6 +94,7 @@ const usePrivacyRequestForm = ({
   });
 
   const formik = useFormik<FormValues>({
+    enableReinitialize: true,
     initialValues: {
       ...Object.fromEntries(
         Object.entries({
