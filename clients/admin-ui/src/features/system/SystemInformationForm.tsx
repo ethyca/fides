@@ -261,7 +261,7 @@ const SystemInformationForm = ({
     // system_type, etc.) make it into the payload.
     const values: FormValues = { ...initialValues, ...submittedValues };
     let dictionaryDeclarations;
-    if (values.vendor_id && values.privacy_declarations.length === 0) {
+    if (values.vendor_id && (values.privacy_declarations?.length ?? 0) === 0) {
       const dataUseQueryResult = await getDictionaryDataUseTrigger({
         vendor_id: values.vendor_id!,
       });
