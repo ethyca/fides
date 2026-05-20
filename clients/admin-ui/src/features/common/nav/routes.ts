@@ -39,6 +39,8 @@ export const ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ROUTE =
   "/data-discovery/action-center/cloud_infrastructure/[monitorId]";
 export const ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
   "/data-discovery/action-center/cloud_infrastructure/[monitorId]/activity";
+export const ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_GROUPS_ROUTE =
+  "/data-discovery/action-center/cloud_infrastructure/[monitorId]/groups";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
 
 // Privacy requests group

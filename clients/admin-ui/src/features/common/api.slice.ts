@@ -105,6 +105,7 @@ export const baseApi = createApi({
     "Identity Provider Monitor Filters",
     "Cloud Infra Monitor Results",
     "Cloud Infra Monitor Filters",
+    "Cloud Infra Groups",
     "Privacy Assessment",
     "Privacy Assessment Config",
     "Privacy Assessment Questionnaire",

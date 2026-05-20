@@ -10,6 +10,7 @@ import {
 export enum ActionCenterRoute {
   ATTENTION_REQUIRED = "attention-required",
   ACTIVITY = "activity",
+  GROUPS = "groups",
 }
 
 export const ACTION_CENTER_CONFIG: Record<
@@ -21,6 +22,12 @@ export const ACTION_CENTER_CONFIG: Record<
     type: "item",
     label: "Attention required",
     icon: <Icons.ListBoxes />,
+  },
+  [ActionCenterRoute.GROUPS]: {
+    key: ActionCenterRoute.GROUPS,
+    type: "item",
+    label: "Groups",
+    icon: <Icons.Grid />,
   },
   [ActionCenterRoute.ACTIVITY]: {
     key: ActionCenterRoute.ACTIVITY,
@@ -36,18 +43,29 @@ export const ACTION_CENTER_TAB_ITEMS: NavConfigTab[] = [
   { title: "Activity", path: ACTION_CENTER_ACTIVITY_ROUTE },
 ];
 
-export type ActionCenterRouteConfig = Record<ActionCenterRoute, string>;
+export type ActionCenterRouteConfig = Partial<
+  Record<ActionCenterRoute, string>
+> &
+  Record<
+    ActionCenterRoute.ATTENTION_REQUIRED | ActionCenterRoute.ACTIVITY,
+    string
+  >;
 
 const useActionCenterNavigation = (routeConfig: ActionCenterRouteConfig) => {
   const { activeItem, setActiveItem } = useMenuNavigation({
-    routes: routeConfig,
+    routes: routeConfig as Record<string, string>,
     defaultKey: ActionCenterRoute.ATTENTION_REQUIRED,
   });
+
+  // Only include menu items for routes present in the config
+  const items = Object.fromEntries(
+    Object.entries(ACTION_CENTER_CONFIG).filter(([key]) => key in routeConfig),
+  );
 
   return {
     activeItem,
     setActiveItem,
-    items: ACTION_CENTER_CONFIG,
+    items,
   };
 };
 

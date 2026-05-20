@@ -147,6 +147,7 @@ export type * from "./models/ClientResponse";
 export type * from "./models/ClientSecretRotateResponse";
 export type * from "./models/ClientUpdateRequest";
 export type * from "./models/CloudConfig";
+export type * from "./models/CloudInfraGroup";
 export type * from "./models/CloudInfraMonitorResourcesDynamicFilters";
 export type * from "./models/CloudInfraMonitorUpdates";
 export type * from "./models/CloudInfraStagedResource";

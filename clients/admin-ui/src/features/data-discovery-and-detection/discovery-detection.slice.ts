@@ -4,6 +4,9 @@ import queryString from "query-string";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  CloudInfraAssignmentActionResponse,
+  CloudInfraGroupRequest,
+  CloudInfraGroupResponse,
   CloudInfraMonitorResourcesDynamicFilters,
   CloudInfraStagedResource,
   DiffStatus,
@@ -80,6 +83,18 @@ interface CloudInfraMonitorResultsQueryParams {
 
 interface CloudInfraMonitorFiltersQueryParams {
   monitor_config_id: string;
+}
+
+interface CloudInfraGroupsQueryParams {
+  monitor_config_id: string;
+  page?: number;
+  size?: number;
+}
+
+interface CloudInfraGroupAssignmentParams {
+  monitor_config_id: string;
+  group_id: string;
+  staged_resource_urns: string[];
 }
 
 // Identity Provider Monitor interfaces (Okta-specific)
@@ -561,6 +576,84 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Cloud Infra Monitor Filters"],
     }),
+    // Cloud Infra Group endpoints
+    getCloudInfraGroups: build.query<
+      {
+        items: CloudInfraGroupResponse[];
+        total: number;
+        page: number;
+        size: number;
+        pages: number;
+      },
+      CloudInfraGroupsQueryParams
+    >({
+      query: ({ monitor_config_id, ...params }) => ({
+        method: "GET",
+        url: `/plus/discovery-monitor/${monitor_config_id}/cloud-infra-groups?${queryString.stringify(
+          params,
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      providesTags: () => ["Cloud Infra Groups"],
+    }),
+    createCloudInfraGroup: build.mutation<
+      CloudInfraGroupResponse,
+      { monitor_config_id: string; body: CloudInfraGroupRequest }
+    >({
+      query: ({ monitor_config_id, body }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/${monitor_config_id}/cloud-infra-groups`,
+        body,
+      }),
+      invalidatesTags: ["Cloud Infra Groups"],
+    }),
+    updateCloudInfraGroup: build.mutation<
+      CloudInfraGroupResponse,
+      {
+        monitor_config_id: string;
+        group_id: string;
+        body: CloudInfraGroupRequest;
+      }
+    >({
+      query: ({ monitor_config_id, group_id, body }) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${monitor_config_id}/cloud-infra-groups/${group_id}`,
+        body,
+      }),
+      invalidatesTags: ["Cloud Infra Groups"],
+    }),
+    deleteCloudInfraGroup: build.mutation<
+      void,
+      { monitor_config_id: string; group_id: string }
+    >({
+      query: ({ monitor_config_id, group_id }) => ({
+        method: "DELETE",
+        url: `/plus/discovery-monitor/${monitor_config_id}/cloud-infra-groups/${group_id}`,
+      }),
+      invalidatesTags: ["Cloud Infra Groups"],
+    }),
+    assignResourcesToCloudInfraGroup: build.mutation<
+      CloudInfraAssignmentActionResponse,
+      CloudInfraGroupAssignmentParams
+    >({
+      query: ({ monitor_config_id, group_id, staged_resource_urns }) => ({
+        method: "PUT",
+        url: `/plus/discovery-monitor/${monitor_config_id}/cloud-infra-groups/${group_id}/assignments`,
+        body: { staged_resource_urns },
+      }),
+      invalidatesTags: ["Cloud Infra Monitor Results", "Cloud Infra Groups"],
+    }),
+    unassignResourcesFromCloudInfraGroup: build.mutation<
+      CloudInfraAssignmentActionResponse,
+      CloudInfraGroupAssignmentParams
+    >({
+      query: ({ monitor_config_id, group_id, staged_resource_urns }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/${monitor_config_id}/cloud-infra-groups/${group_id}/assignments/remove`,
+        body: { staged_resource_urns },
+      }),
+      invalidatesTags: ["Cloud Infra Monitor Results", "Cloud Infra Groups"],
+    }),
   }),
 });
 
@@ -596,6 +689,12 @@ export const {
   useUpdateInfrastructureSystemDescriptionMutation,
   useGetCloudInfraMonitorResultsQuery,
   useGetCloudInfraMonitorFiltersQuery,
+  useGetCloudInfraGroupsQuery,
+  useCreateCloudInfraGroupMutation,
+  useUpdateCloudInfraGroupMutation,
+  useDeleteCloudInfraGroupMutation,
+  useAssignResourcesToCloudInfraGroupMutation,
+  useUnassignResourcesFromCloudInfraGroupMutation,
   util: discoveryDetectionUtil,
 } = discoveryDetectionApi;
 

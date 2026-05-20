@@ -4,6 +4,7 @@ import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "~/features/data-discovery-and-
 import { DiffStatus } from "~/types/api";
 import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
+import { GroupSelect } from "../fields/GroupSelect";
 import {
   getServiceIconUrl,
   getServiceLabel,
@@ -11,12 +12,17 @@ import {
 
 interface CloudInfraResourceListItemProps {
   item: CloudInfraStagedResource;
+  monitorId: string;
 }
 
 export const CloudInfraResourceListItem = ({
   item,
+  monitorId,
 }: CloudInfraResourceListItemProps) => {
   const resourceName = item.name ?? "Unnamed resource";
+  const groupsDisabled =
+    item.diff_status === DiffStatus.MUTED ||
+    item.diff_status === DiffStatus.REMOVAL;
 
   return (
     <List.Item>
@@ -68,12 +74,23 @@ export const CloudInfraResourceListItem = ({
               {item.tags && Object.keys(item.tags).length > 0 && (
                 <Flex gap={4} wrap="wrap">
                   {Object.entries(item.tags).map(([key, value]) => (
-                    <Tag key={key} className="text-xs" icon={<Icons.Tag />}>
+                    <Tag
+                      key={key}
+                      className="text-xs"
+                      color="marble"
+                      icon={<Icons.Tag />}
+                    >
                       {key}: {value}
                     </Tag>
                   ))}
                 </Flex>
               )}
+              <GroupSelect
+                monitorId={monitorId}
+                resourceUrn={item.urn}
+                groups={item.groups}
+                disabled={groupsDisabled}
+              />
             </Flex>
           }
         />

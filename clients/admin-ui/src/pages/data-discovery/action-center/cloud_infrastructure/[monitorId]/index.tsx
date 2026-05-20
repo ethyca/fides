@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 
 import {
   ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
+  ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_GROUPS_ROUTE,
   ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ROUTE,
 } from "~/features/common/nav/routes";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
@@ -19,6 +20,8 @@ export const MONITOR_CLOUD_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
     ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
   [ActionCenterRoute.ATTENTION_REQUIRED]:
     ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ROUTE,
+  [ActionCenterRoute.GROUPS]:
+    ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_GROUPS_ROUTE,
 } as const;
 
 const CloudInfrastructureMonitorResults: NextPage = () => {

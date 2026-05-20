@@ -1,3 +1,4 @@
+import { CloudInfraGroupSummary } from "./CloudInfraGroup";
 import { DiffStatus } from "./DiffStatus";
 import { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
@@ -22,4 +23,5 @@ export type CloudInfraStagedResource = {
   cloud_account_id: string;
   source_id: string;
   tags?: Record<string, string> | null;
+  groups?: CloudInfraGroupSummary[] | null;
 };

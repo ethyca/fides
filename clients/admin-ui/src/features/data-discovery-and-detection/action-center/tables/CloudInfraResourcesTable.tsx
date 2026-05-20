@@ -103,7 +103,9 @@ export const CloudInfraResourcesTable = ({
               />
             ),
           }}
-          renderItem={(item) => <CloudInfraResourceListItem item={item} />}
+          renderItem={(item) => (
+            <CloudInfraResourceListItem item={item} monitorId={monitorId} />
+          )}
         />
       </Flex>
       <Pagination
