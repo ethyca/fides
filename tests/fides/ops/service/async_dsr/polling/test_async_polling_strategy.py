@@ -1229,7 +1229,10 @@ class TestAsyncPollingStrategy:
         # Verify input_data was forwarded to generate_update_param_values
         mock_query_config.generate_update_param_values.assert_called_once()
         call_args = mock_query_config.generate_update_param_values.call_args
-        assert call_args[0][4] == input_data or call_args[1].get("input_data") == input_data
+        assert (
+            call_args[0][4] == input_data
+            or call_args[1].get("input_data") == input_data
+        )
 
     def test_initial_request_erasure_forwards_input_data_to_generate_methods(
         self, db, async_polling_strategy
@@ -1271,7 +1274,9 @@ class TestAsyncPollingStrategy:
 
         mock_query_config = MagicMock()
         mock_query_config.get_masking_request.return_value = masking_request
-        mock_query_config.generate_update_param_values.return_value = {"user_id": "row1"}
+        mock_query_config.generate_update_param_values.return_value = {
+            "user_id": "row1"
+        }
 
         mock_response = Mock(spec=Response)
         mock_response.status_code = 200
