@@ -1,0 +1,4 @@
+type: Added
+description: Added frontend for cloud infra resource grouping with inline group assignment, group CRUD management tab, and create/edit modal with system linking
+pr: 8246
+labels: []

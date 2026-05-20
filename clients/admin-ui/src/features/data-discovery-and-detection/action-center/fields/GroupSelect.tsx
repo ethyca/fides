@@ -126,11 +126,20 @@ export const GroupSelect = ({
   };
 
   const handleCreateSuccess = async (groupId: string) => {
-    await assignResources({
+    const result = await assignResources({
       monitor_config_id: monitorId,
       group_id: groupId,
       staged_resource_urns: [resourceUrn],
     });
+    if (isErrorResult(result)) {
+      messageApi.open({
+        type: "error",
+        content: getErrorMessage(
+          result.error,
+          "Group created, but failed to assign to this resource.",
+        ),
+      });
+    }
   };
 
   const tagRender = (props: {
