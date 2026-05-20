@@ -1,0 +1,15 @@
+.container {
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--fidesui-color-primary);
+    background: var(--fidesui-color-primary-bg);
+  }
+}
+
+.handle {
+  cursor: grab;
+  touch-action: none;
+}
