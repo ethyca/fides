@@ -1,11 +1,25 @@
+.header {
+  border-bottom: 1px solid var(--fidesui-neutral-200);
+  padding-bottom: 14px;
+}
+
 .rowNumber {
   font-family: var(--fidesui-font-family-code);
-  font-size: var(--fidesui-font-size-lg);
-  min-width: 24px;
+  font-size: 10px !important;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.groupTitle {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.15 !important;
 }
 
 .statCell {
-  text-align: right;
+  text-align: left;
 }
 
 .statValue {

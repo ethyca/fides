@@ -1,11 +1,11 @@
-import { Button, Card, Col, Divider, Flex, Row, Text, Typography } from "fidesui";
+import { Button, Card, Col, Flex, Row, Text, Typography } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 
-import styles from "./AssessmentGroup.module.scss";
 import { AssessmentCard } from "./AssessmentCard";
+import styles from "./AssessmentGroup.module.scss";
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
 import {
   AssessmentStatus,
@@ -73,20 +73,27 @@ export const AssessmentGroup = ({
 
   // Category label for cards (short version of the data use)
   const categoryLabel = dataUseName?.split(" ")[0]?.toUpperCase() ?? undefined;
+  // Parent category for the header kicker (e.g. "Privacy · Analytics")
+  const headerCategory = dataUseName?.split(" ")[0] ?? displayName;
 
   return (
     <div>
       {/* Group header */}
-      <Flex justify="space-between" align="flex-end" className="mb-2">
-        <Flex gap={12} align="baseline">
+      <Flex
+        justify="space-between"
+        align="flex-end"
+        gap={16}
+        className={`mb-4 ${styles.header}`}
+      >
+        <Flex gap={12} align="flex-end" flex="1 1 auto" style={{ minWidth: 0 }}>
           <Text type="secondary" className={styles.rowNumber}>
             {rowNumber}
           </Text>
           <div>
             <Text variant="monoLabel" type="secondary" size="sm" strong>
-              Privacy · {displayName}
+              Privacy · {headerCategory}
             </Text>
-            <Title level={2} className="!m-0">
+            <Title level={2} className={`!m-0 ${styles.groupTitle}`}>
               {displayName}
             </Title>
           </div>
@@ -121,9 +128,7 @@ export const AssessmentGroup = ({
             <Text variant="monoLabel" type="secondary" size="sm">
               Avg · Answered
             </Text>
-            <Text className={styles.statValue}>
-              {avgAnswered}%
-            </Text>
+            <Text className={styles.statValue}>{avgAnswered}%</Text>
           </div>
           <div className={styles.statCell}>
             <Text variant="monoLabel" type="secondary" size="sm">
@@ -142,8 +147,6 @@ export const AssessmentGroup = ({
           </div>
         </Flex>
       </Flex>
-
-      <Divider className="mb-4 mt-0" />
 
       {/* Card grid */}
       <Row gutter={[16, 16]}>
