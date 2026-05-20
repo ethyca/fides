@@ -8,12 +8,10 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useRouter } from "next/router";
 import React, { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 import { User } from "./types";
 import {
@@ -29,7 +27,6 @@ const useDeleteUserModal = ({
   onClose,
 }: Pick<User, "id" | "username"> & { onClose: () => void }) => {
   const message = useMessage();
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const [deleteUser] = useDeleteUserMutation();
 
@@ -37,12 +34,11 @@ const useDeleteUserModal = ({
     const result = await deleteUser(id);
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
-    } else {
-      message.success("Successfully deleted user");
-      onClose();
+      return;
     }
+    message.success("Successfully deleted user");
     dispatch(setActiveUserId(undefined));
-    router.push(USER_MANAGEMENT_ROUTE);
+    onClose();
   };
 
   return {

@@ -11,13 +11,11 @@ import {
   useModal,
 } from "fidesui";
 import { isEqual } from "lodash";
-import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -49,7 +47,6 @@ const { Text } = Typography;
  */
 const PermissionsForm = () => {
   const message = useMessage();
-  const router = useRouter();
   const modal = useModal();
   const [form] = Form.useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -262,9 +259,6 @@ const PermissionsForm = () => {
           )}
         </Flex>
         <div>
-          <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
-            Cancel
-          </Button>
           <Tooltip title={saveButtonTooltip}>
             <Button
               className="ml-2"

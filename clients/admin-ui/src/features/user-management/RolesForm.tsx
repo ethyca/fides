@@ -21,8 +21,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import { RouterLink } from "~/features/common/nav/RouterLink";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import {
   useAssignUserRoleMutation,
   useGetRolesQuery,
@@ -445,9 +443,6 @@ const RolesForm = () => {
       )}
 
       <Flex gap={12}>
-        <RouterLink href={USER_MANAGEMENT_ROUTE}>
-          <Button>Cancel</Button>
-        </RouterLink>
         <Button
           type="primary"
           onClick={handleSave}
