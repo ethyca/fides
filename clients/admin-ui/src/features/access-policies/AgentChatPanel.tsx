@@ -12,7 +12,7 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import Image from "~/features/common/Image";
+import EthycaLogo from "~/features/common/logos/EthycaLogo";
 import { RTKErrorResult } from "~/types/errors";
 
 import {
@@ -35,21 +35,12 @@ interface ChatMessage {
   yamlApplied?: boolean;
 }
 
-const AgentLogoMark = ({ size = 20 }: { size?: number }) => (
-  <Image
-    src="/images/logomark-ethyca.svg"
-    alt="Ethyca"
-    width={size}
-    height={size}
-  />
-);
-
 const AgentAvatar = () => (
   <Avatar
     shape="square"
     size="medium"
     className={styles.agentAvatar}
-    icon={<AgentLogoMark size={15} />}
+    icon={<EthycaLogo size={15} />}
   />
 );
 

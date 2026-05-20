@@ -1,3 +1,5 @@
+import type { ComponentType } from "./catalog";
+
 export type PcFieldType =
   | "text"
   | "select"
@@ -95,4 +97,41 @@ export interface JsonRenderElement {
 export interface JsonRenderSpec {
   root: string;
   elements: Record<string, JsonRenderElement>;
+}
+
+export interface FieldPropertiesPanelProps {
+  spec: JsonRenderSpec | null;
+  selectedElementId: string | null;
+  onUpdateField: (elementId: string, props: Record<string, unknown>) => void;
+  onRemoveField: (elementId: string) => void;
+  onUpdateVisibility: (elementId: string, visible: unknown | undefined) => void;
+}
+
+export type EditableType = Exclude<ComponentType, "Form">;
+
+export type FormValues = Record<string, unknown>;
+
+export type ChatRole = "user" | "assistant" | "system";
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
+export type Status = "idle" | "streaming" | "aborted" | "error";
+
+export interface UseFormBuilderInput {
+  propertyId: string;
+  actionPolicyKey: string;
+  initialSpec: JsonRenderSpec | null;
+}
+
+export interface UseFormBuilder {
+  spec: JsonRenderSpec | null;
+  messages: ChatMessage[];
+  status: Status;
+  error: string | null;
+  sendMessage: (text: string) => Promise<void>;
+  abort: () => void;
+  setSpec: (spec: JsonRenderSpec | null) => void;
 }

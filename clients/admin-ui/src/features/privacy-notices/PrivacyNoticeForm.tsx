@@ -32,6 +32,7 @@ import {
 } from "~/features/data-use/data-use.slice";
 import { PrivacyNoticeTranslationForm } from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
 import {
+  ConsentMechanism,
   LimitedPrivacyNoticeResponseSchema,
   NoticeTranslation,
   PrivacyNoticeCreation,
@@ -191,6 +192,8 @@ const PrivacyNoticeForm = ({
     [allValues, initialValues],
   );
 
+  const consentMechanism = Form.useWatch("consent_mechanism", form);
+
   // Read children and translations reactively via useWatch so ScrollableList
   // and the translation form stay in sync with the hidden Form.Items below.
   const children =
@@ -254,6 +257,23 @@ const PrivacyNoticeForm = ({
               valuePropName="checked"
             >
               <Switch data-testid="input-has_gpc_flag" />
+            </Form.Item>
+            <Form.Item
+              name="att_exempt"
+              label={
+                <Flex align="center" gap={4}>
+                  Exempt from App Tracking Transparency (ATT)
+                  {consentMechanism === ConsentMechanism.NOTICE_ONLY && (
+                    <InfoTooltip label="Notice-only notices are not affected by this setting." />
+                  )}
+                </Flex>
+              }
+              valuePropName="checked"
+            >
+              <Switch
+                data-testid="input-att_exempt"
+                disabled={consentMechanism === ConsentMechanism.NOTICE_ONLY}
+              />
             </Form.Item>
             <PrivacyNoticeLocationDisplay
               regions={passedInPrivacyNotice?.configured_regions}

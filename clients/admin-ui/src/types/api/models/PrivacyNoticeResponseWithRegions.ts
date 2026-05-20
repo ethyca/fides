@@ -57,6 +57,10 @@ export type PrivacyNoticeResponseWithRegions = {
    */
   has_gpc_flag: boolean;
   /**
+   * Att Exempt
+   */
+  att_exempt: boolean;
+  /**
    * Translations
    */
   translations?: Array<NoticeTranslationResponse>;
