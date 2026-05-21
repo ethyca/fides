@@ -25,6 +25,7 @@ export enum ExecutionLogStatus {
   RETRYING = "retrying",
   SKIPPED = "skipped",
   POLLING = "polling",
+  INFO = "info",
   // Audit log statuses for pre-approval webhooks
   APPROVED = "approved",
   DENIED = "denied",
@@ -43,6 +44,7 @@ export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
   [ExecutionLogStatus.RETRYING]: "Retrying",
   [ExecutionLogStatus.SKIPPED]: "Skipped",
   [ExecutionLogStatus.POLLING]: "Awaiting polling",
+  [ExecutionLogStatus.INFO]: "Info",
   [ExecutionLogStatus.APPROVED]: "Approved",
   [ExecutionLogStatus.DENIED]: "Denied",
   [ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED]: "Webhooks triggered",
@@ -63,6 +65,7 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.PAUSED]: undefined,
   [ExecutionLogStatus.RETRYING]: undefined,
   [ExecutionLogStatus.POLLING]: CUSTOM_TAG_COLOR.WARNING,
+  [ExecutionLogStatus.INFO]: CUSTOM_TAG_COLOR.INFO,
   [ExecutionLogStatus.APPROVED]: CUSTOM_TAG_COLOR.SUCCESS,
   [ExecutionLogStatus.DENIED]: CUSTOM_TAG_COLOR.WARNING,
   [ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED]: CUSTOM_TAG_COLOR.INFO,
