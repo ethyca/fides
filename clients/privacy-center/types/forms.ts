@@ -27,6 +27,7 @@ export interface CustomPrivacyRequestField {
   hidden?: boolean;
   query_param_key?: string;
   ip_geolocation_hint?: boolean;
+  display_condition?: import("./config").Condition | null;
   max_size_bytes?: number;
   allowed_file_types?: string[];
 }

@@ -1,7 +1,6 @@
-import { Button, Flex, Form, Input, Text } from "fidesui";
+import { Alert, Button, Flex, Form, Input, Text } from "fidesui";
 import React from "react";
 
-import { isFieldVisible } from "~/common/visibility";
 import { buildCustomFieldProps } from "~/components/common/buildCustomFieldProps";
 import CustomFieldRenderer from "~/components/common/CustomFieldRenderer";
 import { ModalViews } from "~/components/modals/types";
@@ -39,6 +38,8 @@ const PrivacyRequestForm = ({
     values,
     isSubmitting,
     orderedFields,
+    applicableFields,
+    validationError,
   } = usePrivacyRequestForm({
     onExit,
     action,
@@ -127,14 +128,17 @@ const PrivacyRequestForm = ({
     if (field.kind !== "custom" && field.kind !== "custom-identity") {
       return null;
     }
-    // custom + custom-identity render via the same CustomFieldRenderer pipeline
-    // they always have. The hidden / visible_when filters apply only to those —
-    // legacy identity fields above don't honor those props in the existing UX.
+    // custom + custom-identity render via the same CustomFieldRenderer pipeline.
+    // Hidden fields and fields gated off by display_condition are filtered out.
+    // Custom identity fields bypass applicableFields (they don't have display_condition).
     const { key, field: item } = field;
     if (!item) {
       return null;
     }
-    if (item.hidden || !isFieldVisible(item, values)) {
+    if (item.hidden) {
+      return null;
+    }
+    if (field.kind === "custom" && !applicableFields.has(key)) {
       return null;
     }
     const isCheckbox = item.field_type === "checkbox";
@@ -168,6 +172,13 @@ const PrivacyRequestForm = ({
             <Text size="sm">{paragraph}</Text>
           </Form.Item>
         ))}
+        {validationError && (
+          <Alert
+            type="error"
+            title="Something went wrong. Please try again later."
+            showIcon
+          />
+        )}
         {orderedFields.map(renderField)}
         <Flex justify="stretch" gap="medium">
           <Button type="default" variant="outlined" onClick={onExit} block>
