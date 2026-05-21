@@ -303,7 +303,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
 
   const vendorFilter = tableInstance
     .getState()
-    .columnFilters.find((c) => c.id === "vendor_id");
+    .columnFilters.find((c) => c.id === "source");
   const totalFilters =
     vendorFilter && Array.isArray(vendorFilter.value)
       ? vendorFilter.value.length

@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed source filter on the Vendors table silently doing nothing
+pr: 8259
+labels: []
