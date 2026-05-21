@@ -100,7 +100,9 @@ class TestDatabaseTaskOnFailure:
 
         mock_privacy_request = MagicMock()
         mock_privacy_request.status = MagicMock()
-        mock_privacy_request.status.__eq__ = lambda self, other: False  # not already errored
+        mock_privacy_request.status.__eq__ = (
+            lambda self, other: False
+        )  # not already errored
         mock_privacy_request.policy.get_action_type.return_value = "access"
 
         mock_session.query.return_value.filter.return_value.first.return_value = (
@@ -118,7 +120,9 @@ class TestDatabaseTaskOnFailure:
 
         mock_privacy_request.add_error_execution_log.assert_called_once()
         call_kwargs = mock_privacy_request.add_error_execution_log.call_args
-        assert "Worker killed by OOM" in call_kwargs[1]["message"] or "Worker killed by OOM" in str(call_kwargs)
+        assert "Worker killed by OOM" in call_kwargs[1][
+            "message"
+        ] or "Worker killed by OOM" in str(call_kwargs)
         assert call_kwargs[1]["dataset_name"] == "Worker task failure"
 
         mock_privacy_request.error_processing.assert_called_once_with(db=mock_session)
