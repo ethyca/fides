@@ -165,7 +165,7 @@ def requeue_privacy_requests_after_email_send(
             dataset_name=None,
             collection_name=None,
             message="Request paused after batch email send, resuming from post-webhooks step",
-            action_type=privacy_request.policy.get_action_type(),
+            action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
         )
 
         queue_privacy_request(

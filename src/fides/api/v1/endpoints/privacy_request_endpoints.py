@@ -833,7 +833,7 @@ def resume_privacy_request(
         dataset_name=None,
         collection_name=None,
         message=f"Request resumed from webhook pause: {webhook.key}",
-        action_type=privacy_request.policy.get_action_type(),
+        action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
     )
 
     queue_privacy_request(
@@ -1346,7 +1346,7 @@ def mark_privacy_request_pre_approve_not_eligible(
             dataset_name=None,
             collection_name=None,
             message=f"Pre-approval webhook returned not eligible: {webhook.name}",
-            action_type=privacy_request.policy.get_action_type(),
+            action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
         )
 
 

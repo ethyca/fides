@@ -805,7 +805,7 @@ def run_privacy_request(
                     dataset_name=None,
                     collection_name=None,
                     message=f"Request paused by webhook halt instruction: {exc}",
-                    action_type=privacy_request.policy.get_action_type(),
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
                 )
                 _log_warning(exc, CONFIG.dev_mode)
                 return
@@ -1406,7 +1406,7 @@ def run_webhooks_and_report_status(
                 dataset_name=None,
                 collection_name=None,
                 message=f"Request paused by webhook: {webhook.key}",
-                action_type=privacy_request.policy.get_action_type(),
+                action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
             )
             initiate_paused_privacy_request_followup(privacy_request)
             return False
