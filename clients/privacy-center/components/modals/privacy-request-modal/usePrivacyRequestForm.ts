@@ -337,7 +337,7 @@ const usePrivacyRequestForm = ({
     validate,
   });
 
-  const applicableFields = useApplicabilitySync({
+  const { applicableFields, conditionError } = useApplicabilitySync({
     customPrivacyRequestFields,
     applicableFieldsRef,
     initialValues,
@@ -360,7 +360,7 @@ const usePrivacyRequestForm = ({
     customPrivacyRequestFields,
     orderedFields,
     applicableFields,
-    validationError,
+    validationError: validationError || conditionError,
   };
 };
 

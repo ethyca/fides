@@ -212,7 +212,7 @@ const useConsentRequestForm = ({
     validate,
   });
 
-  const applicableFields = useApplicabilitySync({
+  const { applicableFields, conditionError } = useApplicabilitySync({
     customPrivacyRequestFields,
     applicableFieldsRef,
     initialValues,
@@ -225,7 +225,7 @@ const useConsentRequestForm = ({
     identityInputs,
     customPrivacyRequestFields,
     applicableFields,
-    validationError,
+    validationError: validationError || conditionError,
   };
 };
 

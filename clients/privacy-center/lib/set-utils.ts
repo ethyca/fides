@@ -2,11 +2,10 @@ export const setsEqual = (a: Set<string>, b: Set<string>): boolean => {
   if (a.size !== b.size) {
     return false;
   }
-  let equal = true;
-  a.forEach((item) => {
+  for (const item of a) {
     if (!b.has(item)) {
-      equal = false;
+      return false;
     }
-  });
-  return equal;
+  }
+  return true;
 };

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as Yup from "yup";
 
 import { useApplicableFields } from "~/hooks/useApplicableFields";
@@ -25,9 +25,18 @@ export const useConditionalValidate = ({
     new Set(Object.keys(customPrivacyRequestFields)),
   );
 
+  // Invalidate the schema cache when the field config changes, so a
+  // re-conditionalized field (same applicable key set, different rules)
+  // doesn't serve a stale schema.
+  const configSignature = useMemo(
+    () => JSON.stringify(Object.keys(customPrivacyRequestFields).sort()),
+    [customPrivacyRequestFields],
+  );
+
   // Cache the last applicable-aware schema to avoid rebuilding on every keystroke
   const schemaCache = useRef<{
     applicableKey: string;
+    configSignature: string;
     schema: Yup.AnyObjectSchema;
   } | null>(null);
 
@@ -37,14 +46,17 @@ export const useConditionalValidate = ({
     const applicableKey = Array.from(currentApplicable).sort().join(",");
     let combinedSchema: Yup.AnyObjectSchema;
 
-    if (schemaCache.current?.applicableKey === applicableKey) {
+    if (
+      schemaCache.current?.applicableKey === applicableKey &&
+      schemaCache.current?.configSignature === configSignature
+    ) {
       combinedSchema = schemaCache.current.schema;
     } else {
       const customFieldSchema = getValidationSchema(currentApplicable);
       combinedSchema = identityValidationSchema.concat(
         customFieldSchema,
       ) as Yup.AnyObjectSchema;
-      schemaCache.current = { applicableKey, schema: combinedSchema };
+      schemaCache.current = { applicableKey, configSignature, schema: combinedSchema };
     }
 
     try {
@@ -84,16 +96,16 @@ export const useApplicabilitySync = ({
   initialValues: FormValues;
   formValues: FormValues;
   setFieldValue: (field: string, value: unknown) => void;
-}): Set<string> => {
-  const applicableFields = useApplicableFields(
+}): { applicableFields: Set<string>; conditionError: boolean } => {
+  const { applicableFields, conditionError } = useApplicableFields(
     customPrivacyRequestFields,
     formValues,
   );
-  // eslint-disable-next-line no-param-reassign
-  applicableFieldsRef.current = applicableFields;
 
   const prevApplicable = useRef<Set<string>>(applicableFields);
   useEffect(() => {
+    // eslint-disable-next-line no-param-reassign
+    applicableFieldsRef.current = applicableFields;
     const prev = prevApplicable.current;
     prevApplicable.current = applicableFields;
 
@@ -114,5 +126,5 @@ export const useApplicabilitySync = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicableFields]);
 
-  return applicableFields;
+  return { applicableFields, conditionError };
 };

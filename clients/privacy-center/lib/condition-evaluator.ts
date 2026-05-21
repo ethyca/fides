@@ -9,7 +9,14 @@ import { setsEqual } from "./set-utils";
 
 /**
  * Check whether a value should be considered "present" for exists/not_exists.
- * Empty strings and empty arrays are treated as absent, matching backend behavior.
+ *
+ * Values treated as absent: null, undefined, "", and [].
+ * Values treated as present: false, 0, non-empty strings/arrays, and all other truthy values.
+ *
+ * Note: The backend operators.py checks only `is not None` for exists, but the
+ * backend's _submitted_has_value() also treats "" and [] as absent. We follow
+ * the stricter definition here because privacy center form values are always
+ * strings or string arrays — false and 0 don't occur as form values.
  */
 const hasValue = (val: unknown): boolean => {
   if (val === null || val === undefined) {
@@ -70,28 +77,24 @@ const applyOperator = (
 
 /**
  * Evaluate a single condition (leaf or group) against a flat data record.
- * Returns false on any error, matching backend behavior (conservative: field hidden).
+ * Throws on malformed conditions so callers can surface errors to the user.
  */
 export const evaluateCondition = (
   condition: Condition,
   data: Record<string, unknown>,
 ): boolean => {
-  try {
-    if ("field_address" in condition) {
-      // ConditionLeaf
-      const leaf = condition as ConditionLeaf;
-      const actual = data[leaf.field_address];
-      return applyOperator(leaf.operator, actual, leaf.value);
-    }
-    // ConditionGroup
-    const group = condition as ConditionGroup;
-    const results = group.conditions.map((c) => evaluateCondition(c, data));
-    return group.logical_operator === "and"
-      ? results.every(Boolean)
-      : results.some(Boolean);
-  } catch {
-    return false;
+  if ("field_address" in condition) {
+    // ConditionLeaf
+    const leaf = condition as ConditionLeaf;
+    const actual = data[leaf.field_address];
+    return applyOperator(leaf.operator, actual, leaf.value);
   }
+  // ConditionGroup
+  const group = condition as ConditionGroup;
+  const results = group.conditions.map((c) => evaluateCondition(c, data));
+  return group.logical_operator === "and"
+    ? results.every(Boolean)
+    : results.some(Boolean);
 };
 
 /**
@@ -105,11 +108,7 @@ const isFieldApplicable = (
   if (!condition) {
     return true;
   }
-  try {
-    return evaluateCondition(condition, dataView);
-  } catch {
-    return false;
-  }
+  return evaluateCondition(condition, dataView);
 };
 
 /**
@@ -161,7 +160,10 @@ export const resolveApplicableFields = <
     applicable = evaluateFieldSet(previous, fields, formValues);
     iterations += 1;
     if (iterations > maxIterations) {
-      return applicable;
+      throw new Error(
+        `resolveApplicableFields exceeded max iterations (${maxIterations}). ` +
+          `Possible circular dependency in display_condition config.`,
+      );
     }
   } while (!setsEqual(applicable, previous));
 

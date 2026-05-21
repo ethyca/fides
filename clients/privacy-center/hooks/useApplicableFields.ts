@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { resolveApplicableFields } from "~/lib/condition-evaluator";
 import { setsEqual } from "~/lib/set-utils";
@@ -41,15 +41,17 @@ const extractWatchedKeys = (
 export const useApplicableFields = (
   customFields: Record<string, CustomConfigField>,
   formValues: Record<string, string | string[]>,
-): Set<string> => {
+): { applicableFields: Set<string>; conditionError: boolean } => {
   const prevResult = useRef<Set<string>>(new Set());
+  const [conditionError, setConditionError] = useState(false);
 
   const watchedKeys = useMemo(
     () => extractWatchedKeys(customFields),
     [customFields],
   );
 
-  // Snapshot only the watched values into a stable string for memoization
+  // Snapshot only the watched values into a stable string for memoization.
+  // Safe to stringify because formValues are string | string[] (no circular refs).
   const watchedSnapshot = useMemo(() => {
     if (watchedKeys.size === 0) {
       return "";
@@ -62,14 +64,22 @@ export const useApplicableFields = (
     return JSON.stringify(entries);
   }, [watchedKeys, formValues]);
 
-  return useMemo(() => {
-    const result = resolveApplicableFields(customFields, formValues);
-    // Return the same reference if the set hasn't changed
-    if (setsEqual(result, prevResult.current)) {
+  const applicableFields = useMemo(() => {
+    try {
+      const result = resolveApplicableFields(customFields, formValues);
+      setConditionError(false);
+      // Return the same reference if the set hasn't changed
+      if (setsEqual(result, prevResult.current)) {
+        return prevResult.current;
+      }
+      prevResult.current = result;
+      return result;
+    } catch {
+      setConditionError(true);
       return prevResult.current;
     }
-    prevResult.current = result;
-    return result;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customFields, watchedSnapshot]);
+
+  return { applicableFields, conditionError };
 };
