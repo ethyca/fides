@@ -1,6 +1,7 @@
 import {
   Button,
   Dropdown,
+  Flex,
   Icons,
   Modal,
   Typography,
@@ -10,11 +11,15 @@ import { useCallback, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
   useBulkAssignStewardMutation,
   useBulkDeleteSystemsMutation,
 } from "~/features/system/system.slice";
-import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
+import {
+  CreateSystemGroupForm,
+  useCreateSystemGroupForm,
+} from "~/features/system/system-groups/components/CreateSystemGroupForm";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import { SystemGroupCreate } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -38,6 +43,9 @@ const SystemActionsMenu = ({
 }: SystemActionsMenuProps) => {
   const messageApi = useMessage();
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
+  const { form: createGroupForm, isSubmittable: isCreateGroupSubmittable } =
+    useCreateSystemGroupForm();
+
   const [bulkAssignSteward] = useBulkAssignStewardMutation();
 
   const { plus: isPlusEnabled } = useFeatures();
@@ -169,20 +177,38 @@ const SystemActionsMenu = ({
           Delete {selectedRowKeys.length} systems? This action cannot be undone.
         </Typography.Paragraph>
       </Modal>
-      <Modal
+      <ConfirmCloseModal
+        title="Create system group"
         open={createModalIsOpen}
         destroyOnHidden
-        onCancel={() => setCreateModalIsOpen(false)}
+        onClose={() => setCreateModalIsOpen(false)}
+        getIsDirty={() => createGroupForm.isFieldsTouched()}
         centered
-        width={768}
-        footer={null}
+        footer={
+          <Flex justify="flex-end" gap="small">
+            <Button
+              onClick={() => setCreateModalIsOpen(false)}
+              data-testid="cancel-btn"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => createGroupForm.submit()}
+              disabled={!isCreateGroupSubmittable}
+              data-testid="save-btn"
+            >
+              Create group
+            </Button>
+          </Flex>
+        }
       >
         <CreateSystemGroupForm
+          form={createGroupForm}
           selectedSystemKeys={selectedRowKeys.map((key) => key.toString())}
           onSubmit={handleCreateSystemGroup}
-          onCancel={() => setCreateModalIsOpen(false)}
         />
-      </Modal>
+      </ConfirmCloseModal>
       <Dropdown
         trigger={["click"]}
         menu={{

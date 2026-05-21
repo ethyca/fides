@@ -815,6 +815,7 @@ AUDIT_LOG_DISPLAY_NAMES = {
     "denied": "Request denied",
     "email_sent": "Email sent",
     "finished": "Request finished",
+    "imported": "Request imported",
     "policy_evaluated": "Request policy evaluated",
     "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
     "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",

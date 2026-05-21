@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed Privacy Center consent page heading and description rendering HTML as escaped text when ALLOW_HTML_DESCRIPTION is enabled.
-pr: 8226
-labels: []

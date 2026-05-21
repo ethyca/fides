@@ -1,4 +1,0 @@
-type: Added
-description: Added threading header support (Reply-To, Message-ID, In-Reply-To, References) and plaintext alternative to all email providers
-pr: 8122
-labels: []

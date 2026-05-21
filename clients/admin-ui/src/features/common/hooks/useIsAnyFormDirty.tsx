@@ -88,7 +88,6 @@ type FormGuardProps = {
    */
   isDirty?: boolean;
 };
-
 const FormGuardWithSlice = ({
   id,
   name,
@@ -101,17 +100,14 @@ const FormGuardWithSlice = ({
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Provide info on active form
     dispatch(registerForm({ id, name }));
 
     return () => {
-      // When un-rendered, remove from shared state.
       dispatch(unregisterForm({ id }));
     };
   }, [dispatch, id, name]);
 
   useEffect(() => {
-    // Update shared state whenever the dirty state changes.
     dispatch(updateDirtyFormState({ id, isDirty: dirty }));
   }, [dirty, dispatch, id]);
 

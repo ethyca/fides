@@ -1,0 +1,4 @@
+type: Added
+description: Added an Assessment Status card to the home dashboard showing privacy assessment counts by status, risk profile, owners with open work, and groups needing attention.
+pr: 8134
+labels: []

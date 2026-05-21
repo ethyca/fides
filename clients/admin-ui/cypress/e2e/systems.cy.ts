@@ -82,7 +82,7 @@ describe("System management page", () => {
         cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
         cy.getByTestId("input-name").type("Demo Analytics System");
         cy.getByTestId("input-description").focus();
-        cy.getByTestId("error-name");
+        cy.getAntFormError("name").should("be.visible");
       });
 
       it.skip("Can step through the flow", () => {
