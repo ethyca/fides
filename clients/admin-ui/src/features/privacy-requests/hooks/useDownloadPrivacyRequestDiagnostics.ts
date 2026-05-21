@@ -52,8 +52,12 @@ const useDownloadPrivacyRequestDiagnostics = ({
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-    } catch {
-      message.error("Unable to download troubleshooting data");
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        message.error("Download timed out. Please try again.");
+      } else {
+        message.error("Unable to download troubleshooting data");
+      }
     } finally {
       clearTimeout(timeoutId);
       setIsLoading(false);

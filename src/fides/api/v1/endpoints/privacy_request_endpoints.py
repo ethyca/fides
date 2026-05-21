@@ -630,6 +630,7 @@ def get_request_status_logs(
     PRIVACY_REQUEST_DIAGNOSTICS,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
     status_code=HTTP_200_OK,
+    response_class=StreamingResponse,
 )
 def get_privacy_request_diagnostics_report(
     privacy_request_id: str,
@@ -648,12 +649,18 @@ def get_privacy_request_diagnostics_report(
             detail=f"No privacy request found with id '{privacy_request_id}'.",
         )
 
-    filename = f"diagnostics-{privacy_request_id}.zip"
+    # Sanitize the ID before embedding in a header to guard against injection
+    # if the ID format ever changes beyond safe UUID characters.
+    safe_id = "".join(c for c in privacy_request_id if c.isalnum() or c in "-_")
+    filename = f"diagnostics-{safe_id}.zip"
     # BytesIO is held entirely in memory — no disk I/O occurs.
     return StreamingResponse(
         buf,
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Content-Length": str(buf.getbuffer().nbytes),
+        },
     )
 
 
