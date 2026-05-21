@@ -11,11 +11,13 @@ import { useCustomFields } from "./hooks";
 type CustomFieldsListProps = {
   resourceFidesKey?: string;
   resourceType: LegacyResourceTypes;
+  disabled?: boolean;
 };
 
 export const CustomFieldsList = ({
   resourceFidesKey,
   resourceType,
+  disabled,
 }: CustomFieldsListProps) => {
   const {
     idToAllowListWithOptions,
@@ -59,6 +61,7 @@ export const CustomFieldsList = ({
               >
                 <Input
                   aria-label={definition.name}
+                  disabled={disabled}
                   data-testid={`input-${testNameSegment}`}
                 />
               </Form.Item>
@@ -87,6 +90,7 @@ export const CustomFieldsList = ({
                 mode={isMulti ? "multiple" : undefined}
                 options={allowList.options}
                 className="w-full"
+                disabled={disabled}
                 data-testid={`controlled-select-${testNameSegment}`}
               />
             </Form.Item>

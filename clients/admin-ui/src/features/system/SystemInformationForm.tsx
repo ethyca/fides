@@ -865,6 +865,7 @@ const SystemInformationForm = ({
                 <CustomFieldsList
                   resourceType={LegacyResourceTypes.SYSTEM}
                   resourceFidesKey={fidesKey}
+                  disabled={isReadOnly}
                 />
               ) : null}
             </>
