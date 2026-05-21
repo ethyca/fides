@@ -24,8 +24,15 @@ import {
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
+import {
+  CustomConfigField,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
 import { FormValues, MultiselectFieldValue } from "~/types/forms";
+
+import { buildOrderedFields } from "./buildOrderedFields";
+
+export type { OrderedField } from "./buildOrderedFields";
 
 /**
  *
@@ -148,6 +155,7 @@ const usePrivacyRequestForm = ({
     });
 
   const formik = useFormik<FormValues>({
+    enableReinitialize: true,
     initialValues: {
       ...Object.fromEntries(
         Object.entries({
@@ -337,12 +345,20 @@ const usePrivacyRequestForm = ({
     setFieldValue: formik.setFieldValue,
   });
 
+  const orderedFields = buildOrderedFields(
+    legacyIdentityFields,
+    customIdentityFields as Record<string, CustomConfigField>,
+    customPrivacyRequestFields,
+    action?.field_order,
+  );
+
   return {
     ...formik,
     isSubmitting: formik.isSubmitting || isSubmitPending,
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,
+    orderedFields,
     applicableFields,
     validationError,
   };

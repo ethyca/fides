@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Stop tracking auto-generated `next-env.d.ts` files in admin-ui and privacy-center to eliminate phantom diffs between `next dev` and `next build`
-pr: 8150
-labels: []

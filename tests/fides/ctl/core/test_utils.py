@@ -1,7 +1,9 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+import subprocess
 from pathlib import PosixPath
 from typing import Generator
+from unittest import mock
 
 import pytest
 import requests
@@ -117,6 +119,24 @@ class TestGitIsDirty:
             file.write("test file")
         assert core_utils.git_is_dirty()
         os.remove(test_file)
+
+    def test_no_git_dir_returns_false(self) -> None:
+        with mock.patch("fides.core.utils.os.path.exists", return_value=False):
+            assert not core_utils.git_is_dirty()
+
+    def test_git_binary_missing_returns_false(self) -> None:
+        with mock.patch(
+            "fides.core.utils.subprocess.run",
+            side_effect=FileNotFoundError,
+        ):
+            assert not core_utils.git_is_dirty()
+
+    def test_git_timeout_returns_false(self) -> None:
+        with mock.patch(
+            "fides.core.utils.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(cmd="git", timeout=10),
+        ):
+            assert not core_utils.git_is_dirty()
 
 
 @pytest.mark.unit

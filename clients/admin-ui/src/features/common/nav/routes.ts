@@ -145,3 +145,9 @@ export const CONTROLS_EDIT_ROUTE = "/access-policies/controls/[controlKey]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
+
+// DSR Traversal Visualizer
+export const DSR_TRAVERSAL_ROUTE = "/dsr-traversal";
+export const DSR_TRAVERSAL_PROPERTY_ROUTE = "/dsr-traversal/[propertyKey]";
+export const DSR_TRAVERSAL_PROPERTY_ACTION_ROUTE =
+  "/dsr-traversal/[propertyKey]/[[...actionType]]";

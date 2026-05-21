@@ -1,4 +1,0 @@
-type: Added
-description: Add group_id column and is_monitor_task_paused helper to MonitorTask for task stop support
-pr: 8115
-labels: ["db-migration"]

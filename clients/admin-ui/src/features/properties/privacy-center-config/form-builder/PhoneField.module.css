@@ -1,0 +1,17 @@
+/* Make the react-phone-number-input inner <input> look borderless so the
+   outer antd-styled wrapper provides the input chrome. */
+.wrapper :global(.PhoneInputInput) {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.88);
+  line-height: 1.5714;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
+
+.wrapper :global(.PhoneInputInput::placeholder) {
+  color: rgba(0, 0, 0, 0.25);
+}

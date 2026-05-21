@@ -172,11 +172,13 @@ const useSystemsTable = () => {
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
     } else {
-      let successMessage = `System group '${result.data.name}' created`;
-      if (result.data.systems?.length === 1) {
-        successMessage += ` with system '${result.data.systems[0]}'`;
-      } else if (result.data.systems?.length) {
-        successMessage += ` with ${result.data.systems.length} systems`;
+      const name = result.data?.name ?? payload.name;
+      const systems = result.data?.systems ?? payload.systems;
+      let successMessage = `System group '${name}' created`;
+      if (systems?.length === 1) {
+        successMessage += ` with system '${systems[0]}'`;
+      } else if (systems?.length) {
+        successMessage += ` with ${systems.length} systems`;
       }
       messageApi.success(successMessage);
     }

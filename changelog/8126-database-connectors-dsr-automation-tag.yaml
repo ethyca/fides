@@ -1,4 +1,0 @@
-type: Changed
-description: Added the "DSR Automation" tag to PostgreSQL, RDS MySQL, and Google Cloud SQL for MySQL integration cards to match peer database connectors.
-pr: 8126
-labels: []

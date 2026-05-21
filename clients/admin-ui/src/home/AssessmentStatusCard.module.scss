@@ -1,0 +1,128 @@
+.cardContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  :global(.ant-card-head) {
+    flex-shrink: 0;
+  }
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.viewAllLink {
+  &:focus-visible {
+    outline: auto;
+  }
+}
+
+.segmentBarEmpty {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--ant-color-fill-quaternary);
+}
+
+.segmentLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  border-radius: var(--ant-border-radius);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--ant-color-fill-quaternary);
+  }
+
+  &:focus-visible {
+    outline: auto;
+  }
+}
+
+.segmentDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.attentionGrid {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: stretch;
+  container-type: inline-size;
+  min-height: 0;
+}
+
+.attentionColumn {
+  flex: 1 1 240px;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.attentionColumn:first-child {
+  border-right: 1px solid var(--fidesui-color-border);
+  padding-right: 24px;
+}
+
+.attentionColumn:last-child {
+  padding-left: 24px;
+}
+
+.attentionList {
+  flex: 1;
+  min-height: 0;
+  max-height: 280px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding-right: 8px;
+}
+
+@container (max-width: 519px) {
+  .attentionColumn:first-child {
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--fidesui-color-border);
+  }
+  .attentionColumn:last-child {
+    padding-left: 0;
+    padding-top: 16px;
+  }
+}
+
+.attentionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: var(--ant-border-radius);
+  text-decoration: none;
+  min-width: 0;
+
+  &:hover {
+    background: var(--ant-color-fill-quaternary);
+  }
+
+  &:focus-visible {
+    outline: auto;
+  }
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
