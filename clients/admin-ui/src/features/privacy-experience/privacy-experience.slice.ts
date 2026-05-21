@@ -12,6 +12,16 @@ import {
   Page_ExperienceConfigListViewResponse_,
   PrivacyNoticeRegion,
 } from "~/types/api";
+import { PaginatedResponse, PaginationQueryParams } from "~/types/query-params";
+
+export interface TCFVersionHashHistoryResponse {
+  id: string;
+  privacy_experience_config_id?: string | null;
+  previous_hash?: string | null;
+  current_hash: string;
+  changed_at: string;
+  trigger_source: string;
+}
 
 export interface State {
   page?: number;
@@ -132,6 +142,22 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Privacy Experience Configs", "Property"],
     }),
+    getExperienceConfigTCFHashHistory: build.query<
+      PaginatedResponse<TCFVersionHashHistoryResponse>,
+      PaginationQueryParams & { experienceConfigId: string }
+    >({
+      query: ({ experienceConfigId, page, size }) => ({
+        url: `privacy-experience/tcf-hash-history`,
+        params: {
+          privacy_experience_config_id: experienceConfigId,
+          page,
+          size,
+        },
+      }),
+      providesTags: (result, error, { experienceConfigId }) => [
+        { type: "TCF Version History", id: experienceConfigId },
+      ],
+    }),
   }),
 });
 
@@ -142,6 +168,7 @@ export const {
   useGetExperienceConfigByIdQuery,
   useGetAvailableConfigTranslationsQuery,
   usePostExperienceConfigMutation,
+  useGetExperienceConfigTCFHashHistoryQuery,
 } = privacyExperienceConfigApi;
 
 export const privacyExperienceConfigSlice = createSlice({

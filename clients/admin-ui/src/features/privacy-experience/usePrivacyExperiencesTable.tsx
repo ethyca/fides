@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/router";
 import React, { useMemo, useState } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -22,6 +23,7 @@ import { EnablePrivacyExperienceCell } from "~/features/privacy-experience/cells
 import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
 import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import {
+  ComponentType,
   ExperienceConfigListViewResponse,
   PrivacyNoticeRegion,
   ScopeRegistryEnum,
@@ -139,7 +141,16 @@ const usePrivacyExperiencesTable = () => {
         title: "Component",
         dataIndex: "component",
         key: "component",
-        render: (_, { component }) => <Tag>{COMPONENT_MAP.get(component)}</Tag>,
+        render: (_, { id, component }) => (
+          <Flex align="center" gap="small">
+            <Tag>{COMPONENT_MAP.get(component)}</Tag>
+            {component === ComponentType.TCF_OVERLAY && (
+              <RouterLink href={`/experience-config/${id}/tcf-version-history`}>
+                History →
+              </RouterLink>
+            )}
+          </Flex>
+        ),
       },
       {
         title: "Locations",

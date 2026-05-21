@@ -5,20 +5,7 @@ import {
   ConditionalTotalPage_ConsentReportingSchema_,
   PreferencesSavedExtended,
 } from "~/types/api";
-import {
-  DateRangeParams,
-  PaginatedResponse,
-  PaginationQueryParams,
-} from "~/types/query-params";
-
-export interface TCFVersionHashHistoryResponse {
-  id: string;
-  tcf_configuration_id?: string | null;
-  previous_hash?: string | null;
-  current_hash: string;
-  changed_at: string;
-  trigger_source: string;
-}
+import { DateRangeParams, PaginationQueryParams } from "~/types/query-params";
 
 const startOfDayIso = (date?: Dayjs | null) =>
   date?.startOf("day")?.utc()?.toISOString();
@@ -77,16 +64,6 @@ export const consentReportingApi = baseApi.injectEndpoints({
       },
       providesTags: ["Consent Reporting"],
     }),
-    getTCFVersionHistory: build.query<
-      PaginatedResponse<TCFVersionHashHistoryResponse>,
-      PaginationQueryParams
-    >({
-      query: ({ page, size }) => ({
-        url: "privacy-experience/history",
-        params: { page, size },
-      }),
-      providesTags: ["TCF Version History"],
-    }),
   }),
 });
 
@@ -94,5 +71,4 @@ export const {
   useLazyDownloadReportQuery,
   useGetAllHistoricalPrivacyPreferencesQuery,
   useLazyGetCurrentPrivacyPreferencesQuery,
-  useGetTCFVersionHistoryQuery,
 } = consentReportingApi;

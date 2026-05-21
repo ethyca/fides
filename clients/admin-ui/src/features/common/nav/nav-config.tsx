@@ -209,14 +209,15 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         keywords: ["banner", "overlay", "CMP"],
       },
       {
-        title: "Consent report",
-        path: routes.CONSENT_REPORTING_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-      },
-      {
         title: "TCF version history",
         path: routes.TCF_VERSION_HISTORY_ROUTE,
+        hidden: true,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
+      },
+      {
+        title: "Consent report",
+        path: routes.CONSENT_REPORTING_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },

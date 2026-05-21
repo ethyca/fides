@@ -243,6 +243,7 @@ export {
   // TODO: remove when all FidesTableV2s are migrated to Ant
   Spin as TableSpinner,
   Tabs,
+  Timeline,
   TimePicker,
   Transfer,
   Tree,

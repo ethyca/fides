@@ -55,7 +55,7 @@ export const CONFIGURE_CONSENT_ROUTE = "/consent/configure";
 export const ADD_MULTIPLE_VENDORS_ROUTE = "/consent/configure/add-vendors";
 export const CONSENT_REPORTING_ROUTE = "/consent/reporting";
 export const TCF_VERSION_HISTORY_ROUTE =
-  "/consent/privacy-experience/tcf-version-history";
+  "/experience-config/[id]/tcf-version-history";
 
 // Management group
 export const PROPERTIES_ROUTE = "/properties";
