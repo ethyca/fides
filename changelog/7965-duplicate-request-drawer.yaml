@@ -1,4 +1,0 @@
-type: Added
-description: Added "View related requests" drawer on the privacy request timeline that lists other requests sharing identity values with the current one
-pr: 7965
-labels: []

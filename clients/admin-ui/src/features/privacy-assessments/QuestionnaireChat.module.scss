@@ -5,7 +5,7 @@
 
 .header {
   padding: 8px 12px;
-  border-bottom: 1px solid var(--ant-color-border);
+  border-bottom: 1px solid var(--fidesui-color-border);
   flex-shrink: 0;
 }
 
@@ -18,7 +18,7 @@
 .emptyState {
   height: 100%;
   padding: 24px;
-  color: var(--ant-color-text-tertiary);
+  color: var(--fidesui-color-text-tertiary);
   text-align: center;
 }
 
@@ -28,7 +28,7 @@
 
 .footer {
   padding: 8px 12px;
-  border-top: 1px solid var(--ant-color-border);
+  border-top: 1px solid var(--fidesui-color-border);
   flex-shrink: 0;
 }
 

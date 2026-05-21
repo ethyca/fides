@@ -10,7 +10,7 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import EthycaLogo from "~/features/common/logos/EthycaLogo";
+import Image from "~/features/common/Image";
 
 import styles from "./ChatPane.module.scss";
 import type { ChatMessage, Status } from "./types";
@@ -25,12 +25,21 @@ interface ChatPaneProps {
   disabledReason?: string;
 }
 
+const BuilderLogoMark = ({ size = 20 }: { size?: number }) => (
+  <Image
+    src="/images/logomark-ethyca.svg"
+    alt="Ethyca"
+    width={size}
+    height={size}
+  />
+);
+
 const BuilderAvatar = () => (
   <Avatar
     shape="square"
     size="medium"
     className={styles.builderAvatar}
-    icon={<EthycaLogo size={15} />}
+    icon={<BuilderLogoMark size={15} />}
   />
 );
 
@@ -85,10 +94,10 @@ export const ChatPane = ({
       {disabled && (
         <Alert
           type="info"
-          message={disabledReason ?? "LLM provider not configured."}
+          title={disabledReason ?? "LLM provider not configured."}
         />
       )}
-      {error && <Alert type="error" message={error} closable />}
+      {error && <Alert type="error" title={error} closable />}
 
       <div className={styles.body}>
         {messages.length === 0 ? (

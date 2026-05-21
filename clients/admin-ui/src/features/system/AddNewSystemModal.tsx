@@ -38,7 +38,7 @@ import {
   useCreateSystemMutation,
   useLazyGetSystemsQuery,
 } from "./system.slice";
-import VendorSelectorAnt from "./VendorSelectorAnt";
+import VendorSelector from "./VendorSelector";
 
 const { Text } = Typography;
 
@@ -241,7 +241,7 @@ export const AddNewSystemModal = ({
             library by selecting the compass icon below.
           </Text>
           {dictionaryService ? (
-            <VendorSelectorAnt
+            <VendorSelector
               label="System name"
               options={dictionaryOptions}
               onVendorSelected={handleVendorSelected}

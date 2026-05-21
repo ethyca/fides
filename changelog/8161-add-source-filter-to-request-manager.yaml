@@ -1,4 +1,0 @@
-type: Added
-description: Add a Source filter to the Request Manager dashboard for filtering privacy requests by their originating source
-pr: 8161
-labels: []

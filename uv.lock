@@ -926,7 +926,6 @@ dependencies = [
     { name = "filelock" },
     { name = "firebase-admin" },
     { name = "flower" },
-    { name = "gitpython" },
     { name = "google-auth" },
     { name = "httpx" },
     { name = "iab-tcf" },
@@ -1089,7 +1088,6 @@ requires-dist = [
     { name = "filelock", specifier = "~=3.20.0" },
     { name = "firebase-admin", specifier = "==5.3.0" },
     { name = "flower", specifier = "==2.0.1" },
-    { name = "gitpython", specifier = "==3.1.41" },
     { name = "google-auth", specifier = "==2.48.0" },
     { name = "httpx", specifier = "~=0.28.1" },
     { name = "iab-tcf", specifier = "==0.2.2" },
@@ -1176,7 +1174,7 @@ dev = [
     { name = "debugpy", specifier = "~=1.8.0" },
     { name = "faker", specifier = "==14.1.0" },
     { name = "freezegun", specifier = "==1.5.5" },
-    { name = "gitpython", specifier = "==3.1.41" },
+    { name = "gitpython", specifier = "==3.1.50" },
     { name = "moto", extras = ["s3", "secretsmanager", "ses"], specifier = "==5.1.22" },
     { name = "mypy", specifier = "==1.10.0" },
     { name = "nox", specifier = ">=2025.11" },
@@ -1579,14 +1577,14 @@ wheels = [
 
 [[package]]
 name = "gitpython"
-version = "3.1.41"
+version = "3.1.50"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "gitdb" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/c2/6e3a26945a7ff7cf2854b8825026cf3f22ac8e18285bc11b6b1ceeb8dc3f/GitPython-3.1.41.tar.gz", hash = "sha256:ed66e624884f76df22c8e16066d567aaa5a37d5b5fa19db2c6df6f7156db9048", size = 209029, upload-time = "2024-01-10T12:15:19.596Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/33/f6/354ae6491228b5eb40e10d89c4d13c651fe1cf7556e35ebdded50cff57ce/gitpython-3.1.50.tar.gz", hash = "sha256:80da2d12504d52e1f998772dc5baf6e553f8d2fcfe1fcc226c9d9a2ee3372dcc", size = 219798, upload-time = "2026-05-06T04:01:26.571Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/45/c6/a637a7a11d4619957cb95ca195168759a4502991b1b91c13d3203ffc3748/GitPython-3.1.41-py3-none-any.whl", hash = "sha256:c36b6634d069b3f719610175020a9aed919421c87552185b085e04fbbdb10b7c", size = 196354, upload-time = "2024-01-10T12:15:16.135Z" },
+    { url = "https://files.pythonhosted.org/packages/20/7a/1c6e3562dfd8950adbb11ffbc65d21e7c89d01a6e4f137fa981056de25c5/gitpython-3.1.50-py3-none-any.whl", hash = "sha256:d352abe2908d07355014abdd21ddf798c2a961469239afec4962e9da884858f9", size = 212507, upload-time = "2026-05-06T04:01:23.799Z" },
 ]
 
 [[package]]

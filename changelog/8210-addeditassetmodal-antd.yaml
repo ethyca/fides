@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated AddEditAssetModal to antd Form (Chakra/Formik removal)
-pr: 8210
-labels: []

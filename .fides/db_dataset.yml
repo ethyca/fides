@@ -3728,6 +3728,8 @@ dataset:
         data_categories: [system.operations]
       - name: trigger_source
         data_categories: [system.operations]
+      - name: details
+        data_categories: [system.operations]
   - name: stagedresourceancestor
     fields:
       - name: id
