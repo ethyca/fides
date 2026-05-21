@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.86.0..main)
 
+### Added
+- Added `system_pre_delete_hooks` registry so cross-repo consumers can snapshot dependent state before a system delete cascades. Fired from the single and bulk system-delete routes.
+
 ## [2.86.0](https://github.com/ethyca/fides/compare/2.85.1..2.86.0)
 
 ### Added

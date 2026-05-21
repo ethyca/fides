@@ -5,8 +5,8 @@ A single-purpose callback registry that lets fidesplus react when a user is
 added/removed as a data steward (system manager) of a system. The only known
 consumer today is fidesplus's monitor-stewardship-inheritance propagation.
 
-This module exists ONLY because the event framework in fides PR #8096 is
-not yet merged. When it lands:
+This module exists ONLY because the event framework is not yet merged. When
+it lands:
 
   - Call sites of ``notify_system_stewards_changed`` (in the three v1
     system-manager routes) are replaced with

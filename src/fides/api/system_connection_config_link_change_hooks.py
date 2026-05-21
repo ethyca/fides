@@ -9,7 +9,7 @@ the system its connection is linked to, so the inherited set must be
 recomputed when that linkage changes.
 
 Like ``system_steward_change_hooks``, this module exists ONLY because the
-event framework in fides PR #8096 is not yet merged. When it lands:
+event framework is not yet merged. When it lands:
 
   - Call sites of ``notify_system_connection_config_link_changed`` (in the
     ``SystemIntegrationLinkService`` mutators) are replaced with

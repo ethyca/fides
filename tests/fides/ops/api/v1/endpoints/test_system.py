@@ -13,6 +13,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
+from fides.api import system_pre_delete_hooks
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -1298,3 +1299,49 @@ class TestDeleteSystemUnlinksStagedResources:
 
         assert resp.status_code == HTTP_200_OK
         assert db.query(System).filter_by(id=system_id).first() is None
+
+
+class TestDeleteSystemFiresPreDeleteHook:
+    """Verify both delete routes invoke the pre-delete hook before the row is removed."""
+
+    @pytest.fixture(scope="function")
+    def registered_hook(self):
+        hook = mock.MagicMock()
+        system_pre_delete_hooks.register_system_pre_delete_hook(hook)
+        yield hook
+        system_pre_delete_hooks._HOOKS.remove(hook)
+
+    def test_single_delete_fires_pre_delete_hook(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        registered_hook,
+    ) -> None:
+        system_id = system.id
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}"
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+
+        assert resp.status_code == HTTP_200_OK
+        registered_hook.assert_called_once()
+        # Second positional arg is system_id.
+        assert registered_hook.call_args.args[1] == system_id
+
+    def test_bulk_delete_fires_pre_delete_hook_per_system(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        registered_hook,
+    ) -> None:
+        system_id = system.id
+        bulk_url = V1_URL_PREFIX + "/system/bulk-delete"
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.post(bulk_url, headers=auth_header, json=[system.fides_key])
+
+        assert resp.status_code == HTTP_200_OK
+        registered_hook.assert_called_once()
+        assert registered_hook.call_args.args[1] == system_id

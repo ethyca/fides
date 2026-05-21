@@ -57,6 +57,7 @@ from fides.api.schemas.system import (
     BasicSystemResponse,
     SystemResponse,
 )
+from fides.api.system_pre_delete_hooks import notify_system_about_to_be_deleted
 from fides.api.system_steward_change_hooks import notify_system_stewards_changed
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
@@ -338,6 +339,7 @@ async def upsert(
 )
 async def delete(
     fides_key: str,
+    background_tasks: BackgroundTasks,
     # to retrieve the System and also return a value
     db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
@@ -346,6 +348,9 @@ async def delete(
     to add additional "system manager" permission checks.
     """
     system_to_delete = await get_resource(System, fides_key, db)
+    # Pre-delete hook runs while dependent rows still exist so consumers can
+    # snapshot state before FK cascade wipes joins they depend on.
+    notify_system_about_to_be_deleted(background_tasks, system_to_delete.id)
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
@@ -370,6 +375,7 @@ async def delete(
 )
 async def system_bulk_delete(
     fides_keys: List[str],
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
     """Delete multiple systems by their fides_keys."""
@@ -383,6 +389,7 @@ async def system_bulk_delete(
         systems_to_delete = result.scalars().all()
 
         for system in systems_to_delete:
+            notify_system_about_to_be_deleted(background_tasks, system.id)
             await db.delete(system)
             deleted.append(SystemSchema.model_validate(system).model_dump(mode="json"))
 
