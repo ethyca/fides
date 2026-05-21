@@ -6,7 +6,7 @@
  * features, retention period). Validation lives on each Form.Item's `rules` array — no Yup.
  */
 
-import { Button, Card, Flex, Form, Input, Select, Switch } from "fidesui";
+import { Button, Card, Flex, Form, Input, Select, Spin, Switch } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -131,7 +131,7 @@ export const PrivacyDeclarationForm = ({
   const { specialCategoryLegalBasisOptions } =
     useSpecialCategoryLegalBasisOptions();
 
-  const { customFieldValues, upsertCustomFields } = useCustomFields({
+  const { customFieldValues, upsertCustomFields, isLoading } = useCustomFields({
     resourceType: LegacyResourceTypes.PRIVACY_DECLARATION,
     resourceFidesKey: privacyDeclarationId,
   });
@@ -148,7 +148,13 @@ export const PrivacyDeclarationForm = ({
   const [form] = Form.useForm<FormValues>();
 
   const handleFinish = async (values: FormValues) => {
-    const declaration = transformFormValueToDeclaration(values);
+    // antd Form only tracks fields with a Form.Item; untracked fields
+    // (`id`, `egress`, `ingress`) are silently dropped from `values`. Merge
+    // them back in from initialValues so updates aren't mistaken for creates.
+    const declaration = transformFormValueToDeclaration({
+      ...initialValues,
+      ...values,
+    });
     const success = await onSubmit(declaration);
     if (success) {
       const matched = success.find(
@@ -164,6 +170,14 @@ export const PrivacyDeclarationForm = ({
       }
     }
   };
+
+  if (isEditing && isLoading) {
+    return (
+      <Flex justify="center" align="center" className="py-8">
+        <Spin />
+      </Flex>
+    );
+  }
 
   return (
     <Form

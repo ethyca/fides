@@ -1,4 +1,0 @@
-type: Changed
-description: Updated the version history modals to use the YAML editor and avoid null values
-pr: 8166
-labels: []

@@ -1,4 +1,0 @@
-type: Added
-description: Added cloud_infra_group and cloud_infra_group_assignment tables
-pr: 8189
-labels: [db-migration]
