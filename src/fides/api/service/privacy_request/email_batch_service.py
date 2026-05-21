@@ -159,6 +159,14 @@ def requeue_privacy_requests_after_email_send(
         )
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db=db)
+        privacy_request.add_info_execution_log(
+            db,
+            connection_key=None,
+            dataset_name=None,
+            collection_name=None,
+            message="Request paused after batch email send, resuming from post-webhooks step",
+            action_type=privacy_request.policy.get_action_type(),
+        )
 
         queue_privacy_request(
             privacy_request_id=privacy_request.id,

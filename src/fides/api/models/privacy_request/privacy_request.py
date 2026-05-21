@@ -1651,6 +1651,28 @@ class PrivacyRequest(
             },
         )
 
+    def add_info_execution_log(
+        self,
+        db: Session,
+        connection_key: Optional[str],
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
+        message: str,
+        action_type: ActionType,
+    ) -> ExecutionLog:
+        return ExecutionLog.create(
+            db=db,
+            data={
+                "privacy_request_id": self.id,
+                "connection_key": connection_key,
+                "dataset_name": dataset_name,
+                "collection_name": collection_name,
+                "status": ExecutionLogStatus.info,
+                "message": message,
+                "action_type": action_type,
+            },
+        )
+
 
 class PrivacyRequestError(Base):
     """The DB ORM model to track PrivacyRequests error message status."""

@@ -18,6 +18,7 @@ class ExecutionLogStatus(enum.Enum):
     retrying = "retrying"
     skipped = "skipped"
     polling = "polling"
+    info = "info"
 
     @classmethod
     def in_progress_statuses(cls) -> Set["ExecutionLogStatus"]:

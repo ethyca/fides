@@ -175,6 +175,14 @@ def get_manual_webhook_access_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
+        privacy_request.add_info_execution_log(
+            db,
+            connection_key=None,
+            dataset_name=None,
+            collection_name=None,
+            message=f"Manual webhook access input missing: {exc}",
+            action_type=ActionType.access,
+        )
         return ManualWebhookResults(
             manual_data_for_upload=manual_inputs_for_upload,
             manual_data_for_storage=manual_inputs_for_storage,
@@ -213,6 +221,14 @@ def get_manual_webhook_erasure_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
+        privacy_request.add_info_execution_log(
+            db,
+            connection_key=None,
+            dataset_name=None,
+            collection_name=None,
+            message=f"Manual webhook erasure input missing: {exc}",
+            action_type=ActionType.erasure,
+        )
         return ManualWebhookResults(
             manual_data_for_upload=manual_inputs,
             manual_data_for_storage=manual_inputs,
@@ -783,6 +799,14 @@ def run_privacy_request(
 
             except PrivacyRequestPaused as exc:
                 privacy_request.pause_processing(session)
+                privacy_request.add_info_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name=None,
+                    collection_name=None,
+                    message=f"Request paused by webhook halt instruction: {exc}",
+                    action_type=privacy_request.policy.get_action_type(),
+                )
                 _log_warning(exc, CONFIG.dev_mode)
                 return
 
@@ -1376,6 +1400,14 @@ def run_webhooks_and_report_status(
                 webhook.key,
             )
             privacy_request.pause_processing(db)
+            privacy_request.add_info_execution_log(
+                db,
+                connection_key=webhook.key,
+                dataset_name=None,
+                collection_name=None,
+                message=f"Request paused by webhook: {webhook.key}",
+                action_type=privacy_request.policy.get_action_type(),
+            )
             initiate_paused_privacy_request_followup(privacy_request)
             return False
         except ClientUnsuccessfulException as exc:

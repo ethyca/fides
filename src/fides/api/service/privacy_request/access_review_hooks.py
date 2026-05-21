@@ -111,6 +111,14 @@ def should_wait_for_access_review(
 
     privacy_request.status = PrivacyRequestStatus.awaiting_access_review
     privacy_request.save(db=session)
+    privacy_request.add_info_execution_log(
+        session,
+        connection_key=None,
+        dataset_name=None,
+        collection_name=None,
+        message="Request paused for access package review",
+        action_type=ActionType.access,
+    )
     logger.info(
         "Privacy request '{}' paused for access package review.",
         privacy_request.id,
