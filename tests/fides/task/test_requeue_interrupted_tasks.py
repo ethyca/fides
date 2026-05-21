@@ -5,11 +5,11 @@ from unittest import mock
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.execution_log import ExecutionLog
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.models.privacy_request.execution_log import ExecutionLog
 from fides.api.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
     _cancel_interrupted_tasks_and_error_privacy_request,
@@ -558,7 +558,9 @@ class TestCancelInterruptedTasksCreatesExecutionLog:
         )
         assert len(error_logs) >= 1
         reaper_log = [
-            log for log in error_logs if "stuck without a running task" in (log.message or "")
+            log
+            for log in error_logs
+            if "stuck without a running task" in (log.message or "")
         ]
         assert len(reaper_log) == 1
         assert reaper_log[0].dataset_name == "Task interruption"
@@ -577,6 +579,8 @@ class TestCancelInterruptedTasksCreatesExecutionLog:
         )
         assert len(error_logs) >= 1
         reaper_log = [
-            log for log in error_logs if "interrupted without a running task" in (log.message or "")
+            log
+            for log in error_logs
+            if "interrupted without a running task" in (log.message or "")
         ]
         assert len(reaper_log) == 1
