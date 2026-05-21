@@ -95,13 +95,13 @@ const SystemInformationForm = ({
   const [form] = Form.useForm<FormValues>();
   const { data: systems = [] } = useGetAllSystemsQuery();
   const features = useFeatures();
-  const { plus: systemGroupsEnabled, rbac: isRbacEnabled } = features;
+  const { plus: systemGroupsEnabled } = features;
 
   const canUpdateSystems = useHasPermission([
     ScopeRegistryEnum.SYSTEM_UPDATE,
     ScopeRegistryEnum.SYSTEM_MANAGER_UPDATE,
   ]);
-  const isReadOnly = isRbacEnabled && passedInSystem && !canUpdateSystems;
+  const isReadOnly = !!passedInSystem && !canUpdateSystems;
 
   const dispatch = useAppDispatch();
 
