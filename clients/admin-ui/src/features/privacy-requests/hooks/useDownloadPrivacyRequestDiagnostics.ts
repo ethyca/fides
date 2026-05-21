@@ -25,13 +25,15 @@ const useDownloadPrivacyRequestDiagnostics = ({
 
   const downloadTroubleshootingData = async () => {
     setIsLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60_000);
     try {
       const headers = new Headers();
       addCommonHeaders(headers, token);
 
       const resp = await fetch(
         `${process.env.NEXT_PUBLIC_FIDESCTL_API}/privacy-request/${privacyRequest.id}/diagnostics`,
-        { headers },
+        { headers, signal: controller.signal },
       );
 
       if (!resp.ok) {
@@ -53,6 +55,7 @@ const useDownloadPrivacyRequestDiagnostics = ({
     } catch {
       message.error("Unable to download troubleshooting data");
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };

@@ -649,6 +649,7 @@ def get_privacy_request_diagnostics_report(
         )
 
     filename = f"diagnostics-{privacy_request_id}.zip"
+    # BytesIO is held entirely in memory — no disk I/O occurs.
     return StreamingResponse(
         buf,
         media_type="application/zip",
