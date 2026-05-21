@@ -16,6 +16,7 @@ import { isEqual } from "lodash";
 import { useEffect, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import {
   CustomFieldsList,
   useCustomFields,
@@ -75,6 +76,7 @@ import {
 import VendorSelector from "~/features/system/VendorSelector";
 import {
   useGetAllUsersQuery,
+  useGetUserManagedSystemsQuery,
   useRemoveUserManagedSystemMutation,
 } from "~/features/user-management";
 import { ScopeRegistryEnum, SystemResponse } from "~/types/api";
@@ -97,10 +99,21 @@ const SystemInformationForm = ({
   const features = useFeatures();
   const { plus: systemGroupsEnabled } = features;
 
-  const canUpdateSystems = useHasPermission([
+  const currentUser = useAppSelector(selectUser);
+  const hasSystemUpdateScope = useHasPermission([
     ScopeRegistryEnum.SYSTEM_UPDATE,
-    ScopeRegistryEnum.SYSTEM_MANAGER_UPDATE,
   ]);
+  const { data: currentUserManagedSystems } = useGetUserManagedSystemsQuery(
+    currentUser?.id ?? "",
+    { skip: !currentUser?.id || hasSystemUpdateScope || !passedInSystem },
+  );
+  const isAssignedSystemManager = !!(
+    passedInSystem &&
+    currentUserManagedSystems?.some(
+      (s) => s.fides_key === passedInSystem.fides_key,
+    )
+  );
+  const canUpdateSystems = hasSystemUpdateScope || isAssignedSystemManager;
   const isReadOnly = !!passedInSystem && !canUpdateSystems;
 
   const dispatch = useAppDispatch();
