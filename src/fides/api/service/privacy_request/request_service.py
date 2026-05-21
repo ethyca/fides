@@ -606,6 +606,19 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 should_requeue = False
                 logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
 
+                # Skip requests that are intentionally paused for manual input
+                # or an external system (e.g. manual webhook, manual task, Jira).
+                # These requests have no running Celery task by design.
+                if privacy_request.status in (
+                    PrivacyRequestStatus.requires_input,
+                    PrivacyRequestStatus.pending_external,
+                ):
+                    logger.debug(
+                        f"Skipping privacy request {privacy_request.id} in "
+                        f"{privacy_request.status.value} status - intentionally paused"
+                    )
+                    continue
+
                 try:
                     task_id = get_cached_task_id(privacy_request.id)
                 except Exception as cache_exc:
