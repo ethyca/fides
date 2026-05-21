@@ -292,6 +292,18 @@ describe("evaluateCondition", () => {
     });
   });
 
+  describe("empty conditions array", () => {
+    it("AND with no conditions returns true (vacuous truth)", () => {
+      const group: ConditionGroup = { logical_operator: "and", conditions: [] };
+      expect(evaluateCondition(group, {})).toBe(true);
+    });
+
+    it("OR with no conditions returns false", () => {
+      const group: ConditionGroup = { logical_operator: "or", conditions: [] };
+      expect(evaluateCondition(group, {})).toBe(false);
+    });
+  });
+
   describe("nested groups", () => {
     it("handles nested group conditions", () => {
       const condition: Condition = {
@@ -330,6 +342,10 @@ describe("evaluateCondition", () => {
 });
 
 describe("resolveApplicableFields", () => {
+  it("returns an empty set when fields record is empty", () => {
+    expect(resolveApplicableFields({}, {})).toEqual(new Set());
+  });
+
   it("returns all fields when none have display_condition", () => {
     const fields = makeFields({
       name: { label: "Name" },
