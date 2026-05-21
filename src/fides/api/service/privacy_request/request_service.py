@@ -681,24 +681,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             break
 
                         # If the task ID is not cached, we can't check if it's running
-                        # This means the subtask is stuck - but we need to handle this differently
-                        # based on the privacy request status
                         if not subtask_id:
-                            if privacy_request.status in (
-                                PrivacyRequestStatus.requires_input,
-                                PrivacyRequestStatus.pending_external,
-                            ):
-                                # For requires_input / pending_external status, don't
-                                # automatically error the request as it's intentionally
-                                # waiting for user input or an external system (e.g. Jira)
-                                logger.warning(
-                                    f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) in {privacy_request.status.value} status - "
-                                    f"keeping request in current status as it may be waiting for input or an external system"
-                                )
-                                should_requeue = False
-                                break
-
                             # A pending task awaiting upstream is not stuck — it was
                             # never dispatched because its prerequisites aren't done.
                             # Skip it and continue checking other tasks. (ENG-2756)

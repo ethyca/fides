@@ -65,9 +65,8 @@ def requeue_requires_input_requests(db: Session) -> None:
             has_request_tasks = (
                 db.query(RequestTask.id)
                 .filter(RequestTask.privacy_request_id == pr.id)
-                .limit(1)
-                .count()
-                > 0
+                .first()
+                is not None
             )
             if has_request_tasks:
                 logger.debug(
