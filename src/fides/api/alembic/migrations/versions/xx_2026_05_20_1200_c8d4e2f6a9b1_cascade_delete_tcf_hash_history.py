@@ -1,7 +1,7 @@
 """cascade delete tcf_version_hash_history on experience config delete
 
 Revision ID: c8d4e2f6a9b1
-Revises: 1e07732ff193
+Revises: b6d4f8e2c1a3
 Create Date: 2026-05-20 12:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c8d4e2f6a9b1"
-down_revision = "1e07732ff193"
+down_revision = "b6d4f8e2c1a3"
 branch_labels = None
 depends_on = None
 
