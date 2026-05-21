@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed stuck task reaper not writing execution logs when erroring interrupted privacy requests, leaving no error details visible in Admin UI
+pr: 8253
+labels: []

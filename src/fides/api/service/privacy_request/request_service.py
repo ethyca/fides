@@ -409,6 +409,22 @@ def _cancel_interrupted_tasks_and_error_privacy_request(
     # Cancel all associated Celery tasks
     privacy_request.cancel_celery_tasks()
 
+    # Write an execution log visible in the Admin UI before marking as errored
+    try:
+        privacy_request.add_error_execution_log(
+            db,
+            connection_key=None,
+            dataset_name="Task interruption",
+            collection_name=None,
+            message=error_message
+            or f"Privacy request {privacy_request.id} interrupted without a running task",
+            action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
+        )
+    except Exception as exc:
+        logger.error(
+            f"Failed to create execution log for privacy request {privacy_request.id}: {exc}"
+        )
+
     # Set privacy request to error state using the existing method
     try:
         privacy_request.error_processing(db)

@@ -9,8 +9,10 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.models.privacy_request.execution_log import ExecutionLog
 from fides.api.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
+    _cancel_interrupted_tasks_and_error_privacy_request,
     requeue_interrupted_tasks,
 )
 from fides.api.util.cache import (
@@ -529,3 +531,52 @@ class TestRequeueInterruptedTasks:
 
         reset_privacy_request_retry_count(pr.id)
         assert get_privacy_request_retry_count(pr.id) == 0
+
+
+class TestCancelInterruptedTasksCreatesExecutionLog:
+    """Test that _cancel_interrupted_tasks_and_error_privacy_request writes
+    an execution log visible in the Admin UI."""
+
+    def test_creates_error_execution_log(self, db, privacy_request):
+        """The reaper should write an error execution log before marking the request as errored."""
+        error_msg = "No task ID found for privacy request, request is stuck without a running task"
+
+        _cancel_interrupted_tasks_and_error_privacy_request(
+            db, privacy_request, error_msg
+        )
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.error
+
+        error_logs = (
+            db.query(ExecutionLog)
+            .filter_by(
+                privacy_request_id=privacy_request.id,
+                status=ExecutionLogStatus.error,
+            )
+            .all()
+        )
+        assert len(error_logs) >= 1
+        reaper_log = [
+            log for log in error_logs if "stuck without a running task" in (log.message or "")
+        ]
+        assert len(reaper_log) == 1
+        assert reaper_log[0].dataset_name == "Task interruption"
+
+    def test_creates_execution_log_with_default_message(self, db, privacy_request):
+        """When no error message is provided, a default message is used."""
+        _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+
+        error_logs = (
+            db.query(ExecutionLog)
+            .filter_by(
+                privacy_request_id=privacy_request.id,
+                status=ExecutionLogStatus.error,
+            )
+            .all()
+        )
+        assert len(error_logs) >= 1
+        reaper_log = [
+            log for log in error_logs if "interrupted without a running task" in (log.message or "")
+        ]
+        assert len(reaper_log) == 1
