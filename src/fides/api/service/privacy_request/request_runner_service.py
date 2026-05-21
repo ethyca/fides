@@ -175,14 +175,6 @@ def get_manual_webhook_access_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        privacy_request.add_info_execution_log(
-            db,
-            connection_key=None,
-            dataset_name=None,
-            collection_name=None,
-            message=f"Manual webhook access input missing: {exc}",
-            action_type=ActionType.access,
-        )
         return ManualWebhookResults(
             manual_data_for_upload=manual_inputs_for_upload,
             manual_data_for_storage=manual_inputs_for_storage,
@@ -221,14 +213,6 @@ def get_manual_webhook_erasure_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        privacy_request.add_info_execution_log(
-            db,
-            connection_key=None,
-            dataset_name=None,
-            collection_name=None,
-            message=f"Manual webhook erasure input missing: {exc}",
-            action_type=ActionType.erasure,
-        )
         return ManualWebhookResults(
             manual_data_for_upload=manual_inputs,
             manual_data_for_storage=manual_inputs,

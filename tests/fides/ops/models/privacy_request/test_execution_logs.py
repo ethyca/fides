@@ -8,7 +8,6 @@ from fides.api.models.privacy_request.execution_log import (
     ExecutionLog,
     can_run_checkpoint,
 )
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 
@@ -156,22 +155,3 @@ def test_execution_log_info_status(db, execution_log_data):
     assert retrieved is not None
     assert retrieved.status == ExecutionLogStatus.info
     execution_log.delete(db)
-
-
-def test_add_info_execution_log(db, privacy_request, policy):
-    """Test the add_info_execution_log convenience method on PrivacyRequest."""
-    log = privacy_request.add_info_execution_log(
-        db,
-        connection_key="test_connection",
-        dataset_name=None,
-        collection_name=None,
-        message="Request paused for testing",
-        action_type=ActionType.access,
-    )
-
-    assert log.status == ExecutionLogStatus.info
-    assert log.connection_key == "test_connection"
-    assert log.message == "Request paused for testing"
-    assert log.action_type == ActionType.access
-    assert log.privacy_request_id == privacy_request.id
-    log.delete(db)

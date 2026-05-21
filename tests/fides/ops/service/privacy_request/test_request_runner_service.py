@@ -3012,3 +3012,31 @@ class TestSoftTimeLimit:
             if "soft time limit" in (log.message or "").lower()
         ]
         assert len(timeout_logs) == 1
+
+
+class TestInfoExecutionLogs:
+    """Tests that info-level execution logs are created when requests are paused."""
+
+    @mock.patch(
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+    )
+    def test_webhook_halt_creates_info_log(
+        self,
+        mock_trigger_policy_webhook,
+        db,
+        privacy_request,
+        policy_pre_execution_webhooks,
+    ):
+        """When a webhook returns halt=true, an info execution log explains why the request paused."""
+        mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
+            "Request received to halt"
+        )
+
+        proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        assert not proceed
+        assert privacy_request.status == PrivacyRequestStatus.paused
+
+        info_logs = privacy_request.execution_logs.filter_by(status="info").all()
+        assert len(info_logs) == 1
+        assert "paused by webhook" in info_logs[0].message.lower()
+        assert info_logs[0].connection_key == policy_pre_execution_webhooks[0].key

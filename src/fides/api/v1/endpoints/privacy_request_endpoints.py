@@ -827,14 +827,6 @@ def resume_privacy_request(
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
-    privacy_request.add_info_execution_log(
-        db,
-        connection_key=webhook.key,
-        dataset_name=None,
-        collection_name=None,
-        message=f"Request resumed from webhook pause: {webhook.key}",
-        action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
-    )
 
     queue_privacy_request(
         privacy_request_id=privacy_request.id,
@@ -1340,14 +1332,6 @@ def mark_privacy_request_pre_approve_not_eligible(
     if privacy_request:
         privacy_request.status = PrivacyRequestStatus.pre_approval_not_eligible
         privacy_request.save(db)
-        privacy_request.add_info_execution_log(
-            db,
-            connection_key=None,
-            dataset_name=None,
-            collection_name=None,
-            message=f"Pre-approval webhook returned not eligible: {webhook.name}",
-            action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
-        )
 
 
 def _handle_manual_webhook_input(
