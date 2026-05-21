@@ -1061,7 +1061,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         connection_config.delete(db)
         dataset_config.ctl_dataset.delete(db=db)
 
-    def test_instantiate_connection_from_template_ignore_enabled_actions(
+    def test_instantiate_connection_from_template_accepts_enabled_actions(
         self, db, generate_auth_header, api_client, base_url
     ):
         connection_config = ConnectionConfig.filter(
@@ -1100,7 +1100,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_data["key"] == "mailchimp_connection_config"
         assert connection_data["name"] == "Mailchimp Connector"
         assert connection_data["secrets"]["api_key"] == "**********"
-        assert connection_data["enabled_actions"] is None
+        assert connection_data["enabled_actions"] == ["access"]
 
         dataset_data = resp.json()["dataset"]
         assert dataset_data["fides_key"] == "secondary_mailchimp_instance"
@@ -1126,7 +1126,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
         assert connection_config.system is not None
-        assert connection_config.enabled_actions is None
+        assert connection_config.enabled_actions == [ActionType.access]
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.ctl_dataset_id is not None

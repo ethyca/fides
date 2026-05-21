@@ -23,6 +23,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.manual_task import ManualTask
@@ -663,6 +664,7 @@ class TestPatchConnections:
             "access": "write",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
@@ -671,6 +673,7 @@ class TestPatchConnections:
             "access": "read",
             "disabled": False,
             "description": None,
+            "enabled_actions": None,
         }
 
     def test_patch_connections_no_name(self, api_client, generate_auth_header, url):
@@ -704,7 +707,7 @@ class TestPatchConnections:
         assert response.json()["succeeded"][0]["name"] is None
         assert response.json()["succeeded"][1]["name"] is None
 
-    def test_patch_connections_ignore_enabled_actions(
+    def test_patch_connections_accepts_enabled_actions(
         self, db, api_client: TestClient, generate_auth_header, url
     ) -> None:
         payload = [
@@ -722,12 +725,12 @@ class TestPatchConnections:
 
         assert 200 == response.status_code
         response_body = response.json()
-        assert response_body["succeeded"][0]["enabled_actions"] is None
+        assert response_body["succeeded"][0]["enabled_actions"] == ["access"]
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "my_connection")
         ).first()
-        assert connection_config.enabled_actions is None
+        assert connection_config.enabled_actions == [ActionType.access]
 
     def test_patch_connection_manual_task_auto_creation(
         self, url, api_client, db: Session, generate_auth_header
