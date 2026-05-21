@@ -4,6 +4,8 @@ Routes catch these and translate to HTTP. Services and repositories must
 never raise ``HTTPException`` directly.
 """
 
+from typing import Optional
+
 
 class AttachmentsServiceError(Exception):
     """Base class for attachments service domain errors."""
@@ -97,8 +99,8 @@ class AttachmentContextMismatchError(AttachmentsServiceError):
         attachment_id: str,
         expected_field: str,
         actual_field: str,
-        expected_property: str,
-        actual_property: str,
+        expected_property: Optional[str],
+        actual_property: Optional[str],
         expected_policy: str,
         actual_policy: str,
     ):
