@@ -1,0 +1,3 @@
+type: Added
+description: Added Request Types (enabled_actions) field to the integration creation form and Privacy Requests tab, allowing users to configure which DSR action types an integration supports directly from the Integrations page.
+pr: 8258
