@@ -17,15 +17,29 @@ export type CustomIdentityFields = Record<
 
 export type IdentityInputs = DefaultIdentities & CustomIdentityFields;
 
-export type VisibilityOperator = "eq" | "ne" | "set" | "empty" | "contains";
+// Display condition types — mirrors the backend's Condition schema but restricted
+// to the 5 operators allowed for display_condition on custom fields.
+export type DisplayOperator =
+  | "eq"
+  | "neq"
+  | "exists"
+  | "not_exists"
+  | "list_contains";
 
-export interface VisibilityCondition {
-  /** Sibling field key (snake_case `name`) whose value drives this condition. */
-  source_field: string;
-  operator: VisibilityOperator;
-  /** Omitted for `set` / `empty`. */
-  value?: string | number;
+export type DisplayGroupOperator = "and" | "or";
+
+export interface ConditionLeaf {
+  field_address: string;
+  operator: DisplayOperator;
+  value?: string | number | boolean | Array<string | number | boolean> | null;
 }
+
+export interface ConditionGroup {
+  logical_operator: DisplayGroupOperator;
+  conditions: Array<ConditionLeaf | ConditionGroup>;
+}
+
+export type Condition = ConditionLeaf | ConditionGroup;
 
 export interface ICustomField {
   label: string;
@@ -33,12 +47,7 @@ export interface ICustomField {
   query_param_key?: string | null;
   hidden?: boolean;
   placeholder?: string;
-  /**
-   * AND-combined conditions. Absent or empty ⇒ field is always visible.
-   * When evaluated against the current form values, all conditions must pass
-   * for the field to render (and be included in submission).
-   */
-  visible_when?: VisibilityCondition[];
+  display_condition?: Condition | null;
 }
 
 export interface CustomTextField extends ICustomField {
@@ -56,6 +65,30 @@ export interface CustomMultiSelectField extends ICustomField {
   default_value?: string[] | null;
   field_type: "multiselect";
   options?: string[];
+}
+
+export interface CustomCheckboxField extends ICustomField {
+  default_value?: string | null;
+  field_type: "checkbox";
+}
+
+export interface CustomCheckboxGroupField extends ICustomField {
+  default_value?: string[] | null;
+  field_type: "checkbox_group";
+  options: string[];
+}
+
+export interface CustomTextareaField extends ICustomField {
+  default_value?: string | null;
+  field_type: "textarea";
+}
+
+export interface CustomFileUploadField extends ICustomField {
+  default_value?: string | null;
+  field_type: "file";
+  max_size_bytes?: number;
+  max_file_count?: number;
+  allowed_file_types?: string[];
 }
 
 export interface CustomLocationField extends ICustomField {
@@ -76,6 +109,10 @@ export type CustomConfigField =
   | CustomTextField
   | CustomSelectField
   | CustomMultiSelectField
+  | CustomCheckboxField
+  | CustomCheckboxGroupField
+  | CustomTextareaField
+  | CustomFileUploadField
   | CustomLocationField
   | CustomDateField;
 export type CustomIdentityField =

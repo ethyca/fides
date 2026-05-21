@@ -1,15 +1,30 @@
 import dayjs from "dayjs";
-import { DatePicker, Input, LocationSelect, Select } from "fidesui";
+import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Input,
+  LocationSelect,
+  Select,
+  Upload,
+  UploadFile,
+} from "fidesui";
 import { ReactNode } from "react";
 
 import {
+  CustomCheckboxField,
+  CustomCheckboxGroupField,
   CustomDateField,
+  CustomFileUploadField,
   CustomLocationField,
   CustomMultiSelectField,
   CustomSelectField,
+  CustomTextareaField,
   CustomTextField,
   ICustomField,
 } from "~/types/config";
+
+const DEFAULT_MAX_FILE_COUNT = 10;
 
 interface ICustomFieldProps extends ICustomField {
   onBlur: () => void;
@@ -33,6 +48,30 @@ interface ICustomMultiSelectFieldProps
   onChange: (value: Array<string>) => void;
 }
 
+interface ICustomCheckboxFieldProps
+  extends CustomCheckboxField, ICustomFieldProps {
+  value: boolean;
+  onChange: (value: boolean) => void;
+}
+
+interface ICustomCheckboxGroupFieldProps
+  extends CustomCheckboxGroupField, ICustomFieldProps {
+  value: Array<string>;
+  onChange: (value: Array<string>) => void;
+}
+
+interface ICustomTextareaFieldProps
+  extends CustomTextareaField, ICustomFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+interface ICustomFileUploadFieldProps
+  extends CustomFileUploadField, ICustomFieldProps {
+  value: UploadFile[];
+  onChange: (fileList: UploadFile[]) => void;
+}
+
 interface ICustomLocationFieldProps
   extends CustomLocationField, ICustomFieldProps {
   value: string;
@@ -48,6 +87,10 @@ export type CustomFieldRendererProps =
   | ICustomTextFieldProps
   | ICustomSelectFieldProps
   | ICustomMultiSelectFieldProps
+  | ICustomCheckboxFieldProps
+  | ICustomCheckboxGroupFieldProps
+  | ICustomTextareaFieldProps
+  | ICustomFileUploadFieldProps
   | ICustomLocationFieldProps
   | ICustomDateFieldProps;
 
@@ -129,6 +172,78 @@ const CustomFieldRenderer = ({
           aria-describedby={`${fieldKey}-error`}
           aria-required={required !== false}
         />
+      );
+
+    case "checkbox":
+      return (
+        <Checkbox
+          id={fieldKey}
+          data-testid={`checkbox-${fieldKey}`}
+          checked={props.value}
+          onChange={(e) => {
+            props.onChange(e.target.checked);
+            onBlur();
+          }}
+          aria-label={label}
+          aria-describedby={`${fieldKey}-error`}
+          aria-required={required !== false}
+        >
+          {label}
+        </Checkbox>
+      );
+
+    case "checkbox_group":
+      return (
+        <Checkbox.Group
+          data-testid={`checkbox-group-${fieldKey}`}
+          value={props.value}
+          onChange={(checkedValues) => {
+            props.onChange(checkedValues as string[]);
+            onBlur();
+          }}
+          options={props.options?.map((option) => ({
+            label: option,
+            value: option,
+          }))}
+          aria-label={label}
+          aria-describedby={`${fieldKey}-error`}
+        />
+      );
+
+    case "textarea":
+      return (
+        <Input.TextArea
+          id={fieldKey}
+          name={fieldKey}
+          placeholder={label}
+          onChange={(e) => props.onChange(e.target.value)}
+          onBlur={onBlur}
+          value={props.value}
+          rows={4}
+          aria-label={label}
+          aria-describedby={`${fieldKey}-error`}
+          aria-required={required !== false}
+        />
+      );
+
+    case "file":
+      return (
+        <Upload
+          fileList={props.value}
+          onChange={({ fileList: newFileList }) => {
+            props.onChange(newFileList);
+            onBlur();
+          }}
+          beforeUpload={() => false}
+          multiple
+          maxCount={props.max_file_count ?? DEFAULT_MAX_FILE_COUNT}
+          accept={props.allowed_file_types?.join(",")}
+          data-testid={`file-upload-${fieldKey}`}
+        >
+          <Button data-testid={`file-upload-button-${fieldKey}`}>
+            Click to upload
+          </Button>
+        </Upload>
       );
 
     case "location":
