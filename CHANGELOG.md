@@ -23,7 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 
-- Fixed Vendors table source filter (GVL / AC) silently failing due to a column-id mismatch [#8260](https://github.com/ethyca/fides/pull/8260)
+- Fixed Vendors table source filter (GVL / AC) silently failing due to a column-id mismatch [#8259](https://github.com/ethyca/fides/pull/8259)
 
 ## [2.86.0](https://github.com/ethyca/fides/compare/2.85.1..2.86.0)
 
