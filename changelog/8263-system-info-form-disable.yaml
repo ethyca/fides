@@ -1,0 +1,3 @@
+type: Fixed
+description: Fixed the System Information form so all fields (including custom fields and antd Selects) lock for viewer users and assigned system managers, matching what the backend actually authorizes.
+pr: 8263
