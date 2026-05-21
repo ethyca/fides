@@ -1,0 +1,4 @@
+type: Removed
+description: Removed the unused `/add-systems` config wizard page (including the AWS and Okta scanner steps); single-system creation remains at `/add-systems/manual` and bulk vendor add at `/add-systems/multiple`
+pr: 8260
+labels: []
