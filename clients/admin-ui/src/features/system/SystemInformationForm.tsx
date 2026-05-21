@@ -3,6 +3,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Alert,
   Button,
+  ConfigProvider,
   Flex,
   Form,
   FormRule,
@@ -477,7 +478,7 @@ const SystemInformationForm = ({
           className="mb-4"
         />
       )}
-      <fieldset disabled={isReadOnly} className="border-0 p-0">
+      <ConfigProvider componentDisabled={isReadOnly}>
         <Flex vertical className="w-full lg:max-w-[70%]">
           <Text>
             Adding appropriate detail and context to each system helps everyone
@@ -540,6 +541,7 @@ const SystemInformationForm = ({
                     ? initialValues.tags.map((s) => ({ value: s, label: s }))
                     : []
                 }
+                disabled={lockedForGVL}
                 data-testid="controlled-select-tags"
               />
             </Form.Item>
@@ -553,6 +555,7 @@ const SystemInformationForm = ({
                   mode="multiple"
                   aria-label="System groups"
                   options={systemGroupOptions}
+                  disabled={lockedForGVL}
                   data-testid="controlled-select-system_groups"
                 />
               </Form.Item>
@@ -570,6 +573,7 @@ const SystemInformationForm = ({
                 aria-label="Dataset references"
                 options={datasetSelectOptions}
                 optionRender={DatasetSelectOption}
+                disabled={lockedForGVL}
                 data-testid="controlled-select-dataset_references"
               />
             </Form.Item>
@@ -850,7 +854,7 @@ const SystemInformationForm = ({
             </>
           )}
         </Flex>
-      </fieldset>
+      </ConfigProvider>
       {!isReadOnly && (
         <div className="mt-6">
           <Form.Item shouldUpdate noStyle>
