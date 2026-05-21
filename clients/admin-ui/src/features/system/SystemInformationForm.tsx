@@ -199,7 +199,6 @@ const SystemInformationForm = ({
 
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
   const lockedForGVL = useAppSelector(selectLockedForGVL);
-  const formDisabled = isReadOnly || lockedForGVL;
 
   const isEditing = useMemo(
     () =>
@@ -492,7 +491,7 @@ const SystemInformationForm = ({
                 options={dictionaryOptions}
                 onVendorSelected={handleVendorSelected}
                 isCreate={!passedInSystem}
-                lockedForGVL={formDisabled}
+                lockedForGVL={isReadOnly || lockedForGVL}
                 nameRules={[
                   { required: true, message: "System name is required" },
                   nameUniquenessRule,
@@ -511,7 +510,7 @@ const SystemInformationForm = ({
               >
                 <Input
                   id="name"
-                  disabled={formDisabled}
+                  disabled={isReadOnly}
                   data-testid="input-name"
                 />
               </Form.Item>
@@ -530,7 +529,7 @@ const SystemInformationForm = ({
               name="description"
               label="Description"
               tooltip="What services does this system perform?"
-              disabled={formDisabled}
+              disabled={isReadOnly}
             />
             <Form.Item
               name="tags"
@@ -546,7 +545,7 @@ const SystemInformationForm = ({
                     ? initialValues.tags.map((s) => ({ value: s, label: s }))
                     : []
                 }
-                disabled={formDisabled}
+                disabled={isReadOnly}
                 data-testid="controlled-select-tags"
               />
             </Form.Item>
@@ -560,7 +559,7 @@ const SystemInformationForm = ({
                   mode="multiple"
                   aria-label="System groups"
                   options={systemGroupOptions}
-                  disabled={formDisabled}
+                  disabled={isReadOnly}
                   data-testid="controlled-select-system_groups"
                 />
               </Form.Item>
@@ -578,7 +577,7 @@ const SystemInformationForm = ({
                 aria-label="Dataset references"
                 options={datasetSelectOptions}
                 optionRender={DatasetSelectOption}
-                disabled={formDisabled}
+                disabled={isReadOnly}
                 data-testid="controlled-select-dataset_references"
               />
             </Form.Item>
@@ -591,7 +590,7 @@ const SystemInformationForm = ({
                   name="processes_personal_data"
                   label="This system processes personal data"
                   tooltip="Does this system process personal data?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                 />
               </div>
               <div className="rounded bg-gray-50 p-4">
@@ -600,7 +599,9 @@ const SystemInformationForm = ({
                     name="exempt_from_privacy_regulations"
                     label="This system is exempt from privacy regulations"
                     tooltip="Is this system exempt from privacy regulations?"
-                    disabled={!processesPersonalData || formDisabled}
+                    disabled={
+                      isReadOnly || !processesPersonalData || lockedForGVL
+                    }
                   />
                   {exemptFromPrivacyRegulations && (
                     <div className="mt-4">
@@ -611,7 +612,7 @@ const SystemInformationForm = ({
                         required={exemptFromPrivacyRegulations}
                       >
                         <Input
-                          disabled={formDisabled}
+                          disabled={isReadOnly || lockedForGVL}
                           data-testid="input-reason_for_exemption"
                         />
                       </Form.Item>
@@ -626,7 +627,7 @@ const SystemInformationForm = ({
                       name="uses_profiling"
                       label="This system performs profiling"
                       tooltip="Does this system perform profiling that could have a legal effect?"
-                      disabled={formDisabled}
+                      disabled={isReadOnly || lockedForGVL}
                     />
                     {usesProfiling && (
                       <div className="mt-4">
@@ -640,7 +641,7 @@ const SystemInformationForm = ({
                             mode="multiple"
                             aria-label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
-                            disabled={formDisabled}
+                            disabled={isReadOnly || lockedForGVL}
                             data-testid="controlled-select-legal_basis_for_profiling"
                           />
                         </Form.Item>
@@ -652,7 +653,7 @@ const SystemInformationForm = ({
                       name="does_international_transfers"
                       label="This system transfers data"
                       tooltip="Does this system transfer data to other countries or international organizations?"
-                      disabled={formDisabled}
+                      disabled={isReadOnly || lockedForGVL}
                     />
                     {doesInternationalTransfers && (
                       <div className="mt-4">
@@ -666,7 +667,7 @@ const SystemInformationForm = ({
                             mode="multiple"
                             aria-label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
-                            disabled={formDisabled}
+                            disabled={isReadOnly || lockedForGVL}
                             data-testid="controlled-select-legal_basis_for_transfers"
                           />
                         </Form.Item>
@@ -685,7 +686,7 @@ const SystemInformationForm = ({
                     >
                       <Switch
                         size="small"
-                        disabled={formDisabled}
+                        disabled={isReadOnly || lockedForGVL}
                         data-testid="input-requires_data_protection_assessments"
                       />
                     </Form.Item>
@@ -698,7 +699,7 @@ const SystemInformationForm = ({
                           required={requiresDpas}
                         >
                           <Input
-                            disabled={formDisabled}
+                            disabled={isReadOnly || lockedForGVL}
                             data-testid="input-dpa_location"
                           />
                         </Form.Item>
@@ -717,25 +718,25 @@ const SystemInformationForm = ({
                   name="uses_cookies"
                   label="This system uses cookies"
                   tooltip="Does this system use cookies?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                 />
                 <DictSuggestionSwitch
                   name="cookie_refresh"
                   label="This system refreshes cookies"
                   tooltip="Does this system automatically refresh cookies?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                 />
                 <DictSuggestionSwitch
                   name="uses_non_cookie_access"
                   label="This system uses non-cookie trackers"
                   tooltip="Does this system use other types of trackers?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                 />
                 <DictSuggestionNumberInput
                   name="cookie_max_age_seconds"
                   label="Maximum duration (seconds)"
                   tooltip="What is the maximum amount of time a cookie will live?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                 />
               </SystemFormInputGroup>
 
@@ -756,7 +757,7 @@ const SystemInformationForm = ({
                         .includes(input.toLowerCase())
                     }
                     placeholder="Select data stewards"
-                    disabled={formDisabled}
+                    disabled={isReadOnly}
                     data-testid="controlled-select-data_stewards"
                   />
                 </Form.Item>
@@ -765,7 +766,7 @@ const SystemInformationForm = ({
                   name="privacy_policy"
                   label="Privacy policy URL"
                   tooltip="Where can the privacy policy be located?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                   rules={[
                     {
                       type: "url",
@@ -778,14 +779,14 @@ const SystemInformationForm = ({
                   name="legal_name"
                   label="Legal name"
                   tooltip="What is the legal name of the business?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly}
                 />
                 <DictSuggestionTextArea
                   id="legal_address"
                   name="legal_address"
                   label="Legal address"
                   tooltip="What is the legal address for the business?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly}
                 />
                 <Form.Item
                   name="administrating_department"
@@ -794,9 +795,9 @@ const SystemInformationForm = ({
                 >
                   <Input
                     disabled={
+                      isReadOnly ||
                       !processesPersonalData ||
-                      exemptFromPrivacyRegulations ||
-                      formDisabled
+                      exemptFromPrivacyRegulations
                     }
                     data-testid="input-administrating_department"
                   />
@@ -811,9 +812,9 @@ const SystemInformationForm = ({
                     aria-label="Responsibility"
                     options={responsibilityOptions}
                     disabled={
+                      isReadOnly ||
                       !processesPersonalData ||
-                      exemptFromPrivacyRegulations ||
-                      formDisabled
+                      exemptFromPrivacyRegulations
                     }
                     data-testid="controlled-select-responsibility"
                   />
@@ -823,7 +824,7 @@ const SystemInformationForm = ({
                   id="dpo"
                   label="Legal contact (DPO)"
                   tooltip="What is the official privacy contact information?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                 />
                 <Form.Item
                   name="joint_controller_info"
@@ -832,9 +833,9 @@ const SystemInformationForm = ({
                 >
                   <Input
                     disabled={
+                      isReadOnly ||
                       !processesPersonalData ||
-                      exemptFromPrivacyRegulations ||
-                      formDisabled
+                      exemptFromPrivacyRegulations
                     }
                     data-testid="input-joint_controller_info"
                   />
@@ -844,13 +845,13 @@ const SystemInformationForm = ({
                   name="data_security_practices"
                   id="data_security_practices"
                   tooltip="Which data security practices are employed to keep the data safe?"
-                  disabled={formDisabled}
+                  disabled={isReadOnly}
                 />
                 <DictSuggestionTextInput
                   label="Legitimate interest disclosure URL"
                   name="legitimate_interest_disclosure_url"
                   id="legitimate_interest_disclosure_url"
-                  disabled={formDisabled}
+                  disabled={isReadOnly || lockedForGVL}
                 />
                 <DictSuggestionTextInput
                   label="Vendor deleted date"
