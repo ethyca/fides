@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { resolveApplicableFields } from "~/lib/condition-evaluator";
 import { setsEqual } from "~/lib/set-utils";
@@ -44,6 +44,7 @@ export const useApplicableFields = (
 ): { applicableFields: Set<string>; conditionError: boolean } => {
   const prevResult = useRef<Set<string>>(new Set());
   const [conditionError, setConditionError] = useState(false);
+  const errorRef = useRef(false);
 
   const watchedKeys = useMemo(
     () => extractWatchedKeys(customFields),
@@ -67,7 +68,7 @@ export const useApplicableFields = (
   const applicableFields = useMemo(() => {
     try {
       const result = resolveApplicableFields(customFields, formValues);
-      setConditionError(false);
+      errorRef.current = false;
       // Return the same reference if the set hasn't changed
       if (setsEqual(result, prevResult.current)) {
         return prevResult.current;
@@ -75,11 +76,16 @@ export const useApplicableFields = (
       prevResult.current = result;
       return result;
     } catch {
-      setConditionError(true);
+      errorRef.current = true;
       return prevResult.current;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customFields, watchedSnapshot]);
+
+  // Sync the error ref to state in an effect to avoid setState during render
+  useEffect(() => {
+    setConditionError(errorRef.current);
+  }, [applicableFields]);
 
   return { applicableFields, conditionError };
 };

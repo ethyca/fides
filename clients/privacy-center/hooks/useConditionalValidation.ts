@@ -105,11 +105,13 @@ export const useApplicabilitySync = ({
     customPrivacyRequestFields,
     formValues,
   );
+  // Update the ref synchronously so the validate function (which reads from
+  // this ref) always sees the latest applicable set during the same render.
+  // eslint-disable-next-line no-param-reassign
+  applicableFieldsRef.current = applicableFields;
 
   const prevApplicable = useRef<Set<string>>(applicableFields);
   useEffect(() => {
-    // eslint-disable-next-line no-param-reassign
-    applicableFieldsRef.current = applicableFields;
     const prev = prevApplicable.current;
     prevApplicable.current = applicableFields;
 
