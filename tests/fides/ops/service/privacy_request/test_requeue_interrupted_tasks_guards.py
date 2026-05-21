@@ -1,6 +1,6 @@
 """Tests for requires_input/pending_external guards in requeue_interrupted_tasks.
 
-ENG-3687: The watchdog incorrectly cancels/requeues DSRs that are intentionally
+The watchdog incorrectly cancels/requeues DSRs that are intentionally
 paused for manual webhook data or manual task input. These tests verify that all
 four unguarded paths in the watchdog correctly skip paused DSRs.
 

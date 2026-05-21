@@ -1,6 +1,6 @@
 """Tests for requeue_requires_input_requests in connection_util.
 
-ENG-3687: The function incorrectly requeues ALL requires_input DSRs when no
+The function incorrectly requeues ALL requires_input DSRs when no
 AccessManualWebhooks exist. DSRs paused by manual_task connections (which have
 RequestTasks) should not be requeued — only DSRs paused by manual_webhook
 connections (which have zero RequestTasks) should be affected.
