@@ -78,6 +78,7 @@ export interface CustomFileUploadField extends ICustomField {
   default_value?: string | null;
   field_type: "file";
   max_size_bytes?: number;
+  max_file_count?: number;
   allowed_file_types?: string[];
 }
 

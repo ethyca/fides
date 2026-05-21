@@ -125,8 +125,12 @@ export const useCustomFieldsForm = ({
               ];
             }
             if (fieldType === "checkbox") {
-              // Checkbox is always valid — false is a legitimate value
-              return [key, Yup.boolean().notRequired()];
+              return [
+                key,
+                isRequired
+                  ? Yup.boolean().oneOf([true], requiredMessage)
+                  : Yup.boolean().notRequired(),
+              ];
             }
             if (fieldType === "file") {
               const maxSize = field.max_size_bytes ?? DEFAULT_MAX_SIZE_BYTES;
@@ -159,7 +163,7 @@ export const useCustomFieldsForm = ({
                       return true;
                     }
                     return (files as UploadFile[]).every(
-                      (f) => !f.type || allowedTypes.includes(f.type),
+                      (f) => !!f.type && allowedTypes.includes(f.type),
                     );
                   },
                 );

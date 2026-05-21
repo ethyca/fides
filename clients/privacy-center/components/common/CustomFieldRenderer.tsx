@@ -1,3 +1,5 @@
+const DEFAULT_MAX_FILE_COUNT = 10;
+
 import dayjs from "dayjs";
 import {
   Button,
@@ -234,6 +236,7 @@ const CustomFieldRenderer = ({
           }}
           beforeUpload={() => false}
           multiple
+          maxCount={props.max_file_count ?? DEFAULT_MAX_FILE_COUNT}
           accept={props.allowed_file_types?.join(",")}
           data-testid={`file-upload-${fieldKey}`}
         >
