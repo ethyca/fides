@@ -144,7 +144,7 @@ export const useCustomFieldsForm = ({
               }
               fileSchema = fileSchema.test(
                 "file-size",
-                `Each file must be under ${Math.round(maxSize / (1024 * 1024))}MB`,
+                `Each file must be under ${Math.ceil(maxSize / (1024 * 1024))}MB`,
                 (files) => {
                   if (!files) {
                     return true;

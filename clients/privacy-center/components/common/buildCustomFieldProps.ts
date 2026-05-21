@@ -57,6 +57,13 @@ export const buildCustomFieldProps = (
         value: Array.isArray(value) ? (value as UploadFile[]) : [],
         onChange: (fileList: UploadFile[]) => setFieldValue(key, fileList),
       };
+    case "textarea":
+      return {
+        ...fieldConfig,
+        ...sharedProps,
+        value: typeof value === "string" ? value : "",
+        onChange: (v: string) => setFieldValue(key, v),
+      };
     default: {
       let stringValue: string;
       if (typeof value === "string") {
