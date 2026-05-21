@@ -1,8 +1,4 @@
-import {
-  ChakraBox as Box,
-  ChakraHeading as Heading,
-  ChakraStack as Stack,
-} from "fidesui";
+import { Card } from "fidesui";
 import _ from "lodash";
 import React from "react";
 
@@ -38,40 +34,22 @@ const SystemDataGroup = ({
     return false;
   });
 
-  // If no children should be rendered, return null
   if (filteredChildren.length === 0) {
     return null;
   }
 
   return (
-    <Stack marginTop="0px !important">
-      <Box
-        maxWidth="720px"
-        border="1px"
-        borderColor="gray.200"
-        borderRadius={6}
-        overflow="visible"
-        mt={6}
-      >
-        <Box
-          backgroundColor="gray.50"
-          px={6}
-          py={4}
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          borderBottom="1px"
-          borderColor="gray.200"
-          borderTopRadius={6}
-        >
-          <Heading as="h3" size="xs">
-            {heading}
-          </Heading>
-        </Box>
-
-        <Stack>{filteredChildren}</Stack>
-      </Box>
-    </Stack>
+    <Card
+      title={heading}
+      variant="outlined"
+      className="mt-6 max-w-[720px] overflow-visible"
+      styles={{
+        body: { padding: 0 },
+        header: { padding: "16px" },
+      }}
+    >
+      {filteredChildren}
+    </Card>
   );
 };
 

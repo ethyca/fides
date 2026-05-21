@@ -270,6 +270,32 @@ export interface GroupedAssessmentsResponse {
   pages: number;
 }
 
+export type AssessmentSummarySegment =
+  | "completed"
+  | "pending"
+  | "open"
+  | "risk";
+
+export interface AssessmentSummaryBlockedGroup {
+  name: string;
+  outdated_count: number;
+  high_risk_count: number;
+  total_count: number;
+}
+
+export interface AssessmentSummaryOwner {
+  owner: string;
+  open_count: number;
+  outdated_count: number;
+}
+
+export interface AssessmentSummaryResponse {
+  total: number;
+  by_segment: Record<AssessmentSummarySegment, number>;
+  blocked_groups: AssessmentSummaryBlockedGroup[];
+  owners: AssessmentSummaryOwner[];
+}
+
 export interface GetAssessmentEvidenceParams {
   id: string;
   question_id?: string;

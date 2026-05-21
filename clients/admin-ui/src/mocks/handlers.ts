@@ -8,6 +8,7 @@ import { dataPurposesHandlers } from "./data-purposes/handlers";
 import { dsrTraversalHandlers } from "./dsr-traversal/handlers";
 import { manualTasksHandlers } from "./manual-tasks/handlers";
 import { policyHandlers } from "./policy/handlers";
+import { privacyAssessmentsHandlers } from "./privacy-assessments/handlers";
 
 // eslint-disable-next-line import/prefer-default-export
 export const handlers = [
@@ -19,5 +20,6 @@ export const handlers = [
   ...dashboardHandlers(),
   ...manualTasksHandlers(),
   ...dataPurposesHandlers(),
+  ...privacyAssessmentsHandlers(),
   ...dsrTraversalHandlers(),
 ];

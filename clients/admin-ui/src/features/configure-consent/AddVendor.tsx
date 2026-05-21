@@ -29,7 +29,7 @@ import {
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
-import VendorSelectorAnt from "~/features/system/VendorSelectorAnt";
+import VendorSelector from "~/features/system/VendorSelector";
 import { System } from "~/types/api";
 
 import {
@@ -241,7 +241,7 @@ const AddVendor = ({
           >
             <Flex vertical gap="middle" align="stretch">
               {dictionaryService ? (
-                <VendorSelectorAnt
+                <VendorSelector
                   label="Vendor name"
                   options={dictionaryOptions}
                   isLoading={isLoading}

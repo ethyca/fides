@@ -1,4 +1,0 @@
-type: Changed
-description: Make `property_id` optional on the privacy-request attachment upload endpoint to support privacy requests without an associated property.
-pr: 8228
-labels: []

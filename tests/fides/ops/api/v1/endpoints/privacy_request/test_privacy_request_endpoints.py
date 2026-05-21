@@ -46,7 +46,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
@@ -87,6 +87,7 @@ from fides.common.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_IMPORT,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -104,6 +105,7 @@ from fides.common.urn_registry import (
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_FINALIZE,
+    PRIVACY_REQUEST_BULK_IMPORT,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
@@ -10107,3 +10109,619 @@ class TestSendBatchEmailIntegrations:
             == "Email batch job started. This may take a few minutes to complete."
         )
         mock_send_email_batch.assert_called_once()
+
+
+class TestImportHistoricalPrivacyRequests:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_REQUEST_BULK_IMPORT
+
+    @pytest.fixture(scope="function")
+    def import_record(self, policy):
+        return {
+            "external_id": "legacy-001",
+            "identity": {"email": "imported@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "reviewed_at": "2024-01-16T10:00:00.000Z",
+        }
+
+    def test_import_requires_authentication(
+        self, api_client: TestClient, url, import_record
+    ):
+        resp = api_client.post(url, json=[import_record])
+        assert resp.status_code == 401
+
+    def test_import_rejects_insufficient_scope(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        import_record,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, headers=auth_header, json=[import_record])
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_import_rejects_contributor_role(
+        self,
+        api_client: TestClient,
+        generate_role_header,
+        url,
+        import_record,
+    ):
+        """CONTRIBUTOR role must NOT receive PRIVACY_REQUEST_IMPORT — it's owner-tier."""
+        auth_header = generate_role_header(roles=[CONTRIBUTOR])
+        resp = api_client.post(url, headers=auth_header, json=[import_record])
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_import_allows_owner_role(
+        self,
+        mock_run_privacy_request,
+        api_client: TestClient,
+        generate_role_header,
+        db,
+        url,
+        import_record,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        resp = api_client.post(url, headers=auth_header, json=[import_record])
+        assert resp.status_code == 200
+
+        for item in resp.json()["succeeded"]:
+            PrivacyRequest.get(db=db, object_id=item["id"]).delete(db=db)
+        assert not mock_run_privacy_request.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service.check_for_duplicates"
+    )
+    @mock.patch("fides.service.privacy_request.privacy_request_service.cache_data")
+    def test_import_single_record_happy_path(
+        self,
+        mock_cache_data,
+        mock_check_for_duplicates,
+        mock_dispatch_message,
+        mock_run_privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        import_record,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        resp = api_client.post(url, headers=auth_header, json=[import_record])
+        assert resp.status_code == 200
+
+        body = resp.json()
+        assert len(body["succeeded"]) == 1
+        assert body["failed"] == []
+
+        pr = PrivacyRequest.get(db=db, object_id=body["succeeded"][0]["id"])
+        assert pr.status == PrivacyRequestStatus.complete
+        assert pr.source == PrivacyRequestSource.import_
+        assert pr.external_id == "legacy-001"
+        assert pr.requested_at is not None
+        assert pr.started_processing_at == pr.requested_at
+        assert pr.finished_processing_at is not None
+        assert pr.reviewed_at is not None
+        assert pr.reviewed_by is None
+        assert pr.submitted_by is None
+        assert pr.finalized_by is None
+
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == "imported@example.com"
+
+        # No processing pipeline side effects.
+        assert not mock_run_privacy_request.called
+        assert not mock_dispatch_message.called
+        assert not mock_check_for_duplicates.called
+        assert not mock_cache_data.called
+
+        pr.delete(db=db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_import_bulk_terminal_statuses(
+        self,
+        mock_run_privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        records = []
+        for status_value in ("complete", "denied", "canceled", "error"):
+            record = {
+                "identity": {"email": f"user-{status_value}@example.com"},
+                "policy_key": policy.key,
+                "status": status_value,
+                "requested_at": "2024-01-15T10:00:00.000Z",
+                "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            }
+            # `denial_reason` is required by the schema when status is "denied".
+            if status_value == "denied":
+                record["denial_reason"] = "Bulk import test denial"
+            records.append(record)
+
+        resp = api_client.post(url, headers=auth_header, json=records)
+        assert resp.status_code == 200
+
+        body = resp.json()
+        assert len(body["succeeded"]) == 4
+        assert body["failed"] == []
+
+        statuses = sorted(item["status"] for item in body["succeeded"])
+        assert statuses == ["canceled", "complete", "denied", "error"]
+        assert not mock_run_privacy_request.called
+
+        for item in body["succeeded"]:
+            PrivacyRequest.get(db=db, object_id=item["id"]).delete(db=db)
+
+    def test_import_writes_single_imported_audit_log(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        import_record,
+        application_user,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        resp = api_client.post(url, headers=auth_header, json=[import_record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        audit_logs: List[AuditLog] = AuditLog.filter(
+            db=db,
+            conditions=(AuditLog.privacy_request_id == pr_id),
+        ).all()
+        assert len(audit_logs) == 1
+        entry = audit_logs[0]
+        assert entry.action == AuditLogAction.imported
+        assert entry.user_id == application_user.id
+        assert "complete" in (entry.message or "")
+
+        entry.delete(db=db)
+        PrivacyRequest.get(db=db, object_id=pr_id).delete(db=db)
+
+    def test_import_rejects_non_terminal_status(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        bad_record = {
+            "identity": {"email": "imported@example.com"},
+            "policy_key": policy.key,
+            "status": "pending",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[bad_record])
+        assert resp.status_code == 422
+        assert "terminal" in resp.text.lower() or "must be one of" in resp.text
+
+    def test_import_invalid_policy_lands_in_failed(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        bad_record = {
+            "identity": {"email": "imported@example.com"},
+            "policy_key": "policy_that_does_not_exist",
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[bad_record])
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["succeeded"] == []
+        assert len(body["failed"]) == 1
+        assert "policy_that_does_not_exist" in body["failed"][0]["message"]
+
+    def test_import_empty_identity_lands_in_failed(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        bad_record = {
+            "identity": {},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[bad_record])
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["succeeded"] == []
+        assert len(body["failed"]) == 1
+        assert "identity" in body["failed"][0]["message"].lower()
+
+    def test_import_batch_size_exceeded(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "imported@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record] * 51)
+        assert resp.status_code == 422
+
+    def test_import_mixed_success_and_failure(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        records = [
+            {
+                "identity": {"email": "good@example.com"},
+                "policy_key": policy.key,
+                "status": "complete",
+                "requested_at": "2024-01-15T10:00:00.000Z",
+                "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            },
+            {
+                "identity": {"email": "bad@example.com"},
+                "policy_key": "missing_policy",
+                "status": "complete",
+                "requested_at": "2024-01-15T10:00:00.000Z",
+                "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            },
+        ]
+        resp = api_client.post(url, headers=auth_header, json=records)
+        assert resp.status_code == 200
+        body = resp.json()
+        assert len(body["succeeded"]) == 1
+        assert len(body["failed"]) == 1
+        PrivacyRequest.get(db=db, object_id=body["succeeded"][0]["id"]).delete(db=db)
+
+    def test_import_atomicity_on_persist_identity_failure(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """If `persist_identity` fails after the PrivacyRequest row is created,
+        no orphan PrivacyRequest row should remain."""
+        test_external_id = f"atomicity-persist-{uuid4()}"
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "external_id": test_external_id,
+            "identity": {"email": "atomicity@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+
+        with mock.patch.object(
+            PrivacyRequest,
+            "persist_identity",
+            side_effect=RuntimeError("simulated identity failure"),
+        ):
+            resp = api_client.post(url, headers=auth_header, json=[record])
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["succeeded"] == []
+        assert len(body["failed"]) == 1
+
+        orphans = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.external_id == test_external_id)
+            .all()
+        )
+        # Clean up before asserting so a regression doesn't pollute later tests.
+        for orphan in orphans:
+            orphan.delete(db=db)
+        assert len(orphans) == 0, (
+            f"Expected no orphan PrivacyRequest rows; found {len(orphans)}"
+        )
+
+    def test_import_atomicity_on_audit_log_failure(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """If `AuditLog.create` fails after the PrivacyRequest and identity are
+        persisted, no orphan PrivacyRequest (or its identity rows) should remain."""
+        test_external_id = f"atomicity-audit-{uuid4()}"
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "external_id": test_external_id,
+            "identity": {"email": "atomicity-audit@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+
+        with mock.patch.object(
+            AuditLog,
+            "create",
+            side_effect=RuntimeError("simulated audit log failure"),
+        ):
+            resp = api_client.post(url, headers=auth_header, json=[record])
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["succeeded"] == []
+        assert len(body["failed"]) == 1
+
+        orphans = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.external_id == test_external_id)
+            .all()
+        )
+        for orphan in orphans:
+            orphan.delete(db=db)
+        assert len(orphans) == 0, (
+            f"Expected no orphan PrivacyRequest rows; found {len(orphans)}"
+        )
+
+    def test_import_rejects_non_import_source(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+    ):
+        """The schema constrains `source` to `Import`; any other value is rejected
+        at request validation time."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        bad_record = {
+            "identity": {"email": "wrong-source@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "source": PrivacyRequestSource.privacy_center.value,
+        }
+        resp = api_client.post(url, headers=auth_header, json=[bad_record])
+        assert resp.status_code == 422
+
+    def test_import_uses_explicit_started_processing_at(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """An explicit `started_processing_at` is persisted as-is, distinct from
+        `requested_at`."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "started-explicit@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "started_processing_at": "2024-01-17T08:30:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.requested_at == parse("2024-01-15T10:00:00.000Z")
+        assert pr.started_processing_at == parse("2024-01-17T08:30:00.000Z")
+        assert pr.started_processing_at != pr.requested_at
+        pr.delete(db=db)
+
+    def test_import_falls_back_started_processing_at_to_requested_at(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """When `started_processing_at` is omitted, the service falls back to
+        `requested_at` so the row remains valid."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "started-fallback@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.started_processing_at == pr.requested_at
+        pr.delete(db=db)
+
+    def test_import_denied_writes_denial_audit_log(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+        application_user,
+    ):
+        """Imported denied records get a synthesized `denied` AuditLog row
+        carrying the denial reason; the CSV download surfaces it via
+        `audit_log WHERE action='denied'`. The reviewer identifier is
+        resolved to a `FidesUser` so the row's `user_id` is the matched id."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "denied-import@example.com"},
+            "policy_key": policy.key,
+            "status": "denied",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "reviewed_at": "2024-01-16T10:00:00.000Z",
+            "reviewed_by": application_user.email_address,
+            "denial_reason": "Insufficient proof of identity",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        audit_logs: List[AuditLog] = AuditLog.filter(
+            db=db,
+            conditions=(AuditLog.privacy_request_id == pr_id),
+        ).all()
+        actions = sorted(log.action for log in audit_logs)
+        assert actions == [AuditLogAction.denied, AuditLogAction.imported]
+
+        denied_log = next(
+            log for log in audit_logs if log.action == AuditLogAction.denied
+        )
+        assert denied_log.message == "Insufficient proof of identity"
+        assert denied_log.user_id == application_user.id
+
+        for log in audit_logs:
+            log.delete(db=db)
+        PrivacyRequest.get(db=db, object_id=pr_id).delete(db=db)
+
+    def test_import_denied_without_denial_reason_returns_422(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+    ):
+        """`denial_reason` is required when `status == 'denied'` so the CSV
+        "Denial Reason" column populates for imported records."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        bad_record = {
+            "identity": {"email": "denied-no-reason@example.com"},
+            "policy_key": policy.key,
+            "status": "denied",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[bad_record])
+        assert resp.status_code == 422
+        assert "denial_reason" in resp.text.lower()
+
+    def test_import_resolves_reviewed_by_to_fides_user(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+        application_user,
+    ):
+        """When `reviewed_by` matches an existing FidesUser by email, the
+        service populates `privacyrequest.reviewed_by` so the CSV "Reviewed By"
+        column and the response `reviewer` field surface the user."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "resolved-reviewer@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "reviewed_at": "2024-01-16T10:00:00.000Z",
+            "reviewed_by": application_user.email_address,
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.reviewed_by == application_user.id
+
+        approved_log = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == pr_id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+        assert approved_log is not None
+        assert approved_log.user_id == application_user.id
+
+        for log in AuditLog.filter(
+            db=db, conditions=(AuditLog.privacy_request_id == pr_id)
+        ).all():
+            log.delete(db=db)
+        pr.delete(db=db)
+
+    def test_import_unresolved_reviewed_by_drops_reviewer_attribution(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """When `reviewed_by` does not match any FidesUser on a non-denied
+        import, the FK is left NULL and no synthesized lifecycle AuditLog row
+        is written — only the `imported` marker. The raw identifier is not
+        stuffed into `audit_log.user_id`; customers should pre-create the
+        relevant `FidesUser` records to preserve reviewer attribution."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "ghost-import@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "reviewed_at": "2024-01-16T10:00:00.000Z",
+            "reviewed_by": "ghost-reviewer@example.com",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.reviewed_by is None
+
+        audit_logs: List[AuditLog] = AuditLog.filter(
+            db=db, conditions=(AuditLog.privacy_request_id == pr_id)
+        ).all()
+        actions = [log.action for log in audit_logs]
+        assert actions == [AuditLogAction.imported]
+
+        for log in audit_logs:
+            log.delete(db=db)
+        pr.delete(db=db)
