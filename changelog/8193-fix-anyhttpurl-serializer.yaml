@@ -1,3 +1,0 @@
-type: Fixed
-description: Suppressed `PydanticSerializationUnexpectedValue` warnings emitted by `AnyHttpUrlStringRemovesSlash` (e.g. `url_recorded` on the consent-reporting celery payload) by attaching a `PlainSerializer` that matches what the validator returns.
-pr: 8193

@@ -2,6 +2,7 @@ import { UploadFile } from "fidesui";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import { isFieldVisible } from "~/common/visibility";
 import { dateFieldValidation } from "~/components/modals/validation";
 import { selectUserLocation } from "~/features/consent/consent.slice";
 import { CustomConfigField, CustomDateField } from "~/types/config";
@@ -73,75 +74,119 @@ export const useCustomFieldsForm = ({
           .filter(([, field]) => !field.hidden)
           .map(([key, field]) => {
             const { label, required } = field;
+            const fieldType = field.field_type;
+            const visibilityRules = field.visible_when;
             const isRequired = required !== false;
-
-            switch (field.field_type) {
-              case "multiselect":
-              case "checkbox_group":
+            const hasVisibilityRules =
+              Array.isArray(visibilityRules) && visibilityRules.length > 0;
+            const requiredMessage = `${label} is required`;
+            // When the field has visibility rules, gate the required check on
+            // the current sibling values: invisible ⇒ not required; visible ⇒
+            // existing required logic applies.
+            const requiredTest = (
+              base: Yup.AnySchema,
+              isFilled: (v: unknown) => boolean,
+            ) =>
+              hasVisibilityRules
+                ? base.test(
+                    "required-when-visible",
+                    requiredMessage,
+                    function requiredWhenVisible(value) {
+                      const parent = (this.parent ?? {}) as Record<
+                        string,
+                        unknown
+                      >;
+                      if (
+                        !isFieldVisible(
+                          { visible_when: visibilityRules },
+                          parent,
+                        )
+                      ) {
+                        return true;
+                      }
+                      if (!isRequired) {
+                        return true;
+                      }
+                      return isFilled(value);
+                    },
+                  )
+                : base;
+            if (fieldType === "multiselect" || fieldType === "checkbox_group") {
+              const arr = Yup.array();
+              if (hasVisibilityRules) {
                 return [
                   key,
-                  isRequired
-                    ? Yup.array().min(1, `${label} is required`)
-                    : Yup.array().notRequired(),
+                  requiredTest(arr, (v) => Array.isArray(v) && v.length > 0),
                 ];
-              case "checkbox":
-                // Checkbox is always valid — false is a legitimate value
-                return [key, Yup.boolean().notRequired()];
-              case "file": {
-                const maxSize = field.max_size_bytes ?? DEFAULT_MAX_SIZE_BYTES;
-                const allowedTypes = field.allowed_file_types;
-                let fileSchema = Yup.array();
-                if (isRequired) {
-                  fileSchema = fileSchema.min(
-                    1,
-                    `${label} requires at least one file`,
+              }
+              return [
+                key,
+                isRequired ? arr.min(1, requiredMessage) : arr.notRequired(),
+              ];
+            }
+            if (fieldType === "checkbox") {
+              // Checkbox is always valid — false is a legitimate value
+              return [key, Yup.boolean().notRequired()];
+            }
+            if (fieldType === "file") {
+              const maxSize = field.max_size_bytes ?? DEFAULT_MAX_SIZE_BYTES;
+              const allowedTypes = field.allowed_file_types;
+              let fileSchema = Yup.array();
+              if (isRequired) {
+                fileSchema = fileSchema.min(
+                  1,
+                  `${label} requires at least one file`,
+                );
+              }
+              fileSchema = fileSchema.test(
+                "file-size",
+                `Each file must be under ${Math.round(maxSize / (1024 * 1024))}MB`,
+                (files) => {
+                  if (!files) {
+                    return true;
+                  }
+                  return (files as UploadFile[]).every(
+                    (f) => !f.size || f.size <= maxSize,
                   );
-                }
+                },
+              );
+              if (allowedTypes && allowedTypes.length > 0) {
                 fileSchema = fileSchema.test(
-                  "file-size",
-                  `Each file must be under ${Math.round(maxSize / (1024 * 1024))}MB`,
+                  "file-type",
+                  `Allowed file types: ${allowedTypes.join(", ")}`,
                   (files) => {
                     if (!files) {
                       return true;
                     }
                     return (files as UploadFile[]).every(
-                      (f) => !f.size || f.size <= maxSize,
+                      (f) => !f.type || allowedTypes.includes(f.type),
                     );
                   },
                 );
-                if (allowedTypes && allowedTypes.length > 0) {
-                  fileSchema = fileSchema.test(
-                    "file-type",
-                    `Allowed file types: ${allowedTypes.join(", ")}`,
-                    (files) => {
-                      if (!files) {
-                        return true;
-                      }
-                      return (files as UploadFile[]).every(
-                        (f) => !f.type || allowedTypes.includes(f.type),
-                      );
-                    },
-                  );
-                }
-                return [key, fileSchema];
               }
-              case "date":
-                return [
-                  key,
-                  dateFieldValidation(
-                    field as CustomDateField,
-                    label,
-                    isRequired,
-                  ),
-                ];
-              default:
-                return [
-                  key,
-                  isRequired
-                    ? Yup.string().required(`${label} is required`)
-                    : Yup.string().notRequired(),
-                ];
+              return [key, fileSchema];
             }
+            const str = Yup.string();
+            if (hasVisibilityRules) {
+              return [
+                key,
+                requiredTest(str, (v) => typeof v === "string" && v.length > 0),
+              ];
+            }
+            if (fieldType === "date") {
+              return [
+                key,
+                dateFieldValidation(
+                  field as CustomDateField,
+                  label,
+                  isRequired,
+                ),
+              ];
+            }
+            return [
+              key,
+              isRequired ? str.required(requiredMessage) : str.notRequired(),
+            ];
           }),
       ),
     });

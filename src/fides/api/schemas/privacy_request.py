@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum as EnumType
 from enum import StrEnum
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 from uuid import UUID
 
 from fideslang.validation import FidesKey
@@ -92,6 +92,7 @@ class PrivacyRequestSource(str, EnumType):
     - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
     - Dataset Test: Standalone dataset test
     - Janus SDK: Request created from the Mobile SDK
+    - Import: Historical privacy request imported from another Fides deployment (no processing)
     """
 
     privacy_center = "Privacy Center"
@@ -100,6 +101,7 @@ class PrivacyRequestSource(str, EnumType):
     fides_js = "Fides.js"
     dataset_test = "Dataset Test"
     janus_sdk = "Janus SDK"
+    import_ = "Import"
 
 
 class PrivacyRequestCreate(FidesSchema):
@@ -344,6 +346,69 @@ ACTIVE_REQUEST_STATUSES = frozenset(
         PrivacyRequestStatus.awaiting_access_review,
     }
 )
+
+TERMINAL_PRIVACY_REQUEST_STATUSES = frozenset(
+    {
+        PrivacyRequestStatus.complete,
+        PrivacyRequestStatus.denied,
+        PrivacyRequestStatus.canceled,
+        PrivacyRequestStatus.error,
+    }
+)
+
+
+class HistoricalPrivacyRequestImport(FidesSchema):
+    """Schema for importing a single historical, already-completed privacy request.
+
+    Used by the admin import endpoint to backfill DSRs from another Fides deployment
+    without triggering any processing pipeline. Status must be terminal.
+
+    `reviewed_by` accepts a free-string identifier (email or username) from the
+    source deployment. The service performs a best-effort lookup against
+    `FidesUser` by `email_address` and then `username`; if a match is found, the
+    underlying `privacyrequest.reviewed_by` foreign key is populated so the CSV
+    download and the response `reviewer` field surface the user. If no match is
+    found the foreign key is left NULL and reviewer attribution is dropped for
+    non-denied imports — pre-create the relevant `FidesUser` records in the
+    destination deployment to preserve attribution. Denied imports still record
+    the supplied `denial_reason` regardless of whether the reviewer resolves.
+
+    `denial_reason` is required when `status == denied` so the CSV "Denial
+    Reason" column (which reads from the `denied` `AuditLog.message`) populates
+    for imported denied requests, satisfying GDPR Art. 5(2) accountability.
+    """
+
+    external_id: Optional[str] = None
+    identity: Identity
+    policy_key: FidesKey
+    status: PrivacyRequestStatus
+    requested_at: datetime
+    started_processing_at: Optional[datetime] = None
+    finished_processing_at: datetime
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[SafeStr] = None
+    denial_reason: Optional[SafeStr] = None
+    source: Literal[PrivacyRequestSource.import_] = PrivacyRequestSource.import_
+
+    @field_validator("status")
+    @classmethod
+    def status_must_be_terminal(
+        cls, value: PrivacyRequestStatus
+    ) -> PrivacyRequestStatus:
+        if value not in TERMINAL_PRIVACY_REQUEST_STATUSES:
+            allowed = sorted(s.value for s in TERMINAL_PRIVACY_REQUEST_STATUSES)
+            raise ValueError(
+                f"status must be one of {allowed} for an imported privacy request"
+            )
+        return value
+
+    @model_validator(mode="after")
+    def denial_reason_required_when_denied(
+        self,
+    ) -> "HistoricalPrivacyRequestImport":
+        if self.status == PrivacyRequestStatus.denied and not self.denial_reason:
+            raise ValueError("denial_reason is required when status is 'denied'")
+        return self
 
 
 class IdentityValue(BaseModel):

@@ -251,6 +251,7 @@ export const PrivacyExperienceForm = ({
           data_uses: [],
           consent_mechanism: ConsentMechanism.NOTICE_ONLY,
           disabled: false,
+          att_exempt: false,
         });
       }
       if (hasFilteredGppNotices) {
@@ -261,6 +262,7 @@ export const PrivacyExperienceForm = ({
           data_uses: [],
           consent_mechanism: ConsentMechanism.NOTICE_ONLY,
           disabled: true,
+          att_exempt: false,
         });
       }
       return noticesWithTcfPlaceholder;

@@ -1,4 +1,0 @@
-type: Added
-description: Added integration tests for Snowflake VARIANT column with nested JSON data
-pr: 8173
-labels: []

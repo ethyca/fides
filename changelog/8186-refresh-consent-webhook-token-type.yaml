@@ -1,4 +1,0 @@
-type: Added
-description: Added REFRESH_CONSENT_WEBHOOK_TOKEN SaaSRequestType for automatic consent webhook token refresh
-pr: 8186
-labels: []

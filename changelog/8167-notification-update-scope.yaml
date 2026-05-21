@@ -1,4 +1,0 @@
-type: Added
-description: Added NOTIFICATION_UPDATE scope for mutation endpoints in the notification system
-pr: 8167
-labels: ["db-migration"]

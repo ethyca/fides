@@ -1,0 +1,26 @@
+/* Mimic antd Input chrome so react-phone-number-input blends in. */
+.wrapper {
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius);
+  padding: 4px 11px;
+  background-color: var(--fidesui-color-bg-container);
+  transition: border-color 0.2s;
+  cursor: text;
+}
+
+/* Make the inner <input> borderless so the wrapper provides the chrome. */
+.wrapper :global(.PhoneInputInput) {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--fidesui-color-text);
+  line-height: 1.5714;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
+
+.wrapper :global(.PhoneInputInput::placeholder) {
+  color: var(--fidesui-color-text-placeholder);
+}
