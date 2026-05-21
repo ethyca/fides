@@ -67,13 +67,6 @@ const nextConfig = {
         source: `/health`,
         destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/health`,
       },
-      // GraphQL PoC: the Strawberry endpoint is mounted at /graphql (not under
-      // /api/v1), so proxy it to the backend for the real-BE path. In mock
-      // mode MSW intercepts /graphql before it reaches this rewrite.
-      {
-        source: `/graphql`,
-        destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/graphql`,
-      },
     ];
   },
 };

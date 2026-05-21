@@ -51,19 +51,15 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     <SafeHydrate>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <DashboardGraphqlProvider>
-            <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
-              <NuqsAdapter>
-                {Component === Login ||
-                Component === LoginWithOIDC ||
-                Component === ForgotPassword ? (
-                  // Only the login page is accessible while logged out. If there is
-                  // a use case for more unprotected routes, Next has a guide for
-                  // per-page layouts:
-                  // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
-                  <Component {...pageProps} />
-                ) : (
-                  <ProtectedRoute>
+          <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
+            <NuqsAdapter>
+              {Component === Login ||
+              Component === LoginWithOIDC ||
+              Component === ForgotPassword ? (
+                <Component {...pageProps} />
+              ) : (
+                <ProtectedRoute>
+                  <DashboardGraphqlProvider>
                     <CommonSubscriptions />
                     <Flex width="100%" height="100%" flex={1}>
                       <MainSideNav />
@@ -76,11 +72,11 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
                         <Component {...pageProps} />
                       </Flex>
                     </Flex>
-                  </ProtectedRoute>
-                )}
-              </NuqsAdapter>
-            </FidesUIProvider>
-          </DashboardGraphqlProvider>
+                  </DashboardGraphqlProvider>
+                </ProtectedRoute>
+              )}
+            </NuqsAdapter>
+          </FidesUIProvider>
         </PersistGate>
       </Provider>
     </SafeHydrate>

@@ -102,7 +102,7 @@ const mockedSchema = addMocksToSchema({
 });
 
 export const dashboardGraphqlHandlers = () => [
-  rest.post(/\/graphql$/, async (req, res, ctx) => {
+  rest.post(/\/api\/v1\/plus\/graphql$/, async (req, res, ctx) => {
     const body = (await req.json()) as {
       query?: string;
       operationName?: string;

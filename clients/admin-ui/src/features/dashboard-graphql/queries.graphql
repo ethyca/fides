@@ -52,15 +52,16 @@ query DashboardOverview($trendPeriod: TrendPeriod! = thirty_days) {
     awaitingResponse
     risksIdentified
   }
-  ... @defer(label: "agentBriefing") {
-    agentBriefing {
-      briefing
-      quickActions {
-        label
-        actionType
-        severity
-        actionData
-      }
+}
+
+query DashboardAgentBriefing {
+  agentBriefing {
+    briefing
+    quickActions {
+      label
+      actionType
+      severity
+      actionData
     }
   }
 }

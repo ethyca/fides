@@ -1,34 +1,29 @@
 /**
  * Drop-in GraphQL replacements for the dashboard RTK Query hooks (Apollo).
  *
- * The six static read-only cards share **one** combined `DashboardOverview`
- * query with `@defer` on `agentBriefing`. Apollo deduplicates concurrent
- * `useQuery(DashboardOverviewDocument)` calls with identical variables into
- * a single network request, so all six hooks below issue exactly one POST
- * — verify in DevTools → Network. The slow LLM-backed `agentBriefing`
- * arrives in a second `multipart/mixed` chunk and re-renders only the
- * banner; the rest of the dashboard paints from the initial chunk.
+ * The five static read-only cards share one combined `DashboardOverview`
+ * query. Apollo deduplicates concurrent `useQuery(DashboardOverviewDocument)`
+ * calls with identical variables into a single network request, so all five
+ * hooks below issue exactly one POST.
  *
- * `priorityActions` and `activityFeed` keep their own per-card queries —
- * their interactive variables (dimension filter, infinite-scroll
- * pagination) make them poor combined-query candidates.
+ * `agentBriefing` is a separate query because the LLM-backed briefing is
+ * slow and should not block the rest of the dashboard from painting.
+ *
+ * `priorityActions` and `activityFeed` keep their own per-card queries --
+ * their interactive variables (dimension filter, infinite-scroll pagination)
+ * make them poor combined-query candidates.
  *
  * Each hook keeps the exact name, call signature, and return shape of its
  * counterpart in ~/features/dashboard/dashboard.slice and maps the
  * camelCase GraphQL response back onto the existing snake_case
  * ~/features/dashboard/types interfaces. Cards change by one import line.
- *
- * The mapped result is memoised on the raw query slice. Apollo returns a
- * stable `data` reference until the result changes, so the mapped object
- * identity is stable too — without this, consumers that key effects on
- * `data` (e.g. useInfiniteActivityFeed) re-fire setState every render and
- * React throws "Maximum update depth exceeded".
  */
 import { useQuery } from "@apollo/client";
 import { useMemo } from "react";
 
 import {
   DashboardActivityFeedDocument,
+  DashboardAgentBriefingDocument,
   DashboardOverviewDocument,
   DashboardPriorityActionsDocument,
   TrendPeriod as GqlTrendPeriod,
@@ -51,25 +46,19 @@ import {
   TrendPeriod,
 } from "~/features/dashboard/types";
 
-// REST TrendPeriod values ("30d") differ from the GraphQL enum names
-// ("thirty_days"); the rest of the enums share the same string values.
 const TREND_PERIOD_TO_GQL: Record<TrendPeriod, GqlTrendPeriod> = {
   [TrendPeriod.THIRTY_DAYS]: GqlTrendPeriod.ThirtyDays,
   [TrendPeriod.SIXTY_DAYS]: GqlTrendPeriod.SixtyDays,
   [TrendPeriod.NINETY_DAYS]: GqlTrendPeriod.NinetyDays,
 };
 
-// All six static hooks call the combined query with the same default
-// trendPeriod so Apollo merges them into one request. The trends hook
-// accepts a `period` param for drop-in parity; passing a non-default
-// period would (correctly) refetch the whole combined query.
 const useDashboardOverview = (period: TrendPeriod = TrendPeriod.THIRTY_DAYS) =>
   useQuery(DashboardOverviewDocument, {
     variables: { trendPeriod: TREND_PERIOD_TO_GQL[period] },
   });
 
 export const useGetAgentBriefingQuery = () => {
-  const { data } = useDashboardOverview();
+  const { data, loading } = useQuery(DashboardAgentBriefingDocument);
   const briefing = data?.agentBriefing;
   const mapped = useMemo<AgentBriefingResponse | undefined>(
     () =>
@@ -86,9 +75,7 @@ export const useGetAgentBriefingQuery = () => {
         : undefined,
     [briefing],
   );
-  // agentBriefing is @defer'd — it stays absent until the second multipart
-  // chunk arrives, so the dashboard renders without waiting on it.
-  return { data: mapped, isLoading: !briefing };
+  return { data: mapped, isLoading: loading };
 };
 
 export const useGetDashboardPostureQuery = () => {
@@ -277,15 +264,11 @@ interface ActivityFeedParams {
 
 interface ActivityFeedOptions {
   pollingInterval?: number;
-  // Accept (and ignore) the other RTK Query options the call site passes
-  // (skipPollingIfUnfocused, refetchOnMountOrArgChange, ...).
   [key: string]: unknown;
 }
 
 export const useGetActivityFeedQuery = (
   params?: ActivityFeedParams | void,
-  // RTK polling options are accepted for signature parity. Polling maps to
-  // Apollo's pollInterval; the rest are no-ops for the PoC.
   options?: ActivityFeedOptions,
 ) => {
   const { page, size } = params ?? {};
@@ -300,8 +283,6 @@ export const useGetActivityFeedQuery = (
       af
         ? {
             items: af.items.map((i) => ({
-              // The GraphQL ActivityFeedItem has no id; synthesise a stable
-              // one so the infinite-scroll dedupe keeps working unchanged.
               id: `${i.timestamp}__${i.message}`,
               actor_type: i.actorType as unknown as "user" | "system",
               message: i.message,

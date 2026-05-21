@@ -8,12 +8,8 @@ import { setContext } from "@apollo/client/link/context";
 
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
 
-// The Strawberry endpoint is mounted at the app root (/graphql), NOT under
-// the /api/v1 prefix that NEXT_PUBLIC_FIDESCTL_API points at. Post to the
-// relative /graphql path: in dev the Next rewrite proxies it to the backend,
-// and in mock mode MSW intercepts it.
 const httpLink = createHttpLink({
-  uri: "/graphql",
+  uri: "/api/v1/plus/graphql",
 });
 
 /**
