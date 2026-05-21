@@ -265,7 +265,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # which the @retry decorator handles identically to a disabled
             # connection — the task is marked skipped and downstream tasks
             # proceed with empty data.
-            self.connector = None
+            self.connector = None  # type: ignore[assignment]
 
         self.key: CollectionAddress = self.execution_node.address
 
