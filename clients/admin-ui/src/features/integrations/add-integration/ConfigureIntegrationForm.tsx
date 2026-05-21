@@ -8,7 +8,14 @@ import {
   Text,
   useMessage,
 } from "fidesui";
-import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
+import {
+  isEmpty,
+  isEqual,
+  isUndefined,
+  mapValues,
+  omitBy,
+  upperFirst,
+} from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -34,6 +41,7 @@ import { useIntegrationPropertySelect } from "~/features/properties/useIntegrati
 import { useGetSystemsQuery } from "~/features/system";
 import {
   AccessLevel,
+  ActionType,
   BigQueryDocsSchema,
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -55,6 +63,7 @@ type FormValues = {
   secrets?: ConnectionSecrets;
   dataset?: string[];
   property_ids?: string[];
+  enabled_actions?: string[];
 };
 
 const PROPERTY_UPDATE_FAILED_MSG =
@@ -187,10 +196,17 @@ export const ConfigureIntegrationForm = ({
       }),
       dataset: initialDatasets,
       property_ids: initialPropertyIds,
+      ...(hasPlus && {
+        enabled_actions: (
+          connection?.enabled_actions ?? connectionOption.supported_actions
+        ).map((a) => a.toString()),
+      }),
     }),
     [
       connection,
+      connectionOption.supported_actions,
       initialSystemFidesKey,
+      hasPlus,
       hasSecrets,
       secrets,
       initialDatasets,
@@ -232,6 +248,10 @@ export const ConfigureIntegrationForm = ({
       ? excludeUnchangedSecrets(processedValues.secrets!)
       : {};
 
+    const enabledActionsPayload = values.enabled_actions
+      ? { enabled_actions: values.enabled_actions as ActionType[] }
+      : {};
+
     const connectionPayload = isEditing
       ? {
           ...connection,
@@ -239,16 +259,9 @@ export const ConfigureIntegrationForm = ({
           name: values.name,
           description: values.description,
           secrets: undefined,
+          ...enabledActionsPayload,
         }
-      : // enabled_actions is intentionally omitted here. Both
-        // POST /connection/instantiate/{type} and PATCH /connection drop unknown
-        // fields, so connections created from this form land with
-        // enabled_actions=NULL. The DSR runner treats NULL as "all actions
-        // enabled" for access/erasure but disables consent. SaaS consent
-        // integrations created through this form need request types set via the
-        // System → Integrations form until we expose the field on the Privacy
-        // requests tab (deferred — needs a base-schema addition).
-        {
+      : {
           name: values.name,
           key: formatKey(values.name),
           connection_type: (isSaas
@@ -262,6 +275,7 @@ export const ConfigureIntegrationForm = ({
           ...(isSaas
             ? { saas_connector_type: connectionOption.identifier }
             : {}),
+          ...enabledActionsPayload,
         };
 
     // Two-step approach for both create and edit, intentionally avoiding the
@@ -531,6 +545,30 @@ export const ConfigureIntegrationForm = ({
               </Form.Item>
             )}
           {hasSecrets && secrets && generateFields(secrets)}
+          {hasPlus && connectionOption.supported_actions.length > 0 && (
+            <Form.Item
+              name="enabled_actions"
+              label="Request types"
+              tooltip="The request types that are supported for this integration"
+              rules={[
+                {
+                  required: true,
+                  message: "At least one request type is required",
+                },
+              ]}
+              className="w-full"
+            >
+              <Select
+                aria-label="Request types"
+                data-testid="select-enabled-actions"
+                mode="multiple"
+                options={connectionOption.supported_actions.map((action) => ({
+                  label: upperFirst(action),
+                  value: action,
+                }))}
+              />
+            </Form.Item>
+          )}
           {isEditing && hasPlus && hasDatasets && (
             <Form.Item
               name="property_ids"

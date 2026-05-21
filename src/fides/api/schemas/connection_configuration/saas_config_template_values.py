@@ -1,10 +1,11 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict
 
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
+from fides.api.schemas.policy import ActionType
 
 
 class SaasConnectionTemplateValues(BaseModel):
@@ -15,6 +16,7 @@ class SaasConnectionTemplateValues(BaseModel):
     description: Optional[str] = None  # For ConnectionConfig
     secrets: connection_secrets_schemas  # For ConnectionConfig
     instance_key: FidesKey  # For DatasetConfig.fides_key
+    enabled_actions: Optional[List[ActionType]] = None
     model_config = ConfigDict(extra="ignore")
 
     def generate_config_data_from_template(
@@ -30,4 +32,6 @@ class SaasConnectionTemplateValues(BaseModel):
         }
         if self.name:
             data["name"] = self.name
+        if self.enabled_actions is not None:
+            data["enabled_actions"] = self.enabled_actions
         return data

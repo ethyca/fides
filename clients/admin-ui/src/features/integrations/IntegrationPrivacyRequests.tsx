@@ -5,6 +5,7 @@ import {
   Input,
   List,
   Modal,
+  Select,
   Spin,
   Switch,
   Table,
@@ -13,8 +14,10 @@ import {
   useMessage,
   useModal,
 } from "fidesui";
+import { upperFirst } from "lodash";
 import { useCallback, useMemo, useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
@@ -26,6 +29,7 @@ import {
   usePutDatasetConfigsMutation,
 } from "~/features/datastore-connections";
 import {
+  ActionType,
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   Dataset,
@@ -44,11 +48,46 @@ const IntegrationPrivacyRequests = ({
 }) => {
   const messageApi = useMessage();
   const modalApi = useModal();
+  const { plus: hasPlus } = useFeatures();
 
   // -- Status (enable / disable for privacy requests) -----------------------
 
   const [patchConnection, { isLoading: isPatchingStatus }] =
     usePatchDatastoreConnectionsMutation();
+
+  // -- Request types (enabled_actions, Plus only) ---------------------------
+
+  const [patchRequestTypes, { isLoading: isPatchingRequestTypes }] =
+    usePatchDatastoreConnectionsMutation();
+
+  const supportedActions = useMemo(
+    () => integrationOption?.supported_actions ?? [],
+    [integrationOption],
+  );
+
+  const enabledActions = useMemo(
+    () =>
+      (connection.enabled_actions ?? supportedActions).map((a) => a.toString()),
+    [connection.enabled_actions, supportedActions],
+  );
+
+  const handleRequestTypesChange = async (nextActions: string[]) => {
+    if (nextActions.length === 0) {
+      return;
+    }
+    const result = await patchRequestTypes({
+      key: connection.key,
+      name: connection.name ?? connection.key,
+      access: connection.access,
+      connection_type: connection.connection_type,
+      enabled_actions: nextActions as ActionType[],
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+    messageApi.success("Request types updated");
+  };
 
   const enabled = !connection.disabled;
 
@@ -308,6 +347,27 @@ const IntegrationPrivacyRequests = ({
           integration.
         </Paragraph>
       </Flex>
+
+      {hasPlus && supportedActions.length > 0 && (
+        <Flex vertical gap="small">
+          <Typography.Title level={5}>Request types</Typography.Title>
+          <Paragraph type="secondary" className="m-0">
+            Choose which privacy request types this integration supports.
+          </Paragraph>
+          <Select
+            aria-label="Request types"
+            data-testid="select-enabled-actions"
+            mode="multiple"
+            loading={isPatchingRequestTypes}
+            value={enabledActions}
+            onChange={handleRequestTypesChange}
+            options={supportedActions.map((action) => ({
+              label: upperFirst(action),
+              value: action,
+            }))}
+          />
+        </Flex>
+      )}
 
       {supportsDatasets && (
         <Flex vertical gap="small">

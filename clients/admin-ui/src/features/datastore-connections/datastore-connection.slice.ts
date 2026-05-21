@@ -342,10 +342,26 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       invalidatesTags: () => ["Datastore Connection", "Datasets"],
     }),
     patchDatastoreConnections: build.mutation({
-      query: ({ key, name, disabled, connection_type, access }) => ({
+      query: ({
+        key,
+        name,
+        disabled,
+        connection_type,
+        access,
+        enabled_actions,
+      }) => ({
         url: CONNECTION_ROUTE,
         method: "PATCH",
-        body: [{ key, name, disabled, connection_type, access }],
+        body: [
+          {
+            key,
+            name,
+            disabled,
+            connection_type,
+            access,
+            ...(enabled_actions !== undefined && { enabled_actions }),
+          },
+        ],
       }),
       invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
     }),

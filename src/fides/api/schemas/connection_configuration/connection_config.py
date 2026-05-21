@@ -47,6 +47,7 @@ class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
 
     secrets: Optional[connection_secrets_schemas] = None
     saas_connector_type: Optional[str] = None
+    enabled_actions: Optional[List[ActionType]] = None
     model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
