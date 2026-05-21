@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -52,6 +52,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         request_task_id: str,
         query_config: SaaSQueryConfig,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute async mask data with internal phase routing."""
         request_task = self._get_request_task(request_task_id)
@@ -59,7 +60,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
 
         if async_phase == AsyncPhase.initial_async:
             return self._initial_request_erasure(
-                client, request_task, query_config, rows
+                client, request_task, query_config, rows, input_data
             )
         if async_phase == AsyncPhase.callback_completion:
             return self._callback_completion_erasure(request_task)
@@ -141,6 +142,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         request_task: RequestTask,
         query_config: SaaSQueryConfig,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Handle initial setup for erasure callback requests."""
         logger.info(f"Initial callback request for erasure task {request_task.id}")
@@ -168,7 +170,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
                 for row in rows:
                     try:
                         prepared_request = query_config.generate_update_stmt(
-                            row, policy, privacy_request
+                            row, policy, privacy_request, input_data
                         )
                         client.send(prepared_request, masking_request.ignore_errors)
                         rows_updated += 1
