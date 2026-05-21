@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.85.2b1.dev35+g160f3e4d8"
+    "version": "2.85.2b1.dev37+g86b6e8083"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13876,6 +13876,60 @@
         ]
       }
     },
+    "/api/v1/privacy-request/bulk/import": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Import Historical Privacy Requests",
+        "description": "Bulk-import historical, already-completed privacy requests from another Fides\ndeployment for migration purposes. Each record must have a terminal status\n(complete, denied, canceled, error).\n\nBypasses all processing pipeline side effects: no Celery scheduling, no\nnotifications, no webhooks, no identity verification, no duplicate detection,\nno Redis caching of identity/encryption. Records are written directly to the\ndatabase with `source=\"Import\"` and a single AuditLog entry per record.",
+        "operationId": "import_historical_privacy_requests_api_v1_privacy_request_bulk_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/HistoricalPrivacyRequestImport"
+                },
+                "type": "array",
+                "maxItems": 50,
+                "title": "Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPostPrivacyRequests"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:import"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/search": {
       "post": {
         "tags": [
@@ -21394,6 +21448,7 @@
           "pre_approval_webhook_triggered",
           "pre_approval_eligible",
           "pre_approval_not_eligible",
+          "imported",
           "access_package_approved",
           "access_package_redacted"
         ],
@@ -28797,6 +28852,103 @@
         ],
         "title": "Header"
       },
+      "HistoricalPrivacyRequestImport": {
+        "properties": {
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "policy_key": {
+            "type": "string",
+            "title": "Policy Key"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PrivacyRequestStatus"
+          },
+          "requested_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Requested At"
+          },
+          "started_processing_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started Processing At"
+          },
+          "finished_processing_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Finished Processing At"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "denial_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Denial Reason"
+          },
+          "source": {
+            "type": "string",
+            "const": "Import",
+            "title": "Source",
+            "default": "Import"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identity",
+          "policy_key",
+          "status",
+          "requested_at",
+          "finished_processing_at"
+        ],
+        "title": "HistoricalPrivacyRequestImport",
+        "description": "Schema for importing a single historical, already-completed privacy request.\n\nUsed by the admin import endpoint to backfill DSRs from another Fides deployment\nwithout triggering any processing pipeline. Status must be terminal.\n\n`reviewed_by` accepts a free-string identifier (email or username) from the\nsource deployment. The service performs a best-effort lookup against\n`FidesUser` by `email_address` and then `username`; if a match is found, the\nunderlying `privacyrequest.reviewed_by` foreign key is populated so the CSV\ndownload and the response `reviewer` field surface the user. If no match is\nfound the foreign key is left NULL and reviewer attribution is dropped for\nnon-denied imports \u2014 pre-create the relevant `FidesUser` records in the\ndestination deployment to preserve attribution. Denied imports still record\nthe supplied `denial_reason` regardless of whether the reviewer resolves.\n\n`denial_reason` is required when `status == denied` so the CSV \"Denial\nReason\" column (which reads from the `denied` `AuditLog.message`) populates\nfor imported denied requests, satisfying GDPR Art. 5(2) accountability."
+      },
       "Identity": {
         "properties": {
           "phone_number": {
@@ -33765,10 +33917,11 @@
           "Consent Webhook",
           "Fides.js",
           "Dataset Test",
-          "Janus SDK"
+          "Janus SDK",
+          "Import"
         ],
         "title": "PrivacyRequestSource",
-        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js\n- Dataset Test: Standalone dataset test\n- Janus SDK: Request created from the Mobile SDK"
+        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js\n- Dataset Test: Standalone dataset test\n- Janus SDK: Request created from the Mobile SDK\n- Import: Historical privacy request imported from another Fides deployment (no processing)"
       },
       "PrivacyRequestStatus": {
         "type": "string",
@@ -37390,6 +37543,7 @@
           "privacy-request-access-results:read",
           "privacy-request:delete",
           "privacy-request-email-integrations:send",
+          "privacy-request:import",
           "privacy-request:manual-steps:respond",
           "privacy-request:manual-steps:review",
           "privacy-request-notifications:create_or_update",
