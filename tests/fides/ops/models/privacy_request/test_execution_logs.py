@@ -152,9 +152,7 @@ def test_execution_log_info_status(db, execution_log_data):
     execution_log_data["status"] = "info"
     execution_log = ExecutionLog.create(db, data=execution_log_data)
 
-    retrieved = (
-        db.query(ExecutionLog).filter_by(privacy_request_id="test_id").first()
-    )
+    retrieved = db.query(ExecutionLog).filter_by(privacy_request_id="test_id").first()
     assert retrieved is not None
     assert retrieved.status == ExecutionLogStatus.info
     execution_log.delete(db)
