@@ -35,7 +35,11 @@ import { buildOrderedFields } from "./buildOrderedFields";
 import { uploadAllFiles } from "./fileUploadUtils";
 
 export type { OrderedField } from "./buildOrderedFields";
-export { uploadFile, uploadFieldFiles, uploadAllFiles } from "./fileUploadUtils";
+export {
+  uploadAllFiles,
+  uploadFieldFiles,
+  uploadFile,
+} from "./fileUploadUtils";
 
 /**
  *
@@ -179,7 +183,9 @@ const usePrivacyRequestForm = ({
           handleError({
             title: "An error occurred while uploading your file",
             error:
-              uploadError instanceof Error ? uploadError.message : "File upload failed",
+              uploadError instanceof Error
+                ? uploadError.message
+                : "File upload failed",
           });
           return;
         }

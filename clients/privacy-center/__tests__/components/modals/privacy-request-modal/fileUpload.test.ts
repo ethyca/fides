@@ -1,9 +1,9 @@
 import type { UploadFile } from "fidesui";
 
 import {
-  uploadFile,
-  uploadFieldFiles,
   uploadAllFiles,
+  uploadFieldFiles,
+  uploadFile,
 } from "~/components/modals/privacy-request-modal/fileUploadUtils";
 
 const API_URL = "http://localhost:8080/api/v1";
@@ -17,10 +17,7 @@ const defaultContext = {
 const mockFile = new File(["hello"], "hello.txt", { type: "text/plain" });
 
 /** Helper to build a minimal UploadFile-like object. */
-const makeUploadFile = (
-  uid: string,
-  originFileObj?: File,
-): UploadFile =>
+const makeUploadFile = (uid: string, originFileObj?: File): UploadFile =>
   ({
     uid,
     name: originFileObj?.name ?? uid,
@@ -61,9 +58,9 @@ describe("uploadFile", () => {
       json: async () => ({ detail: "Too large" }),
     });
 
-    await expect(
-      uploadFile(mockFile, API_URL, defaultContext),
-    ).rejects.toThrow("Too large");
+    await expect(uploadFile(mockFile, API_URL, defaultContext)).rejects.toThrow(
+      "Too large",
+    );
   });
 
   it("throws with a generic message when the error body is unparseable", async () => {
@@ -75,9 +72,9 @@ describe("uploadFile", () => {
       },
     });
 
-    await expect(
-      uploadFile(mockFile, API_URL, defaultContext),
-    ).rejects.toThrow("File upload failed (500)");
+    await expect(uploadFile(mockFile, API_URL, defaultContext)).rejects.toThrow(
+      "File upload failed (500)",
+    );
   });
 
   it("does not append property_id to FormData when propertyId is empty", async () => {
@@ -91,7 +88,7 @@ describe("uploadFile", () => {
       propertyId: "",
     });
 
-    const body: FormData = (global.fetch as jest.Mock).mock.calls[0][1].body;
+    const { body } = (global.fetch as jest.Mock).mock.calls[0][1];
     expect(body.get("property_id")).toBeNull();
     expect(body.get("policy_key")).toBe("default_access_policy");
   });
