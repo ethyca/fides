@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -35,6 +35,7 @@ class AsyncDSRStrategy(Strategy):
         request_task_id: str,
         query_config: SaaSQueryConfig,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """
         Execute async mask data.
