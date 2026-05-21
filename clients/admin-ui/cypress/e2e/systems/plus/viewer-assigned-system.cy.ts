@@ -1,11 +1,3 @@
-/**
- * Regression test for ENG-3137: Viewer user can't edit a system assigned to them
- *
- * A viewer user with an assigned system should be able to edit that system.
- * The RBAC commit (8e9788e) introduced a read-only check that only looks at
- * the global SYSTEM_UPDATE scope, ignoring SYSTEM_MANAGER_UPDATE which
- * allows per-system editing for assigned systems.
- */
 import {
   stubDatasetCrud,
   stubPlus,
@@ -16,9 +8,11 @@ import {
 } from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
-import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
+import { RoleRegistryEnum } from "~/types/api";
 
-describe("ENG-3137: Viewer with assigned system should be able to edit", () => {
+const ASSIGNED_SYSTEM_KEY = "demo_analytics_system";
+
+describe("Viewer with assigned system on the System Information form", () => {
   beforeEach(() => {
     cy.login();
     stubSystemCrud();
@@ -44,50 +38,43 @@ describe("ENG-3137: Viewer with assigned system should be able to edit", () => {
     stubSystemVendors();
   });
 
-  it("viewer with system_manager:update can edit assigned system", () => {
-    // Simulate a viewer who also has system_manager:update for their assigned system
+  it("viewer assigned to this system can edit it", () => {
+    cy.assumeRole(RoleRegistryEnum.VIEWER);
+
     cy.fixture("login.json").then((body) => {
       const { id: userId } = body.user_data;
-      cy.intercept(`/api/v1/user/${userId}/permission`, {
-        body: {
-          id: userId,
-          user_id: userId,
-          roles: [RoleRegistryEnum.VIEWER],
-          total_scopes: [
-            // Standard viewer scopes
-            ScopeRegistryEnum.SYSTEM_READ,
-            ScopeRegistryEnum.SYSTEM_MANAGER_READ,
-            ScopeRegistryEnum.SYSTEM_MANAGER_UPDATE,
-            // Other viewer scopes
-            ScopeRegistryEnum.USER_READ,
-            ScopeRegistryEnum.ORGANIZATION_READ,
-          ],
-        },
-      }).as("getUserPermission");
+      cy.fixture("systems/systems.json").then((systems) => {
+        const assignedSystem = systems.find(
+          (s: { fides_key: string }) => s.fides_key === ASSIGNED_SYSTEM_KEY,
+        );
+        cy.intercept(`/api/v1/user/${userId}/system-manager`, {
+          body: [assignedSystem],
+        }).as("getManagedSystems");
+      });
     });
 
-    cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
-    cy.wait("@getUserPermission");
+    cy.visit(`${SYSTEM_ROUTE}/configure/${ASSIGNED_SYSTEM_KEY}`);
+    cy.wait("@getManagedSystems");
 
-    // The form should NOT be read-only for a viewer with system_manager:update
     cy.getByTestId("input-name").should("exist");
-
-    // Regression guard (ENG-3137): read-only alert should NOT appear
     cy.contains("Read-only access").should("not.exist");
-
-    // Regression guard (ENG-3137): form fields should be editable, not disabled
     cy.get("fieldset[disabled]").should("not.exist");
   });
 
-  it("viewer WITHOUT system_manager:update sees read-only form", () => {
-    // Standard viewer without system_manager:update
+  it("viewer NOT assigned to this system sees read-only form", () => {
     cy.assumeRole(RoleRegistryEnum.VIEWER);
 
-    cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+    cy.fixture("login.json").then((body) => {
+      const { id: userId } = body.user_data;
+      cy.intercept(`/api/v1/user/${userId}/system-manager`, {
+        body: [],
+      }).as("getManagedSystems");
+    });
+
+    cy.visit(`${SYSTEM_ROUTE}/configure/${ASSIGNED_SYSTEM_KEY}`);
+    cy.wait("@getManagedSystems");
 
     cy.getByTestId("input-name").should("exist");
-
-    // This viewer SHOULD see read-only since they have no update permissions
     cy.contains("Read-only access").should("exist");
     cy.get("fieldset[disabled]").should("exist");
   });
