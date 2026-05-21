@@ -9,6 +9,26 @@ type RequestCustomFieldsProps = {
   subjectRequest: PrivacyRequestEntity;
 };
 
+const formatFieldValue = (value: unknown): string => {
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  return formatIsoDate(value);
+};
+
+const hasValue = (value: unknown): boolean => {
+  if (typeof value === "boolean") {
+    return true;
+  }
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+  return value !== null && value !== undefined && value !== "" && value !== 0;
+};
+
 const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
   const { custom_privacy_request_fields: customPrivacyRequestFields } =
     subjectRequest;
@@ -18,14 +38,10 @@ const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
       {customPrivacyRequestFields &&
         Object.keys(customPrivacyRequestFields).length > 0 &&
         Object.entries(customPrivacyRequestFields)
-          .filter(([, item]) => item.value)
+          .filter(([, item]) => hasValue(item.value))
           .map(([key, item]) => (
             <RequestDetailsRow label={item.label} key={key}>
-              <Typography.Text>
-                {Array.isArray(item.value)
-                  ? item.value.join(", ")
-                  : formatIsoDate(item.value)}
-              </Typography.Text>
+              <Typography.Text>{formatFieldValue(item.value)}</Typography.Text>
             </RequestDetailsRow>
           ))}
     </div>
