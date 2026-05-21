@@ -42,6 +42,10 @@ export type LimitedPrivacyNoticeResponseSchema = {
    * Disabled
    */
   disabled: boolean;
+  /**
+   * Att Exempt
+   */
+  att_exempt: boolean;
   framework?: PrivacyNoticeFramework | null;
   /**
    * Children

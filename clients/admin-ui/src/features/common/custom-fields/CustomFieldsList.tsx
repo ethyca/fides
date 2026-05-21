@@ -1,5 +1,4 @@
-import { ChakraFlex as Flex, Spin } from "fidesui";
-import { Field, FieldInputProps } from "formik";
+import { Form, Input, Select, Spin } from "fidesui";
 
 import {
   LegacyAllowedTypes,
@@ -7,8 +6,6 @@ import {
 } from "~/features/common/custom-fields/types";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 
-import { ControlledSelect } from "../form/ControlledSelect";
-import { CustomTextInput } from "../form/inputs";
 import { useCustomFields } from "./hooks";
 
 type CustomFieldsListProps = {
@@ -37,76 +34,65 @@ export const CustomFieldsList = ({
 
   return (
     <SystemFormInputGroup heading="Custom fields">
-      <Flex flexDir="column" data-testid="custom-fields-list">
-        <Flex flexDir="column" gap="24px">
-          {isLoading ? (
-            <Spin />
-          ) : (
-            sortedCustomFieldDefinitionIds.length > 0 && (
-              <Flex flexDirection="column" gap="12px" paddingBottom="24px">
-                {sortedCustomFieldDefinitionIds.map((definitionId) => {
-                  const customFieldDefinition =
-                    idToCustomFieldDefinition.get(definitionId);
-                  if (!customFieldDefinition) {
-                    // This should never happen.
-                    return null;
-                  }
+      {isLoading ? (
+        <Spin />
+      ) : (
+        sortedCustomFieldDefinitionIds.map((definitionId) => {
+          const definition = idToCustomFieldDefinition.get(definitionId);
+          if (!definition) {
+            return null;
+          }
+          const fieldName = ["customFieldValues", definition.id];
+          const isFreeText =
+            !definition.allow_list_id &&
+            definition.field_type === LegacyAllowedTypes.STRING;
 
-                  const name = `customFieldValues.${customFieldDefinition.id}`;
-                  if (
-                    !customFieldDefinition.allow_list_id &&
-                    customFieldDefinition.field_type ===
-                      LegacyAllowedTypes.STRING
-                  ) {
-                    return (
-                      <Field key={definitionId} name={name}>
-                        {({ field }: { field: FieldInputProps<string> }) => (
-                          <CustomTextInput
-                            {...field}
-                            label={customFieldDefinition.name}
-                            tooltip={customFieldDefinition.description}
-                            variant="stacked"
-                          />
-                        )}
-                      </Field>
-                    );
-                  }
+          const testNameSegment = `customFieldValues.${definition.id}`;
 
-                  const allowList = idToAllowListWithOptions.get(
-                    customFieldDefinition.allow_list_id!,
-                  );
-                  if (!allowList) {
-                    // This would only happen if the field definitions load before
-                    // the allow list data.
-                    return null;
-                  }
+          if (isFreeText) {
+            return (
+              <Form.Item
+                key={definitionId}
+                name={fieldName}
+                label={definition.name}
+                tooltip={definition.description}
+              >
+                <Input
+                  aria-label={definition.name}
+                  data-testid={`input-${testNameSegment}`}
+                />
+              </Form.Item>
+            );
+          }
 
-                  const { options } = allowList;
+          const allowList = idToAllowListWithOptions.get(
+            definition.allow_list_id!,
+          );
+          if (!allowList) {
+            return null;
+          }
 
-                  return (
-                    <ControlledSelect
-                      key={definitionId}
-                      name={name}
-                      allowClear
-                      mode={
-                        customFieldDefinition.field_type !==
-                        LegacyAllowedTypes.STRING
-                          ? "multiple"
-                          : undefined
-                      }
-                      label={customFieldDefinition.name}
-                      options={options}
-                      tooltip={customFieldDefinition.description}
-                      layout="stacked"
-                      className="w-full"
-                    />
-                  );
-                })}
-              </Flex>
-            )
-          )}
-        </Flex>
-      </Flex>
+          const isMulti = definition.field_type !== LegacyAllowedTypes.STRING;
+
+          return (
+            <Form.Item
+              key={definitionId}
+              name={fieldName}
+              label={definition.name}
+              tooltip={definition.description}
+            >
+              <Select
+                aria-label={definition.name}
+                allowClear
+                mode={isMulti ? "multiple" : undefined}
+                options={allowList.options}
+                className="w-full"
+                data-testid={`controlled-select-${testNameSegment}`}
+              />
+            </Form.Item>
+          );
+        })
+      )}
     </SystemFormInputGroup>
   );
 };

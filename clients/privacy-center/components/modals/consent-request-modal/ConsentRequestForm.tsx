@@ -1,13 +1,11 @@
-import { Button, Flex, Form, Input, Text } from "fidesui";
+import { Alert, Button, Flex, Form, Input, Text } from "fidesui";
 import React, { useEffect } from "react";
 
-import CustomFieldRenderer, {
-  CustomFieldRendererProps,
-} from "~/components/common/CustomFieldRenderer";
+import { buildCustomFieldProps } from "~/components/common/buildCustomFieldProps";
+import CustomFieldRenderer from "~/components/common/CustomFieldRenderer";
 import { ModalViews } from "~/components/modals/types";
 import { PhoneInput } from "~/components/phone-input";
 import { useConfig } from "~/features/common/config.slice";
-import { CustomConfigField } from "~/types/config";
 
 import useConsentRequestForm from "./useConsentRequestForm";
 
@@ -40,6 +38,8 @@ const ConsentRequestForm = ({
     resetForm,
     identityInputs: { email: emailInput, phone: phoneInput },
     customPrivacyRequestFields,
+    applicableFields,
+    validationError,
   } = useConsentRequestForm({
     onClose,
     setCurrentView,
@@ -67,12 +67,19 @@ const ConsentRequestForm = ({
         layout="vertical"
         data-testid="consent-request-form"
       >
+        {validationError && (
+          <Alert
+            type="error"
+            title="Something went wrong. Please try again later."
+            showIcon
+          />
+        )}
         {!!emailInput && (
           <Form.Item
             validateStatus={
               touched.email && !!errors.email ? "error" : undefined
             }
-            help={touched.email && errors.email}
+            help={touched.email && (errors.email as string)}
             required={emailInput === "required"}
             hasFeedback={touched.email && !!errors.email}
             label="Email"
@@ -94,7 +101,7 @@ const ConsentRequestForm = ({
             validateStatus={
               touched.phone && !!errors.phone ? "error" : undefined
             }
-            help={touched.phone && errors.phone}
+            help={touched.phone && (errors.phone as string)}
             required={phoneInput === "required"}
             hasFeedback={touched.phone && !!errors.phone}
             label="Phone"
@@ -111,47 +118,16 @@ const ConsentRequestForm = ({
             />
           </Form.Item>
         )}
-        {Object.entries(customPrivacyRequestFields).map(([key, item]) => {
-          const customFieldProps = (
-            value: string | string[],
-            fieldConfig: CustomConfigField,
-          ): CustomFieldRendererProps => {
-            const sharedProps = {
-              fieldKey: key,
-              onBlur: () => handleBlur({ target: { name: key } }),
-              error: touched[key] && errors[key] ? errors[key] : undefined,
-            };
-
-            switch (fieldConfig.field_type) {
-              case "multiselect":
-                return {
-                  ...fieldConfig,
-                  ...sharedProps,
-                  value: typeof value === "string" ? [value] : value,
-                  onChange: (v: Array<string>) => {
-                    setFieldValue(key, v);
-                  },
-                };
-              default:
-                return {
-                  ...fieldConfig,
-                  ...sharedProps,
-                  value: typeof value === "string" ? value : value?.[0],
-                  onChange: (v: string) => {
-                    setFieldValue(key, v);
-                  },
-                };
-            }
-          };
-
-          return (
+        {Object.entries(customPrivacyRequestFields)
+          .filter(([key, field]) => !field?.hidden && applicableFields.has(key))
+          .map(([key, item]) => (
             <Form.Item
               key={key}
               id={key}
               validateStatus={
                 touched[key] && Boolean(errors[key]) ? "error" : undefined
               }
-              help={touched[key] && errors[key]}
+              help={touched[key] && (errors[key] as string)}
               required={item.required !== false}
               hasFeedback={
                 item.field_type === "text" && touched[key] && !!errors[key]
@@ -159,10 +135,16 @@ const ConsentRequestForm = ({
               label={item.label}
               htmlFor={key}
             >
-              <CustomFieldRenderer {...customFieldProps(values[key], item)} />
+              <CustomFieldRenderer
+                {...buildCustomFieldProps(key, values[key], item, {
+                  setFieldValue,
+                  handleBlur,
+                  touched,
+                  errors,
+                })}
+              />
             </Form.Item>
-          );
-        })}
+          ))}
         <Flex justify="stretch" gap="medium">
           <Button type="default" variant="outlined" onClick={onClose} block>
             {config.consent?.button.cancelButtonText || "Cancel"}

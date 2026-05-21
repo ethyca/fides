@@ -109,6 +109,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         request_task_id: str,
         query_config: "SaaSQueryConfig",
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """
         Execute async mask data with internal phase routing.
@@ -118,7 +119,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         if async_phase == AsyncPhase.initial_async:
             return self._initial_request_erasure(
-                client, request_task, query_config, rows
+                client, request_task, query_config, rows, input_data
             )
 
         if async_phase == AsyncPhase.polling_continuation:
@@ -192,6 +193,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         request_task: RequestTask,
         query_config: "SaaSQueryConfig",
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Handle initial setup for erasure polling requests."""
         logger.info(f"Initial polling request for erasure task {request_task.id}")
@@ -220,6 +222,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 policy,
                 privacy_request,
                 client,
+                input_data,
             )
 
         # After processing all requests, raise AwaitingAsyncProcessing (like access flow)
@@ -412,6 +415,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         policy: Policy,
         privacy_request: "PrivacyRequest",
         client: "AuthenticatedClient",
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> None:
         """Handles the setup for asynchronous initial erasure requests."""
         logger.info(
@@ -423,12 +427,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             try:
                 # Generate parameter values first (like access requests)
                 param_value_map = query_config.generate_update_param_values(
-                    row, policy, privacy_request, request
+                    row, policy, privacy_request, request, input_data
                 )
 
                 # Generate the update request using the param_values
                 prepared_request = query_config.generate_update_stmt(
-                    row, policy, privacy_request
+                    row, policy, privacy_request, input_data
                 )
                 response = send_and_handle_errors(
                     client,

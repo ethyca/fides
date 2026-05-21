@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed missing ON DELETE CASCADE on tcf_version_hash_history foreign key
+pr: 8241
+labels: ["db-migration"]

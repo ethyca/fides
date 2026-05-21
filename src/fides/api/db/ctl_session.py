@@ -34,6 +34,9 @@ async_engine = create_async_engine(
     pool_size=CONFIG.database.api_async_engine_pool_size,
     max_overflow=CONFIG.database.api_async_engine_max_overflow,
     pool_pre_ping=CONFIG.database.api_async_engine_pool_pre_ping,
+    pool_recycle=CONFIG.database.pool_recycle
+    if CONFIG.database.pool_recycle is not None
+    else -1,  # -1 is SQLAlchemy's default (no recycling)
 )
 async_session_factory = sessionmaker(
     async_engine, class_=AsyncSession, expire_on_commit=False
@@ -60,6 +63,9 @@ if CONFIG.database.async_readonly_database_uri:
         pool_size=CONFIG.database.async_readonly_database_pool_size,
         max_overflow=CONFIG.database.async_readonly_database_max_overflow,
         pool_pre_ping=CONFIG.database.async_readonly_database_pre_ping,
+        pool_recycle=CONFIG.database.pool_recycle
+        if CONFIG.database.pool_recycle is not None
+        else -1,  # -1 is SQLAlchemy's default (no recycling)
         # Don't rollback before returning a connection to the pool - this improves performance dramatically;
         # can be turned off via config but the default is to not reset on return
         pool_reset_on_return=(

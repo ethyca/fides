@@ -1,5 +1,6 @@
 import { Button, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
@@ -7,22 +8,40 @@ import PageHeader from "~/features/common/PageHeader";
 import {
   AssessmentGroup,
   AssessmentSettingsModal,
+  AssessmentStatus,
   AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
+const VALID_STATUSES = new Set<string>(Object.values(AssessmentStatus));
+
+function readQueryParam(
+  value: string | string[] | undefined,
+): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 const PrivacyAssessmentsPage: NextPage = () => {
+  const router = useRouter();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
+
+  const statusParam = readQueryParam(router.query.status);
+  const statusFilter =
+    statusParam && VALID_STATUSES.has(statusParam)
+      ? (statusParam as AssessmentStatus)
+      : undefined;
 
   const {
     data: assessmentsData,
     isLoading,
     isError,
     refetch: refetchAssessments,
-  } = useGetPrivacyAssessmentsQuery();
+  } = useGetPrivacyAssessmentsQuery(
+    statusFilter ? { status: statusFilter } : undefined,
+  );
 
   const groups = assessmentsData?.items ?? [];
   const hasAssessments = groups.length > 0;

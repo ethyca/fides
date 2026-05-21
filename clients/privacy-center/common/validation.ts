@@ -147,13 +147,14 @@ export const validateConfig = (
   }
 
   const invalidFieldMessages = (config.actions ?? []).flatMap((action) => {
+    const messages: string[] = [];
+    const fields = Object.entries(action.custom_privacy_request_fields || {});
+
     /*
       Validate that hidden fields must have a default_value or a query_param_key
       defined, otherwise the field would never get a value assigned.
     */
-    const invalidFields = Object.entries(
-      action.custom_privacy_request_fields || {},
-    )
+    const hiddenWithoutValue = fields
       .filter(
         ([, field]) =>
           field.hidden &&
@@ -162,21 +163,47 @@ export const validateConfig = (
       )
       .map(([key]) => `'${key}'`);
 
-    return invalidFields.length > 0
-      ? [
-          `${invalidFields.join(", ")} in the action with policy_key '${
-            action.policy_key
-          }'`,
-        ]
-      : [];
+    if (hiddenWithoutValue.length > 0) {
+      messages.push(
+        `A default_value or query_param_key is required for hidden field(s) ${hiddenWithoutValue.join(", ")} in the action with policy_key '${action.policy_key}'`,
+      );
+    }
+
+    /*
+      Validate field_type constraints:
+      - checkbox_group and multiselect require options
+      - checkbox and textarea must not have options
+    */
+    fields.forEach(([key, field]) => {
+      const ft = field.field_type;
+      if (
+        (ft === "checkbox_group" || ft === "multiselect") &&
+        (!("options" in field) ||
+          !Array.isArray(field.options) ||
+          field.options.length === 0)
+      ) {
+        messages.push(
+          `'${key}' in the action with policy_key '${action.policy_key}' is a ${ft} field and requires options`,
+        );
+      }
+      if (
+        (ft === "checkbox" || ft === "textarea") &&
+        "options" in field &&
+        field.options
+      ) {
+        messages.push(
+          `'${key}' in the action with policy_key '${action.policy_key}' is a ${ft} field and must not have options`,
+        );
+      }
+    });
+
+    return messages;
   });
 
   if (invalidFieldMessages.length > 0) {
     return {
       isValid: false,
-      message: `A default_value or query_param_key is required for hidden field(s) ${invalidFieldMessages.join(
-        ", ",
-      )}`,
+      message: invalidFieldMessages.join("; "),
     };
   }
 

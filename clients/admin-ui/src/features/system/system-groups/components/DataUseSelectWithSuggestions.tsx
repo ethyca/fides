@@ -1,39 +1,42 @@
 import {
   DefaultOptionType,
-  Flex,
   Icons,
   Select,
+  SelectProps,
   Space,
   SparkleIcon,
 } from "fidesui";
-import { useField } from "formik";
 import { uniq } from "lodash";
 import { useMemo } from "react";
 
-import { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
-import { ErrorMessage, Label } from "~/features/common/form/inputs";
-
 const ALL_SUGGESTED_VALUE = "all-suggested";
 
-const DataUseSelectWithSuggestions = ({
-  options,
-  loading,
-  name,
-  suggestedDataUses,
-  ...props
-}: ControlledSelectProps & { suggestedDataUses: string[] }) => {
-  const [field, meta, { setValue }] = useField(name);
-  const isInvalid = !!(meta.touched && meta.error);
+interface DataUseSelectWithSuggestionsProps extends Omit<
+  SelectProps,
+  "options" | "value" | "onChange" | "mode"
+> {
+  options: DefaultOptionType[];
+  suggestedDataUses: string[];
+  value?: string[];
+  onChange?: (value: string[]) => void;
+}
 
-  const onChange = (value: string[]) => {
-    if (value.includes(ALL_SUGGESTED_VALUE)) {
-      const newValue = uniq([
+export const DataUseSelectWithSuggestions = ({
+  options,
+  suggestedDataUses,
+  value,
+  onChange,
+  ...props
+}: DataUseSelectWithSuggestionsProps) => {
+  const handleChange = (next: string[]) => {
+    if (next.includes(ALL_SUGGESTED_VALUE)) {
+      const merged = uniq([
         ...suggestedDataUses,
-        ...value.filter((v) => v !== ALL_SUGGESTED_VALUE),
+        ...next.filter((v) => v !== ALL_SUGGESTED_VALUE),
       ]);
-      setValue(newValue);
+      onChange?.(merged);
     } else {
-      setValue(value);
+      onChange?.(next);
     }
   };
 
@@ -83,30 +86,14 @@ const DataUseSelectWithSuggestions = ({
     : optionsGroups.all;
 
   return (
-    <Flex vertical gap="small">
-      <Flex align="center">
-        <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
-          Data uses
-        </Label>
-      </Flex>
-      <Select
-        options={optionsToRender}
-        mode="multiple"
-        placeholder="Select data uses"
-        allowClear
-        loading={loading}
-        value={field.value}
-        onChange={onChange}
-        status={isInvalid ? "error" : undefined}
-        {...props}
-      />
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
-    </Flex>
+    <Select
+      {...props}
+      mode="multiple"
+      placeholder="Select data uses"
+      allowClear
+      options={optionsToRender}
+      value={value}
+      onChange={handleChange}
+    />
   );
 };
-
-export default DataUseSelectWithSuggestions;

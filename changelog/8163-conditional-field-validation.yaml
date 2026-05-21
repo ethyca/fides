@@ -1,0 +1,4 @@
+type: Added
+description: Added client-side conditional validation for privacy center custom form fields, allowing fields to show/hide based on display_condition rules
+pr: 8163
+labels: []

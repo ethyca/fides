@@ -1,4 +1,4 @@
-import { ChakraAccordion as Accordion } from "fidesui";
+import { Flex } from "fidesui";
 import React from "react";
 
 import { System } from "~/types/api";
@@ -14,12 +14,12 @@ export const DataFlowAccordion = ({
   system,
   isSystemTab,
 }: DataFlowFormProps) => (
-  <Accordion allowToggle data-testid="data-flow-accordion">
+  <Flex vertical data-testid="data-flow-accordion">
     <DataFlowAccordionForm
       system={system}
       isIngress
       isSystemTab={isSystemTab}
     />
     <DataFlowAccordionForm system={system} isSystemTab={isSystemTab} />
-  </Accordion>
+  </Flex>
 );

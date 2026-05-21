@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated the configure-consent "Add a vendor" form from Formik to antd
-pr: 8156
-labels: []

@@ -1,31 +1,21 @@
 import {
   Button,
-  ChakraBox as Box,
-  ChakraCloseButton as CloseButton,
-  ChakraFormControl as FormControl,
-  ChakraHStack as HStack,
-  ChakraSpacer as Spacer,
-  ChakraVStack as VStack,
   CompassIcon,
   Dropdown,
+  Flex,
+  Form,
+  FormRule,
+  Icons,
+  Input,
   MenuProps,
   Select,
 } from "fidesui";
-import { useField, useFormikContext } from "formik";
-import { FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { KeyboardEvent, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  CustomTextInput,
-  ErrorMessage,
-  Label,
-} from "~/features/common/form/inputs";
-import { InfoTooltip } from "~/features/common/InfoTooltip";
+import { AutosuggestSuffix } from "~/features/common/AutosuggestSuffix";
 import { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
-import { FormValues } from "~/features/system/form";
-
-import { AutosuggestSuffix } from "../common/AutosuggestSuffix";
 
 const NEW_SYSTEM_PREFIX = "Create new system";
 
@@ -50,30 +40,36 @@ const CompassButton = ({
   );
 
   return (
-    <VStack>
-      <Spacer minHeight="18px" />
-      <Dropdown menu={{ items }} disabled={disabled}>
-        <Button
-          icon={<CompassIcon />}
-          aria-label="Update information from Compass"
-          data-testid="refresh-suggestions-btn"
-          disabled={disabled}
-          type={active ? "primary" : undefined}
-        />
-      </Dropdown>
-    </VStack>
+    <Dropdown menu={{ items }} disabled={disabled}>
+      <Button
+        icon={<CompassIcon />}
+        aria-label="Update information from Compass"
+        data-testid="refresh-suggestions-btn"
+        disabled={disabled}
+        type={active ? "primary" : undefined}
+      />
+    </Dropdown>
   );
 };
 
-interface VendorSelectorProps {
+export interface VendorSelectorProps {
   label: string;
   isCreate: boolean;
   lockedForGVL: boolean;
   options: VendorOption[];
   isLoading?: boolean;
   onVendorSelected: (vendorId?: string | null) => void;
+  /**
+   * Validation rules applied to the `name` field (e.g. uniqueness check).
+   * Forwarded to the wrapped `Form.Item`.
+   */
+  nameRules?: FormRule[];
 }
 
+/**
+ * antd-Form-native vendor name typeahead. Drop-in inside any antd `Form`
+ * that exposes `name: string` and `vendor_id?: string` on its values.
+ */
 const VendorSelector = ({
   label,
   isCreate,
@@ -81,25 +77,18 @@ const VendorSelector = ({
   options,
   isLoading,
   onVendorSelected,
+  nameRules,
 }: VendorSelectorProps) => {
+  const form = Form.useFormInstance();
   const dictSuggestionsState = useAppSelector(selectSuggestions);
-  const [initialField, meta, { setValue }] = useField("name");
-  const isInvalid = !!(meta.touched && meta.error);
-  const field = { ...initialField, value: initialField.value ?? "" };
-  const { touched, values, setTouched, setFieldValue, validateForm } =
-    useFormikContext<FormValues>();
+  const name = Form.useWatch<string | undefined>("name", form);
+  const vendorId = Form.useWatch<string | undefined>("vendor_id", form);
+
   const [isTypeahead, setIsTypeahead] = useState(true);
-
-  const selected = options.find((o) => o.value === field.value) ?? {
-    label: field.value,
-    value: field.value,
-    description: "",
-  };
-
-  const filterFunction = (searchParam: string, option?: VendorOption) =>
-    !!option?.label.toLowerCase().startsWith(searchParam.toLowerCase());
-
   const [searchParam, setSearchParam] = useState<string>("");
+
+  const filterFunction = (searchText: string, option?: VendorOption) =>
+    !!option?.label.toLowerCase().startsWith(searchText.toLowerCase());
 
   const suggestions = useMemo(
     () => options.filter((o) => filterFunction(searchParam, o)),
@@ -107,9 +96,8 @@ const VendorSelector = ({
   );
 
   const optionsWithCustom = useMemo(() => {
-    let o = options;
     if (isCreate && searchParam) {
-      o = [
+      return [
         ...options,
         {
           label: `${NEW_SYSTEM_PREFIX} "${searchParam}"...`,
@@ -117,154 +105,222 @@ const VendorSelector = ({
         },
       ];
     }
-    return o;
+    return options;
   }, [isCreate, options, searchParam]);
+
   const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
   const nameFieldLockedForGVL = lockedForGVL && !isCreate;
 
   useEffect(() => {
-    setIsTypeahead(!field.value && !values.vendor_id);
-  }, [field.value, values.vendor_id, setIsTypeahead]);
+    setIsTypeahead(!name && !vendorId);
+  }, [name, vendorId]);
 
-  useEffect(() => {
-    validateForm();
-  }, [isTypeahead, validateForm]);
+  const selectedOption = useMemo(() => {
+    const match = options.find((o) => o.value === name);
+    if (match) {
+      return match;
+    }
+    if (!name) {
+      return undefined;
+    }
+    return { label: name, value: name, description: "" } as VendorOption;
+  }, [options, name]);
 
-  const handleClear = async () => {
+  const handleClear = () => {
     setSearchParam("");
-    setFieldValue("vendor_id", undefined);
-    await setValue("");
-    setTouched({ ...touched, vendor_id: false, name: false });
+    form.setFieldsValue({ name: "", vendor_id: undefined });
+    form.validateFields(["name"]).catch(() => {});
     onVendorSelected(undefined);
   };
 
-  const handleChange = async (newValue: VendorOption) => {
-    if (newValue) {
-      const newVendorId = options.some((opt) => opt.value === newValue.value)
-        ? newValue.value
-        : undefined;
-      setFieldValue("vendor_id", newVendorId);
-      await setValue(
-        newValue.label.startsWith(NEW_SYSTEM_PREFIX)
-          ? newValue.value
-          : newValue.label,
-      );
-      setTouched({ ...touched, vendor_id: true, name: true });
-      onVendorSelected(newVendorId);
+  const handleChange = (newValue: VendorOption | undefined) => {
+    if (!newValue) {
+      return;
     }
+    const newVendorId = options.some((opt) => opt.value === newValue.value)
+      ? newValue.value
+      : undefined;
+    const newName = newValue.label.startsWith(NEW_SYSTEM_PREFIX)
+      ? newValue.value
+      : newValue.label;
+    // Clear searchParam so the synthetic "Create new system" option drops out
+    // of optionsWithCustom — otherwise antd warns that the selected value's
+    // label doesn't match that synthetic option's label.
+    setSearchParam("");
+    form.setFieldsValue({ name: newName, vendor_id: newVendorId });
+    form.validateFields(["name"]).catch(() => {});
+    onVendorSelected(newVendorId);
   };
 
-  // accept the value in the search input as is if it's not empty
-  const handleBlur = async (event: FocusEvent) => {
-    field.onBlur(event);
+  // Accept typed value as the name on blur if nothing was picked.
+  const handleBlur = () => {
     if (searchParam) {
-      await setValue(searchParam);
+      form.setFieldValue("name", searchParam);
     }
-    setTouched({ ...touched, name: true });
+    form.validateFields(["name"]).catch(() => {});
   };
 
-  // complete the autosuggest
-  const handleTabPressed = async (
+  // Tab completes the autosuggest.
+  const handleTabPressed = (
     event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
       event.preventDefault();
-      setSearchParam(suggestions[0].label);
-      setFieldValue("vendor_id", suggestions[0].value);
-      await setValue(suggestions[0].label);
-      onVendorSelected(suggestions[0].value);
+      const [topSuggestion] = suggestions;
+      setSearchParam(topSuggestion.label);
+      form.setFieldsValue({
+        name: topSuggestion.label,
+        vendor_id: topSuggestion.value,
+      });
+      onVendorSelected(topSuggestion.value);
     } else {
-      setFieldValue("vendor_id", undefined);
-      await setValue(searchParam);
+      form.setFieldsValue({ name: searchParam, vendor_id: undefined });
     }
-    setTouched({ ...touched, name: true });
   };
 
-  // we have to build the typeahead from scratch, too much context-specific
-  // is needed to use the existing ControlledSelect component
+  // Standalone typeahead UI — bypasses Form.Item value injection (Select uses
+  // labelInValue, which is shaped { label, value } rather than a plain string).
+  // The hidden Form.Item below registers `name` so rules and validation still
+  // apply; we wrap the visible field in a shouldUpdate render-prop so the
+  // hidden field's validation errors render here too.
+  const compassButton = (
+    <CompassButton
+      active={!!vendorId || hasVendorSuggestions}
+      disabled={!vendorId || dictSuggestionsState === "showing"}
+      onRefreshSuggestions={() => onVendorSelected(vendorId)}
+    />
+  );
+
   const typeaheadSelect = (
-    <FormControl isInvalid={isInvalid} isRequired width="100%">
-      <VStack alignItems="start" position="relative" width="100%">
-        <HStack spacing={1}>
-          <Label htmlFor="vendorName" fontSize="xs" my={0} mr={1}>
-            {label}
-          </Label>
-          <InfoTooltip label="Enter the system name" />
-        </HStack>
-        <Box width="100%" className="relative">
-          <Select<VendorOption, VendorOption>
-            id="vendorName"
-            labelInValue
-            autoFocus
-            allowClear
-            options={optionsWithCustom}
-            loading={isLoading}
-            filterOption={(value, option) =>
-              filterFunction(value, option) ||
-              !!option?.label.startsWith(NEW_SYSTEM_PREFIX)
-            }
-            optionFilterProp="label"
-            value={selected}
-            placeholder="Enter system name..."
-            aria-label="Select a system"
-            disabled={nameFieldLockedForGVL}
-            onChange={handleChange}
-            onSearch={setSearchParam}
-            onClear={handleClear}
-            onBlur={handleBlur}
-            onInputKeyDown={(e) => {
-              if (searchParam && e.key === "Tab") {
-                handleTabPressed(e);
-              }
-            }}
-            status={isInvalid ? "error" : undefined}
-            data-testid="vendor-name-select"
-          />
-          <AutosuggestSuffix
-            searchText={searchParam}
-            suggestion={suggestions.length ? suggestions[0].label : ""}
-          />
-        </Box>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName="name"
-        />
-      </VStack>
-    </FormControl>
+    <Form.Item shouldUpdate noStyle>
+      {() => {
+        const errors = form.getFieldError("name");
+        return (
+          <Form.Item
+            label={label}
+            tooltip="Enter the system name"
+            required
+            htmlFor="vendorName"
+            className="w-full"
+            validateStatus={errors.length > 0 ? "error" : undefined}
+            help={errors[0]}
+          >
+            <Flex gap="small" align="center">
+              <div className="relative grow">
+                <Select<VendorOption, VendorOption>
+                  id="vendorName"
+                  labelInValue
+                  autoFocus
+                  allowClear
+                  options={optionsWithCustom}
+                  loading={isLoading}
+                  filterOption={(value, option) =>
+                    filterFunction(value, option) ||
+                    !!option?.label.startsWith(NEW_SYSTEM_PREFIX)
+                  }
+                  optionFilterProp="label"
+                  value={selectedOption}
+                  placeholder="Enter system name..."
+                  aria-label="Select a system"
+                  disabled={nameFieldLockedForGVL}
+                  status={errors.length > 0 ? "error" : undefined}
+                  onChange={handleChange}
+                  onSearch={setSearchParam}
+                  onClear={handleClear}
+                  onBlur={handleBlur}
+                  onInputKeyDown={(e) => {
+                    if (searchParam && e.key === "Tab") {
+                      handleTabPressed(e);
+                    }
+                  }}
+                  data-testid="vendor-name-select"
+                />
+                <AutosuggestSuffix
+                  searchText={searchParam}
+                  suggestion={suggestions.length ? suggestions[0].label : ""}
+                />
+              </div>
+              {compassButton}
+            </Flex>
+          </Form.Item>
+        );
+      }}
+    </Form.Item>
+  );
+
+  const textInput = (
+    <Form.Item shouldUpdate noStyle>
+      {() => {
+        const errors = form.getFieldError("name");
+        return (
+          <Form.Item
+            label="System name"
+            tooltip="Enter the system name"
+            required
+            htmlFor="vendorNameInput"
+            className="w-full"
+            validateStatus={errors.length > 0 ? "error" : undefined}
+            help={errors[0]}
+          >
+            <Flex gap="small" align="center">
+              <Input
+                id="vendorNameInput"
+                value={name ?? ""}
+                onChange={(e) => {
+                  form.setFieldValue("name", e.target.value);
+                  form.validateFields(["name"]).catch(() => {});
+                }}
+                autoFocus
+                disabled={nameFieldLockedForGVL}
+                status={errors.length > 0 ? "error" : undefined}
+                suffix={
+                  !nameFieldLockedForGVL ? (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<Icons.Close />}
+                      onClick={handleClear}
+                      aria-label="Clear vendor name"
+                      data-testid="clear-btn"
+                    />
+                  ) : undefined
+                }
+              />
+              {compassButton}
+            </Flex>
+          </Form.Item>
+        );
+      }}
+    </Form.Item>
   );
 
   return (
-    <HStack alignItems="flex-start" width="full">
-      {isTypeahead ? (
-        typeaheadSelect
-      ) : (
-        <CustomTextInput
-          autoFocus
-          id="name"
-          name="name"
-          label="System name"
-          tooltip="Enter the system name"
-          variant="stacked"
+    <>
+      {/*
+        Always-mounted hidden fields so Form.useWatch stays reactive across
+        both the typeahead and text-input branches above. Without these, the
+        registered Form.Item for "name" would unmount when the user picks an
+        option and the UI flips from Select → Input, and "vendor_id" has no
+        visible Form.Item at all.
+      */}
+      {/*
+        `input-name` is the public testid used by Cypress to assert on the
+        system-name field's existence and disabled state. It rides on the
+        always-mounted hidden Input so the testid is stable across the
+        typeahead → text-input mode flip.
+      */}
+      <Form.Item name="name" rules={nameRules} noStyle>
+        <Input
+          type="hidden"
+          data-testid="input-name"
           disabled={nameFieldLockedForGVL}
-          isRequired
-          inputRightElement={
-            !nameFieldLockedForGVL ? (
-              <CloseButton
-                onClick={handleClear}
-                size="sm"
-                data-testid="clear-btn"
-              />
-            ) : null
-          }
         />
-      )}
-      <CompassButton
-        active={!!values.vendor_id || hasVendorSuggestions}
-        disabled={!values.vendor_id || dictSuggestionsState === "showing"}
-        onRefreshSuggestions={() => onVendorSelected(values.vendor_id)}
-      />
-    </HStack>
+      </Form.Item>
+      <Form.Item name="vendor_id" noStyle>
+        <Input type="hidden" />
+      </Form.Item>
+      {isTypeahead ? typeaheadSelect : textInput}
+    </>
   );
 };
 

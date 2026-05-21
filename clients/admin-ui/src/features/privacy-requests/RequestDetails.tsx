@@ -16,6 +16,7 @@ import { RouterLink } from "~/features/common/nav/RouterLink";
 import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
+import { formatIsoDate } from "~/features/common/utils";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { useGetPropertyByIdQuery } from "~/features/properties/property.slice";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
@@ -105,7 +106,8 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         {Object.entries(identity)
           .filter(([, { value }]) => value !== null)
           .map(([key, { value = "", label }]) => {
-            const text = `${value}${!identityVerifiedAt ? " (Unverified)" : ""}`;
+            const displayValue = formatIsoDate(value);
+            const text = `${displayValue}${!identityVerifiedAt ? " (Unverified)" : ""}`;
 
             return (
               <RequestDetailsRow

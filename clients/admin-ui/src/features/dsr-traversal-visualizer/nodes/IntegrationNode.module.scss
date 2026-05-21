@@ -1,0 +1,29 @@
+.node {
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
+}
+
+.body {
+  border-top: 1px solid var(--fidesui-color-border);
+}
+
+.handle {
+  background: var(--fidesui-color-text-quaternary);
+  border: none;
+  width: 8px;
+  height: 8px;
+}
+
+.metaText {
+  font-size: 12px;
+}
+
+.tag {
+  font-size: 10px;
+  margin: 0;
+}
+
+.stageVia {
+  font-size: 11px;
+}
