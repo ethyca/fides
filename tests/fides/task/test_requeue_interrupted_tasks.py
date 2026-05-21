@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from unittest import mock
+from unittest.mock import patch
 
 import pytest
 
@@ -584,3 +585,49 @@ class TestCancelInterruptedTasksCreatesExecutionLog:
             if "interrupted without a running task" in (log.message or "")
         ]
         assert len(reaper_log) == 1
+
+    def test_handles_execution_log_failure_gracefully(self, db, privacy_request):
+        """If writing the execution log fails, the request is still marked as errored."""
+        with patch.object(
+            privacy_request,
+            "add_error_execution_log",
+            side_effect=Exception("DB write failed"),
+        ):
+            _cancel_interrupted_tasks_and_error_privacy_request(
+                db, privacy_request, "task stuck"
+            )
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.error
+
+    def test_handles_error_processing_failure_gracefully(self, db, privacy_request):
+        """If error_processing fails, the function doesn't raise."""
+        with patch.object(
+            privacy_request,
+            "error_processing",
+            side_effect=Exception("DB commit failed"),
+        ):
+            _cancel_interrupted_tasks_and_error_privacy_request(
+                db, privacy_request, "task stuck"
+            )
+
+        # Execution log was still created despite error_processing failing
+        error_logs = (
+            db.query(ExecutionLog)
+            .filter_by(
+                privacy_request_id=privacy_request.id,
+                status=ExecutionLogStatus.error,
+            )
+            .all()
+        )
+        assert len(error_logs) >= 1
+
+    def test_cancels_celery_tasks(self, db, privacy_request):
+        """Celery tasks are revoked when canceling an interrupted request."""
+        with patch.object(
+            privacy_request, "cancel_celery_tasks"
+        ) as mock_cancel:
+            _cancel_interrupted_tasks_and_error_privacy_request(
+                db, privacy_request, "task stuck"
+            )
+            mock_cancel.assert_called_once()
