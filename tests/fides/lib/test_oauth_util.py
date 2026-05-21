@@ -4,7 +4,9 @@ import json
 from datetime import datetime
 
 import pytest
+from fastapi import HTTPException
 from fastapi.security import SecurityScopes
+from starlette.requests import Request
 
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.cryptography.schemas.jwt import (
@@ -36,6 +38,7 @@ from fides.api.oauth.utils import (
     has_permissions,
     has_scope_subset,
     is_token_expired,
+    verify_client_can_assign_scopes,
     verify_oauth_client,
     verify_oauth_client_async,
 )
@@ -1034,3 +1037,61 @@ class TestAsyncPermissionChecker:
         assert result is True
         assert len(received_db) == 1
         assert received_db[0] == mock_async_session
+
+
+class TestVerifyClientCanAssignScopes:
+    """Tests for verify_client_can_assign_scopes error reporting."""
+
+    def test_role_based_user_reports_only_missing_scopes(self, db, config, owner_user):
+        """When an owner user (role-based, no direct token scopes) tries to
+        assign scopes that include one invalid scope, the error should only
+        list the actually-missing scope — not every scope.
+
+        Regression: the fallback was computing unauthorized_scopes from the
+        empty direct token scopes, making it report ALL requested scopes as
+        missing instead of just the offending one(s).
+        """
+        fake_scope = "fake:nonexistent_scope"
+        valid_scopes = [
+            USER_READ,
+            USER_DELETE,
+            PRIVACY_REQUEST_READ,
+            PRIVACY_REQUEST_REVIEW,
+            DATASET_CREATE_OR_UPDATE,
+        ]
+        requested_scopes = valid_scopes + [fake_scope]
+
+        payload = {
+            JWE_PAYLOAD_ROLES: [OWNER],
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+
+        request = Request(
+            scope={
+                "type": "http",
+                "headers": [
+                    (b"authorization", f"Bearer {token}".encode()),
+                ],
+            },
+        )
+
+        with pytest.raises(HTTPException) as exc_info:
+            verify_client_can_assign_scopes(
+                request=request,
+                requesting_client=owner_user.client,
+                scopes=requested_scopes,
+                db=db,
+            )
+
+        detail = exc_info.value.detail
+        # The error should mention ONLY the fake scope, not the valid ones
+        assert fake_scope in detail
+        for scope in valid_scopes:
+            assert scope not in detail, (
+                f"Valid scope '{scope}' should not be listed as missing"
+            )
