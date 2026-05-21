@@ -104,11 +104,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         keywords: ["data map", "data inventory", "assets"],
       },
       {
-        title: "Add systems",
-        path: routes.ADD_SYSTEMS_ROUTE,
-        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
-      },
-      {
         title: "Manage datasets",
         path: routes.DATASET_ROUTE,
         scopes: [

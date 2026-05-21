@@ -10,7 +10,6 @@ const ALL_SCOPES_FOR_TILES = [
   ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW,
   ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
   ScopeRegistryEnum.SYSTEM_READ,
-  ScopeRegistryEnum.SYSTEM_CREATE,
 ];
 
 describe("configureTiles", () => {
@@ -54,15 +53,6 @@ describe("configureTiles", () => {
         flags: {},
       });
       expect(tiles.length).toEqual(0);
-    });
-
-    it("conditionally shows add systems based on scope", () => {
-      const tiles = configureTiles({
-        config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
-        flags: {},
-      });
-      expect(tiles.map((t) => t.name)).toEqual(["Add systems"]);
     });
 
     it("conditionally shows view datamap", () => {

@@ -10,7 +10,7 @@ import {
 } from "cypress/support/stubs";
 
 import {
-  ADD_SYSTEMS_ROUTE,
+  ADD_SYSTEMS_MULTIPLE_ROUTE,
   DATAMAP_ROUTE,
   LOCATIONS_ROUTE,
   PRIVACY_NOTICES_ROUTE,
@@ -41,8 +41,6 @@ describe("Routes", () => {
 
     it("admins can access many routes", () => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
-      cy.visit(ADD_SYSTEMS_ROUTE);
-      cy.getByTestId("add-systems");
       cy.visit("/privacy-requests");
       cy.getByTestId("privacy-requests");
       cy.visit("/privacy-requests/configure");
@@ -66,9 +64,8 @@ describe("Routes", () => {
         RoleRegistryEnum.VIEWER_AND_APPROVER,
       ].forEach((role) => {
         cy.assumeRole(role);
-        // cannot access /add-systems
-        cy.visit(ADD_SYSTEMS_ROUTE);
-        cy.getByTestId("add-systems").should("not.exist");
+        // cannot access /add-systems/multiple
+        cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
         cy.getByTestId("home-content");
         // can access /privacy-requests
         cy.visit("/privacy-requests");

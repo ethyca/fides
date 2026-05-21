@@ -25,7 +25,6 @@ import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { v3Api } from "~/features/common/v3-api.slice";
-import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
 import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { discoveryDetectionSlice } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -80,7 +79,6 @@ const reducer = {
   [datamapSlice.name]: datamapSlice.reducer,
   [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
   [authSlice.name]: authSlice.reducer,
-  [configWizardSlice.name]: configWizardSlice.reducer,
   [connectionTypeSlice.name]: connectionTypeSlice.reducer,
   [tcfConfigSlice.name]: tcfConfigSlice.reducer,
   [dataSubjectsSlice.name]: dataSubjectsSlice.reducer,

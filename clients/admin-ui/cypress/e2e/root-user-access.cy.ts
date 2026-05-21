@@ -213,13 +213,6 @@ describe("Root User Access", () => {
       cy.url().should("not.include", "/login");
     });
 
-    it("can navigate to Add systems page", () => {
-      cy.getByTestId("Data inventory-nav-group").click();
-      cy.getByTestId("Add systems-nav-link").click();
-      cy.url().should("include", "/add-systems");
-      cy.url().should("not.include", "/login");
-    });
-
     it("can navigate to Privacy requests page", () => {
       cy.getByTestId("Privacy requests-nav-group").click();
       cy.getByTestId("Request manager-nav-link").click();

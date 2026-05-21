@@ -36,7 +36,6 @@ describe("configureNavGroups", () => {
     // NOTE: the data map should _not_ include the Plus routes (/plus/datamap, /classify-systems, etc.)
     expect(findGroup(navGroups, "Data inventory").children).toMatchObject([
       { title: "System inventory", path: routes.SYSTEM_ROUTE },
-      { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
       { title: "Manage datasets", path: routes.DATASET_ROUTE },
     ]);
 
@@ -64,7 +63,6 @@ describe("configureNavGroups", () => {
     expect(findGroup(navGroups, "Data inventory").children).toMatchObject([
       { title: "Data lineage", path: routes.DATAMAP_ROUTE },
       { title: "System inventory", path: routes.SYSTEM_ROUTE },
-      { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
       { title: "Manage datasets", path: routes.DATASET_ROUTE },
       { title: "Data map report", path: routes.REPORTING_DATAMAP_ROUTE },
       { title: "Asset report", path: routes.REPORTING_ASSETS_ROUTE },
@@ -145,7 +143,6 @@ describe("configureNavGroups", () => {
       // The data map should _not_ include the actual "/plus/datamap".
       expect(findGroup(navGroups, "Data inventory").children).toMatchObject([
         { title: "System inventory", path: routes.SYSTEM_ROUTE },
-        { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
       ]);
     });
@@ -367,13 +364,6 @@ describe("findActiveNav", () => {
       expected: {
         title: "Data inventory",
         path: routes.DATAMAP_ROUTE,
-      },
-    },
-    {
-      path: routes.ADD_SYSTEMS_ROUTE,
-      expected: {
-        title: "Data inventory",
-        path: routes.ADD_SYSTEMS_ROUTE,
       },
     },
     {

@@ -10,7 +10,6 @@ import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import ConnectionTypeLogo, {
   connectionLogoFromKey,
@@ -65,13 +64,7 @@ const NewManualSystem: NextPage = () => {
     <Layout title="Describe your system">
       <PageHeader
         heading="Add systems"
-        breadcrumbItems={[
-          {
-            title: "Add systems",
-            href: ADD_SYSTEMS_ROUTE,
-          },
-          { title: "New system" },
-        ]}
+        breadcrumbItems={[{ title: "Add systems" }, { title: "New system" }]}
       />
       <Header connector={connector} />
 

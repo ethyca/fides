@@ -9,9 +9,7 @@ import {
 } from "cypress/support/stubs";
 
 import {
-  ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
-  ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
   INDEX_ROUTE,
 } from "~/features/common/nav/routes";
@@ -44,39 +42,6 @@ describe("Plus Bulk Vendor Add", () => {
     cy.getByTestId("fidesTable-body")
       .find("tr")
       .should("have.length.greaterThan", 0);
-  });
-
-  it("upgrade modal doesn't pop up if compass is enabled", () => {
-    cy.visit(ADD_SYSTEMS_ROUTE);
-    cy.getByTestId("multiple-btn").click();
-    cy.wait("@getSystemVendors");
-    cy.getByTestId("fidesTable");
-  });
-
-  it("upgrade modal pops up if compass isn't enabled and redirects to manual add", () => {
-    stubPlus(true, {
-      core_fides_version: "2.2.0",
-      fidesplus_server: "healthy",
-      dictionary: {
-        enabled: false,
-        service_health: null,
-        service_error: null,
-      },
-      tcf: {
-        enabled: true,
-      },
-      fidesplus_version: "",
-      fides_cloud: {
-        enabled: false,
-      },
-    });
-    cy.visit(ADD_SYSTEMS_ROUTE);
-    cy.getByTestId("multiple-btn").click();
-    cy.get(".ant-modal-confirm");
-    cy.getAntModalConfirmButtons()
-      .find(".ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous)")
-      .click();
-    cy.url().should("include", ADD_SYSTEMS_MANUAL_ROUTE);
   });
 
   it("can add new systems and redirects to datamap", () => {

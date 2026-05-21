@@ -6,7 +6,7 @@ import {
   ChakraText as Text,
 } from "fidesui";
 
-import { ADD_SYSTEMS_ROUTE } from "../common/nav/routes";
+import { ADD_SYSTEMS_MULTIPLE_ROUTE } from "../common/nav/routes";
 
 const GetStarted = () => {
   return (
@@ -34,7 +34,7 @@ const GetStarted = () => {
           <Text>Let&apos;s get started!</Text>
           <Box>
             <Button
-              href={ADD_SYSTEMS_ROUTE}
+              href={ADD_SYSTEMS_MULTIPLE_ROUTE}
               role="link"
               type="primary"
               className="w-fit"

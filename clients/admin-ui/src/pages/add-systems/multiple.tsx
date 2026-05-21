@@ -5,7 +5,6 @@ import Layout from "~/features/common/Layout";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
-  ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -18,13 +17,7 @@ const AddMultipleSystemsPage: NextPage = () => (
   <Layout title="Choose vendors">
     <PageHeader
       heading="Add systems"
-      breadcrumbItems={[
-        {
-          title: "Add systems",
-          href: ADD_SYSTEMS_ROUTE,
-        },
-        { title: "Choose vendors" },
-      ]}
+      breadcrumbItems={[{ title: "Add systems" }, { title: "Choose vendors" }]}
     />
     <Box w={{ base: "100%", md: "75%" }}>
       <Text fontSize="sm" mb={8}>

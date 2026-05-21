@@ -8,7 +8,6 @@ import {
 
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
-  ADD_SYSTEMS_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
@@ -91,9 +90,7 @@ describe("System management page", () => {
             body: { ...system, privacy_declarations: [] },
           }).as("getDemoSystem");
           // Fill in the describe form based on fixture data
-          cy.visit(ADD_SYSTEMS_ROUTE);
-          cy.getByTestId("manual-btn").click();
-          cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
+          cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
           cy.wait("@getSystemsPaginated");
           cy.getByTestId("input-name").type(system.name);
           cy.getByTestId("input-description").type(system.description);

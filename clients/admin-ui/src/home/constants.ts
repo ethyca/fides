@@ -1,5 +1,4 @@
 import {
-  ADD_SYSTEMS_ROUTE,
   CONFIGURE_CONSENT_ROUTE,
   DATAMAP_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
@@ -13,7 +12,6 @@ import { ModuleCardConfig } from "./types";
  * Enums
  */
 export enum ModuleCardKeys {
-  ADD_SYSTEMS = 1,
   VIEW_SYSTEMS = 2,
   REVIEW_PRIVACY_REQUESTS = 3,
   VIEW_MAP = 4,
@@ -33,16 +31,6 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     requiresPlus: true,
     requiresSystems: true,
     scopes: [ScopeRegistryEnum.DATAMAP_READ],
-  },
-  {
-    color: "var(--fidesui-brand-olive)",
-    description: "Add third party applications and databases to your data map.",
-    href: `${ADD_SYSTEMS_ROUTE}`,
-    key: ModuleCardKeys.ADD_SYSTEMS,
-    name: "Add systems",
-    sortOrder: 1,
-    title: "AS",
-    scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
   },
   {
     color: "var(--fidesui-brand-terracotta)",
