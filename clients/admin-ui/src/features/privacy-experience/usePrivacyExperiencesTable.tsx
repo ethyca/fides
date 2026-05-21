@@ -21,11 +21,28 @@ import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { EnablePrivacyExperienceCell } from "~/features/privacy-experience/cells";
 import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
 import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
+// PROTOTYPE — delete with TCF history
 import {
+  MOCK_TCF_EXPERIENCE_ID,
+  MOCK_TCF_EXPERIENCE_NAME,
+} from "~/features/privacy-experience/version-history/mockHistory";
+import {
+  ComponentType,
   ExperienceConfigListViewResponse,
   PrivacyNoticeRegion,
   ScopeRegistryEnum,
 } from "~/types/api";
+
+// PROTOTYPE — delete with TCF history
+const MOCK_TCF_ROW: ExperienceConfigListViewResponse = {
+  id: MOCK_TCF_EXPERIENCE_ID,
+  name: MOCK_TCF_EXPERIENCE_NAME,
+  component: ComponentType.TCF_OVERLAY,
+  regions: [],
+  properties: [],
+  updated_at: "2026-05-20T16:07:15+01:00",
+  disabled: false,
+};
 
 const EmptyTableExperience = ({ canCreate }: { canCreate: boolean }) => {
   const router = useRouter();
@@ -74,6 +91,7 @@ const getRegionValues = (regions: PrivacyNoticeRegion[] | undefined) => {
 };
 
 const usePrivacyExperiencesTable = () => {
+  const router = useRouter();
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_UPDATE,
   ]);
@@ -95,8 +113,19 @@ const usePrivacyExperiencesTable = () => {
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPropertiesExpanded, setIsPropertiesExpanded] = useState(false);
 
-  const dataSource = useMemo(() => data?.items ?? [], [data?.items]);
-  const totalRows = data?.total ?? 0;
+  // PROTOTYPE — delete with TCF history: seed a mocked TCF row alongside real data
+  const dataSource = useMemo(() => {
+    const realItems = data?.items ?? [];
+    const hasTcf = realItems.some(
+      (item) => item.component === ComponentType.TCF_OVERLAY,
+    );
+    return hasTcf ? realItems : [MOCK_TCF_ROW, ...realItems];
+  }, [data?.items]);
+  const totalRows =
+    (data?.total ?? 0) +
+    (data?.items?.some((item) => item.component === ComponentType.TCF_OVERLAY)
+      ? 0
+      : 1);
 
   const emptyText = useMemo(
     () => <EmptyTableExperience canCreate={userCanUpdate} />,
@@ -212,8 +241,27 @@ const usePrivacyExperiencesTable = () => {
             },
           ]
         : []),
+      // PROTOTYPE — delete with TCF history: TCF-only actions column
+      {
+        title: "Actions",
+        key: "actions",
+        render: (_: unknown, record: ExperienceConfigListViewResponse) =>
+          record.component === ComponentType.TCF_OVERLAY ? (
+            <Button
+              size="small"
+              icon={<Icons.Time />}
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${record.id}/history`);
+              }}
+              data-testid={`view-history-${record.id}`}
+            >
+              View history
+            </Button>
+          ) : null,
+      },
     ],
-    [userCanUpdate, isLocationsExpanded, isPropertiesExpanded],
+    [userCanUpdate, isLocationsExpanded, isPropertiesExpanded, router],
   );
 
   return {
