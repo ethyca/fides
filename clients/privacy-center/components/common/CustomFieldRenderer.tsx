@@ -1,5 +1,3 @@
-const DEFAULT_MAX_FILE_COUNT = 10;
-
 import dayjs from "dayjs";
 import {
   Button,
@@ -25,6 +23,8 @@ import {
   CustomTextField,
   ICustomField,
 } from "~/types/config";
+
+const DEFAULT_MAX_FILE_COUNT = 10;
 
 interface ICustomFieldProps extends ICustomField {
   onBlur: () => void;
