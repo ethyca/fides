@@ -1,0 +1,4 @@
+type: Changed
+description: Added info-level execution logs for privacy request status transitions (requires_input, paused, awaiting_access_review, pre_approval_not_eligible) to improve troubleshooting
+pr: 8251
+labels: []
