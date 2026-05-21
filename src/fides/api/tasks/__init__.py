@@ -58,61 +58,6 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     _task_engine = None
     _sessionmaker = None
 
-    def on_failure(
-        self, exc: BaseException, task_id: str, args: tuple, kwargs: dict, einfo: Any
-    ) -> None:
-        """Log an execution log when a privacy request task fails at the worker level.
-
-        Catches failures that bypass the task's own exception handling: hard time
-        limit exceeded, worker killed, broker disconnect, etc. Skips if the
-        in-task BaseException catch-all already handled it (status already error).
-        Only applies to tasks with a privacy_request_id kwarg; other tasks are ignored.
-        """
-        privacy_request_id = kwargs.get("privacy_request_id")
-        if not privacy_request_id:
-            return
-
-        try:
-            session = self.get_new_session()
-            try:
-                from fides.api.models.privacy_request import PrivacyRequest
-                from fides.api.schemas.privacy_request import PrivacyRequestStatus
-
-                privacy_request = (
-                    session.query(PrivacyRequest)
-                    .filter(PrivacyRequest.id == privacy_request_id)
-                    .first()
-                )
-                if not privacy_request:
-                    return
-
-                if privacy_request.status == PrivacyRequestStatus.error:
-                    return
-
-                logger.error(
-                    "Privacy request '{}' failed at worker level: {}",
-                    privacy_request_id,
-                    str(exc),
-                )
-                privacy_request.add_error_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Worker task failure",
-                    collection_name=None,
-                    message=f"Task failed at worker level: {type(exc).__name__}: {exc}",
-                    action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
-                )
-                privacy_request.error_processing(db=session)
-                session.commit()
-            finally:
-                session.close()
-        except Exception:  # pylint: disable=broad-except
-            logger.error(
-                "Failed to log worker-level failure for privacy request '{}': {}",
-                privacy_request_id,
-                str(exc),
-            )
-
     # This retry will attempt to connect 5 times with an exponential backoff (2, 4, 8, 16 seconds between each attempt).
     # The original error will be re-raised if the retries are successful. All attempts are shown in the logs.
     @retry(
