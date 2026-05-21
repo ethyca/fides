@@ -23,7 +23,7 @@ class SaasConnectionTemplateValues(BaseModel):
         self, config_from_template: Dict
     ) -> Dict[str, Any]:
         """Generate a config data object (dict) based on the template values"""
-        data = {
+        data: Dict[str, Any] = {
             "key": self.key if self.key else self.instance_key,
             "description": self.description,
             "connection_type": ConnectionType.saas,
