@@ -56,7 +56,11 @@ export const useConditionalValidate = ({
       combinedSchema = identityValidationSchema.concat(
         customFieldSchema,
       ) as Yup.AnyObjectSchema;
-      schemaCache.current = { applicableKey, configSignature, schema: combinedSchema };
+      schemaCache.current = {
+        applicableKey,
+        configSignature,
+        schema: combinedSchema,
+      };
     }
 
     try {
