@@ -1161,3 +1161,145 @@ class TestAsyncPollingStrategy:
             AsyncPollingStrategy._extract_correlation_id(
                 mock_response, "missing_key", {"other_key": "value"}
             )
+
+    def test_async_mask_data_forwards_input_data_to_initial_erasure(
+        self, db, async_polling_strategy
+    ):
+        """
+        Verify that async_mask_data passes input_data through to _initial_request_erasure.
+        This is the fix for connectors with external references (e.g., Movable Ink)
+        where upstream collection data must be available for placeholder resolution.
+        """
+        policy = erasure_policy(db)
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_input_data_forwarding",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "erasure",
+                "privacy_request_id": privacy_request.id,
+            },
+        )
+
+        input_data = {"mi_u": ["external_user_id_123"]}
+        rows = [{"user_id": "abc"}]
+
+        masking_request = MagicMock()
+        masking_request.async_config = {"strategy": "polling", "configuration": {}}
+        masking_request.ignore_errors = []
+        masking_request.path = "/api/v2/data-subject-rights"
+        masking_request.skip_missing_param_values = False
+        masking_request.correlation_id_path = "request_id"
+
+        mock_query_config = MagicMock()
+        mock_query_config.get_masking_request.return_value = masking_request
+        mock_query_config.get_read_requests_by_identity.return_value = []
+        mock_query_config.generate_update_param_values.return_value = {"user_id": "abc"}
+
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 200
+        mock_response.ok = True
+        mock_response.content = b'{"request_id": "corr_123"}'
+        mock_response.json.return_value = {"request_id": "corr_123"}
+
+        mock_client = MagicMock()
+        mock_client.send.return_value = mock_response
+
+        with pytest.raises(AwaitingAsyncProcessing):
+            async_polling_strategy.async_mask_data(
+                client=mock_client,
+                request_task_id=request_task.id,
+                query_config=mock_query_config,
+                rows=rows,
+                input_data=input_data,
+            )
+
+        # Verify input_data was forwarded to generate_update_stmt
+        mock_query_config.generate_update_stmt.assert_called_once_with(
+            rows[0], policy, privacy_request, input_data
+        )
+        # Verify input_data was forwarded to generate_update_param_values
+        mock_query_config.generate_update_param_values.assert_called_once()
+        call_args = mock_query_config.generate_update_param_values.call_args
+        assert (
+            call_args[0][4] == input_data
+            or call_args[1].get("input_data") == input_data
+        )
+
+    def test_initial_request_erasure_forwards_input_data_to_generate_methods(
+        self, db, async_polling_strategy
+    ):
+        """
+        Direct test of _initial_request_erasure to confirm input_data reaches
+        generate_update_stmt and generate_update_param_values.
+        """
+        policy = erasure_policy(db)
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_erasure_input_data_direct",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "erasure",
+                "privacy_request_id": privacy_request.id,
+            },
+        )
+
+        input_data = {"mi_u": ["ext_user_456"], "email": ["user@example.com"]}
+        rows = [{"user_id": "row1"}, {"user_id": "row2"}]
+
+        masking_request = MagicMock()
+        masking_request.async_config = {"strategy": "polling", "configuration": {}}
+        masking_request.ignore_errors = []
+        masking_request.path = "/api/delete"
+        masking_request.skip_missing_param_values = False
+        masking_request.correlation_id_path = "id"
+
+        mock_query_config = MagicMock()
+        mock_query_config.get_masking_request.return_value = masking_request
+        mock_query_config.generate_update_param_values.return_value = {
+            "user_id": "row1"
+        }
+
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 200
+        mock_response.ok = True
+        mock_response.content = b'{"id": "corr_1"}'
+        mock_response.json.return_value = {"id": "corr_1"}
+
+        mock_client = MagicMock()
+        mock_client.send.return_value = mock_response
+
+        with pytest.raises(AwaitingAsyncProcessing):
+            async_polling_strategy._initial_request_erasure(
+                mock_client, request_task, mock_query_config, rows, input_data
+            )
+
+        # Both rows should trigger calls with input_data
+        assert mock_query_config.generate_update_stmt.call_count == 2
+        assert mock_query_config.generate_update_param_values.call_count == 2
+
+        for call in mock_query_config.generate_update_stmt.call_args_list:
+            assert call[0][3] == input_data  # 4th positional arg is input_data
+
+        for call in mock_query_config.generate_update_param_values.call_args_list:
+            assert call[0][4] == input_data  # 5th positional arg is input_data
