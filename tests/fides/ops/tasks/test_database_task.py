@@ -1,6 +1,7 @@
 # pylint: disable=protected-access
 
 from unittest import mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from sqlalchemy.engine import Engine
@@ -73,3 +74,97 @@ class TestDatabaseTask:
                 with task.get_new_session():
                     pass
             assert always_failing_session_maker.call_count == NEW_SESSION_RETRIES
+
+
+class TestDatabaseTaskOnFailure:
+    """Tests for the on_failure handler that logs worker-level task deaths."""
+
+    def test_on_failure_skips_non_privacy_request_tasks(self):
+        """Tasks without privacy_request_id in kwargs are ignored."""
+        task = DatabaseTask()
+        task.on_failure(
+            exc=RuntimeError("boom"),
+            task_id="test-task-id",
+            args=(),
+            kwargs={"some_other_param": "value"},
+            einfo=None,
+        )
+        # No exception raised, no DB interaction
+
+    @patch.object(DatabaseTask, "get_new_session")
+    def test_on_failure_creates_error_log_for_worker_death(self, mock_get_session):
+        """When a privacy request task dies at the worker level, an error
+        execution log is created and the request is marked as errored."""
+        mock_session = MagicMock()
+        mock_get_session.return_value = mock_session
+
+        mock_privacy_request = MagicMock()
+        mock_privacy_request.status = MagicMock()
+        mock_privacy_request.status.__eq__ = lambda self, other: False  # not already errored
+        mock_privacy_request.policy.get_action_type.return_value = "access"
+
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_privacy_request
+        )
+
+        task = DatabaseTask()
+        task.on_failure(
+            exc=RuntimeError("Worker killed by OOM"),
+            task_id="test-task-id",
+            args=(),
+            kwargs={"privacy_request_id": "test-pr-id"},
+            einfo=None,
+        )
+
+        mock_privacy_request.add_error_execution_log.assert_called_once()
+        call_kwargs = mock_privacy_request.add_error_execution_log.call_args
+        assert "Worker killed by OOM" in call_kwargs[1]["message"] or "Worker killed by OOM" in str(call_kwargs)
+        assert call_kwargs[1]["dataset_name"] == "Worker task failure"
+
+        mock_privacy_request.error_processing.assert_called_once_with(db=mock_session)
+        mock_session.commit.assert_called_once()
+        mock_session.close.assert_called_once()
+
+    @patch.object(DatabaseTask, "get_new_session")
+    def test_on_failure_skips_already_errored_request(self, mock_get_session):
+        """If the in-task exception handler already handled the error, on_failure is a no-op."""
+        mock_session = MagicMock()
+        mock_get_session.return_value = mock_session
+
+        # Simulate PrivacyRequestStatus.error comparison
+        from fides.api.schemas.privacy_request import PrivacyRequestStatus
+
+        mock_privacy_request = MagicMock()
+        mock_privacy_request.status = PrivacyRequestStatus.error
+
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_privacy_request
+        )
+
+        task = DatabaseTask()
+        task.on_failure(
+            exc=RuntimeError("boom"),
+            task_id="test-task-id",
+            args=(),
+            kwargs={"privacy_request_id": "test-pr-id"},
+            einfo=None,
+        )
+
+        mock_privacy_request.add_error_execution_log.assert_not_called()
+        mock_privacy_request.error_processing.assert_not_called()
+        mock_session.close.assert_called_once()
+
+    @patch.object(DatabaseTask, "get_new_session")
+    def test_on_failure_handles_db_errors_gracefully(self, mock_get_session):
+        """If the DB is unavailable during on_failure, the error is logged but not raised."""
+        mock_get_session.side_effect = OperationalError("DB down", None, None)
+
+        task = DatabaseTask()
+        # Should not raise
+        task.on_failure(
+            exc=RuntimeError("original error"),
+            task_id="test-task-id",
+            args=(),
+            kwargs={"privacy_request_id": "test-pr-id"},
+            einfo=None,
+        )
