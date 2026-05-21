@@ -1,0 +1,4 @@
+type: Changed
+description: Added Celery on_failure handler to log worker-level DSR task deaths (OOM, hard timeout, broker disconnect) with error execution logs
+pr: 8252
+labels: []
