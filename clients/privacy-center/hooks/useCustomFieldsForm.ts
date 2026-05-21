@@ -95,11 +95,7 @@ export const buildCustomFieldsValidationSchema = (
           if (fieldType === "date") {
             return [
               key,
-              dateFieldValidation(
-                field as CustomDateField,
-                label,
-                isRequired,
-              ),
+              dateFieldValidation(field as CustomDateField, label, isRequired),
             ];
           }
           return [
