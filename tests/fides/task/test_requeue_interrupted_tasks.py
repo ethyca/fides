@@ -624,9 +624,7 @@ class TestCancelInterruptedTasksCreatesExecutionLog:
 
     def test_cancels_celery_tasks(self, db, privacy_request):
         """Celery tasks are revoked when canceling an interrupted request."""
-        with patch.object(
-            privacy_request, "cancel_celery_tasks"
-        ) as mock_cancel:
+        with patch.object(privacy_request, "cancel_celery_tasks") as mock_cancel:
             _cancel_interrupted_tasks_and_error_privacy_request(
                 db, privacy_request, "task stuck"
             )
