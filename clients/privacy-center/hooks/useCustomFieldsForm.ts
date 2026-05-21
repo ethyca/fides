@@ -1,3 +1,4 @@
+import { UploadFile } from "fidesui";
 import { useCallback } from "react";
 import * as Yup from "yup";
 
@@ -10,6 +11,8 @@ interface UseCustomFieldsFormProps {
   customPrivacyRequestFields: Record<string, CustomConfigField>;
   searchParams?: URLSearchParams | null;
 }
+
+const DEFAULT_MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 /**
  * Build a Yup validation schema for custom fields, filtering out fields that
@@ -34,24 +37,75 @@ export const buildCustomFieldsValidationSchema = (
         .map(([key, field]) => {
           const { label, required, field_type: fieldType } = field;
           const isRequired = required !== false;
-          if (fieldType === "multiselect") {
+          const requiredMessage = `${label} is required`;
+          if (fieldType === "multiselect" || fieldType === "checkbox_group") {
             return [
               key,
               isRequired
-                ? Yup.array().min(1, `${label} is required`)
+                ? Yup.array().min(1, requiredMessage)
                 : Yup.array().notRequired(),
             ];
+          }
+          if (fieldType === "checkbox") {
+            return [
+              key,
+              isRequired
+                ? Yup.boolean().oneOf([true], requiredMessage)
+                : Yup.boolean().notRequired(),
+            ];
+          }
+          if (fieldType === "file") {
+            const maxSize = field.max_size_bytes ?? DEFAULT_MAX_SIZE_BYTES;
+            const allowedTypes = field.allowed_file_types;
+            let fileSchema = Yup.array();
+            if (isRequired) {
+              fileSchema = fileSchema.min(
+                1,
+                `${label} requires at least one file`,
+              );
+            }
+            fileSchema = fileSchema.test(
+              "file-size",
+              `Each file must be under ${Math.ceil(maxSize / (1024 * 1024))}MB`,
+              (files) => {
+                if (!files) {
+                  return true;
+                }
+                return (files as UploadFile[]).every(
+                  (f) => !f.size || f.size <= maxSize,
+                );
+              },
+            );
+            if (allowedTypes && allowedTypes.length > 0) {
+              fileSchema = fileSchema.test(
+                "file-type",
+                `Allowed file types: ${allowedTypes.join(", ")}`,
+                (files) => {
+                  if (!files) {
+                    return true;
+                  }
+                  return (files as UploadFile[]).every(
+                    (f) => !!f.type && allowedTypes.includes(f.type),
+                  );
+                },
+              );
+            }
+            return [key, fileSchema];
           }
           if (fieldType === "date") {
             return [
               key,
-              dateFieldValidation(field as CustomDateField, label, isRequired),
+              dateFieldValidation(
+                field as CustomDateField,
+                label,
+                isRequired,
+              ),
             ];
           }
           return [
             key,
             isRequired
-              ? Yup.string().required(`${label} is required`)
+              ? Yup.string().required(requiredMessage)
               : Yup.string().notRequired(),
           ];
         }),
@@ -79,8 +133,8 @@ export const useCustomFieldsForm = ({
             : null;
 
         switch (field.field_type) {
-          case "multiselect": {
-            // Determine the multiselect value with proper precedence
+          case "multiselect":
+          case "checkbox_group": {
             let value: string[];
             if (valueFromQueryParam) {
               value = [valueFromQueryParam];
@@ -91,6 +145,10 @@ export const useCustomFieldsForm = ({
             }
             return [key, value];
           }
+          case "checkbox":
+            return [key, field?.default_value === "true"];
+          case "file":
+            return [key, [] as UploadFile[]];
           case "location":
             return [
               key,

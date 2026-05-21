@@ -28,11 +28,21 @@ import {
   CustomConfigField,
   PrivacyRequestOption as ConfigPrivacyRequestOption,
 } from "~/types/config";
-import { FormValues, MultiselectFieldValue } from "~/types/forms";
+import {
+  FormFieldValue,
+  FormValues,
+  MultiselectFieldValue,
+} from "~/types/forms";
 
 import { buildOrderedFields } from "./buildOrderedFields";
+import { uploadAllFiles } from "./fileUploadUtils";
 
 export type { OrderedField } from "./buildOrderedFields";
+export {
+  uploadAllFiles,
+  uploadFieldFiles,
+  uploadFile,
+} from "./fileUploadUtils";
 
 /**
  *
@@ -182,6 +192,22 @@ const usePrivacyRequestForm = ({
       }
       setIsSubmitPending(true);
 
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: unknown;
+      }) => {
+        setIsSubmitPending(false);
+        const errorMessage = typeof error === "string" ? error : undefined;
+        toast({
+          title,
+          description: errorMessage,
+          ...ErrorToastOptions,
+        });
+      };
+
       // extract identity input values
       const identityInputValues = Object.fromEntries(
         Object.entries(action.identity_inputs ?? {})
@@ -201,12 +227,40 @@ const usePrivacyRequestForm = ({
           }),
       );
 
+      // Upload files first, before building the submission payload
+      let fileAttachmentIds: Record<string, string[]> = {};
+      if (action.custom_privacy_request_fields) {
+        try {
+          fileAttachmentIds = await uploadAllFiles(
+            values,
+            action.custom_privacy_request_fields,
+            settings.FIDES_API_URL,
+            {
+              propertyId: property?.id || "",
+              policyKey: action.policy_key,
+            },
+          );
+        } catch (uploadError) {
+          handleError({
+            title: "An error occurred while uploading your file",
+            error:
+              uploadError instanceof Error
+                ? uploadError.message
+                : "File upload failed",
+          });
+          return;
+        }
+      }
+
       const customPrivacyRequestFieldValues =
         action.custom_privacy_request_fields
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
                 .filter(([key, field]) => {
-                  if (field.field_type === "location") {
+                  if (
+                    field.field_type === "location" ||
+                    field.field_type === "file"
+                  ) {
                     return false;
                   }
                   // Exclude fields gated off by display_condition
@@ -220,19 +274,31 @@ const usePrivacyRequestForm = ({
                     field.query_param_key &&
                     searchParams?.get(field.query_param_key);
                   const hiddenValue = paramValue ?? field.default_value;
-                  const value = !field.hidden ? values[key] : hiddenValue;
+                  const value: FormFieldValue = !field.hidden
+                    ? values[key]
+                    : (hiddenValue ?? "");
 
                   let processedValue;
-                  if (field.field_type === "multiselect") {
+                  if (
+                    field.field_type === "multiselect" ||
+                    field.field_type === "checkbox_group"
+                  ) {
                     processedValue = value || [];
+                  } else if (field.field_type === "checkbox") {
+                    processedValue = Boolean(value);
                   } else {
-                    processedValue = fallbackNull(value);
+                    processedValue = fallbackNull(
+                      value as
+                        | string
+                        | MultiselectFieldValue
+                        | null
+                        | undefined,
+                    );
                   }
 
                   return [
                     key,
                     {
-                      // only include label and value
                       label: field.label,
                       value: processedValue,
                     },
@@ -241,9 +307,20 @@ const usePrivacyRequestForm = ({
                 .filter(
                   ([, fieldData]) =>
                     typeof fieldData === "object" && fieldData.value !== null,
-                ), // Filter out null values (but keep empty arrays for multiselect)
+                ),
             )
           : {};
+
+      // Add file field values as attachment ID arrays
+      Object.entries(fileAttachmentIds).forEach(([key, ids]) => {
+        const field = action.custom_privacy_request_fields?.[key];
+        if (field) {
+          customPrivacyRequestFieldValues[key] = {
+            label: field.label,
+            value: ids,
+          };
+        }
+      });
 
       // Extract custom fields object for cleaner code
       const customFieldsPayload =
@@ -261,22 +338,6 @@ const usePrivacyRequestForm = ({
           location: values?.location ? values.location : undefined,
         },
       ];
-
-      const handleError = ({
-        title,
-        error,
-      }: {
-        title: string;
-        error?: unknown;
-      }) => {
-        setIsSubmitPending(false);
-        const errorMessage = typeof error === "string" ? error : undefined;
-        toast({
-          title,
-          description: errorMessage,
-          ...ErrorToastOptions,
-        });
-      };
 
       try {
         const headers: Headers = new Headers();
