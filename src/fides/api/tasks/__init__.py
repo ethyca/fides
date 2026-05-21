@@ -32,6 +32,9 @@ DISCOVERY_MONITORS_DETECTION_QUEUE_NAME = "fidesplus.discovery_monitors_detectio
 DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME = "fidesplus.discovery_monitors_classification"  # This queue is used for running discovery monitors classification tasks
 DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME = "fidesplus.discovery_monitors_promotion"  # This queue is used for running discovery monitors promotion tasks
 BULK_CONSENT_IMPORT_QUEUE_NAME = "fidesplus.bulk_consent_import"  # This queue is used for bulk importing pre-verified consent records
+DATAHUB_QUEUE_NAME = (
+    "fidesplus.datahub"  # This queue is used for syncing Fides datasets with Datahub
+)
 
 
 NEW_SESSION_RETRIES = 5
