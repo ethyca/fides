@@ -2266,3 +2266,69 @@ class TestRunErasureRequestRecreatesMissingTasks:
         )
 
         mock_persist_erasure.assert_not_called()
+
+    @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
+    @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
+    @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
+    def test_recreates_missing_tasks_when_partial(
+        self,
+        mock_get_ready,
+        mock_update_erasure,
+        mock_persist_erasure,
+        db,
+        privacy_request,
+        request_task,
+        erasure_request_task,
+        policy,
+    ):
+        """When some erasure tasks exist but fewer than the graph expects,
+        run_erasure_request should create the missing ones."""
+        from fides.api.graph.config import Collection, GraphDataset, ScalarField
+        from fides.api.task.create_request_tasks import run_erasure_request
+
+        # erasure_request_task fixture creates some tasks, but we'll provide
+        # a graph with more nodes than tasks exist for
+        existing_count = privacy_request.erasure_tasks.count()
+        assert existing_count > 0
+
+        # Build a graph with more nodes than existing tasks
+        identity_field = ScalarField(name="email", primary_key=True)
+        identity_field.identity = "email"
+        collections = [
+            Collection(name=f"coll_{i}", fields=[identity_field])
+            for i in range(existing_count + 5)
+        ]
+        dataset = GraphDataset(
+            name="test_ds", collections=collections, connection_key="test_conn"
+        )
+        graph = DatasetGraph(dataset)
+        identity = {"email": "test@example.com"}
+
+        # Add an erasure rule to the policy
+        from fides.api.models.policy import Rule
+
+        Rule.create(
+            db=db,
+            data={
+                "action_type": "erasure",
+                "name": "test_erasure_rule_partial",
+                "policy_id": policy.id,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            },
+        )
+
+        mock_get_ready.return_value = []
+
+        run_erasure_request(
+            privacy_request,
+            db,
+            privacy_request_proceed=False,
+            policy=policy,
+            graph=graph,
+            identity=identity,
+        )
+
+        mock_persist_erasure.assert_called_once()

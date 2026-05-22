@@ -676,26 +676,34 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     If erasure tasks are missing (e.g., task creation failed on a previous run), recreate them
     from the current graph before proceeding.
     """
-    # Guard: recreate erasure tasks if they are missing
+    # Ensure erasure tasks exist. persist_initial_erasure_request_tasks is
+    # idempotent (skips nodes that already have tasks), so this is safe to
+    # call even when some or all tasks already exist. Handles both the
+    # zero-task case (creation failed entirely) and the partial-task case
+    # (creation crashed partway through).
     if (
-        not privacy_request.erasure_tasks.count()
-        and policy
+        policy
         and policy.get_rules_for_action(action_type=ActionType.erasure)
         and graph
         and identity
     ):
-        logger.warning(
-            "Privacy request {} has erasure rules but zero erasure tasks. "
-            "Recreating erasure tasks from current graph.",
-            privacy_request.id,
-        )
-        traversal = Traversal(graph, identity, policy=policy)
-        traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
-        traversal.traverse(traversal_nodes, collect_tasks_fn)
-        erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
-        persist_initial_erasure_request_tasks(
-            session, privacy_request, traversal_nodes, erasure_end_nodes, graph
-        )
+        expected_count = len(graph.nodes)
+        actual_count = privacy_request.erasure_tasks.count()
+        if actual_count < expected_count:
+            logger.warning(
+                "Privacy request {} has {} erasure tasks but graph expects {}. "
+                "Creating missing erasure tasks.",
+                privacy_request.id,
+                actual_count,
+                expected_count,
+            )
+            traversal = Traversal(graph, identity, policy=policy)
+            traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
+            traversal.traverse(traversal_nodes, collect_tasks_fn)
+            erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+            persist_initial_erasure_request_tasks(
+                session, privacy_request, traversal_nodes, erasure_end_nodes, graph
+            )
 
     update_erasure_tasks_with_access_data(session, privacy_request)
     ready_tasks: List[RequestTask] = (
