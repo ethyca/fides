@@ -155,6 +155,7 @@ class TestDerivePrivacyRequestStatus:
             pytest.param(PrivacyRequestStatus.error, id="error"),
             pytest.param(PrivacyRequestStatus.complete, id="complete"),
             pytest.param(PrivacyRequestStatus.canceled, id="canceled"),
+            pytest.param(PrivacyRequestStatus.denied, id="denied"),
         ],
     )
     def test_terminal_status_never_overwritten(

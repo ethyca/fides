@@ -26,7 +26,10 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.privacy_request import (
+    TERMINAL_PRIVACY_REQUEST_STATUSES,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
@@ -519,16 +522,6 @@ def _get_request_task_ids_in_progress(
         yield (task.id, task.status, awaiting_upstream, task.async_type)
 
 
-TERMINAL_PRIVACY_REQUEST_STATUSES = frozenset(
-    {
-        PrivacyRequestStatus.error,
-        PrivacyRequestStatus.complete,
-        PrivacyRequestStatus.canceled,
-        PrivacyRequestStatus.denied,
-    }
-)
-
-
 def derive_privacy_request_status(
     db: Session, privacy_request: PrivacyRequest
 ) -> PrivacyRequestStatus:
@@ -562,26 +555,6 @@ def derive_privacy_request_status(
         return PrivacyRequestStatus.requires_input
 
     return PrivacyRequestStatus.pending_external
-
-
-def _has_async_tasks_awaiting_external_completion(
-    db: Session, privacy_request_id: str
-) -> bool:
-    """
-    Check if a privacy request has any non-exited async task pending external completion.
-
-    Only considers async tasks that have NOT already finished (complete/error/skipped).
-    Completed async tasks should not prevent the watchdog from rescuing other stuck tasks.
-    """
-    return db.query(
-        db.query(RequestTask)
-        .filter(
-            RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.async_type.in_([AsyncTaskType.polling, AsyncTaskType.callback]),
-            RequestTask.status.notin_(EXITED_EXECUTION_LOG_STATUSES),
-        )
-        .exists()
-    ).scalar()
 
 
 # pylint: disable=too-many-branches
