@@ -1,4 +1,14 @@
-import { Button, Card, Flex, Form, Input, Select, Space, Spin } from "fidesui";
+import {
+  Button,
+  Card,
+  Flex,
+  Form,
+  Icons,
+  Input,
+  Select,
+  Space,
+  Spin,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -15,19 +25,10 @@ import {
 } from "~/types/api";
 
 import DeletePropertyModal from "./DeletePropertyModal";
-import { PathsEditor } from "./PathsEditor";
 import {
   PrivacyCenterConfigSection,
   PrivacyCenterConfigValue,
 } from "./privacy-center-config/PrivacyCenterConfigSection";
-
-const PathsEditorAdapter = ({
-  value,
-  onChange,
-}: {
-  value?: string[];
-  onChange?: (next: string[]) => void;
-}) => <PathsEditor value={value ?? []} onChange={(next) => onChange?.(next)} />;
 
 const PCConfigSectionAdapter = ({
   propertyId,
@@ -197,10 +198,30 @@ export const PropertyForm = ({
               </Form.Item>
               <Form.Item
                 label="Privacy center paths"
-                name="paths"
                 tooltip="Paths under your privacy center this property responds to. Each path must be unique across properties."
               >
-                <PathsEditorAdapter />
+                <Form.List name="paths">
+                  {(fields, { add, remove }) => (
+                    <Flex vertical>
+                      {fields.map((field) => (
+                        <Flex className="my-1" key={field.key}>
+                          <Form.Item name={field.name} className="mb-0 grow">
+                            <Input placeholder="/privacy" />
+                          </Form.Item>
+                          <Button
+                            aria-label="Remove path"
+                            className="ml-2"
+                            icon={<Icons.TrashCan />}
+                            onClick={() => remove(field.name)}
+                          />
+                        </Flex>
+                      ))}
+                      <Button className="mt-2" onClick={() => add("")}>
+                        Add path
+                      </Button>
+                    </Flex>
+                  )}
+                </Form.List>
               </Form.Item>
               <Form.Item
                 name="privacy_center_config"

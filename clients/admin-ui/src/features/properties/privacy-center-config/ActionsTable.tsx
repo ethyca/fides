@@ -75,14 +75,18 @@ export const ActionsTable = ({
             <List.Item
               key={row.policy_key}
               actions={[
-                <Link
-                  key="edit-form"
-                  href={`/properties/${propertyId}/forms/${encodeURIComponent(
-                    row.policy_key,
-                  )}`}
-                >
-                  <Button>Edit form</Button>
-                </Link>,
+                ...(propertyId
+                  ? [
+                      <Link
+                        key="edit-form"
+                        href={`/properties/${propertyId}/forms/${encodeURIComponent(
+                          row.policy_key,
+                        )}`}
+                      >
+                        <Button>Edit form</Button>
+                      </Link>,
+                    ]
+                  : []),
                 <Button
                   key="edit-action"
                   icon={<Icons.Edit />}
