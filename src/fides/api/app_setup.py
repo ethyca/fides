@@ -38,6 +38,7 @@ from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
+from fides.api.mcp_pdp.config import PDP_MOUNT_PATH
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
@@ -63,6 +64,7 @@ from fides.common.engine_creators import db_cred_provider
 from fides.common.session_management import get_api_session, get_autoclose_db_session
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.mcp.config import MCPSettings
 
 VERSION = fides.__version__
 
@@ -138,6 +140,13 @@ def create_fides_app(
         fastapi_app.include_router(router)
 
     override_generic_routers(OVERRIDING_ROUTERS, fastapi_app)
+
+    mcp_settings = MCPSettings()
+    if mcp_settings.pdp_enabled:
+        from fides.api.mcp_pdp.server import get_sse_app
+
+        fastapi_app.mount(PDP_MOUNT_PATH, get_sse_app())
+        logger.info("MCP PDP mounted at {}", PDP_MOUNT_PATH)
 
     if security_env == "dev":
         # This removes auth requirements for specific endpoints

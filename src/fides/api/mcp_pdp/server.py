@@ -1,0 +1,17 @@
+"""FastMCP server entry point.
+
+Basic tools (Task 16 evaluate_policy, Task 18 discovery, Task 19 set_session_purpose)
+register on import. The Fidesplus add-on `evaluate_with_inference` tool (Tasks
+17-A and 17-B) registers itself at Fidesplus startup via the bootstrap module.
+"""
+
+from __future__ import annotations
+
+from mcp.server.fastmcp import FastMCP
+
+mcp_server = FastMCP("fides-mcp-pdp")
+
+
+def get_sse_app():
+    """Return an ASGI app exposing the FastMCP SSE transport."""
+    return mcp_server.sse_app()
