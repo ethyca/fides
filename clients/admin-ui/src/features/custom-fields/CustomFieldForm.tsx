@@ -185,12 +185,13 @@ const CustomFieldForm = ({
       return undefined;
     }
     const fieldType = getCustomFieldType(field);
-    const template =
+    const isCustomFieldType =
       fieldType === FieldTypes.OPEN_TEXT ||
       fieldType === FieldTypes.SINGLE_SELECT ||
-      fieldType === FieldTypes.MULTIPLE_SELECT
-        ? CUSTOM_TEMPLATE_VALUE
-        : undefined;
+      fieldType === FieldTypes.MULTIPLE_SELECT;
+    const template = isCustomFieldType
+      ? CUSTOM_TEMPLATE_VALUE
+      : field.field_type;
     return {
       ...field,
       value_type: field.field_type,

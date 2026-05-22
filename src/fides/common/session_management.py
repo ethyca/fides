@@ -40,6 +40,7 @@ def get_api_session() -> Session:
             pool_size=CONFIG.database.api_engine_pool_size,
             max_overflow=CONFIG.database.api_engine_max_overflow,
             pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
+            pool_recycle=CONFIG.database.pool_recycle,
         )
     SessionLocal = get_db_session(CONFIG, engine=_engine)
     return SessionLocal()
@@ -157,6 +158,7 @@ def get_readonly_api_session() -> Session:
             pool_size=CONFIG.database.api_engine_pool_size,
             max_overflow=CONFIG.database.api_engine_max_overflow,
             pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
+            pool_recycle=CONFIG.database.pool_recycle,
         )
     SessionLocal = get_db_session(CONFIG, engine=_readonly_engine)
     return SessionLocal()

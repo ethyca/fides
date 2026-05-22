@@ -114,5 +114,6 @@ from fides.api.models.tcf_publisher_restrictions import (
     TCFPublisherRestriction,
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.models.tcf_version_hash_history import TCFVersionHashHistory
 from fides.api.models.v3.privacy_preferences import PrivacyPreferences
 from fides.system_integration_link.models import SystemConnectionConfigLink

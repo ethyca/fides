@@ -20,6 +20,7 @@ import ConnectionTypeLogo, {
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionType,
+  ExecutionLogStatus,
   MonitorTaskResponse,
   MonitorTaskType,
 } from "~/types/api";
@@ -32,15 +33,8 @@ import {
 
 const { Paragraph, Text, Title } = Typography;
 
-// Helper function to format status names for display
-const formatStatusForDisplay = (status: string): string => {
-  // Special case: "paused" should display as "Awaiting Processing"
-  if (status === "paused") {
-    return "Awaiting Processing";
-  }
-
-  return status.split("_").map(capitalize).join(" ");
-};
+const formatStatusForDisplay = (status: string) =>
+  status.split("_").map(capitalize).join(" ");
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
   task: MonitorTaskResponse;
@@ -102,11 +96,10 @@ export const InProgressMonitorTaskItem = ({
 
   const taskCount = task.staged_resource_urns?.length || 0;
   const isInProgress = [
-    "pending",
-    "in_processing",
-    "paused",
-    "retrying",
-  ].includes((task.status || "").toLowerCase());
+    ExecutionLogStatus.PENDING,
+    ExecutionLogStatus.IN_PROCESSING,
+    ExecutionLogStatus.RETRYING,
+  ].some((status) => status === task.status?.toLowerCase());
   const fieldCount = task.field_count || taskCount;
   const taskTitle = (() => {
     if (

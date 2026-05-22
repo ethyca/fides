@@ -1,0 +1,3 @@
+type: Fixed
+description: Fixed async erasure strategies (polling and callback) not forwarding input_data to update statement generation, causing failures for SaaS connectors with external references.
+pr: 8236

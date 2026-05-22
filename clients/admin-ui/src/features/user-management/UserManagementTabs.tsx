@@ -8,6 +8,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 import { useHasPermission } from "../common/Restrict";
 import PermissionsForm from "./PermissionsForm";
 import RolesForm from "./RolesForm";
+import StewardshipTab from "./StewardshipTab";
 import {
   selectActiveUserId,
   useGetUserByIdQuery,
@@ -66,6 +67,13 @@ const UserManagementTabs = ({
       ),
       disabled: rolesTabDisabled,
       forceRender: !rolesTabDisabled,
+    },
+    {
+      label: "Stewardship",
+      key: "stewardship",
+      children: <StewardshipTab />,
+      disabled: !activeUserId,
+      forceRender: !!activeUserId,
     },
   ];
 

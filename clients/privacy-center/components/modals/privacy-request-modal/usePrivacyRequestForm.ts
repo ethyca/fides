@@ -2,13 +2,14 @@ import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { ModalViews } from "~/components/modals/types";
 import {
+  dateFieldValidation,
   emailValidation,
   nameValidation,
   phoneValidation,
@@ -16,11 +17,32 @@ import {
 import { DEFAULT_IDENTITY_INPUTS } from "~/constants";
 import { useProperty } from "~/features/common/property.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import {
+  useApplicabilitySync,
+  useConditionalValidate,
+} from "~/hooks/useConditionalValidation";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
-import { FormValues, MultiselectFieldValue } from "~/types/forms";
+import {
+  CustomConfigField,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
+import {
+  FormFieldValue,
+  FormValues,
+  MultiselectFieldValue,
+} from "~/types/forms";
+
+import { buildOrderedFields } from "./buildOrderedFields";
+import { uploadAllFiles } from "./fileUploadUtils";
+
+export type { OrderedField } from "./buildOrderedFields";
+export {
+  uploadAllFiles,
+  uploadFieldFiles,
+  uploadFile,
+} from "./fileUploadUtils";
 
 /**
  *
@@ -84,7 +106,66 @@ const usePrivacyRequestForm = ({
     searchParams,
   });
 
+  const initialValues = useMemo(() => getInitialValues(), [getInitialValues]);
+
+  // Build the static portion of the validation schema (identity fields)
+  const identityValidationSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        name: nameValidation(nameInput),
+        email: emailValidation(emailInput).test(
+          "one of email or phone entered",
+          "You must enter either email or phone",
+          (_value, context) => {
+            if (emailInput === "optional" && phoneInput === "optional") {
+              return Boolean(context.parent.phone || context.parent.email);
+            }
+            return true;
+          },
+        ),
+        phone: phoneValidation(phoneInput).test(
+          "one of email or phone entered",
+          "You must enter either email or phone",
+          (_value, context) => {
+            if (emailInput === "optional" && phoneInput === "optional") {
+              return Boolean(context.parent.phone || context.parent.email);
+            }
+            return true;
+          },
+        ),
+        ...Object.fromEntries(
+          Object.entries(customIdentityFields).flatMap(([key, value]) => {
+            if (!value) {
+              return [];
+            }
+            if (value.field_type === "date") {
+              return [
+                [
+                  key,
+                  dateFieldValidation(
+                    value,
+                    value.label,
+                    value.required !== false,
+                  ),
+                ],
+              ];
+            }
+            return [[key, Yup.string().required(`${value.label} is required`)]];
+          }),
+        ),
+      }),
+    [emailInput, phoneInput, nameInput, customIdentityFields],
+  );
+
+  const { validate, applicableFieldsRef, validationError } =
+    useConditionalValidate({
+      customPrivacyRequestFields,
+      identityValidationSchema,
+      getValidationSchema,
+    });
+
   const formik = useFormik<FormValues>({
+    enableReinitialize: true,
     initialValues: {
       ...Object.fromEntries(
         Object.entries({
@@ -92,7 +173,7 @@ const usePrivacyRequestForm = ({
           ...customIdentityFields,
         }).map(([key]) => [key, ""]),
       ),
-      ...getInitialValues(),
+      ...initialValues,
       ...Object.fromEntries(
         Object.entries({
           ...legacyIdentityFields,
@@ -110,6 +191,22 @@ const usePrivacyRequestForm = ({
         return;
       }
       setIsSubmitPending(true);
+
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: unknown;
+      }) => {
+        setIsSubmitPending(false);
+        const errorMessage = typeof error === "string" ? error : undefined;
+        toast({
+          title,
+          description: errorMessage,
+          ...ErrorToastOptions,
+        });
+      };
 
       // extract identity input values
       const identityInputValues = Object.fromEntries(
@@ -130,29 +227,78 @@ const usePrivacyRequestForm = ({
           }),
       );
 
+      // Upload files first, before building the submission payload
+      let fileAttachmentIds: Record<string, string[]> = {};
+      if (action.custom_privacy_request_fields) {
+        try {
+          fileAttachmentIds = await uploadAllFiles(
+            values,
+            action.custom_privacy_request_fields,
+            settings.FIDES_API_URL,
+            {
+              propertyId: property?.id || "",
+              policyKey: action.policy_key,
+            },
+          );
+        } catch (uploadError) {
+          handleError({
+            title: "An error occurred while uploading your file",
+            error:
+              uploadError instanceof Error
+                ? uploadError.message
+                : "File upload failed",
+          });
+          return;
+        }
+      }
+
       const customPrivacyRequestFieldValues =
         action.custom_privacy_request_fields
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
-                .filter(([, field]) => field.field_type !== "location")
+                .filter(([key, field]) => {
+                  if (
+                    field.field_type === "location" ||
+                    field.field_type === "file"
+                  ) {
+                    return false;
+                  }
+                  // Exclude fields gated off by display_condition
+                  if (!applicableFieldsRef.current.has(key) && !field.hidden) {
+                    return false;
+                  }
+                  return true;
+                })
                 .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&
                     searchParams?.get(field.query_param_key);
                   const hiddenValue = paramValue ?? field.default_value;
-                  const value = !field.hidden ? values[key] : hiddenValue;
+                  const value: FormFieldValue = !field.hidden
+                    ? values[key]
+                    : (hiddenValue ?? "");
 
                   let processedValue;
-                  if (field.field_type === "multiselect") {
+                  if (
+                    field.field_type === "multiselect" ||
+                    field.field_type === "checkbox_group"
+                  ) {
                     processedValue = value || [];
+                  } else if (field.field_type === "checkbox") {
+                    processedValue = Boolean(value);
                   } else {
-                    processedValue = fallbackNull(value);
+                    processedValue = fallbackNull(
+                      value as
+                        | string
+                        | MultiselectFieldValue
+                        | null
+                        | undefined,
+                    );
                   }
 
                   return [
                     key,
                     {
-                      // only include label and value
                       label: field.label,
                       value: processedValue,
                     },
@@ -161,9 +307,20 @@ const usePrivacyRequestForm = ({
                 .filter(
                   ([, fieldData]) =>
                     typeof fieldData === "object" && fieldData.value !== null,
-                ), // Filter out null values (but keep empty arrays for multiselect)
+                ),
             )
           : {};
+
+      // Add file field values as attachment ID arrays
+      Object.entries(fileAttachmentIds).forEach(([key, ids]) => {
+        const field = action.custom_privacy_request_fields?.[key];
+        if (field) {
+          customPrivacyRequestFieldValues[key] = {
+            label: field.label,
+            value: ids,
+          };
+        }
+      });
 
       // Extract custom fields object for cleaner code
       const customFieldsPayload =
@@ -181,22 +338,6 @@ const usePrivacyRequestForm = ({
           location: values?.location ? values.location : undefined,
         },
       ];
-
-      const handleError = ({
-        title,
-        error,
-      }: {
-        title: string;
-        error?: unknown;
-      }) => {
-        setIsSubmitPending(false);
-        const errorMessage = typeof error === "string" ? error : undefined;
-        toast({
-          title,
-          description: errorMessage,
-          ...ErrorToastOptions,
-        });
-      };
 
       try {
         const headers: Headers = new Headers();
@@ -253,38 +394,24 @@ const usePrivacyRequestForm = ({
         });
       }
     },
-    validationSchema: Yup.object().shape({
-      name: nameValidation(nameInput),
-      email: emailValidation(emailInput).test(
-        "one of email or phone entered",
-        "You must enter either email or phone",
-        (_value, context) => {
-          if (emailInput === "optional" && phoneInput === "optional") {
-            return Boolean(context.parent.phone || context.parent.email);
-          }
-          return true;
-        },
-      ),
-      phone: phoneValidation(phoneInput).test(
-        "one of email or phone entered",
-        "You must enter either email or phone",
-        (_value, context) => {
-          if (emailInput === "optional" && phoneInput === "optional") {
-            return Boolean(context.parent.phone || context.parent.email);
-          }
-          return true;
-        },
-      ),
-      ...Object.fromEntries(
-        Object.entries(customIdentityFields).flatMap(([key, value]) => {
-          return value
-            ? [[key, Yup.string().required(`${value.label} is required`)]]
-            : [];
-        }),
-      ),
-      ...getValidationSchema().fields,
-    }),
+
+    validate,
   });
+
+  const { applicableFields, conditionError } = useApplicabilitySync({
+    customPrivacyRequestFields,
+    applicableFieldsRef,
+    initialValues,
+    formValues: formik.values,
+    setFieldValue: formik.setFieldValue,
+  });
+
+  const orderedFields = buildOrderedFields(
+    legacyIdentityFields,
+    customIdentityFields as Record<string, CustomConfigField>,
+    customPrivacyRequestFields,
+    action?.field_order,
+  );
 
   return {
     ...formik,
@@ -292,6 +419,9 @@ const usePrivacyRequestForm = ({
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,
+    orderedFields,
+    applicableFields,
+    validationError: validationError || conditionError,
   };
 };
 

@@ -14,5 +14,12 @@ from fides.common.cache.manager import (
     INDEX_KEY_PREFIX,
     RedisCacheManager,
 )
+from fides.common.cache.monitor_task_store import MonitorTaskCacheStore
 
-__all__ = ["INDEX_KEY_PREFIX", "RedisCacheManager", "DSR_KEY_PREFIX", "DSRCacheStore"]
+__all__ = [
+    "INDEX_KEY_PREFIX",
+    "RedisCacheManager",
+    "DSR_KEY_PREFIX",
+    "DSRCacheStore",
+    "MonitorTaskCacheStore",
+]

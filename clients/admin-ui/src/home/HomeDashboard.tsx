@@ -7,7 +7,7 @@ import { TrendPeriod } from "~/features/dashboard/types";
 
 import { ActivityFeedCard } from "./ActivityFeedCard";
 import { AgentBriefingBanner } from "./AgentBriefingBanner";
-import { AstralisPanel } from "./AstralisPanel";
+import { AssessmentStatusCard } from "./AssessmentStatusCard";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { DSRStatusCard } from "./DSRStatusCard";
 import { PostureCard } from "./PostureCard";
@@ -22,8 +22,8 @@ export const HomeDashboard = () => {
     flags: {
       alphaDarkMode,
       alphaDashboardActivityFeed,
-      alphaDashboardAstralisCard,
       alphaDashboardAgentBriefing,
+      alphaDashboardAssessmentStatusCard,
     },
   } = useFlags();
   const { data: trends, isLoading: isTrendsLoading } =
@@ -77,24 +77,27 @@ export const HomeDashboard = () => {
           <DSRStatusCard />
         </Col>
       </Row>
-      {(alphaDashboardActivityFeed || alphaDashboardAstralisCard) && (
-        <Row gutter={ROW_GUTTER} className="h-[400px] items-stretch">
+      {(alphaDashboardActivityFeed || alphaDashboardAssessmentStatusCard) && (
+        <Row
+          gutter={ROW_GUTTER}
+          className={`items-stretch ${alphaDashboardActivityFeed ? "h-[400px]" : ""}`}
+        >
           {alphaDashboardActivityFeed && (
             <Col
               xs={24}
-              md={alphaDashboardAstralisCard ? 16 : 24}
+              md={alphaDashboardAssessmentStatusCard ? 12 : 24}
               className="h-full"
             >
               <ActivityFeedCard />
             </Col>
           )}
-          {alphaDashboardAstralisCard && (
+          {alphaDashboardAssessmentStatusCard && (
             <Col
               xs={24}
-              md={alphaDashboardActivityFeed ? 8 : 24}
+              md={alphaDashboardActivityFeed ? 12 : 24}
               className="h-full"
             >
-              <AstralisPanel />
+              <AssessmentStatusCard />
             </Col>
           )}
         </Row>
