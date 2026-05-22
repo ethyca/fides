@@ -68,7 +68,7 @@ export const AssessmentGroup = ({
   const overflowCount = assessments.length - maxVisible;
 
   // Category label for cards (short version of the data use)
-  const categoryLabel = dataUseName?.split(" ")[0]?.toUpperCase() ?? undefined;
+  const categoryLabel = dataUseName?.split(" ")[0] ?? undefined;
   // Parent category for the header kicker (e.g. "Privacy · Analytics")
   const headerCategory = dataUseName?.split(" ")[0] ?? displayName;
 

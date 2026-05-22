@@ -12,11 +12,11 @@ import { useMemo, useState } from "react";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import {
-  assessmentMatchesFilter,
   AssessmentFilterKey,
   AssessmentFilters,
   AssessmentGroup,
   AssessmentGroupResponse,
+  assessmentMatchesFilter,
   AssessmentSettingsModal,
   AssessmentStatsBar,
   AssessmentTaskStatusIndicator,
@@ -116,14 +116,12 @@ const PrivacyAssessmentsPage: NextPage = () => {
                 <Button
                   aria-label="Assessment settings"
                   icon={<Icons.Settings />}
-                  rounded={false}
                   onClick={() => setSettingsModalOpen(true)}
                   data-testid="btn-assessment-settings"
                 />
                 {hasAssessments && (
                   <Button
                     type="primary"
-                    rounded={false}
                     onClick={() => setGenerateModalOpen(true)}
                   >
                     Generate assessments

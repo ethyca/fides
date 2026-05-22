@@ -158,16 +158,7 @@ export const AssessmentTaskStatusIndicator = ({
       return (
         <Flex align="center" gap={8}>
           <FidesIndicator color="var(--fidesui-color-success)" size={6} />
-          <Text
-            type="secondary"
-            size="sm"
-            style={{
-              fontFamily: "var(--fidesui-font-family-code)",
-              letterSpacing: "0.02em",
-            }}
-          >
-            Last evaluation · {lastAssessmentAgo}
-          </Text>
+          <Text type="secondary">Last evaluation · {lastAssessmentAgo}</Text>
         </Flex>
       );
     }

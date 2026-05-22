@@ -123,7 +123,7 @@ export const AssessmentCard = ({
         {/* Top row: category label + status badge */}
         <Flex justify="space-between" align="center">
           {categoryLabel && (
-            <Text variant="monoLabel" type="secondary" strong>
+            <Text variant="monoLabel" type="secondary">
               {categoryLabel}
             </Text>
           )}
@@ -173,12 +173,7 @@ export const AssessmentCard = ({
                 </RouterLink>
               )}
             </Title>
-            <Text
-              variant="monoLabel"
-              size="sm"
-              className={styles.templateSubtitle}
-              strong
-            >
+            <Text size="sm" className={styles.templateSubtitle} strong>
               {templateName}
             </Text>
           </div>
@@ -236,10 +231,10 @@ export const AssessmentCard = ({
         {/* Progress section */}
         <div>
           <Flex justify="space-between" align="center" className="mb-1">
-            <Text variant="monoLabel" type="secondary" size="sm" strong>
+            <Text type="secondary" size="sm" strong>
               Questions answered
             </Text>
-            <Text variant="monoLabel" size="sm" strong>
+            <Text size="sm" strong>
               {Math.round(completeness)}%
             </Text>
           </Flex>
