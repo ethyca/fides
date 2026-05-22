@@ -28,6 +28,17 @@ export const useInfiniteViolationLogs = ({
 
   const { data, isFetching } = useGetViolationLogsQuery(queryParams);
 
+  // Reset when filters change.
+  // Declared BEFORE the accumulator below so that when both effects fire in
+  // the same render (filters changed AND RTK Query returned a cached result
+  // for the new args), the accumulator's setAllItems wins last-write — without
+  // this, the reset clobbers freshly-cached data and the table renders empty.
+  useEffect(() => {
+    setCursor(null);
+    setAllItems([]);
+    setHasMore(true);
+  }, [filters]);
+
   // Accumulate fetched pages into allItems
   useEffect(() => {
     if (!data) {
@@ -49,13 +60,6 @@ export const useInfiniteViolationLogs = ({
 
     setHasMore(!!data.next_cursor);
   }, [data, cursor]);
-
-  // Reset when filters change
-  useEffect(() => {
-    setCursor(null);
-    setAllItems([]);
-    setHasMore(true);
-  }, [filters]);
 
   const loadMore = useCallback(() => {
     if (!isFetching && hasMore && data?.next_cursor) {

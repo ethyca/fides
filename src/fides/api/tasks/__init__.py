@@ -35,6 +35,8 @@ BULK_CONSENT_IMPORT_QUEUE_NAME = "fidesplus.bulk_consent_import"  # This queue i
 DATAHUB_QUEUE_NAME = (
     "fidesplus.datahub"  # This queue is used for syncing Fides datasets with Datahub
 )
+PRIVACY_ASSESSMENTS_QUEUE_NAME = "fidesplus.privacy_assessments"  # This queue is used for running privacy assessment evaluation tasks
+QUESTIONNAIRES_QUEUE_NAME = "fidesplus.questionnaires"  # This queue is used for processing questionnaire chat replies
 
 
 NEW_SESSION_RETRIES = 5

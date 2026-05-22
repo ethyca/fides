@@ -1417,6 +1417,8 @@ def _requeue_privacy_request(
     if privacy_request.status not in [
         PrivacyRequestStatus.approved,
         PrivacyRequestStatus.in_processing,
+        PrivacyRequestStatus.requires_input,
+        PrivacyRequestStatus.pending_external,
     ]:
         raise PrivacyRequestError(
             f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
