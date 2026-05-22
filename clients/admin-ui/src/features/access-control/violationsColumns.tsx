@@ -17,13 +17,15 @@ export const getViolationsColumns =
   (): ColumnsType<PolicyViolationAggregate> => [
     {
       title: "Policy",
-      dataIndex: "policy",
+      dataIndex: "policy_label",
       key: "policy",
+      render: (value: string | null) => value || "—",
     },
     {
       title: "Control",
-      dataIndex: "control",
+      dataIndex: "control_label",
       key: "control",
+      render: (value: string | null) => value || "—",
     },
     {
       title: "Violations",
@@ -31,9 +33,12 @@ export const getViolationsColumns =
       key: "violation_count",
       width: 120,
       sorter: (a, b) => a.violation_count - b.violation_count,
-      render: (count: number) => (
-        <Tag color={getViolationColor(count)}>{count}</Tag>
-      ),
+      render: (count: number, record: PolicyViolationAggregate) => {
+        if (record.suppressed) {
+          return <Tag color="success">{count} allowed</Tag>;
+        }
+        return <Tag color={getViolationColor(count)}>{count}</Tag>;
+      },
     },
     {
       title: "Last violation",
