@@ -1,0 +1,4 @@
+type: Added
+description: Added aws_iam authentication strategy for SaaS connectors, supporting AWS Signature V4 signing with static credentials and STS AssumeRole with automatic credential caching
+pr: 8272
+labels: []
