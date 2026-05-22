@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed display of checkbox and boolean custom fields in privacy request details, which were previously filtered out or not formatted correctly
+pr: 8278
+labels: []
