@@ -795,6 +795,12 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             # has finished (the task is waiting for an external
                             # event).  Only requeue if the connection is gone —
                             # otherwise the task is legitimately waiting.
+                            #
+                            # NOTE: For requires_input / pending_external PRs,
+                            # requeue is safe for DB-backed ManualTask input
+                            # (survives restart).  Old manual-webhook input is
+                            # Redis-only and may require re-submission if the
+                            # cache TTL expires before the requeued task runs.
                             if task_status == ExecutionLogStatus.awaiting_processing:
                                 if not _task_is_orphaned(db, request_task_id):
                                     continue

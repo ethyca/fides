@@ -287,6 +287,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def generate_dry_run_query(self) -> Optional[str]:
         """Type-specific query generated for this traversal_node."""
+        if self.connector is None:
+            return None
         return self.connector.dry_run_query(self.execution_node)
 
     def can_write_data(self) -> bool:

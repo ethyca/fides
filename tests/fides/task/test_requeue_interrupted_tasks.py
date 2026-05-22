@@ -736,3 +736,34 @@ class TestOrphanedAsyncTasks:
         requeue_interrupted_tasks.apply().get()
         mock_requeue.assert_called_once()
         mock_cancel.assert_not_called()
+
+    # -- Edge case: missing connection_key in traversal_details --
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_missing_connection_key_not_treated_as_orphaned(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """An awaiting_processing task whose traversal_details lacks
+        dataset_connection_key should NOT be treated as orphaned.  The
+        conservative default (return False) keeps the task in its current
+        state rather than incorrectly requeueing."""
+        pr = make_privacy_request()
+        # No connection_key → traversal_details won't have dataset_connection_key
+        make_request_task(
+            pr,
+            ExecutionLogStatus.awaiting_processing,
+            async_type=AsyncTaskType.callback,
+            cached_subtask_id="old-celery-id",
+        )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
