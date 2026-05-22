@@ -23,7 +23,6 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.schemas.policy import ActionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.manual_task import ManualTask
@@ -33,6 +32,7 @@ from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
