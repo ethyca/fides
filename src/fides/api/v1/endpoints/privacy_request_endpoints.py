@@ -24,7 +24,7 @@ from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session, selectinload
-from starlette.responses import StreamingResponse
+from starlette.responses import Response, StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
@@ -630,7 +630,7 @@ def get_request_status_logs(
     PRIVACY_REQUEST_DIAGNOSTICS,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
     status_code=HTTP_200_OK,
-    response_class=StreamingResponse,
+    response_class=Response,
     responses={
         200: {
             "content": {"application/zip": {}},
@@ -642,7 +642,7 @@ def get_privacy_request_diagnostics_report(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-) -> StreamingResponse:
+) -> Response:
     """
     Export a non-PII diagnostics snapshot for a single privacy request
     as a downloadable ZIP file.
@@ -659,13 +659,12 @@ def get_privacy_request_diagnostics_report(
     # if the ID format ever changes beyond safe UUID characters.
     safe_id = "".join(c for c in privacy_request_id if c.isalnum() or c in "-_")
     filename = f"diagnostics-{safe_id}.zip"
-    # BytesIO is held entirely in memory — no disk I/O occurs.
-    return StreamingResponse(
-        buf,
+    content = buf.getvalue()
+    return Response(
+        content=content,
         media_type="application/zip",
         headers={
             "Content-Disposition": f'attachment; filename="{filename}"',
-            "Content-Length": str(buf.getbuffer().nbytes),
         },
     )
 
