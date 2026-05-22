@@ -37,7 +37,7 @@ export const getRequestLogColumns = (): ColumnsType<PolicyViolationLog> => [
     key: "policy",
     width: 180,
     ellipsis: true,
-    render: (value: string | undefined) => value || "Missing",
+    render: (value: string | undefined) => value || "—",
   },
   {
     title: "Control",
