@@ -7,8 +7,11 @@ import Layout from "~/features/common/Layout";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetExperienceConfigByIdQuery } from "~/features/privacy-experience/privacy-experience.slice";
+import TcfHashHistoryTable from "~/features/tcf-hash-history/TcfHashHistoryTable";
 import TcfHashHistoryTimeline from "~/features/tcf-hash-history/TcfHashHistoryTimeline";
 import TcfHashHistoryTimeList from "~/features/tcf-hash-history/TcfHashHistoryTimeList";
+
+type Variant = "timeline" | "list" | "table";
 
 const TcfVersionHistoryPage: NextPage = () => {
   const router = useRouter();
@@ -20,7 +23,7 @@ const TcfVersionHistoryPage: NextPage = () => {
     skip: !experienceConfigId,
   });
 
-  const [variant, setVariant] = useState<"timeline" | "list">("timeline");
+  const [variant, setVariant] = useState<Variant>("timeline");
 
   return (
     <Layout title="TCF version history">
@@ -36,20 +39,23 @@ const TcfVersionHistoryPage: NextPage = () => {
         ]}
         rightContent={
           <Segmented<string>
-            options={["timeline", "list"]}
+            options={["timeline", "list", "table"]}
             onChange={(value) => {
-              setVariant(value as "timeline" | "list");
+              setVariant(value as Variant);
             }}
           />
         }
       />
 
-      {experienceConfigId &&
-        (variant === "timeline" ? (
-          <TcfHashHistoryTimeline experienceConfigId={experienceConfigId} />
-        ) : (
-          <TcfHashHistoryTimeList experienceConfigId={experienceConfigId} />
-        ))}
+      {experienceConfigId && variant === "timeline" && (
+        <TcfHashHistoryTimeline experienceConfigId={experienceConfigId} />
+      )}
+      {experienceConfigId && variant === "list" && (
+        <TcfHashHistoryTimeList experienceConfigId={experienceConfigId} />
+      )}
+      {experienceConfigId && variant === "table" && (
+        <TcfHashHistoryTable experienceConfigId={experienceConfigId} />
+      )}
     </Layout>
   );
 };
