@@ -1,0 +1,32 @@
+.diffItemAdd {
+  background-color: var(--ant-color-success-bg);
+}
+
+.diffItemRemove {
+  background-color: var(--ant-color-error-bg);
+}
+
+.diffItemChange {
+  background-color: var(--ant-color-warning-bg);
+}
+
+.expandBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--fidesui-neutral-600);
+
+  &:hover {
+    color: var(--fidesui-neutral-900);
+  }
+
+  &[disabled] {
+    cursor: default;
+    color: var(--fidesui-neutral-300);
+    pointer-events: none;
+  }
+}

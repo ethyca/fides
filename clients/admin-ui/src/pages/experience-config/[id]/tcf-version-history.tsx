@@ -23,7 +23,7 @@ const TcfVersionHistoryPage: NextPage = () => {
     skip: !experienceConfigId,
   });
 
-  const [variant, setVariant] = useState<Variant>("timeline");
+  const [variant, setVariant] = useState<Variant>("table");
 
   return (
     <Layout title="TCF version history">
@@ -40,6 +40,7 @@ const TcfVersionHistoryPage: NextPage = () => {
         rightContent={
           <Segmented<string>
             options={["timeline", "list", "table"]}
+            value={variant}
             onChange={(value) => {
               setVariant(value as Variant);
             }}

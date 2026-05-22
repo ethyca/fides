@@ -14,6 +14,43 @@ import {
 } from "~/types/api";
 import { PaginatedResponse, PaginationQueryParams } from "~/types/query-params";
 
+interface TcfDiffPurposeChange {
+  vendor_id: number;
+  purpose_id: number;
+  from: string | null;
+  to: string | null;
+}
+
+interface TcfDiffSystemPurposeChange {
+  system_id: string;
+  purpose_id: number;
+  from: string | null;
+  to: string | null;
+}
+
+interface TcfDiffRestrictionChange {
+  purpose_id: number;
+  vendor_id: number;
+  from: string | null;
+  to: string | null;
+}
+
+export interface TcfDiff {
+  vendors_added?: number[];
+  vendors_removed?: number[];
+  purposes_changed?: TcfDiffPurposeChange[];
+  systems_added?: string[];
+  systems_removed?: string[];
+  system_purposes_changed?: TcfDiffSystemPurposeChange[];
+  restrictions_changed?: TcfDiffRestrictionChange[];
+}
+
+interface TcfHistoryDetails {
+  trigger_context?: Record<string, unknown>;
+  tcf_diff?: TcfDiff;
+  tcf_snapshot?: unknown;
+}
+
 export interface TCFVersionHashHistoryResponse {
   id: string;
   privacy_experience_config_id?: string | null;
@@ -21,6 +58,7 @@ export interface TCFVersionHashHistoryResponse {
   current_hash: string;
   changed_at: string;
   trigger_source: string;
+  details?: TcfHistoryDetails | null;
 }
 
 export interface State {

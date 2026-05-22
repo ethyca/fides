@@ -13,6 +13,7 @@ export {
   Attachment,
   Calendar,
   CaretDown,
+  CaretRight,
   Checkmark,
   CheckmarkFilled,
   CheckmarkOutline,
