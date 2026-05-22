@@ -189,9 +189,11 @@ def build_erasure_networkx_digraph(
         for ref in traversal_node.node.collection.erase_after:
             if ref not in valid_nodes:
                 raise TraversalError(
-                    f"Collection {node_name} has an erase_after reference to "
-                    f"{ref} which does not exist in the dataset graph. This may "
-                    f"indicate a deleted integration that is still referenced."
+                    f"Erasure cannot proceed: collection '{node_name}' has an "
+                    f"'Erase After' dependency on '{ref}', which no longer "
+                    f"exists in the dataset graph. Update the 'Erase After' "
+                    f"setting on this collection in the dataset configuration "
+                    f"to remove the stale reference."
                 )
 
     for node_name, traversal_node in traversal_nodes.items():
