@@ -23,6 +23,7 @@ from fides.service.mcp.intent.inference import InferenceClient
 from fides.service.mcp.intent.prompts import (
     build_stage1_prompts,
     build_stage2_category_prompts,
+    build_stage2_purpose_prompts,
 )
 from fides.service.mcp.models import (
     CapabilityProfile,
@@ -45,6 +46,12 @@ class Stage1Output(BaseModel):
 
 class Stage2CategoryOutput(BaseModel):
     data_categories: list[str]
+    confidence: float = Field(ge=0.0, le=1.0)
+    rationale: str = ""
+
+
+class Stage2PurposeOutput(BaseModel):
+    selected_purpose: str
     confidence: float = Field(ge=0.0, le=1.0)
     rationale: str = ""
 
@@ -90,7 +97,12 @@ class IntentResolver:
             return await self._resolve_agent(
                 consumer, tool, arguments, purpose_hint=purpose_hint,
             )
-        raise NotImplementedError("interactive mode lands in Task 11")
+        return await self._resolve_interactive(
+            consumer, tool, arguments,
+            purpose_hint=purpose_hint,
+            session_purpose=session_purpose,
+            chat_context=chat_context,
+        )
 
     async def _resolve_agent(
         self,
@@ -170,6 +182,118 @@ class IntentResolver:
             tool.upstream_key, tool.tool_name, scrub.scrubbed_hash, resolution
         )
         return resolution
+
+    async def _resolve_interactive(
+        self,
+        consumer: Consumer,
+        tool: RegisteredTool,
+        arguments: dict[str, Any],
+        *,
+        purpose_hint: str | None,
+        session_purpose: str | None,
+        chat_context: ChatContext | None,
+    ) -> IntentResolution:
+        # Always scrub args for inference + cache key
+        scrub = self._scrubber.scrub_dict(arguments)
+        chat_text = self._scrub_chat(chat_context) if (
+            chat_context and consumer.chat_context_inference
+        ) else None
+
+        # ---- Pick purpose ----
+        if purpose_hint:
+            if purpose_hint not in consumer.allowable_purpose_keys:
+                raise ValueError(f"purpose_hint {purpose_hint!r} not in allowable set")
+            chosen_purpose = purpose_hint
+            purpose_source = PurposeSource.EXPLICIT_HINT
+            purpose_confidence = 1.0
+        elif session_purpose:
+            if session_purpose not in consumer.allowable_purpose_keys:
+                raise ValueError(f"session_purpose {session_purpose!r} not in allowable set")
+            chosen_purpose = session_purpose
+            purpose_source = PurposeSource.SESSION
+            purpose_confidence = 1.0
+        elif len(consumer.allowable_purpose_keys) == 1:
+            chosen_purpose = consumer.allowable_purpose_keys[0]
+            purpose_source = PurposeSource.DECLARED
+            purpose_confidence = 1.0
+        else:
+            sys_p, user_p = build_stage2_purpose_prompts(
+                tool_name=tool.tool_name,
+                scrubbed_args_text=scrub.scrubbed_text,
+                allowable_purpose_keys=consumer.allowable_purpose_keys,
+                chat_context_text=chat_text,
+            )
+            completion = await self._inference.complete_structured(
+                system_prompt="Stage2 purpose selection: " + sys_p,
+                user_prompt=user_p,
+                output_model=Stage2PurposeOutput,
+                timeout_s=self._stage2_timeout,
+                model=self._stage2_model,
+            )
+            chosen = completion.parsed.selected_purpose
+            if chosen not in consumer.allowable_purpose_keys:
+                raise ValueError(
+                    f"inference picked {chosen!r} which is not in allowable set"
+                )
+            chosen_purpose = chosen
+            purpose_source = PurposeSource.INFERRED
+            purpose_confidence = completion.parsed.confidence
+
+        data_use = self._purpose_data_uses.get(chosen_purpose, chosen_purpose)
+        data_subject = self._purpose_data_subjects.get(chosen_purpose)
+
+        # ---- Categories (same flow as agent mode) ----
+        cached = self._cache.get_resolution(
+            tool.upstream_key, tool.tool_name, scrub.scrubbed_hash
+        )
+        if cached is not None:
+            return cached.model_copy(update={
+                "data_use": data_use, "data_subject": data_subject,
+                "purpose_source": purpose_source, "source": IntentSource.CACHE,
+                "chat_context_used": bool(chat_text),
+            })
+
+        profile = await self._get_or_build_profile(tool)
+        stage2_sys, stage2_user = build_stage2_category_prompts(
+            tool_name=tool.tool_name,
+            tool_description=tool.description,
+            capability_profile_json=profile.model_dump_json(),
+            scrubbed_args_text=scrub.scrubbed_text,
+            allowed_data_categories=profile.plausible_data_categories,
+            chat_context_text=chat_text,
+        )
+        category_completion = await self._inference.complete_structured(
+            system_prompt=stage2_sys, user_prompt=stage2_user,
+            output_model=Stage2CategoryOutput,
+            timeout_s=self._stage2_timeout, model=self._stage2_model,
+        )
+        narrowed = [
+            c for c in category_completion.parsed.data_categories
+            if self._taxonomy.is_known_data_category(c)
+        ]
+        confidence = min(category_completion.parsed.confidence, purpose_confidence)
+        return IntentResolution(
+            data_use=data_use,
+            data_categories=narrowed,
+            data_subject=data_subject,
+            purpose_source=purpose_source,
+            chat_context_used=bool(chat_text),
+            confidence=confidence,
+            rationale=category_completion.parsed.rationale,
+            source=IntentSource.INFERENCE,
+            model=category_completion.model,
+            tool_capability_profile_hash=tool.tool_schema_hash,
+            scrubbed_args_hash=scrub.scrubbed_hash,
+        )
+
+    def _scrub_chat(self, chat: ChatContext) -> str:
+        parts = list(chat.recent_user_messages)
+        if chat.conversation_summary:
+            parts.append(chat.conversation_summary)
+        if chat.active_user_intent:
+            parts.append(chat.active_user_intent)
+        joined = "\n".join(parts)
+        return self._scrubber.scrub(joined).scrubbed_text
 
     async def _get_or_build_profile(self, tool: RegisteredTool) -> CapabilityProfile:
         cached = self._cache.get_profile(
