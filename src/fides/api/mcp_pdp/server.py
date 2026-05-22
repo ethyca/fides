@@ -22,3 +22,16 @@ def get_sse_app():
 from fides.api.mcp_pdp.tools.evaluate import evaluate_policy as _ep  # noqa: F401
 
 mcp_server.tool()(_ep)
+
+from fides.api.mcp_pdp.tools import discovery as _discovery  # noqa: F401, E402
+
+for _fn in (
+    _discovery.list_data_categories,
+    _discovery.list_data_uses,
+    _discovery.list_data_subjects,
+    _discovery.list_consumers,
+    _discovery.get_consumer,
+    _discovery.list_purposes,
+    _discovery.list_policies,
+):
+    mcp_server.tool()(_fn)
