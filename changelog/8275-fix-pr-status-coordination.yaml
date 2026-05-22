@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed privacy request status not updating when manual and async tasks coexist
+pr: 8275
+labels: []
