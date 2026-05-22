@@ -418,9 +418,9 @@ func TestTableResolution_SchemaQualifiedDisambiguation(t *testing.T) {
 				"dataset_b": {DatasetKey: "dataset_b", PurposeKeys: []string{"marketing"}},
 			},
 			Tables: map[string]string{
-				"transactions":             "dataset_b", // bare name = last loaded
-				"dataset_a.transactions":   "dataset_a",
-				"dataset_b.transactions":   "dataset_b",
+				"transactions":           "dataset_b", // bare name = last loaded
+				"dataset_a.transactions": "dataset_a",
+				"dataset_b.transactions": "dataset_b",
 			},
 			FieldCategories: map[string]map[string][]string{},
 		},
