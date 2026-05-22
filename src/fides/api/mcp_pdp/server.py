@@ -35,3 +35,7 @@ for _fn in (
     _discovery.list_policies,
 ):
     mcp_server.tool()(_fn)
+
+from fides.api.mcp_pdp.tools.session import set_session_purpose as _ssp  # noqa: F401, E402
+
+mcp_server.tool()(_ssp)
