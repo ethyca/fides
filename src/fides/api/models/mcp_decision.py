@@ -47,6 +47,9 @@ class MCPDecision(Base):
     forward_ms = Column(Integer, nullable=True)
     error_type = Column(String(255), nullable=True)
 
+    # mcp_decisions has no updated_at column — suppress the FidesBase default
+    updated_at = None  # type: ignore[assignment]
+
     __table_args__ = (
         Index("ix_mcp_decisions_created_at", "created_at"),
         Index("ix_mcp_decisions_consumer", "consumer_fides_key", "created_at"),
