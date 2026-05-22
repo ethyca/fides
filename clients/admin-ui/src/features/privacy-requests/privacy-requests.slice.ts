@@ -11,7 +11,6 @@ import {
   Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
   PrivacyRequestAccessResults,
   PrivacyRequestCreateExtended as PrivacyRequestCreate,
-  PrivacyRequestDiagnosticsExportResponse,
   PrivacyRequestFilter,
   PrivacyRequestNotificationInfo,
   PrivacyRequestStatus,
@@ -590,15 +589,6 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${privacy_request_id}/access-results`,
       }),
     }),
-    getPrivacyRequestDiagnostics: build.query<
-      PrivacyRequestDiagnosticsExportResponse,
-      { privacy_request_id: string }
-    >({
-      query: ({ privacy_request_id }) => ({
-        method: "GET",
-        url: `privacy-request/${privacy_request_id}/diagnostics`,
-      }),
-    }),
     getFilteredResults: build.query<
       {
         privacy_request_id: string;
@@ -662,7 +652,6 @@ export const {
   useCreateStorageSecretsMutation,
   useGetActiveStorageQuery,
   useGetPrivacyRequestAccessResultsQuery,
-  useLazyGetPrivacyRequestDiagnosticsQuery,
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
   usePostPrivacyRequestFinalizeMutation,

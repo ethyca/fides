@@ -478,14 +478,3 @@ class PrivacyRequestDiagnostics(BaseModel):
     attachment_references: List[AttachmentReferenceSnapshot]
     comments: List[CommentSnapshot]
     comment_references: List[CommentReferenceSnapshot]
-
-
-class PrivacyRequestDiagnosticsExportResponse(BaseModel):
-    """Response payload for a diagnostics export request."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    download_url: str
-    storage_type: str
-    object_key: str
-    created_at: datetime
