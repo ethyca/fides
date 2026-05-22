@@ -1,5 +1,5 @@
 import { formatDistance } from "date-fns";
-import { type ColumnsType, Text } from "fidesui";
+import { type ColumnsType, Tag, Text } from "fidesui";
 
 import type { PolicyViolationLog } from "./types";
 
