@@ -1,4 +1,5 @@
 import pytest
+from tests.service.mcp.intent.test_resolver_agent import _FakeInference  # reuse fake
 
 from fides.service.mcp.intent.cache import IntentCache
 from fides.service.mcp.intent.resolver import IntentResolver
@@ -11,7 +12,6 @@ from fides.service.mcp.models import (
 )
 from fides.service.mcp.scrub import RegexScrubber
 from fides.service.mcp.taxonomy import TenantTaxonomy
-from tests.service.mcp.intent.test_resolver_agent import _FakeInference  # reuse fake
 
 
 class _PurposeFakeInference(_FakeInference):

@@ -12,13 +12,13 @@ from __future__ import annotations
 
 from typing import Callable
 
-from fides.service.pbac.engine import evaluate_policies as _go_evaluate_policies
 from fides.service.mcp.models import (
     Decision,
     DecisionOutcome,
     EvaluatedPolicy,
     EvaluationInput,
 )
+from fides.service.pbac.engine import evaluate_policies as _go_evaluate_policies
 
 
 def _call_libpbac(policies: list[dict], request: dict) -> dict:

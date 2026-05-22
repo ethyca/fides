@@ -2,10 +2,14 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.mcp_decision import MCPDecision
-from fides.service.mcp.audit import AuditWriter, AuditRecord
+from fides.service.mcp.audit import AuditRecord, AuditWriter
 from fides.service.mcp.models import (
-    Decision, DecisionOutcome, EvaluationInput, IntentResolution,
-    IntentSource, PurposeSource,
+    Decision,
+    DecisionOutcome,
+    EvaluationInput,
+    IntentResolution,
+    IntentSource,
+    PurposeSource,
 )
 
 

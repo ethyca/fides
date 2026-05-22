@@ -35,7 +35,7 @@ async def test_set_session_purpose_tool_persists_in_store(db):
     ))
     db.commit()
 
-    from fides.api.mcp_pdp.tools.session import set_session_purpose, _SESSIONS
+    from fides.api.mcp_pdp.tools.session import _SESSIONS, set_session_purpose
     with patch(
         "fides.api.mcp_pdp.tools.session._get_db_session", return_value=db
     ):
