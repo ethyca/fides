@@ -104,6 +104,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         keywords: ["data map", "data inventory", "assets"],
       },
       {
+        title: "Add system manually",
+        path: routes.ADD_SYSTEMS_MANUAL_ROUTE,
+        hidden: true,
+        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+      },
+      {
+        title: "Add systems in bulk",
+        path: routes.ADD_SYSTEMS_MULTIPLE_ROUTE,
+        hidden: true,
+        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+      },
+      {
         title: "Manage datasets",
         path: routes.DATASET_ROUTE,
         scopes: [
