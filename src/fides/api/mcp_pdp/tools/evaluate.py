@@ -22,15 +22,19 @@ from sqlalchemy.orm import Session
 from fides.service.mcp.audit import AuditRecord, AuditWriter
 from fides.service.mcp.evaluator import MCPEvaluator
 from fides.service.mcp.models import EvaluationInput
+from fides.service.mcp.policy_loader import load_enabled_v2_policies
 
 
 def _policies_loader() -> list[dict]:
     """Load enabled v2 policies as libpbac-shaped dicts.
 
-    Phase 1: returns an empty list until Task 20 wires this to the real
-    PolicyV2 table loader.
+    Delegates to load_enabled_v2_policies(db) for Phase 1+ wiring.
     """
-    return []
+    db = _get_db_session()
+    try:
+        return load_enabled_v2_policies(db)
+    finally:
+        db.close()
 
 
 def _get_db_session() -> Session:
