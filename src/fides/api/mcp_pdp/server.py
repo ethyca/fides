@@ -15,3 +15,10 @@ mcp_server = FastMCP("fides-mcp-pdp")
 def get_sse_app():
     """Return an ASGI app exposing the FastMCP SSE transport."""
     return mcp_server.sse_app()
+
+
+# Register tools.  Each import must happen after ``mcp_server`` is created so
+# the decorator fires against the real instance.
+from fides.api.mcp_pdp.tools.evaluate import evaluate_policy as _ep  # noqa: F401
+
+mcp_server.tool()(_ep)
