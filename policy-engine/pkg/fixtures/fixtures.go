@@ -66,8 +66,9 @@ type collection struct {
 }
 
 type field struct {
-	Name         string   `yaml:"name"`
-	DataPurposes []string `yaml:"data_purposes,omitempty"`
+	Name           string   `yaml:"name"`
+	DataPurposes   []string `yaml:"data_purposes,omitempty"`
+	DataCategories []string `yaml:"data_categories,omitempty" json:"data_categories,omitempty"`
 }
 
 type datasetFile struct {
@@ -75,8 +76,8 @@ type datasetFile struct {
 }
 
 // Datasets bundles everything LoadDatasets returns: the per-dataset
-// purpose map (engine input) and the table-name -> dataset_key index
-// (table resolution).
+// purpose map (engine input), the table-name -> dataset_key index
+// (table resolution), and the field-level data category index.
 type Datasets struct {
 	// Purposes is keyed by dataset fides_key and fed to the engine.
 	Purposes map[string]pbac.DatasetPurposes `json:"purposes"`
@@ -84,6 +85,10 @@ type Datasets struct {
 	// fides_key. Assumes table names are globally unique across
 	// datasets; on collision the last one loaded wins.
 	Tables map[string]string `json:"tables"`
+	// FieldCategories maps collection_name -> field_name -> data_categories.
+	// Used to resolve SQL column references to Fides data categories
+	// during policy evaluation.
+	FieldCategories map[string]map[string][]string `json:"field_categories,omitempty"`
 }
 
 // LoadConsumers walks dir for *.yml files and returns a map from member
@@ -161,8 +166,9 @@ func LoadPurposes(dir string) (map[string]Purpose, error) {
 // a query on <dataset>.<collection> is the union of all three levels.
 func LoadDatasets(dir string) (Datasets, error) {
 	result := Datasets{
-		Purposes: map[string]pbac.DatasetPurposes{},
-		Tables:   map[string]string{},
+		Purposes:        map[string]pbac.DatasetPurposes{},
+		Tables:          map[string]string{},
+		FieldCategories: map[string]map[string][]string{},
 	}
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return result, nil
@@ -193,6 +199,10 @@ func LoadDatasets(dir string) (Datasets, error) {
 				effective := collectionEffectivePurposes(c)
 				if len(effective) > 0 {
 					dp.CollectionPurposes[name] = effective
+				}
+				fieldCats := collectionFieldCategories(c)
+				if len(fieldCats) > 0 {
+					result.FieldCategories[name] = fieldCats
 				}
 				result.Tables[name] = ds.FidesKey
 			}
@@ -228,6 +238,23 @@ func collectionEffectivePurposes(c collection) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// collectionFieldCategories builds a field_name -> data_categories
+// map for a single collection. Only fields with non-empty
+// data_categories are included.
+func collectionFieldCategories(c collection) map[string][]string {
+	result := map[string][]string{}
+	for _, fd := range c.Fields {
+		if len(fd.DataCategories) == 0 {
+			continue
+		}
+		cats := make([]string, len(fd.DataCategories))
+		copy(cats, fd.DataCategories)
+		sort.Strings(cats)
+		result[fd.Name] = cats
+	}
+	return result
 }
 
 type policyFile struct {
