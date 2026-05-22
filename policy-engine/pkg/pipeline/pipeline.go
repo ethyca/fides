@@ -422,61 +422,6 @@ func resolveDataCategories(
 	return out
 }
 
-// resolveDataCategories looks up data categories for the columns accessed
-// in a specific dataset collection. If no specific columns were extracted
-// (SELECT * or parse failure), returns all categories from all fields in
-// the collection.
-func resolveDataCategories(
-	datasetKey string,
-	collection string,
-	columnsByDataset map[string]map[string][]string,
-	fieldCategories map[string]map[string][]string,
-) []string {
-	if fieldCategories == nil || collection == "" {
-		return nil
-	}
-
-	collFields, ok := fieldCategories[collection]
-	if !ok || len(collFields) == 0 {
-		return nil
-	}
-
-	var columns []string
-	if dsCols, ok := columnsByDataset[datasetKey]; ok {
-		columns = dsCols[collection]
-	}
-
-	catSet := map[string]bool{}
-
-	if len(columns) == 0 {
-		// SELECT * or no columns extracted — use all field categories
-		for _, cats := range collFields {
-			for _, c := range cats {
-				catSet[c] = true
-			}
-		}
-	} else {
-		for _, col := range columns {
-			if cats, ok := collFields[col]; ok {
-				for _, c := range cats {
-					catSet[c] = true
-				}
-			}
-		}
-	}
-
-	if len(catSet) == 0 {
-		return nil
-	}
-
-	out := make([]string, 0, len(catSet))
-	for c := range catSet {
-		out = append(out, c)
-	}
-	sort.Strings(out)
-	return out
-}
-
 func allSuppressed(violations []pbac.PurposeViolation) bool {
 	for _, v := range violations {
 		if v.SuppressedByPolicy == nil {
