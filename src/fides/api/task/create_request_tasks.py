@@ -663,13 +663,40 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     session: Session,
     privacy_request_proceed: bool = True,
+    policy: Optional[Policy] = None,
+    graph: Optional[DatasetGraph] = None,
+    identity: Optional[Dict[str, Any]] = None,
 ) -> List[RequestTask]:
     """
     DSR 3.0: Update erasure Request Tasks that were built in the "run_access_request" step with data
     collected to build masking requests and queue the root task for processing.
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
+
+    If erasure tasks are missing (e.g., task creation failed on a previous run), recreate them
+    from the current graph before proceeding.
     """
+    # Guard: recreate erasure tasks if they are missing
+    if (
+        not privacy_request.erasure_tasks.count()
+        and policy
+        and policy.get_rules_for_action(action_type=ActionType.erasure)
+        and graph
+        and identity
+    ):
+        logger.warning(
+            "Privacy request {} has erasure rules but zero erasure tasks. "
+            "Recreating erasure tasks from current graph.",
+            privacy_request.id,
+        )
+        traversal = Traversal(graph, identity, policy=policy)
+        traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
+        traversal.traverse(traversal_nodes, collect_tasks_fn)
+        erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+        persist_initial_erasure_request_tasks(
+            session, privacy_request, traversal_nodes, erasure_end_nodes, graph
+        )
+
     update_erasure_tasks_with_access_data(session, privacy_request)
     ready_tasks: List[RequestTask] = (
         get_existing_ready_tasks(session, privacy_request, ActionType.erasure) or []
