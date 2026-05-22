@@ -204,7 +204,10 @@ func LoadDatasets(dir string) (Datasets, error) {
 				fieldCats := collectionFieldCategories(c)
 				if len(fieldCats) > 0 {
 					result.FieldCategories[name] = fieldCats
+<<<<<<< HEAD
 					result.FieldCategories[strings.ToLower(ds.FidesKey)+"."+name] = fieldCats
+=======
+>>>>>>> origin/main
 				}
 				result.Tables[name] = ds.FidesKey
 				result.Tables[strings.ToLower(ds.FidesKey)+"."+name] = ds.FidesKey

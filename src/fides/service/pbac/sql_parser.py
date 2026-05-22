@@ -44,11 +44,11 @@ def parse_query(
     )
 
 
-def extract_table_refs(query_text: str, dialect: str | None = None) -> list[TableRef]:
+def extract_table_refs(query_text: str) -> list[TableRef]:
     """Extract table references from SQL using sqlglot."""
     refs: list[TableRef] = []
     try:
-        parsed = sqlglot.parse(query_text, dialect=dialect)
+        parsed = sqlglot.parse(query_text)
     except Exception:
         logger.warning("Failed to parse SQL query for PBAC evaluation", exc_info=True)
         return refs
@@ -106,19 +106,17 @@ def extract_columns(query_text: str) -> dict[str, list[str]]:
             if name not in table_names:
                 table_names.append(name)
 
-        for select_node in statement.find_all(exp.Select):
-            for column in select_node.expressions:
-                for col_ref in column.find_all(exp.Column):
-                    col_name = col_ref.name
-                    if not col_name:
-                        continue
-                    table_node = col_ref.table
-                    if table_node:
-                        table_key = table_node.lower()
-                        resolved = alias_to_table.get(table_key, table_key)
-                    else:
-                        resolved = ""
-                    columns.setdefault(resolved, []).append(col_name)
+        for column in statement.find_all(exp.Column):
+            col_name = column.name
+            if not col_name:
+                continue
+            table_node = column.table
+            if table_node:
+                table_key = table_node.lower()
+                resolved = alias_to_table.get(table_key, table_key)
+            else:
+                resolved = ""
+            columns.setdefault(resolved, []).append(col_name)
 
     # Attribute unqualified columns to the table when only one exists
     if "" in columns and len(table_names) == 1:

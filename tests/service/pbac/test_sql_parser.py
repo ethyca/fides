@@ -27,15 +27,10 @@ class TestExtractColumns:
         )
         assert "users" in result
         assert "orders" in result
-        assert result["users"] == ["email"]
-        assert result["orders"] == ["total"]
-
-    def test_join_keys_excluded(self):
-        result = extract_columns(
-            "SELECT u.email FROM users u JOIN orders o ON u.id = o.user_id"
-        )
-        assert "id" not in result.get("users", [])
-        assert "user_id" not in result.get("orders", [])
+        assert "email" in result["users"]
+        assert "id" in result["users"]
+        assert "total" in result["orders"]
+        assert "user_id" in result["orders"]
 
     def test_select_star_returns_empty(self):
         result = extract_columns("SELECT * FROM users")

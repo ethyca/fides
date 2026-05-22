@@ -25,14 +25,20 @@ import (
 // TableRef is a (collection, qualified_name) pair extracted from SQL.
 // QualifiedName is used as the identifier on UNCONFIGURED_DATASET gaps
 // when Collection does not resolve to a known dataset.
+<<<<<<< HEAD
 // Schema is the SQL schema (BQ dataset, Snowflake schema) used to
 // disambiguate collections that share the same name across datasets.
+=======
+>>>>>>> origin/main
 // Columns holds the column names accessed from this table (extracted
 // by the Python SQL parser). An empty list means SELECT * or parse
 // failure — the pipeline falls back to all field categories.
 type TableRef struct {
 	Collection    string   `json:"collection"`
+<<<<<<< HEAD
 	Schema        string   `json:"schema,omitempty"`
+=======
+>>>>>>> origin/main
 	QualifiedName string   `json:"qualified_name,omitempty"`
 	Columns       []string `json:"columns,omitempty"`
 }
@@ -304,6 +310,15 @@ func filterViolationsThroughPolicies(
 			columnsByDataset, fieldCategories,
 		)
 
+		var collection string
+		if v.Collection != nil {
+			collection = *v.Collection
+		}
+		dataCategories := resolveDataCategories(
+			v.DatasetKey, collection,
+			columnsByDataset, fieldCategories,
+		)
+
 		req := &pbac.AccessEvaluationRequest{
 			Identity:         identity,
 			ConsumerID:       v.ConsumerID,
@@ -382,6 +397,61 @@ func resolveDataCategories(
 	if !ok {
 		collFields, ok = fieldCategories[collection]
 	}
+	if !ok || len(collFields) == 0 {
+		return nil
+	}
+
+	var columns []string
+	if dsCols, ok := columnsByDataset[datasetKey]; ok {
+		columns = dsCols[collection]
+	}
+
+	catSet := map[string]bool{}
+
+	if len(columns) == 0 {
+		// SELECT * or no columns extracted — use all field categories
+		for _, cats := range collFields {
+			for _, c := range cats {
+				catSet[c] = true
+			}
+		}
+	} else {
+		for _, col := range columns {
+			if cats, ok := collFields[col]; ok {
+				for _, c := range cats {
+					catSet[c] = true
+				}
+			}
+		}
+	}
+
+	if len(catSet) == 0 {
+		return nil
+	}
+
+	out := make([]string, 0, len(catSet))
+	for c := range catSet {
+		out = append(out, c)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// resolveDataCategories looks up data categories for the columns accessed
+// in a specific dataset collection. If no specific columns were extracted
+// (SELECT * or parse failure), returns all categories from all fields in
+// the collection.
+func resolveDataCategories(
+	datasetKey string,
+	collection string,
+	columnsByDataset map[string]map[string][]string,
+	fieldCategories map[string]map[string][]string,
+) []string {
+	if fieldCategories == nil || collection == "" {
+		return nil
+	}
+
+	collFields, ok := fieldCategories[collection]
 	if !ok || len(collFields) == 0 {
 		return nil
 	}

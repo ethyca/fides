@@ -1,0 +1,4 @@
+type: Added
+description: Resolve data categories from SQL query fields for PBAC policy evaluation, enabling data_category match blocks in access policies
+pr: 8160
+labels: []
