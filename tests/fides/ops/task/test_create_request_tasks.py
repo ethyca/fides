@@ -2208,7 +2208,6 @@ class TestRunErasureRequestRecreatesMissingTasks:
             privacy_request,
             db,
             privacy_request_proceed=False,
-            policy=policy,
             graph=graph,
             identity=identity,
         )
@@ -2330,7 +2329,6 @@ class TestRunErasureRequestRecreatesMissingTasks:
             privacy_request,
             db,
             privacy_request_proceed=False,
-            policy=policy,
             graph=graph,
             identity=identity,
         )

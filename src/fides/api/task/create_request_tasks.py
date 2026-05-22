@@ -663,7 +663,6 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     session: Session,
     privacy_request_proceed: bool = True,
-    policy: Optional[Policy] = None,
     graph: Optional[DatasetGraph] = None,
     identity: Optional[Dict[str, Any]] = None,
 ) -> List[RequestTask]:
