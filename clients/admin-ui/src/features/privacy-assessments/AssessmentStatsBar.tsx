@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Divider, Flex, Text } from "fidesui";
 
 import styles from "./AssessmentStatsBar.module.scss";
@@ -47,6 +48,7 @@ export const AssessmentStatsBar = ({ groups }: AssessmentStatsBarProps) => {
       value: needsInputCount,
       subtitle: "needs-input + ready-to-sign",
       color: "var(--fidesui-brand-terracotta)",
+      featured: true,
     },
     {
       label: "Agent · Drafting",
@@ -81,7 +83,9 @@ export const AssessmentStatsBar = ({ groups }: AssessmentStatsBarProps) => {
               {stat.label}
             </Text>
             <div
-              className={styles.value}
+              className={classNames(styles.value, {
+                [styles.featured]: stat.featured,
+              })}
               style={stat.color ? { color: stat.color } : undefined}
             >
               {String(stat.value).padStart(2, "0")}

@@ -18,9 +18,13 @@
 
 .value {
   font-family: var(--fidesui-font-family-code);
-  font-size: 44px;
+  font-size: 32px;
   font-weight: normal;
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: var(--fidesui-color-text);
+}
+
+.featured {
+  font-size: 48px;
 }
