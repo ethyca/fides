@@ -2151,9 +2151,7 @@ class TestRunErasureRequestWithRequestTasks:
 class TestRunErasureRequestRecreatesMissingTasks:
     """Tests that run_erasure_request recreates erasure tasks when they are missing."""
 
-    @patch(
-        "fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks"
-    )
+    @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
     @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
     @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
     def test_recreates_erasure_tasks_when_missing(
@@ -2215,9 +2213,7 @@ class TestRunErasureRequestRecreatesMissingTasks:
 
         mock_persist_erasure.assert_called_once()
 
-    @patch(
-        "fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks"
-    )
+    @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
     @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
     @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
     def test_does_not_recreate_when_tasks_exist(
@@ -2245,9 +2241,7 @@ class TestRunErasureRequestRecreatesMissingTasks:
 
         mock_persist_erasure.assert_not_called()
 
-    @patch(
-        "fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks"
-    )
+    @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
     @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
     @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
     def test_does_not_recreate_without_graph(
