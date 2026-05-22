@@ -28,6 +28,7 @@ from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
@@ -472,8 +473,8 @@ def _handle_privacy_request_requeue(
 
 def _get_request_task_ids_in_progress(
     db: Session, privacy_request_id: str
-) -> Generator[tuple[str, ExecutionLogStatus, bool], None, None]:
-    """Yield (task_id, status, awaiting_upstream) for in-progress request tasks.
+) -> Generator[tuple[str, ExecutionLogStatus, bool, Optional[str]], None, None]:
+    """Yield (task_id, status, awaiting_upstream, async_type) for in-progress request tasks.
 
     Loads only the columns needed (avoiding large JSON blobs) and computes
     upstream completion from a single query rather than per-task DB lookups.
@@ -485,6 +486,7 @@ def _get_request_task_ids_in_progress(
             RequestTask.collection_address,
             RequestTask.action_type,
             RequestTask.upstream_tasks,
+            RequestTask.async_type,
         )
         .filter(RequestTask.privacy_request_id == privacy_request_id)
         .all()
@@ -514,27 +516,69 @@ def _get_request_task_ids_in_progress(
                     not in COMPLETED_EXECUTION_LOG_STATUSES
                     for addr in upstream_addrs
                 )
-        yield (task.id, task.status, awaiting_upstream)
+        yield (task.id, task.status, awaiting_upstream, task.async_type)
+
+
+TERMINAL_PRIVACY_REQUEST_STATUSES = frozenset(
+    {
+        PrivacyRequestStatus.error,
+        PrivacyRequestStatus.complete,
+        PrivacyRequestStatus.canceled,
+        PrivacyRequestStatus.denied,
+    }
+)
+
+
+def derive_privacy_request_status(
+    db: Session, privacy_request: PrivacyRequest
+) -> PrivacyRequestStatus:
+    """Derive the correct PR status from the aggregate state of all active RequestTasks.
+
+    User-actionable statuses always surface:
+        requires_input > pending_external > in_processing
+
+    Terminal statuses (error, complete, canceled, denied) are never overwritten.
+    """
+    if privacy_request.status in TERMINAL_PRIVACY_REQUEST_STATUSES:
+        return privacy_request.status
+
+    awaiting_addrs: list[str] = [
+        row[0]
+        for row in db.query(RequestTask.collection_address)
+        .filter(
+            RequestTask.privacy_request_id == privacy_request.id,
+            RequestTask.status == ExecutionLogStatus.awaiting_processing,
+        )
+        .all()
+    ]
+
+    if not awaiting_addrs:
+        return PrivacyRequestStatus.in_processing
+
+    has_manual_awaiting = any(
+        ManualTaskAddress.is_manual_task_address(addr) for addr in awaiting_addrs
+    )
+    if has_manual_awaiting:
+        return PrivacyRequestStatus.requires_input
+
+    return PrivacyRequestStatus.pending_external
 
 
 def _has_async_tasks_awaiting_external_completion(
     db: Session, privacy_request_id: str
 ) -> bool:
     """
-    Check if a privacy request has any async task pending external completion.
+    Check if a privacy request has any non-exited async task pending external completion.
 
-    Args:
-        db: Database session
-        privacy_request_id: The ID of the privacy request to check
-
-    Returns:
-        bool: True if the privacy request has async tasks awaiting external completion, False otherwise
+    Only considers async tasks that have NOT already finished (complete/error/skipped).
+    Completed async tasks should not prevent the watchdog from rescuing other stuck tasks.
     """
     return db.query(
         db.query(RequestTask)
         .filter(
             RequestTask.privacy_request_id == privacy_request_id,
             RequestTask.async_type.in_([AsyncTaskType.polling, AsyncTaskType.callback]),
+            RequestTask.status.notin_(EXITED_EXECUTION_LOG_STATUSES),
         )
         .exists()
     ).scalar()
@@ -653,6 +697,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         request_task_id,
                         task_status,
                         awaiting_upstream,
+                        task_async_type,
                     ) in request_tasks_in_progress:
                         try:
                             subtask_id = get_cached_task_id(request_task_id)
@@ -700,31 +745,19 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 continue
 
-                            # If the privacy request has async tasks awaiting an external
-                            # event (webhook callback, polling), don't requeue or cancel —
-                            # the request is intentionally waiting for that event.
-                            try:
-                                has_async = (
-                                    _has_async_tasks_awaiting_external_completion(
-                                        db, privacy_request.id
-                                    )
+                            # If THIS task is an async task (callback/polling),
+                            # it's intentionally waiting for an external event —
+                            # skip it but keep checking other tasks. (ENG-3835)
+                            if task_async_type in (
+                                AsyncTaskType.polling,
+                                AsyncTaskType.callback,
+                            ):
+                                logger.debug(
+                                    f"Request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is an async "
+                                    f"{task_async_type} task — skipping but continuing to check others"
                                 )
-                            except Exception as async_exc:
-                                # DB error checking async tasks — fail safe: skip this PR.
-                                logger.warning(
-                                    f"Error checking async tasks for privacy request "
-                                    f"{privacy_request.id}, skipping watchdog pass for this request: {async_exc}"
-                                )
-                                should_requeue = False
-                                break
-                            if has_async:
-                                logger.warning(
-                                    f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) contains async tasks awaiting "
-                                    f"external completion - keeping request in current status"
-                                )
-                                should_requeue = False
-                                break
+                                continue
 
                             # All remaining no-subtask_id cases route through the retry
                             # mechanism. Covers three scenarios:

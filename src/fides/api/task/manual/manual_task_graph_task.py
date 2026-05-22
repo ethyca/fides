@@ -11,13 +11,14 @@ from fides.api.models.manual_task import (
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
-    ManualTaskType,
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.privacy_request.request_service import (
+    derive_privacy_request_status,
+)
 from fides.api.task.conditional_dependencies.logging_utils import (
     format_evaluation_failure_message,
     format_evaluation_success_message,
@@ -317,14 +318,13 @@ class ManualTaskGraphTask(GraphTask):
                 f"cannot proceed without intervention"
             )
 
-        # Set privacy request status based on task type
-        awaiting_status = (
-            PrivacyRequestStatus.pending_external
-            if manual_task.task_type == ManualTaskType.jira_ticket
-            else PrivacyRequestStatus.requires_input
+        # Derive the correct PR status from the aggregate state of all tasks.
+        # User-actionable statuses always surface (ENG-3835).
+        derived_status = derive_privacy_request_status(
+            self.resources.session, self.resources.request
         )
-        if self.resources.request.status != awaiting_status:
-            self.resources.request.status = awaiting_status
+        if self.resources.request.status != derived_status:
+            self.resources.request.status = derived_status
             self.resources.request.save(self.resources.session)
 
         # This will trigger log_awaiting_processing via the @retry decorator; include conditional details

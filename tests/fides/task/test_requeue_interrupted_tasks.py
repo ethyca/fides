@@ -283,7 +283,7 @@ class TestRequeueInterruptedTasks:
     @mock.patch(_CANCEL)
     @mock.patch(_REQUEUE)
     @mock.patch(_IN_FLIGHT, return_value=False)
-    def test_in_processing_task_with_no_cache_key_and_async_task_is_not_canceled(
+    def test_in_processing_task_with_no_cache_key_and_async_task_is_requeued(
         self,
         mock_in_flight,
         mock_requeue,
@@ -291,7 +291,7 @@ class TestRequeueInterruptedTasks:
         make_privacy_request,
         make_request_task,
     ):
-        """in_processing+no_cache alongside an async callback task — async guard wins, skips."""
+        """in_processing+no_cache alongside an async callback task — stuck task is rescued (ENG-3835)."""
         pr = make_privacy_request()
         make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
         make_request_task(
@@ -301,29 +301,29 @@ class TestRequeueInterruptedTasks:
             async_type=AsyncTaskType.callback,
         )
         requeue_interrupted_tasks.apply().get()
-        mock_requeue.assert_not_called()
+        mock_requeue.assert_called_once()
         mock_cancel.assert_not_called()
 
     @mock.patch(_CANCEL)
     @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
     @mock.patch(_IN_FLIGHT, return_value=False)
-    def test_async_check_db_error_skips_request(
+    def test_non_async_stuck_task_is_requeued_without_async_check(
         self,
         mock_in_flight,
+        mock_queue,
         mock_requeue,
         mock_cancel,
         make_privacy_request,
         make_request_task,
     ):
-        """DB error in async-task check — watchdog fails safe and skips the request."""
+        """Non-async in_processing task with no cache key — requeued via per-task check (ENG-3835)."""
         pr = make_privacy_request()
-        make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
-        with mock.patch(
-            "fides.api.service.privacy_request.request_service._has_async_tasks_awaiting_external_completion",
-            side_effect=Exception("db error"),
-        ):
-            requeue_interrupted_tasks.apply().get()
-        mock_requeue.assert_not_called()
+        make_request_task(
+            pr, ExecutionLogStatus.in_processing
+        )  # no subtask_id, no async_type
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
         mock_cancel.assert_not_called()
 
     @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
@@ -513,6 +513,80 @@ class TestRequeueInterruptedTasks:
             assert CONFIG.execution.privacy_request_requeue_retry_count == 1
         finally:
             CONFIG.execution.privacy_request_requeue_retry_count = original
+
+    # ------------------------------------------------------------------
+    # Async task status filtering (ENG-3835)
+    # ------------------------------------------------------------------
+
+    @pytest.mark.parametrize(
+        "async_status",
+        [
+            pytest.param(ExecutionLogStatus.complete, id="complete"),
+            pytest.param(ExecutionLogStatus.error, id="error"),
+            pytest.param(ExecutionLogStatus.skipped, id="skipped"),
+        ],
+    )
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_completed_async_task_does_not_blind_watchdog(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+        async_status,
+    ):
+        """Async task that already exited should not prevent watchdog from requeuing stuck tasks."""
+        pr = make_privacy_request()
+        # Stuck manual task — no subtask_id, pending, upstream complete
+        make_request_task(pr, ExecutionLogStatus.pending, collection="manual_task")
+        # Completed async task — should NOT blind the watchdog
+        make_request_task(
+            pr,
+            async_status,
+            collection="async_api",
+            async_type=AsyncTaskType.callback,
+        )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
+        mock_cancel.assert_not_called()
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_active_async_task_skips_only_itself_not_entire_pr(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """Active async task on independent branch — stuck manual task on other branch still gets rescued."""
+        pr = make_privacy_request()
+        # Stuck manual task — pending, no subtask_id, no upstream
+        make_request_task(pr, ExecutionLogStatus.pending, collection="manual_task")
+        # Active async task on separate branch — still polling
+        make_request_task(
+            pr,
+            ExecutionLogStatus.pending,
+            collection="async_api",
+            async_type=AsyncTaskType.polling,
+        )
+        requeue_interrupted_tasks.apply().get()
+        # The stuck manual task should trigger a requeue, despite the active async task
+        mock_requeue.assert_called_once()
+        mock_cancel.assert_not_called()
+
+    # ------------------------------------------------------------------
+    # Retry limit behaviour
+    # ------------------------------------------------------------------
 
     def test_integration_privacy_request_retry_workflow(self, make_privacy_request):
         """Retry counter increments, reads back correctly, and resets to zero."""
