@@ -631,6 +631,12 @@ def get_request_status_logs(
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
     status_code=HTTP_200_OK,
     response_class=StreamingResponse,
+    responses={
+        200: {
+            "content": {"application/zip": {}},
+            "description": "ZIP file containing diagnostics.json",
+        }
+    },
 )
 def get_privacy_request_diagnostics_report(
     privacy_request_id: str,

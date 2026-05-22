@@ -9,6 +9,16 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import { PrivacyRequestEntity } from "../types";
 
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
 const useDownloadPrivacyRequestDiagnostics = ({
   privacyRequest,
 }: {
@@ -44,13 +54,7 @@ const useDownloadPrivacyRequestDiagnostics = ({
       }
 
       const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `diagnostics-${privacyRequest.id}.zip`;
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, `diagnostics-${privacyRequest.id}.zip`);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         message.error("Download timed out. Please try again.");

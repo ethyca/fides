@@ -46,6 +46,7 @@ class TestPrivacyRequestDiagnostics:
         assert resp.status_code == 200
         assert resp.headers["content-type"] == "application/zip"
         assert "attachment" in resp.headers["content-disposition"]
+        assert resp.headers["content-length"] == str(len(resp.content))
 
         with ZipFile(BytesIO(resp.content)) as zf:
             diagnostics_json = zf.read("diagnostics.json").decode("utf-8")
