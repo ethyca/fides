@@ -1,9 +1,7 @@
-import { Button, ChakraText as Text, Flex, useMessage } from "fidesui";
-import { Form, FormikProvider, useFormik } from "formik";
-import * as Yup from "yup";
+import { Button, Flex, Form, Input, Select, useMessage } from "fidesui";
+import { useEffect, useState } from "react";
 
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
+import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import {
   enumToOptions,
   getErrorMessage,
@@ -15,7 +13,6 @@ import {
   useAddSystemAssetMutation,
   useUpdateSystemAssetsMutation,
 } from "~/features/system/system-assets.slice";
-import WrappedDataUseSelect from "~/features/system/tabs/system-assets/WrappedDataUseSelect";
 import { Asset } from "~/types/api";
 
 interface AddEditAssetModalProps {
@@ -35,18 +32,6 @@ export enum AssetType {
   IMAGE = "Image",
 }
 
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required("Enter a name for this asset"),
-  domain: Yup.string().required("Enter a valid domain for this asset"),
-  asset_type: Yup.string().required("Select an asset type"),
-  data_uses: Yup.array().min(1, "Select at least one data use"),
-  base_url: Yup.string().when("asset_type", {
-    is: (asset_type: string) => asset_type !== AssetType.COOKIE,
-    then: (schema) => schema.required("Base URL is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-});
-
 const DEFAULT_VALUES: Asset = {
   name: "",
   description: "",
@@ -65,6 +50,15 @@ const AddEditAssetModal = ({
   asset,
 }: AddEditAssetModalProps) => {
   const isCreate = !asset;
+  const [form] = Form.useForm<Asset>();
+  const watchedValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, watchedValues]);
 
   const [addSystemAsset, { isLoading: addIsLoading }] =
     useAddSystemAssetMutation();
@@ -72,147 +66,156 @@ const AddEditAssetModal = ({
     useUpdateSystemAssetsMutation();
   const message = useMessage();
 
-  const handleCreateNew = async (values: Asset) => {
-    const result = await addSystemAsset({ systemKey, asset: values });
-    if (isErrorResult(result)) {
-      const errorMsg = getErrorMessage(
-        result.error,
-        "An unexpected error occurred while saving this asset. Please try again.",
-      );
-      message.error(errorMsg);
-    } else {
-      message.success("Asset added successfully");
-      onClose();
-    }
-  };
-
-  const handleUpdate = async (values: Asset) => {
-    const result = await updateSystemAsset({ systemKey, assets: [values] });
-    if (isErrorResult(result)) {
-      const errorMsg = getErrorMessage(
-        result.error,
-        "An unexpected error occurred while saving this asset. Please try again.",
-      );
-      message.error(errorMsg);
-    } else {
-      message.success("Asset updated successfully");
-      onClose();
-    }
-  };
-
-  const handleSaveClicked = (values: Asset) => {
-    if (isCreate) {
-      handleCreateNew(values);
-    } else {
-      handleUpdate(values);
-    }
-  };
-
   const initialValues = asset ?? DEFAULT_VALUES;
 
-  const formik = useFormik({
-    initialValues,
-    enableReinitialize: true,
-    onSubmit: handleSaveClicked,
-    validationSchema,
-  });
-  const { values, isValid, dirty } = formik;
-  const isCookieAsset =
-    !!values.asset_type && values.asset_type === AssetType.COOKIE;
-  const isNotCookieAsset =
-    !!values.asset_type && values.asset_type !== AssetType.COOKIE;
+  const handleFinish = async (values: Asset) => {
+    const payload = asset ? { ...asset, ...values } : values;
+    const result = isCreate
+      ? await addSystemAsset({ systemKey, asset: payload })
+      : await updateSystemAsset({ systemKey, assets: [payload] });
+
+    if (isErrorResult(result)) {
+      message.error(
+        getErrorMessage(
+          result.error,
+          "An unexpected error occurred while saving this asset. Please try again.",
+        ),
+      );
+      return;
+    }
+    message.success(
+      isCreate ? "Asset added successfully" : "Asset updated successfully",
+    );
+    onClose();
+  };
 
   return (
-    <FormikProvider value={formik}>
-      <ConfirmCloseModal
-        title={isCreate ? "Add asset" : "Edit asset"}
-        onClose={onClose}
-        getIsDirty={() => formik.dirty}
-        open={isOpen}
-        centered
-        destroyOnHidden
-        footer={null}
-        data-testid="add-modal-content"
+    <ConfirmCloseModal
+      title={isCreate ? "Add asset" : "Edit asset"}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
+      open={isOpen}
+      centered
+      destroyOnHidden
+      footer={null}
+      data-testid="add-modal-content"
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={initialValues}
+        onFinish={handleFinish}
+        key={asset?.id ?? "create"}
+        requiredMark
       >
-        <Form>
-          <Flex vertical className="pb-6 pt-4">
-            <FormInfoBox>
-              <Text fontSize="sm">{FORM_COPY}</Text>
-            </FormInfoBox>
-            <Flex vertical gap={20}>
-              <CustomTextInput
-                id="name"
-                name="name"
-                label="Name"
-                variant="stacked"
-                isRequired
-                disabled={!isCreate}
-              />
-              <ControlledSelect
-                isRequired
-                id="asset_type"
-                name="asset_type"
-                label="Asset type"
-                options={enumToOptions(AssetType)}
-                layout="stacked"
-                disabled={!isCreate}
-              />
-              <WrappedDataUseSelect
-                name="data_uses"
-                label="Data uses"
-                layout="stacked"
-              />
-              <CustomTextInput
-                id="domain"
-                name="domain"
-                label="Domain"
-                variant="stacked"
-                isRequired
-                disabled={!isCreate}
-              />
-              <CustomTextArea
-                id="description"
-                name="description"
-                label="Description"
-                variant="stacked"
-              />
-              {isCookieAsset && (
-                <CustomTextInput
-                  id="duration"
-                  name="duration"
-                  label="Duration"
-                  variant="stacked"
-                  placeholder="e.g. '1 day', '30 minutes', '1 year'"
-                  tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
-                  isRequired={isCookieAsset}
-                />
-              )}
-              {isNotCookieAsset && (
-                <CustomTextInput
-                  id="base_url"
+        <Flex vertical className="pb-6 pt-4">
+          <FormInfoBox>{FORM_COPY}</FormInfoBox>
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Enter a name for this asset" }]}
+          >
+            <Input disabled={!isCreate} data-testid="input-name" />
+          </Form.Item>
+          <Form.Item
+            name="asset_type"
+            label="Asset type"
+            rules={[{ required: true, message: "Select an asset type" }]}
+          >
+            <Select
+              aria-label="Asset type"
+              options={enumToOptions(AssetType)}
+              disabled={!isCreate}
+              data-testid="controlled-select-asset_type"
+            />
+          </Form.Item>
+          <Form.Item
+            name="data_uses"
+            label="Data uses"
+            required
+            rules={[
+              {
+                validator: (_, value) =>
+                  value && value.length > 0
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("Select at least one data use")),
+              },
+            ]}
+          >
+            <DataUseSelect
+              aria-label="Data uses"
+              mode="multiple"
+              selectedTaxonomies={[]}
+              variant="outlined"
+              autoFocus={false}
+              data-testid="controlled-select-data_uses"
+            />
+          </Form.Item>
+          <Form.Item
+            name="domain"
+            label="Domain"
+            rules={[
+              {
+                required: true,
+                message: "Enter a valid domain for this asset",
+              },
+            ]}
+          >
+            <Input disabled={!isCreate} data-testid="input-domain" />
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea data-testid="input-description" />
+          </Form.Item>
+          <Form.Item
+            shouldUpdate={(prev, next) => prev.asset_type !== next.asset_type}
+            noStyle
+          >
+            {({ getFieldValue }) => {
+              const assetType = getFieldValue("asset_type");
+              if (!assetType) {
+                return null;
+              }
+              if (assetType === AssetType.COOKIE) {
+                return (
+                  <Form.Item
+                    name="duration"
+                    label="Duration"
+                    tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
+                  >
+                    <Input
+                      placeholder="e.g. '1 day', '30 minutes', '1 year'"
+                      data-testid="input-duration"
+                    />
+                  </Form.Item>
+                );
+              }
+              return (
+                <Form.Item
                   name="base_url"
                   label="Base URL"
-                  variant="stacked"
-                  isRequired={isNotCookieAsset}
-                />
-              )}
-            </Flex>
-          </Flex>
-          <Flex justify="space-between">
-            <Button onClick={onClose}>Cancel</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={addIsLoading || updateIsLoading}
-              disabled={!isValid || (isCreate && !dirty)}
-              data-testid="save-btn"
-            >
-              Save
-            </Button>
-          </Flex>
-        </Form>
-      </ConfirmCloseModal>
-    </FormikProvider>
+                  rules={[{ required: true, message: "Base URL is required" }]}
+                  validateTrigger={["onChange", "onBlur"]}
+                >
+                  <Input data-testid="input-base_url" />
+                </Form.Item>
+              );
+            }}
+          </Form.Item>
+        </Flex>
+        <Flex justify="space-between">
+          <Button onClick={onClose}>Cancel</Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={addIsLoading || updateIsLoading}
+            disabled={!submittable || (isCreate && !form.isFieldsTouched())}
+            data-testid="save-btn"
+          >
+            Save
+          </Button>
+        </Flex>
+      </Form>
+    </ConfirmCloseModal>
   );
 };
 

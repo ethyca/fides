@@ -1,7 +1,7 @@
 import { format } from "date-fns-tz";
 import { Avatar, Collapse, List, Text } from "fidesui";
 
-import Image from "~/features/common/Image";
+import EthycaLogo from "~/features/common/logos/EthycaLogo";
 import { formatDate, pluralize } from "~/features/common/utils";
 
 import styles from "./SlackThreadCard.module.scss";
@@ -53,15 +53,7 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                             <Avatar
                               shape="square"
                               className={styles.messageAvatarBot}
-                              icon={
-                                <Image
-                                  src="/images/logomark-ethyca-white.svg"
-                                  alt="Fides"
-                                  width={12}
-                                  height={12}
-                                  className={styles.messageAvatarImage}
-                                />
-                              }
+                              icon={<EthycaLogo size={12} variant="white" />}
                             />
                           ) : (
                             <Avatar

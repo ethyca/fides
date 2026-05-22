@@ -1,0 +1,30 @@
+.card {
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--fidesui-color-text);
+  color: var(--fidesui-color-bg-container);
+  border-radius: var(--fidesui-border-radius);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sub {
+  font-size: 11px;
+}
+
+.handle {
+  background: var(--fidesui-color-text-quaternary);
+  border: none;
+  width: 8px;
+  height: 8px;
+}

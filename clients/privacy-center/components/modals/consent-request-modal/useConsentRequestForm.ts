@@ -2,7 +2,7 @@ import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
@@ -15,8 +15,13 @@ import {
 import { DEFAULT_IDENTITY_INPUTS } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import {
+  useApplicabilitySync,
+  useConditionalValidate,
+} from "~/hooks/useConditionalValidation";
 import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
+import type { CustomConfigField } from "~/types/config";
 import { FormValues } from "~/types/forms";
 
 const useConsentRequestForm = ({
@@ -35,15 +40,14 @@ const useConsentRequestForm = ({
   const config = useConfig();
   const identityInputs =
     config.consent?.button.identity_inputs ?? DEFAULT_IDENTITY_INPUTS;
-  const customPrivacyRequestFields =
-    config.consent?.button.custom_privacy_request_fields ?? {};
+  const customPrivacyRequestFields = (config.consent?.button
+    .custom_privacy_request_fields ?? {}) as Record<string, CustomConfigField>;
   const settings = useSettings();
   const { BASE_64_COOKIE } = settings;
   const toast = useToast();
   const [cookie, setCookie] = useState<Awaited<
     ReturnType<typeof getOrMakeFidesCookie>
   > | null>(null);
-
   useEffect(() => {
     const loadCookie = async () => {
       const loadedCookie = await getOrMakeFidesCookie();
@@ -54,15 +58,52 @@ const useConsentRequestForm = ({
 
   // Use our custom hook for form field logic
   const { getInitialValues, getValidationSchema } = useCustomFieldsForm({
-    customPrivacyRequestFields: customPrivacyRequestFields as any,
+    customPrivacyRequestFields,
     searchParams: null, // ConsentRequestForm doesn't use URL params
   });
+
+  const initialValues = useMemo(() => getInitialValues(), [getInitialValues]);
+
+  // Build the static portion of the validation schema (identity fields)
+  const identityValidationSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        email: emailValidation(identityInputs?.email!).test(
+          "one of email or phone entered",
+          "You must enter an email",
+          (_value, context) => {
+            if (identityInputs?.email === "required") {
+              return Boolean(context.parent.email);
+            }
+            return true;
+          },
+        ),
+        phone: phoneValidation(identityInputs?.phone!).test(
+          "one of email or phone entered",
+          "You must enter a phone number",
+          (_value, context) => {
+            if (identityInputs?.phone === "required") {
+              return Boolean(context.parent.phone);
+            }
+            return true;
+          },
+        ),
+      }),
+    [identityInputs?.email, identityInputs?.phone],
+  );
+
+  const { validate, applicableFieldsRef, validationError } =
+    useConditionalValidate({
+      customPrivacyRequestFields,
+      identityValidationSchema,
+      getValidationSchema,
+    });
 
   const formik = useFormik<FormValues>({
     initialValues: {
       email: "",
       phone: "",
-      ...getInitialValues(),
+      ...initialValues,
     },
     onSubmit: async (values) => {
       if (!cookie) {
@@ -71,17 +112,27 @@ const useConsentRequestForm = ({
 
       const { email, phone, ...customPrivacyRequestFieldValues } = values;
 
-      // populate the values from the form or from the field's default value
+      // populate the values from the form or from the field's default value,
+      // excluding fields gated off by display_condition
       const transformedCustomPrivacyRequestFields = Object.fromEntries(
-        Object.entries(customPrivacyRequestFields ?? {}).map(([key, field]) => [
-          key,
-          {
-            label: field.label,
-            value: field.hidden
-              ? field.default_value
-              : customPrivacyRequestFieldValues[key] || "",
-          },
-        ]),
+        Object.entries(customPrivacyRequestFields ?? {})
+          .filter(([key, field]) => {
+            // Keep hidden fields (they use default_value)
+            if (field.hidden) {
+              return true;
+            }
+            // Exclude fields gated off by display_condition
+            return applicableFieldsRef.current.has(key);
+          })
+          .map(([key, field]) => [
+            key,
+            {
+              label: field.label,
+              value: field.hidden
+                ? field.default_value
+                : customPrivacyRequestFieldValues[key] || "",
+            },
+          ]),
       );
 
       const body = {
@@ -157,32 +208,25 @@ const useConsentRequestForm = ({
         handleError({ title: "An unhandled exception occurred." });
       }
     },
-    validationSchema: Yup.object().shape({
-      email: emailValidation(identityInputs?.email!).test(
-        "one of email or phone entered",
-        "You must enter an email",
-        (_value, context) => {
-          if (identityInputs?.email === "required") {
-            return Boolean(context.parent.email);
-          }
-          return true;
-        },
-      ),
-      phone: phoneValidation(identityInputs?.phone!).test(
-        "one of email or phone entered",
-        "You must enter a phone number",
-        (_value, context) => {
-          if (identityInputs?.phone === "required") {
-            return Boolean(context.parent.phone);
-          }
-          return true;
-        },
-      ),
-      ...getValidationSchema().fields,
-    }),
+
+    validate,
   });
 
-  return { ...formik, identityInputs, customPrivacyRequestFields };
+  const { applicableFields, conditionError } = useApplicabilitySync({
+    customPrivacyRequestFields,
+    applicableFieldsRef,
+    initialValues,
+    formValues: formik.values,
+    setFieldValue: formik.setFieldValue,
+  });
+
+  return {
+    ...formik,
+    identityInputs,
+    customPrivacyRequestFields,
+    applicableFields,
+    validationError: validationError || conditionError,
+  };
 };
 
 export default useConsentRequestForm;

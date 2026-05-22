@@ -1,4 +1,0 @@
-type: Added
-description: Added `FileUploadCustomPrivacyRequestField` schema variant, magic-byte sniff helpers, file-upload config knobs, and `PrivacyRequestService` extension hooks.
-pr: 8113
-labels: []

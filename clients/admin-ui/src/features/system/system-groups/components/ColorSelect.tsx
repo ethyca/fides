@@ -1,13 +1,8 @@
-import { HTMLAttributes, useState } from "react";
+import { Select, SelectProps } from "fidesui";
+import { HTMLAttributes } from "react";
 
-import {
-  ControlledSelect,
-  ControlledSelectProps,
-} from "~/features/common/form/ControlledSelect";
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
 import { CustomTaxonomyColor } from "~/types/api";
-
-type ColorSelectProps = Omit<ControlledSelectProps, "options">;
 
 export const COLOR_LABELS: Record<CustomTaxonomyColor, string> = {
   [CustomTaxonomyColor.TAXONOMY_WHITE]: "White",
@@ -20,6 +15,8 @@ export const COLOR_LABELS: Record<CustomTaxonomyColor, string> = {
   [CustomTaxonomyColor.SANDSTONE]: "Sandstone",
   [CustomTaxonomyColor.MINOS]: "Minos",
 };
+
+type ColorSelectProps = Omit<SelectProps, "options">;
 
 const ColorSwatch = ({
   color,
@@ -41,47 +38,18 @@ const ColorSwatch = ({
   );
 };
 
-const renderColorOption = (option: any) => {
-  const value = option?.value as CustomTaxonomyColor;
-  const label = option?.label as string;
-  return (
-    <span className="flex items-center">
-      <ColorSwatch color={value} />
-      <span>{label}</span>
-    </span>
-  );
-};
-
-const ColorSelect = (props: ColorSelectProps) => {
+export const ColorSelect = (props: ColorSelectProps) => {
   const options = (
     Object.values(CustomTaxonomyColor) as CustomTaxonomyColor[]
   ).map((value) => ({
     value,
-    label: COLOR_LABELS[value],
+    label: (
+      <span className="flex items-center">
+        <ColorSwatch color={value} />
+        <span>{COLOR_LABELS[value]}</span>
+      </span>
+    ),
   }));
 
-  const [value, setValue] = useState<CustomTaxonomyColor | undefined>(
-    undefined,
-  );
-
-  return (
-    <ControlledSelect
-      {...props}
-      options={options}
-      optionRender={renderColorOption}
-      layout="stacked"
-      value={value}
-      onChange={(newValue) => {
-        setValue(newValue as CustomTaxonomyColor);
-      }}
-      prefix={
-        <ColorSwatch
-          color={value ?? CustomTaxonomyColor.TAXONOMY_WHITE}
-          style={{ marginBottom: "2px" }}
-        />
-      }
-    />
-  );
+  return <Select {...props} options={options} placeholder="Select color" />;
 };
-
-export default ColorSelect;

@@ -1,0 +1,12 @@
+.canvasCard {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+
+  :global(.ant-card-body) {
+    flex: 1;
+    display: flex;
+    padding: 0;
+    min-height: 0;
+  }
+}

@@ -13,7 +13,7 @@ import { useMemo } from "react";
 
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
-import AntColorSelect from "~/features/system/system-groups/components/AntColorSelect";
+import { ColorSelect } from "~/features/system/system-groups/components/ColorSelect";
 import { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
 import { DataUse, SystemResponse } from "~/types/api";
 
@@ -176,7 +176,7 @@ const SystemGroupEditForm = ({
       </Form.Item>
 
       <Form.Item<string> label="Color" name="label_color">
-        <AntColorSelect
+        <ColorSelect
           disabled={isDisabled}
           data-testid="edit-taxonomy-form_color"
         />

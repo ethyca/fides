@@ -112,7 +112,7 @@ const useSystemFormTabs = ({
       });
 
       notification.success({
-        message: "System saved",
+        title: "System saved",
         description: "Your system has been added to your data map.",
         actions: (
           <NotificationActions

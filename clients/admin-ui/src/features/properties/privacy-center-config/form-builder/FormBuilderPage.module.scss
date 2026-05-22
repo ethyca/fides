@@ -1,0 +1,7 @@
+.splitter {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius);
+  overflow: hidden;
+}
