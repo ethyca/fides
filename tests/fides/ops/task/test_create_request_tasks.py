@@ -2161,14 +2161,16 @@ class TestRunErasureRequestRecreatesMissingTasks:
         mock_persist_erasure,
         db,
         privacy_request,
+        request_task,
         policy,
     ):
-        """When erasure tasks don't exist but the policy has erasure rules,
-        run_erasure_request should recreate them before proceeding."""
+        """When access tasks exist but erasure tasks don't, and the policy has
+        erasure rules, run_erasure_request should recreate them."""
         from fides.api.graph.config import Collection, GraphDataset, ScalarField
         from fides.api.task.create_request_tasks import run_erasure_request
 
-        # Ensure no erasure tasks exist
+        # Access tasks exist (from request_task fixture) but no erasure tasks
+        assert privacy_request.access_tasks.count() > 0
         assert privacy_request.erasure_tasks.count() == 0
 
         # Create a minimal graph and add an erasure rule to the policy
@@ -2251,10 +2253,12 @@ class TestRunErasureRequestRecreatesMissingTasks:
         mock_persist_erasure,
         db,
         privacy_request,
+        request_task,
     ):
         """When graph/policy/identity are not provided, skip recreation even if tasks are missing."""
         from fides.api.task.create_request_tasks import run_erasure_request
 
+        assert privacy_request.access_tasks.count() > 0
         assert privacy_request.erasure_tasks.count() == 0
 
         mock_get_ready.return_value = []
