@@ -677,12 +677,12 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         )
                         should_requeue = True
                     elif request_tasks_count > 0:
-                        # Check for missing action types: if the policy has
-                        # erasure rules but no erasure tasks exist, the request
-                        # is stuck and the watchdog would otherwise be blind
-                        # to it because access tasks mask the gap.
-                        policy = privacy_request.policy
-                        if policy and policy.get_rules_for_action(
+                        # Check for missing erasure tasks: if access tasks
+                        # exist and the policy has erasure rules, erasure
+                        # tasks should have been created alongside them.
+                        # Zero erasure tasks means creation failed.
+                        pr_policy = privacy_request.policy
+                        if pr_policy and pr_policy.get_rules_for_action(
                             action_type=ActionType.erasure
                         ):
                             erasure_count = (

@@ -2154,7 +2154,7 @@ class TestRunErasureRequestRecreatesMissingTasks:
     @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
     @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
     @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
-    def test_recreates_erasure_tasks_when_missing(
+    def test_recreates_erasure_tasks_when_zero(
         self,
         mock_get_ready,
         mock_update_erasure,
@@ -2164,30 +2164,18 @@ class TestRunErasureRequestRecreatesMissingTasks:
         request_task,
         policy,
     ):
-        """When access tasks exist but erasure tasks don't, and the policy has
-        erasure rules, run_erasure_request should recreate them."""
+        """When access tasks exist but zero erasure tasks, and the privacy
+        request's policy has erasure rules, recreate them. In production,
+        run_access_request always creates erasure tasks when the policy has
+        erasure rules, so zero means creation failed."""
         from fides.api.graph.config import Collection, GraphDataset, ScalarField
         from fides.api.task.create_request_tasks import run_erasure_request
 
-        # Access tasks exist (from request_task fixture) but no erasure tasks
         assert privacy_request.access_tasks.count() > 0
         assert privacy_request.erasure_tasks.count() == 0
 
-        # Create a minimal graph and add an erasure rule to the policy
-        identity_field = ScalarField(name="email", primary_key=True)
-        identity_field.identity = "email"
-        collection = Collection(name="users", fields=[identity_field])
-        dataset = GraphDataset(
-            name="test_ds", collections=[collection], connection_key="test_conn"
-        )
-        graph = DatasetGraph(dataset)
-        identity = {"email": "test@example.com"}
-
-        # Add an erasure rule to the policy
+        # Add an erasure rule to the privacy request's policy
         from fides.api.models.policy import Rule
-        from fides.api.schemas.masking.masking_configuration import (
-            MaskingConfiguration,
-        )
 
         Rule.create(
             db=db,
@@ -2201,6 +2189,15 @@ class TestRunErasureRequestRecreatesMissingTasks:
                 },
             },
         )
+
+        identity_field = ScalarField(name="email", primary_key=True)
+        identity_field.identity = "email"
+        collection = Collection(name="users", fields=[identity_field])
+        dataset = GraphDataset(
+            name="test_ds", collections=[collection], connection_key="test_conn"
+        )
+        graph = DatasetGraph(dataset)
+        identity = {"email": "test@example.com"}
 
         mock_get_ready.return_value = []
 
