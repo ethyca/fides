@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed OAuth scope assignment error reporting all scopes as missing for role-based users
+pr: 8256
+labels: []

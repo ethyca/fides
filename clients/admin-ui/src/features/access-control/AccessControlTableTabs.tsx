@@ -28,11 +28,11 @@ export const AccessControlTableTabs = () => {
   const handleSummaryRowClick = useCallback(
     (record: PolicyViolationAggregate) => {
       const facets: Record<string, string> = {};
-      if (record.policy) {
-        facets.policy = record.policy;
+      if (record.policy_key) {
+        facets.policy = record.policy_key;
       }
-      if (record.control) {
-        facets.control = record.control;
+      if (record.control_key) {
+        facets.control = record.control_key;
       }
       applyFacets(facets);
       setActiveTab("log");

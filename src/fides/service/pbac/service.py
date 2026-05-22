@@ -27,6 +27,7 @@ from fides.service.pbac.policies import (
     PolicyDecision,
 )
 from fides.service.pbac.purposes.repository import DataPurposeRedisRepository
+from fides.service.pbac.sql_parser import extract_columns
 from fides.service.pbac.types import (
     ConsumerPurposes,
     DatasetPurposes,
@@ -62,6 +63,7 @@ class InProcessPBACEvaluationService:
         dataset_purposes: dict[str, DatasetPurposes] | None = None,
         identity_resolver: IdentityResolver | None = None,
         dataset_resolver: DatasetResolver | None = None,
+        field_categories: dict[str, dict[str, list[str]]] | None = None,
     ) -> None:
         if cache is None:
             cache = get_cache()
@@ -74,6 +76,7 @@ class InProcessPBACEvaluationService:
         self._dataset_resolver = dataset_resolver or DatasetResolver()
         self._policy_evaluator = policy_evaluator or NoOpPolicyEvaluator()
         self._dataset_purposes = dataset_purposes or {}
+        self._field_categories = field_categories or {}
 
     def evaluate(
         self,
@@ -84,10 +87,12 @@ class InProcessPBACEvaluationService:
         # 1. Resolve consumer
         consumer = self._identity_resolver.resolve(identity=entry.identity)
 
-        # 2. Resolve datasets + collect per-dataset collection names
+        # 2. Resolve datasets + collect per-dataset collection names and columns
         dataset_keys: list[str] = []
         collections: dict[str, list[str]] = {}
         unresolved_gaps: list[EvaluationGap] = []
+        columns_by_table = extract_columns(entry.query_text)
+        columns_by_dataset: dict[str, dict[str, list[str]]] = {}
         for table_ref in entry.referenced_tables:
             fides_key = self._dataset_resolver.resolve(table_ref)
             if fides_key:
@@ -95,7 +100,11 @@ class InProcessPBACEvaluationService:
                     dataset_keys.append(fides_key)
                     collections[fides_key] = []
                 if table_ref.table:
-                    collections[fides_key].append(table_ref.table.lower())
+                    coll = table_ref.table.lower()
+                    collections[fides_key].append(coll)
+                    if fides_key not in columns_by_dataset:
+                        columns_by_dataset[fides_key] = {}
+                    columns_by_dataset[fides_key][coll] = columns_by_table.get(coll, [])
             else:
                 unresolved_gaps.append(
                     EvaluationGap(
@@ -141,7 +150,9 @@ class InProcessPBACEvaluationService:
         enriched = self._resolve_data_uses(result.violations)
 
         # 7. Filter through Policy v2
-        filtered = self._filter_violations_through_policies(enriched, consumer)
+        filtered = self._filter_violations_through_policies(
+            enriched, consumer, columns_by_dataset
+        )
 
         # 8. Build flat EvaluationRecord
         return EvaluationRecord(
@@ -293,17 +304,54 @@ class InProcessPBACEvaluationService:
             total_accesses=raw.get("total_accesses", 0),
         )
 
+    def _resolve_data_categories(
+        self,
+        collection: str | None,
+        columns_by_dataset: dict[str, dict[str, list[str]]],
+        dataset_key: str,
+    ) -> tuple[str, ...]:
+        """Resolve data categories for the columns accessed in a collection."""
+        if not collection or not self._field_categories:
+            return ()
+
+        coll_fields = self._field_categories.get(collection, {})
+        if not coll_fields:
+            return ()
+
+        ds_cols = columns_by_dataset.get(dataset_key, {})
+        columns = ds_cols.get(collection, [])
+
+        cat_set: set[str] = set()
+        if not columns:
+            for cats in coll_fields.values():
+                cat_set.update(cats)
+        else:
+            for col in columns:
+                if col in coll_fields:
+                    cat_set.update(coll_fields[col])
+
+        return tuple(sorted(cat_set))
+
     def _filter_violations_through_policies(
         self,
         violations: list[PurposeViolation],
         consumer: DataConsumerEntity | None,
+        columns_by_dataset: dict[str, dict[str, list[str]]] | None = None,
     ) -> list[PurposeViolation]:
         """Filter PBAC violations through the access policy evaluator."""
         if not violations:
             return []
 
+        if columns_by_dataset is None:
+            columns_by_dataset = {}
+
         remaining: list[PurposeViolation] = []
         for violation in violations:
+            data_categories = self._resolve_data_categories(
+                violation.collection,
+                columns_by_dataset,
+                violation.dataset_key,
+            )
             request = AccessEvaluationRequest(
                 consumer_id=violation.consumer_id,
                 consumer_name=violation.consumer_name,
@@ -312,6 +360,7 @@ class InProcessPBACEvaluationService:
                 collection=violation.collection,
                 dataset_purposes=violation.dataset_purposes,
                 system_fides_key=consumer.system_fides_key if consumer else None,
+                data_categories=data_categories,
             )
             result = self._policy_evaluator.evaluate(request)
             if result.decision == PolicyDecision.ALLOW:

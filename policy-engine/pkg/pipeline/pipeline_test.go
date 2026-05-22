@@ -180,6 +180,214 @@ func TestDave_ConsumerWithNoPurposes_UnconfiguredConsumerGap(t *testing.T) {
 	}
 }
 
+// ── Data category resolution from columns
+
+func TestResolveDataCategories_SpecificColumns(t *testing.T) {
+	fieldCategories := map[string]map[string][]string{
+		"users": {
+			"email": {"user.contact.email"},
+			"phone": {"user.contact.phone_number"},
+			"ssn":   {"user.government_id"},
+		},
+	}
+	columnsByDataset := map[string]map[string][]string{
+		"mydb": {"users": {"email", "phone"}},
+	}
+
+	cats := resolveDataCategories("mydb", "users", columnsByDataset, fieldCategories)
+	if len(cats) != 2 {
+		t.Fatalf("expected 2 categories, got %d: %v", len(cats), cats)
+	}
+	expected := map[string]bool{"user.contact.email": true, "user.contact.phone_number": true}
+	for _, c := range cats {
+		if !expected[c] {
+			t.Errorf("unexpected category %q", c)
+		}
+	}
+}
+
+func TestResolveDataCategories_SelectStar_AllCategories(t *testing.T) {
+	fieldCategories := map[string]map[string][]string{
+		"users": {
+			"email": {"user.contact.email"},
+			"ssn":   {"user.government_id"},
+		},
+	}
+	// Empty columns = SELECT *
+	columnsByDataset := map[string]map[string][]string{}
+
+	cats := resolveDataCategories("mydb", "users", columnsByDataset, fieldCategories)
+	if len(cats) != 2 {
+		t.Fatalf("expected 2 categories (all fields), got %d: %v", len(cats), cats)
+	}
+}
+
+func TestResolveDataCategories_NoFieldCategories(t *testing.T) {
+	cats := resolveDataCategories("mydb", "users", nil, nil)
+	if cats != nil {
+		t.Errorf("expected nil, got %v", cats)
+	}
+}
+
+func TestResolveDataCategories_UnknownColumns(t *testing.T) {
+	fieldCategories := map[string]map[string][]string{
+		"users": {
+			"email": {"user.contact.email"},
+		},
+	}
+	columnsByDataset := map[string]map[string][]string{
+		"mydb": {"users": {"unknown_col"}},
+	}
+
+	cats := resolveDataCategories("mydb", "users", columnsByDataset, fieldCategories)
+	if cats != nil {
+		t.Errorf("expected nil for unknown columns, got %v", cats)
+	}
+}
+
+func TestEvaluate_DataCategoryPolicyMatchesResolvedColumns(t *testing.T) {
+	f := loadFixtures(t)
+
+	// Add field categories to the fixture's datasets
+	f.Datasets.FieldCategories = map[string]map[string][]string{
+		"orders": {
+			"total":      {"user.financial"},
+			"email":      {"user.contact.email"},
+			"product_id": {"system.operations"},
+		},
+	}
+
+	// Add an ALLOW policy that matches on data_category user.financial.
+	// This should suppress the violation when columns include "total"
+	// (which has category user.financial).
+	enabled := true
+	f.Policies = append(f.Policies, pbac.AccessPolicy{
+		Key:      "allow-financial-columns",
+		Priority: 999,
+		Enabled:  &enabled,
+		Decision: pbac.PolicyAllow,
+		Match: pbac.MatchBlock{
+			DataCategory: &pbac.MatchDimension{
+				Any: []string{"user.financial"},
+			},
+		},
+	})
+
+	// Alice querying orders with "total" column (user.financial category)
+	rec := Evaluate(f, Input{
+		QueryID:  "q-cats-match",
+		Identity: "alice@demo.example",
+		Tables: []TableRef{
+			{
+				Collection:    "orders",
+				QualifiedName: "sales.orders",
+				Columns:       []string{"total"},
+			},
+		},
+	})
+
+	if len(rec.Violations) == 0 {
+		t.Fatalf("expected at least 1 violation")
+	}
+	v := rec.Violations[0]
+	if v.SuppressedByPolicy == nil || *v.SuppressedByPolicy != "allow-financial-columns" {
+		t.Fatalf("expected violation suppressed by allow-financial-columns, got %v", v.SuppressedByPolicy)
+	}
+}
+
+func TestEvaluate_DataCategoryPolicyDoesNotMatchWhenColumnsLackCategory(t *testing.T) {
+	f := loadFixtures(t)
+
+	f.Datasets.FieldCategories = map[string]map[string][]string{
+		"orders": {
+			"total":      {"user.financial"},
+			"product_id": {"system.operations"},
+		},
+	}
+
+	// ALLOW policy that matches user.financial
+	enabled := true
+	f.Policies = append(f.Policies, pbac.AccessPolicy{
+		Key:      "allow-financial-columns",
+		Priority: 999,
+		Enabled:  &enabled,
+		Decision: pbac.PolicyAllow,
+		Match: pbac.MatchBlock{
+			DataCategory: &pbac.MatchDimension{
+				Any: []string{"user.financial"},
+			},
+		},
+	})
+
+	// Query only accesses product_id (system.operations), NOT total (user.financial)
+	rec := Evaluate(f, Input{
+		QueryID:  "q-cats-no-match",
+		Identity: "alice@demo.example",
+		Tables: []TableRef{
+			{
+				Collection:    "orders",
+				QualifiedName: "sales.orders",
+				Columns:       []string{"product_id"},
+			},
+		},
+	})
+
+	if len(rec.Violations) == 0 {
+		t.Fatalf("expected at least 1 violation")
+	}
+	v := rec.Violations[0]
+	if v.SuppressedByPolicy != nil && *v.SuppressedByPolicy == "allow-financial-columns" {
+		t.Fatalf("policy should NOT match — query didn't access user.financial columns")
+	}
+}
+
+func TestEvaluate_SelectStarResolvesAllFieldCategories(t *testing.T) {
+	f := loadFixtures(t)
+
+	f.Datasets.FieldCategories = map[string]map[string][]string{
+		"orders": {
+			"total":      {"user.financial"},
+			"product_id": {"system.operations"},
+		},
+	}
+
+	// ALLOW policy matching user.financial
+	enabled := true
+	f.Policies = append(f.Policies, pbac.AccessPolicy{
+		Key:      "allow-financial-columns",
+		Priority: 999,
+		Enabled:  &enabled,
+		Decision: pbac.PolicyAllow,
+		Match: pbac.MatchBlock{
+			DataCategory: &pbac.MatchDimension{
+				Any: []string{"user.financial"},
+			},
+		},
+	})
+
+	// SELECT * — no columns specified, should resolve all categories
+	rec := Evaluate(f, Input{
+		QueryID:  "q-cats-star",
+		Identity: "alice@demo.example",
+		Tables: []TableRef{
+			{
+				Collection:    "orders",
+				QualifiedName: "sales.orders",
+				// No Columns = SELECT *
+			},
+		},
+	})
+
+	if len(rec.Violations) == 0 {
+		t.Fatalf("expected at least 1 violation")
+	}
+	v := rec.Violations[0]
+	// SELECT * includes user.financial, so the policy should match
+	if v.SuppressedByPolicy == nil || *v.SuppressedByPolicy != "allow-financial-columns" {
+		t.Fatalf("expected SELECT * to resolve all categories including user.financial, got suppressed_by=%v", v.SuppressedByPolicy)
+	}
+}
+
 // ── Table resolution: case-insensitive, multi-part qualified names
 
 func TestTableResolution_CaseInsensitive(t *testing.T) {

@@ -39,7 +39,9 @@ export const FindingsTable = ({ onRowClick }: FindingsTableProps) => {
       columns={columns}
       dataSource={data?.items}
       loading={isLoading}
-      rowKey={(record) => `${record.policy}::${record.control}`}
+      rowKey={(record) =>
+        `${record.policy_key ?? ""}::${record.control_key ?? ""}`
+      }
       size="small"
       bordered={false}
       pagination={{ ...paginationProps, total: data?.total }}
