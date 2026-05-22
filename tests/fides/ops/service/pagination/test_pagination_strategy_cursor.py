@@ -294,3 +294,158 @@ def test_cursor_object_and_has_next_in_metadata(
         path="/items",
         query_params={"after": 2},
     )
+
+
+# --- body_path tests (GraphQL Relay-style cursor injection into request body) ---
+
+
+@pytest.fixture(scope="function")
+def graphql_relay_response():
+    """Simulates a GraphQL Relay response with pageInfo alongside edges."""
+    response = Response()
+    response._content = bytes(
+        json.dumps(
+            {
+                "data": {
+                    "orders": {
+                        "pageInfo": {
+                            "hasNextPage": True,
+                            "endCursor": "YXJyYXljb25uZWN0aW9uOjk=",
+                        },
+                        "edges": [
+                            {"node": {"id": "1"}},
+                            {"node": {"id": "2"}},
+                        ],
+                    }
+                }
+            }
+        ),
+        "utf-8",
+    )
+    return response
+
+
+@pytest.fixture(scope="function")
+def graphql_relay_response_last_page():
+    """Simulates a final page GraphQL Relay response."""
+    response = Response()
+    response._content = bytes(
+        json.dumps(
+            {
+                "data": {
+                    "orders": {
+                        "pageInfo": {
+                            "hasNextPage": False,
+                            "endCursor": "YXJyYXljb25uZWN0aW9uOjE5",
+                        },
+                        "edges": [
+                            {"node": {"id": "10"}},
+                        ],
+                    }
+                }
+            }
+        ),
+        "utf-8",
+    )
+    return response
+
+
+def test_body_path_injects_cursor_into_body(graphql_relay_response):
+    """Cursor is injected into the JSON body at body_path instead of query params."""
+    config = CursorPaginationConfiguration(
+        cursor_param="after",
+        field="data.orders.pageInfo.endCursor",
+        has_next="data.orders.pageInfo.hasNextPage",
+        body_path="variables.after",
+    )
+    original_body = json.dumps(
+        {
+            "query": "{ orders(first: 10, after: $after) { edges { node { id } } pageInfo { hasNextPage endCursor } } }",
+            "variables": {"first": 10, "after": None},
+        }
+    )
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/graphql",
+        body=original_body,
+    )
+    paginator = CursorPaginationStrategy(config)
+    next_request = paginator.get_next_request(
+        request_params, {}, graphql_relay_response, "data.orders.edges"
+    )
+
+    assert next_request is not None
+    assert next_request.query_params == {}
+    body = json.loads(next_request.body)
+    assert body["variables"]["after"] == "YXJyYXljb25uZWN0aW9uOjk="
+    assert body["variables"]["first"] == 10
+    assert body["query"] == json.loads(original_body)["query"]
+
+
+def test_body_path_stops_on_last_page(graphql_relay_response_last_page):
+    """Pagination stops when hasNextPage is false, even with body_path."""
+    config = CursorPaginationConfiguration(
+        cursor_param="after",
+        field="data.orders.pageInfo.endCursor",
+        has_next="data.orders.pageInfo.hasNextPage",
+        body_path="variables.after",
+    )
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/graphql",
+        body=json.dumps({"query": "...", "variables": {"after": "prev_cursor"}}),
+    )
+    paginator = CursorPaginationStrategy(config)
+    next_request = paginator.get_next_request(
+        request_params, {}, graphql_relay_response_last_page, "data.orders.edges"
+    )
+
+    assert next_request is None
+
+
+def test_body_path_overwrites_previous_cursor(graphql_relay_response):
+    """On page 3+, body_path overwrites the previous cursor value."""
+    config = CursorPaginationConfiguration(
+        cursor_param="after",
+        field="data.orders.pageInfo.endCursor",
+        has_next="data.orders.pageInfo.hasNextPage",
+        body_path="variables.after",
+    )
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/graphql",
+        body=json.dumps(
+            {"query": "...", "variables": {"after": "old_cursor_from_page_1"}}
+        ),
+    )
+    paginator = CursorPaginationStrategy(config)
+    next_request = paginator.get_next_request(
+        request_params, {}, graphql_relay_response, "data.orders.edges"
+    )
+
+    assert next_request is not None
+    body = json.loads(next_request.body)
+    assert body["variables"]["after"] == "YXJyYXljb25uZWN0aW9uOjk="
+
+
+def test_body_path_preserves_headers(graphql_relay_response):
+    """Headers are preserved when using body_path pagination."""
+    config = CursorPaginationConfiguration(
+        cursor_param="after",
+        field="data.orders.pageInfo.endCursor",
+        has_next="data.orders.pageInfo.hasNextPage",
+        body_path="variables.after",
+    )
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/graphql",
+        headers={"Authorization": "Bearer token123"},
+        body=json.dumps({"query": "...", "variables": {"after": None}}),
+    )
+    paginator = CursorPaginationStrategy(config)
+    next_request = paginator.get_next_request(
+        request_params, {}, graphql_relay_response, "data.orders.edges"
+    )
+
+    assert next_request is not None
+    assert next_request.headers == {"Authorization": "Bearer token123"}

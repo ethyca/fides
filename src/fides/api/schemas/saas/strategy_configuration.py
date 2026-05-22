@@ -90,12 +90,18 @@ class LinkPaginationConfiguration(StrategyConfiguration):
 
 class CursorPaginationConfiguration(StrategyConfiguration):
     """
-    Extracts the cursor value from the 'field' of the last object in the array specified by 'data_path'
+    Extracts the cursor value from the 'field' of the last object in the array specified by 'data_path'.
+
+    By default the cursor is injected as a query parameter named ``cursor_param``.
+    If ``body_path`` is provided (dot-notation, e.g. ``variables.after``), the cursor
+    is injected into the JSON request body at that path instead — useful for GraphQL
+    Relay-style pagination.
     """
 
     cursor_param: str
     field: str
     has_next: Optional[str] = None
+    body_path: Optional[str] = None
 
 
 class ApiKeyAuthenticationConfiguration(StrategyConfiguration):

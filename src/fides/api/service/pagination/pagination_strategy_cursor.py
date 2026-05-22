@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Optional
 
 import pydash
@@ -17,6 +18,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         self.cursor_param = configuration.cursor_param
         self.field = configuration.field
         self.has_next = configuration.has_next
+        self.body_path = configuration.body_path
 
     def get_next_request(
         self,
@@ -55,13 +57,19 @@ class CursorPaginationStrategy(PaginationStrategy):
             if str(has_next).lower() != "true":
                 return None
 
-        # add or replace cursor_param with new cursor value
-        request_params.query_params[self.cursor_param] = cursor
+        # inject cursor into body (for GraphQL) or query params (default)
+        body = request_params.body
+        if self.body_path:
+            body_dict = json.loads(body) if body else {}
+            pydash.set_(body_dict, self.body_path, cursor)
+            body = json.dumps(body_dict)
+        else:
+            request_params.query_params[self.cursor_param] = cursor
 
         return SaaSRequestParams(
             method=request_params.method,
             headers=request_params.headers,
             path=request_params.path,
             query_params=request_params.query_params,
-            body=request_params.body,
+            body=body,
         )
