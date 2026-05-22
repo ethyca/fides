@@ -41,9 +41,6 @@ export const ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
   "/data-discovery/action-center/cloud_infrastructure/[monitorId]/activity";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
 
-// End-to-end datasets
-export const DATA_CATALOG_ROUTE = "/data-catalog";
-
 // Privacy requests group
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
@@ -111,7 +108,6 @@ export const ANT_POC_ROUTE = "/poc/ant-components";
 export const FORMS_POC_ROUTE = "/poc/forms";
 export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
-export const FIDES_JS_DOCS = "/fides-js-docs";
 export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
 export const SEED_DATA_ROUTE = "/poc/seed-data";
 export const TEST_MONITORS_ROUTE = "/poc/test-monitors";
@@ -149,3 +145,9 @@ export const CONTROLS_EDIT_ROUTE = "/access-policies/controls/[controlKey]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
+
+// DSR Traversal Visualizer
+export const DSR_TRAVERSAL_ROUTE = "/dsr-traversal";
+export const DSR_TRAVERSAL_PROPERTY_ROUTE = "/dsr-traversal/[propertyKey]";
+export const DSR_TRAVERSAL_PROPERTY_ACTION_ROUTE =
+  "/dsr-traversal/[propertyKey]/[[...actionType]]";

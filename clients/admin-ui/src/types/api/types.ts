@@ -12710,7 +12710,7 @@ export type listAccessPoliciesApiV1PlusAccessPolicyGetData = {
      */
     size?: number;
   };
-  url: "/api/v1/plus/access-policy";
+  url: "/api/v1/plus/access-policies";
 };
 
 export type listAccessPoliciesApiV1PlusAccessPolicyGetErrors = {
@@ -12737,7 +12737,7 @@ export type createAccessPolicyApiV1PlusAccessPolicyPostData = {
   body: AccessPolicyCreate;
   path?: never;
   query?: never;
-  url: "/api/v1/plus/access-policy";
+  url: "/api/v1/plus/access-policies";
 };
 
 export type createAccessPolicyApiV1PlusAccessPolicyPostErrors = {
@@ -12769,7 +12769,7 @@ export type deleteAccessPolicyApiV1PlusAccessPolicyAccessPolicyIdDeleteData = {
     access_policy_id: string;
   };
   query?: never;
-  url: "/api/v1/plus/access-policy/{access_policy_id}";
+  url: "/api/v1/plus/access-policies/{access_policy_id}";
 };
 
 export type deleteAccessPolicyApiV1PlusAccessPolicyAccessPolicyIdDeleteErrors =
@@ -12803,7 +12803,7 @@ export type getAccessPolicyApiV1PlusAccessPolicyAccessPolicyIdGetData = {
     access_policy_id: string;
   };
   query?: never;
-  url: "/api/v1/plus/access-policy/{access_policy_id}";
+  url: "/api/v1/plus/access-policies/{access_policy_id}";
 };
 
 export type getAccessPolicyApiV1PlusAccessPolicyAccessPolicyIdGetErrors = {
@@ -12835,7 +12835,7 @@ export type updateAccessPolicyApiV1PlusAccessPolicyAccessPolicyIdPatchData = {
     access_policy_id: string;
   };
   query?: never;
-  url: "/api/v1/plus/access-policy/{access_policy_id}";
+  url: "/api/v1/plus/access-policies/{access_policy_id}";
 };
 
 export type updateAccessPolicyApiV1PlusAccessPolicyAccessPolicyIdPatchErrors = {

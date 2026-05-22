@@ -15,6 +15,7 @@ from fides.api.common_exceptions import (
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_center_config import (
@@ -46,6 +47,7 @@ from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     CheckpointActionRequired,
+    HistoricalPrivacyRequestImport,
     PrivacyRequestBulkSelection,
     PrivacyRequestCreate,
     PrivacyRequestFilter,
@@ -55,6 +57,9 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
+    get_pre_restart_cleanup,
+)
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
@@ -196,18 +201,19 @@ class PrivacyRequestService:
         return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption],
     ) -> None:
         """Validate that location is provided for required location fields.
 
-        Looks up the actual Privacy Center configuration to check if any location
-        fields are marked as required for the specified policy.
+        Caller resolves ``action`` once via :meth:`_resolve_action_for_request`
+        and passes it in; ``None`` short-circuits.
         """
         # If location is already provided, no validation needed
         if privacy_request_data.location:
             return
 
-        action = self._resolve_action_for_request(privacy_request_data)
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -317,11 +323,15 @@ class PrivacyRequestService:
         return action
 
     def _validate_field_visibility(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption],
     ) -> None:
         """Reject payloads that violate the action's display_condition
-        contract; translate :class:`DisplayConditionViolation` to ``PrivacyRequestError``."""
-        action = self._resolve_action_for_request(privacy_request_data)
+        contract; translate :class:`DisplayConditionViolation` to
+        ``PrivacyRequestError``. Caller resolves ``action`` once via
+        :meth:`_resolve_action_for_request` and passes it in; ``None``
+        short-circuits."""
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -372,6 +382,26 @@ class PrivacyRequestService:
 
         return False
 
+    def _resolve_attachment_state(
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption],
+    ) -> tuple[PrivacyRequestCreate, Any]:
+        """Extension hook (no-op by default). fidesplus overrides this to
+        resolve file-field attachments and strip them from the persisted
+        payload. Returns ``(possibly-stripped data, opaque state)``; the
+        state is forwarded to :meth:`_promote_attachment_state`."""
+        return privacy_request_data, None
+
+    def _promote_attachment_state(
+        self,
+        privacy_request: PrivacyRequest,
+        attachment_state: Any,
+    ) -> None:
+        """Extension hook (no-op by default). fidesplus overrides this to
+        promote resolved attachments after the request row exists. Raising
+        triggers the rollback path in :meth:`create_privacy_request`."""
+
     # pylint: disable=too-many-branches, too-many-statements
     def create_privacy_request(
         self,
@@ -412,11 +442,15 @@ class PrivacyRequestService:
                     privacy_request_data.model_dump(mode="json"),
                 )
 
-        # Validate location is provided for required location fields
-        self._validate_required_location_fields(privacy_request_data)
-
-        # Validate display_condition visibility: no gated-off fields submitted,
-        self._validate_field_visibility(privacy_request_data)
+        # Resolve the action once and forward to validators + hooks below.
+        # Visibility runs before the attachment hook so required FileUpload
+        # fields are seen as having a submitted value.
+        action = self._resolve_action_for_request(privacy_request_data)
+        self._validate_required_location_fields(privacy_request_data, action)
+        self._validate_field_visibility(privacy_request_data, action)
+        privacy_request_data, attachment_state = self._resolve_attachment_state(
+            privacy_request_data, action
+        )
 
         policy = Policy.get_by(
             db=self.db,
@@ -505,6 +539,31 @@ class PrivacyRequestService:
                 )
                 privacy_request.persist_masking_secrets(masking_secrets)
 
+            # Promote resolved attachments. ``delete()`` commits, so the
+            # invariant assumed here is that the request row is the only
+            # DB-side write pending on ``self.db`` (cache + masking
+            # secrets target Redis, not the DB).
+            try:
+                self._promote_attachment_state(privacy_request, attachment_state)
+            except Exception as promotion_exc:
+                logger.exception(
+                    "Attachment promotion failed for privacy request {}; "
+                    "deleting to preserve 'files required' invariant",
+                    privacy_request.id,
+                )
+                try:
+                    privacy_request.delete(self.db)
+                except Exception:
+                    logger.exception(
+                        "Failed to delete privacy request {} after promotion failure",
+                        privacy_request.id,
+                    )
+                # Generic user-facing message — promotion_exc may include
+                # storage paths/object keys; chained via __cause__ for ops.
+                raise PrivacyRequestError(
+                    "Attachment processing failed.", kwargs
+                ) from promotion_exc
+
             check_and_dispatch_error_notifications(db=self.db)
 
             _handle_notifications_and_processing(
@@ -530,6 +589,10 @@ class PrivacyRequestService:
             raise PrivacyRequestError(
                 "Verification message could not be sent.", kwargs
             ) from exc
+        except PrivacyRequestError:
+            # Already carries a specific reason (e.g. attachment promotion
+            # failure) - don't rewrap with the generic message below.
+            raise
         except Exception as exc:
             logger.error(f"{exc.__class__.__name__}: {str(exc)}")
             raise PrivacyRequestError("This record could not be added", kwargs) from exc
@@ -569,6 +632,171 @@ class PrivacyRequestService:
             succeeded=created,
             failed=failed,
         )
+
+    def import_historical_privacy_requests(
+        self,
+        data: List[HistoricalPrivacyRequestImport],
+        *,
+        imported_by: Optional[str] = None,
+    ) -> BulkPostPrivacyRequests:
+        """Bulk-import historical, already-completed privacy requests.
+
+        Inserts PrivacyRequest, ProvidedIdentity, and a single AuditLog row per
+        record. Bypasses all processing pipeline side effects: no Celery, no
+        notifications, no webhooks, no duplicate detection, no Redis caching of
+        identity/encryption.
+        """
+
+        succeeded: List[PrivacyRequest] = []
+        failed: List[BulkUpdateFailed] = []
+
+        logger.info("Starting historical import of {} privacy requests", len(data))
+
+        for record in data:
+            try:
+                privacy_request = self._import_single_historical_privacy_request(
+                    record, imported_by=imported_by
+                )
+                succeeded.append(privacy_request)
+            except PrivacyRequestError as exc:
+                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+
+        return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
+
+    def _resolve_reviewed_by_user(self, identifier: Optional[str]) -> Optional[str]:
+        """Best-effort lookup of a FidesUser id by email_address then username.
+
+        Used by the historical-import flow to populate the `reviewed_by`
+        foreign key on imported privacy requests when the supplied identifier
+        matches an existing user. Returns the user's id or None.
+        """
+        if not identifier:
+            return None
+        user = FidesUser.get_by(
+            db=self.db, field="email_address", value=identifier
+        ) or FidesUser.get_by(db=self.db, field="username", value=identifier)
+        return user.id if user else None
+
+    def _import_single_historical_privacy_request(
+        self,
+        record: HistoricalPrivacyRequestImport,
+        *,
+        imported_by: Optional[str],
+    ) -> PrivacyRequest:
+        """Insert a single historical privacy request without triggering the
+        normal creation pipeline. See `import_historical_privacy_requests`."""
+
+        if not any(record.identity.model_dump(mode="json").values()):
+            raise PrivacyRequestError(
+                "You must provide at least one identity to process",
+                record.model_dump(mode="json"),
+            )
+
+        policy = Policy.get_by(db=self.db, field="key", value=record.policy_key)
+        if policy is None:
+            raise PrivacyRequestError(
+                f"Policy with key {record.policy_key} does not exist",
+                record.model_dump(mode="json"),
+            )
+
+        resolved_reviewer_id = self._resolve_reviewed_by_user(record.reviewed_by)
+
+        kwargs: Dict[str, Any] = {
+            "policy_id": policy.id,
+            "status": record.status,
+            "requested_at": record.requested_at,
+            "started_processing_at": record.started_processing_at
+            or record.requested_at,
+            "finished_processing_at": record.finished_processing_at,
+            "source": record.source,
+        }
+        if record.external_id is not None:
+            kwargs["external_id"] = record.external_id
+        if record.reviewed_at is not None:
+            kwargs["reviewed_at"] = record.reviewed_at
+        if resolved_reviewer_id is not None:
+            kwargs["reviewed_by"] = resolved_reviewer_id
+
+        # Each `Base.create` call commits independently (see
+        # `OrmWrappedFidesBase.persist_obj`). To avoid leaving an orphan
+        # PrivacyRequest row if `persist_identity` or `AuditLog.create` fails,
+        # we manually delete the partially-written row on exception. The
+        # PrivacyRequest -> ProvidedIdentity FK has ON DELETE CASCADE, so any
+        # identity rows already written are removed automatically; AuditLog
+        # rows have no FK enforcement, so we delete them explicitly first.
+        privacy_request: Optional[PrivacyRequest] = None
+        try:
+            privacy_request = PrivacyRequest.create(db=self.db, data=kwargs)
+            privacy_request.persist_identity(db=self.db, identity=record.identity)
+
+            AuditLog.create(
+                db=self.db,
+                data={
+                    "privacy_request_id": privacy_request.id,
+                    "user_id": imported_by,
+                    "action": AuditLogAction.imported,
+                    "message": f"Imported with status={record.status.value}",
+                },
+            )
+
+            # Synthesize a lifecycle AuditLog row so the CSV "Denial Reason"
+            # column (sourced from `audit_log.message` where `action='denied'`)
+            # and the activity timeline reflect the historical event from the
+            # source deployment. For denied imports the row is always written
+            # because `denial_reason` carries compliance value regardless of
+            # whether the original reviewer can be resolved locally. For
+            # non-denied statuses the row is only written when the reviewer
+            # resolves to a local FidesUser — without an identifiable actor
+            # there is no compliance signal worth recording beyond the
+            # `imported` marker, and stuffing the raw payload identifier into
+            # `audit_log.user_id` would overload that column's semantics.
+            # Pre-create FidesUsers in the destination to preserve reviewer
+            # attribution for imported approved/canceled/error records.
+            if record.status == PrivacyRequestStatus.denied:
+                AuditLog.create(
+                    db=self.db,
+                    data={
+                        "privacy_request_id": privacy_request.id,
+                        "user_id": resolved_reviewer_id,
+                        "action": AuditLogAction.denied,
+                        "message": record.denial_reason,
+                    },
+                )
+            elif resolved_reviewer_id is not None:
+                AuditLog.create(
+                    db=self.db,
+                    data={
+                        "privacy_request_id": privacy_request.id,
+                        "user_id": resolved_reviewer_id,
+                        "action": AuditLogAction.approved,
+                        "message": None,
+                    },
+                )
+
+            return privacy_request
+        except Exception as exc:
+            if privacy_request is not None:
+                try:
+                    self.db.rollback()
+                    self.db.query(AuditLog).filter(
+                        AuditLog.privacy_request_id == privacy_request.id
+                    ).delete(synchronize_session=False)
+                    privacy_request.delete(db=self.db)
+                except Exception:
+                    logger.warning(
+                        "Failed to roll back partial historical import for {}; "
+                        "the row may require manual cleanup.",
+                        privacy_request.id,
+                    )
+            logger.error(
+                "Failed to import historical privacy request: {}",
+                exc.__class__.__name__,
+                exc_info=True,
+            )
+            raise PrivacyRequestError(
+                "This historical record could not be imported",
+                record.model_dump(mode="json"),
+            ) from exc
 
     def resubmit_privacy_request(
         self, privacy_request_id: str
@@ -1250,6 +1478,12 @@ def _process_privacy_request_restart(
             "Restarting failed privacy request '{}' from the beginning",
             privacy_request.id,
         )
+
+    # Clean up any access review state so the request enters review fresh
+    if privacy_request.status == PrivacyRequestStatus.awaiting_access_review:
+        cleanup = get_pre_restart_cleanup()
+        if cleanup:
+            cleanup(privacy_request.id, db)
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)

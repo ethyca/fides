@@ -7,13 +7,6 @@
     "production": false,
     "userCannotModify": true
   },
-  "dataCatalog": {
-    "label": "Data catalog",
-    "description": "Data catalog view",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "webMonitor": {
     "label": "Web monitor",
     "description": "Monitor websites for activity",
@@ -112,13 +105,6 @@
     "test": false,
     "production": false
   },
-  "heliosInsights": {
-    "label": "Helios insights",
-    "description": "Enable the new monitor progress widgets for the action center in Helios",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "alphaPrivacyDocUpload": {
     "label": "Alpha Privacy Document Upload",
     "description": "Enable users to use and see the UI in PBAC",
@@ -133,13 +119,6 @@
     "test": false,
     "production": false
   },
-  "alphaDashboardAstralisCard": {
-    "label": "Alpha dashboard Astralis card",
-    "description": "Show the Astralis agent card on the dashboard",
-    "development": true,
-    "test": false,
-    "production": false
-  },
   "alphaDashboardAgentBriefing": {
     "label": "Alpha dashboard agent briefing",
     "description": "Show the Astralis agent summary banner on the dashboard",
@@ -150,6 +129,34 @@
   "alphaDashboardAgentBriefingActions": {
     "label": "Alpha dashboard agent briefing actions",
     "description": "Show action items inside the Astralis agent briefing banner",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaDashboardAssessmentStatusCard": {
+    "label": "Alpha dashboard assessment status card",
+    "description": "Show the assessment status card on the dashboard",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "dsrTraversalVisualizer": {
+    "label": "DSR traversal visualizer",
+    "description": "Preview the DSR traversal graph for a property before requests run",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "formBuilder": {
+    "label": "Form builder",
+    "description": "Visual drag-and-drop form builder for privacy center request forms",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "accessPackages": {
+    "label": "Access packages",
+    "description": "Data-use-organized access packages with review workflow",
     "development": true,
     "test": false,
     "production": false

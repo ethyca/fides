@@ -1,7 +1,7 @@
 """add email verification token table
 
 Revision ID: 835de27d8c76
-Revises: 5f9821b4baf1
+Revises: c8d4e2f6a9b1
 Create Date: 2026-05-12 10:00:00.000000
 """
 
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "835de27d8c76"
-down_revision = "5f9821b4baf1"
+down_revision = "c8d4e2f6a9b1"
 branch_labels = None
 depends_on = None
 

@@ -57,6 +57,11 @@ class MailgunService(BaseEmailProviderService):
             else:
                 data["html"] = message.body
 
+            # Threading / envelope headers
+            data.update(self.get_threading_headers(message, header_prefix="h:"))
+            if message.body_text:
+                data["text"] = message.body_text
+
             response = requests.post(
                 f"{self.base_url}/{self.api_version}/{self.domain}/messages",
                 auth=("api", self.api_key),

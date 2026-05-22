@@ -557,6 +557,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     request_task_id=request_task.id,
                     query_config=query_config,
                     rows=rows,
+                    input_data=input_data,
                 )
         masking_request = query_config.get_masking_request()
         rows_updated = 0

@@ -1,0 +1,4 @@
+type: Changed
+description: Migrate the system history diff view (SystemDataForm) from Chakra/Formik to Ant Design.
+pr: 8239
+labels: []

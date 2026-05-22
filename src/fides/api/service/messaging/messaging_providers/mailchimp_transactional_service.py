@@ -28,15 +28,29 @@ class MailchimpTransactionalService(BaseEmailProviderService):
         )
 
     def send_email(self, to: str, message: EmailForActionType) -> None:
+        msg_payload: dict = {
+            "from_email": self.from_email,
+            "subject": message.subject,
+            "html": message.body,
+            "to": [{"email": to.strip(), "type": "to"}],
+        }
+
+        # Reply-to uses Mandrill's native field
+        if message.reply_to:
+            msg_payload["reply_to"] = message.reply_to
+
+        # Threading headers (exclude Reply-To — handled natively above)
+        threading_headers = self.get_threading_headers(message)
+        threading_headers.pop(BaseEmailProviderService.HEADER_REPLY_TO, None)
+        if threading_headers:
+            msg_payload["headers"] = threading_headers
+        if message.body_text:
+            msg_payload["text"] = message.body_text
+
         data = json.dumps(
             {
                 "key": self.api_key,
-                "message": {
-                    "from_email": self.from_email,
-                    "subject": message.subject,
-                    "html": message.body,
-                    "to": [{"email": to.strip(), "type": "to"}],
-                },
+                "message": msg_payload,
             }
         )
 

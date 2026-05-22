@@ -1,15 +1,11 @@
-import { Button, Flex, Typography } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, FormInstance, Input, Select } from "fidesui";
 import { uniq } from "lodash";
-import { useMemo } from "react";
-import * as Yup from "yup";
+import { useEffect, useMemo, useState } from "react";
 
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
-import ColorSelect from "~/features/system/system-groups/components/ColorSelect";
-import DataUseSelectWithSuggestions from "~/features/system/system-groups/components/DataUseSelectWithSuggestions";
+import { ColorSelect } from "~/features/system/system-groups/components/ColorSelect";
+import { DataUseSelectWithSuggestions } from "~/features/system/system-groups/components/DataUseSelectWithSuggestions";
 import {
   CustomTaxonomyColor,
   DataUse,
@@ -18,24 +14,30 @@ import {
 } from "~/types/api";
 
 interface CreateSystemGroupFormProps {
+  form: FormInstance<SystemGroupCreate>;
   selectedSystemKeys?: string[];
   onSubmit: (values: SystemGroupCreate) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
 }
 
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required").label("Name"),
-  label_color: Yup.string().required("Color is required").label("Color"),
-  systems: Yup.array().of(Yup.string()).label("Systems"),
-  data_uses: Yup.array().of(Yup.string()).label("Data uses"),
-});
+export const useCreateSystemGroupForm = () => {
+  const [form] = Form.useForm<SystemGroupCreate>();
+  const values = Form.useWatch([], form);
+  const [isSubmittable, setIsSubmittable] = useState(false);
 
-const CreateSystemGroupForm = ({
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setIsSubmittable(true))
+      .catch(() => setIsSubmittable(false));
+  }, [form, values]);
+
+  return { form, isSubmittable };
+};
+
+export const CreateSystemGroupForm = ({
+  form,
   selectedSystemKeys = [],
   onSubmit,
-  onCancel,
-  isSubmitting = false,
 }: CreateSystemGroupFormProps) => {
   const { data: dataUses = [], isLoading: isLoadingDataUses } =
     useGetAllDataUsesQuery();
@@ -83,73 +85,55 @@ const CreateSystemGroupForm = ({
   };
 
   return (
-    <Formik
+    <Form
+      form={form}
       initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={onSubmit}
-      enableReinitialize
+      onFinish={onSubmit}
+      layout="vertical"
     >
-      {({ isValid, dirty }) => {
-        return (
-          <Form>
-            <Flex vertical gap="medium">
-              <Typography.Title level={2}>Create system group</Typography.Title>
-              <CustomTextInput
-                name="name"
-                label="Name"
-                isRequired
-                variant="stacked"
-                placeholder="Enter system group name"
-              />
+      <Form.Item
+        name="name"
+        label="Name"
+        required
+        rules={[{ required: true, message: "Name is required" }]}
+      >
+        <Input placeholder="Enter system group name" data-testid="input-name" />
+      </Form.Item>
 
-              <CustomTextArea
-                name="description"
-                label="Description"
-                variant="stacked"
-                placeholder="Enter system group description"
-                resize={false}
-              />
+      <Form.Item name="description" label="Description">
+        <Input.TextArea
+          placeholder="Enter system group description"
+          data-testid="input-description"
+        />
+      </Form.Item>
 
-              <ControlledSelect
-                name="systems"
-                label="Systems"
-                mode="multiple"
-                placeholder="Select systems"
-                options={systemOptions}
-                layout="stacked"
-                allowClear
-                loading={isLoadingSystems}
-              />
+      <Form.Item name="systems" label="Systems">
+        <Select
+          mode="multiple"
+          aria-label="Systems"
+          placeholder="Select systems"
+          options={systemOptions}
+          allowClear
+          loading={isLoadingSystems}
+        />
+      </Form.Item>
 
-              <ColorSelect name="label_color" label="Color" />
+      <Form.Item
+        name="label_color"
+        label="Color"
+        required
+        rules={[{ required: true, message: "Color is required" }]}
+      >
+        <ColorSelect />
+      </Form.Item>
 
-              <DataUseSelectWithSuggestions
-                name="data_uses"
-                options={dataUseOptions}
-                loading={isLoadingDataUses}
-                suggestedDataUses={suggestedDataUses}
-              />
-
-              <Flex gap="small" justify="space-between" className="pt-4">
-                <Button onClick={onCancel} disabled={isSubmitting}>
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={isSubmitting}
-                  disabled={!isValid || !dirty || isSubmitting}
-                  data-testid="save-btn"
-                >
-                  Create group
-                </Button>
-              </Flex>
-            </Flex>
-          </Form>
-        );
-      }}
-    </Formik>
+      <Form.Item name="data_uses" label="Data uses">
+        <DataUseSelectWithSuggestions
+          options={dataUseOptions}
+          loading={isLoadingDataUses}
+          suggestedDataUses={suggestedDataUses}
+        />
+      </Form.Item>
+    </Form>
   );
 };
-
-export default CreateSystemGroupForm;

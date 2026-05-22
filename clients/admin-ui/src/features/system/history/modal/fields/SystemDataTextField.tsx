@@ -1,32 +1,29 @@
-import {
-  ChakraFlex as Flex,
-  ChakraFormControl as FormControl,
-  ChakraText as Text,
-  ChakraVStack as VStack,
-} from "fidesui";
-import { useField } from "formik";
+import classNames from "classnames";
+import { Flex, Typography } from "fidesui";
 import _ from "lodash";
 import { useEffect, useRef, useState } from "react";
 
-import {
-  CustomInputProps,
-  Label,
-  StringField,
-} from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 import { useSelectedHistory } from "../SelectedHistoryContext";
+import styles from "./SystemDataField.module.scss";
+
+interface SystemDataTextFieldProps {
+  name: string;
+  label?: string;
+  tooltip?: string | null;
+}
 
 const SystemDataTextField = ({
   label,
   tooltip,
   ...props
-}: CustomInputProps & StringField) => {
+}: SystemDataTextFieldProps) => {
   const { selectedHistory, formType } = useSelectedHistory();
-  const [initialField] = useField(props);
-  const field = { ...initialField, value: initialField.value ?? "" };
+  const value =
+    (_.get(selectedHistory?.[formType], props.name) as string) ?? "";
 
-  const contentRef = useRef<HTMLParagraphElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
@@ -36,81 +33,40 @@ const SystemDataTextField = ({
     const afterValue =
       (_.get(selectedHistory?.after, props.name) as string) || "";
 
-    // Determine whether to highlight
     setShouldHighlight(!_.isEqual(beforeValue, afterValue));
 
     const longestValue =
       beforeValue.length > afterValue.length ? beforeValue : afterValue;
 
     if (contentRef.current) {
-      // Temporarily set the value to the longest one to measure height
       contentRef.current.textContent = longestValue;
-
-      // Measure and set the height
       setHeight(contentRef.current.offsetHeight);
-
-      // Reset the value to the actual one
-      contentRef.current.textContent = field.value;
+      contentRef.current.textContent = value;
     }
-  }, [selectedHistory, props.name, field.value]);
-
-  let highlightStyle = {};
-
-  if (shouldHighlight) {
-    if (formType === "before") {
-      highlightStyle = {
-        backgroundColor: "#FFF5F5",
-        borderColor: "#E53E3E",
-        borderTop: "1px dashed #E53E3E",
-        borderBottom: "1px dashed #E53E3E",
-      };
-    } else {
-      highlightStyle = {
-        backgroundColor: "#F0FFF4",
-        borderColor: "#38A169",
-        borderTop: "1px dashed #38A169",
-        borderBottom: "1px dashed #38A169",
-      };
-    }
-  }
+  }, [selectedHistory, props.name, value]);
 
   return (
-    <FormControl
-      style={highlightStyle}
-      paddingLeft={4}
-      paddingRight={4}
-      paddingTop={3}
-      paddingBottom={3}
-      marginTop="-1px !important"
+    <div
+      className={classNames("px-4 py-3", styles.cell, {
+        [styles.highlightBefore]: shouldHighlight && formType === "before",
+        [styles.highlightAfter]: shouldHighlight && formType === "after",
+      })}
     >
-      <VStack alignItems="start">
-        <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
+      <Flex vertical align="flex-start">
+        <Flex align="center" gap="small">
+          <Typography.Text strong className="!text-xs">
             {label}
-          </Label>
+          </Typography.Text>
           <InfoTooltip label={tooltip} />
         </Flex>
-        <Text
-          fontSize="14px"
-          ref={contentRef}
-          style={{ height: `${height}px` }}
-        >
-          {field.value}
-        </Text>
+        <Typography.Text ref={contentRef} style={{ height: `${height}px` }}>
+          {value}
+        </Typography.Text>
         {formType === "before" && shouldHighlight && (
-          <div
-            style={{
-              position: "absolute",
-              right: "-22px",
-              top: "50%",
-              transform: "translateY(-50%)",
-            }}
-          >
-            →
-          </div>
+          <div className={styles.arrow}>→</div>
         )}
-      </VStack>
-    </FormControl>
+      </Flex>
+    </div>
   );
 };
 

@@ -74,7 +74,7 @@ const MultipleSystemsFilterModal = <T,>({
       id: string;
       value: string[];
     } = {
-      id: "vendor_id",
+      id: "source",
       value: [],
     };
     if (filters.GVL) {

@@ -1,0 +1,53 @@
+@keyframes agentPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 32px
+        color-mix(in srgb, var(--fidesui-brand-terracotta) 45%, transparent),
+      0 0 80px
+        color-mix(in srgb, var(--fidesui-brand-terracotta) 25%, transparent);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 48px
+        color-mix(in srgb, var(--fidesui-brand-terracotta) 65%, transparent),
+      0 0 120px
+        color-mix(in srgb, var(--fidesui-brand-terracotta) 35%, transparent);
+    transform: scale(1.15);
+  }
+}
+
+.container {
+  --ease-instrument: cubic-bezier(0.22, 1, 0.36, 1);
+
+  padding: 6px 12px;
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.square {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: var(--fidesui-brand-terracotta);
+  animation: agentPulse 1.8s var(--ease-instrument) infinite;
+}
+
+.small {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  .square {
+    width: 8px;
+    height: 8px;
+  }
+
+  .label {
+    font-size: 12px;
+  }
+}

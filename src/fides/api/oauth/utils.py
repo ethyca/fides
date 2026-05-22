@@ -909,7 +909,12 @@ def verify_client_can_assign_scopes(
 
     # If they don't have all scopes via direct assignment or roles, check individual scopes
     if not has_scope_via_role:
-        unauthorized_scopes = set(scopes) - set(token_scopes)
+        # Combine direct token scopes with role-derived scopes to find
+        # which specific scope(s) the user is actually missing
+        assigned_roles = token_data.get(JWE_PAYLOAD_ROLES, [])
+        role_scopes = get_scopes_from_roles(assigned_roles)
+        effective_scopes = set(token_scopes) | set(role_scopes)
+        unauthorized_scopes = set(scopes) - effective_scopes
 
         if unauthorized_scopes:
             raise HTTPException(

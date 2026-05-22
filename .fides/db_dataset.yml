@@ -23,6 +23,23 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: access_package_review
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: privacy_request_id
+      data_categories: [system.operations]
+    - name: redactions
+      data_categories: [system.operations]
+    - name: approved_at
+      data_categories: [system.operations]
+    - name: approved_by
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: alembic_version
     fields:
     - name: version_num
@@ -97,6 +114,28 @@ dataset:
     - name: client_id
       data_categories:
         - system.operations
+  - name: attachment_user_provided
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: field_name
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: object_key
+      data_categories: [system.operations]
+    - name: policy_key
+      data_categories: [system.operations]
+    - name: promoted_at
+      data_categories: [system.operations]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: storage_key
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: answer_version
     description: 'Immutable history of assessment answer versions'
     fields:
@@ -3270,6 +3309,8 @@ dataset:
       data_categories: [system]
     - name: shared_config_id
       data_categories: [system]
+    - name: inherit_system_stewards
+      data_categories: [system]
   - name: shared_monitor_config
     fields:
     - name: created_at
@@ -3333,6 +3374,34 @@ dataset:
     - name: system_id
       data_categories: [system]
     - name: vendor_id
+      data_categories: [system]
+  - name: cloud_infra_group
+    fields:
+    - name: created_at
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: monitor_config_id
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: system_id
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+  - name: cloud_infra_group_assignment
+    fields:
+    - name: created_at
+      data_categories: [system]
+    - name: group_id
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: promoted
+      data_categories: [system]
+    - name: resource_id
+      data_categories: [system]
+    - name: updated_at
       data_categories: [system]
   - name: cloud_infra_staged_resource
     fields:
@@ -3655,6 +3724,26 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: tcf_version_hash_history
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: privacy_experience_config_id
+        data_categories: [system.operations]
+      - name: previous_hash
+        data_categories: [system.operations]
+      - name: current_hash
+        data_categories: [system.operations]
+      - name: changed_at
+        data_categories: [system.operations]
+      - name: trigger_source
+        data_categories: [system.operations]
+      - name: details
+        data_categories: [system.operations]
   - name: stagedresourceancestor
     fields:
       - name: id
@@ -3690,6 +3779,8 @@ dataset:
       - name: staged_resource_urns
         data_categories: [system.operations]
       - name: child_resource_urns
+        data_categories: [system.operations]
+      - name: group_id
         data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]
@@ -4134,6 +4225,10 @@ dataset:
       - name: user_id
         data_categories: [system.operations]
       - name: monitor_config_id
+        data_categories: [system.operations]
+      - name: source
+        data_categories: [system.operations]
+      - name: source_system_id
         data_categories: [system.operations]
   - name: questionnaire
     description: 'SME questionnaire sessions linked to privacy assessments'

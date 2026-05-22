@@ -15,13 +15,6 @@ jest.mock("query-string", () => ({
   },
 }));
 
-// Mock react-dnd to avoid ES module issues in Jest
-jest.mock("react-dnd", () => ({
-  useDrag: jest.fn(() => [{}, jest.fn()]),
-  useDrop: jest.fn(() => [{}, jest.fn()]),
-  DndProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-
 // Mock the dataset API slice
 jest.mock("~/features/dataset/dataset.slice", () => {
   const originalModule = jest.requireActual("~/features/dataset/dataset.slice");

@@ -137,7 +137,7 @@ describe("Plus Asset List", () => {
         // blur the input without entering anything to trigger the error
         cy.getByTestId("input-base_url").clear().blur();
         cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("error-base_url").should(
+        cy.getAntFormError("base_url").should(
           "contain",
           "Base URL is required",
         );

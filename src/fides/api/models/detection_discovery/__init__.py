@@ -1,5 +1,6 @@
 from .classification_benchmark import ClassificationBenchmark
 from .cloud_infra import CloudInfraStagedResource
+from .cloud_infra_group import CloudInfraGroup, CloudInfraGroupAssignment
 from .core import (
     DiffStatus,
     MonitorConfig,
@@ -8,7 +9,6 @@ from .core import (
     SharedMonitorConfig,
     StagedResource,
     StagedResourceAncestor,
-    fetch_staged_resources_by_type_query,
 )
 from .monitor_steward import MonitorSteward
 from .monitor_task import (
@@ -17,12 +17,15 @@ from .monitor_task import (
     MonitorTaskType,
     TaskRunType,
     create_monitor_task_with_execution_log,
+    is_monitor_task_paused,
     update_monitor_task_with_execution_log,
 )
 from .staged_resource_error import StagedResourceError
 
 __all__ = [
     "ClassificationBenchmark",
+    "CloudInfraGroup",
+    "CloudInfraGroupAssignment",
     "CloudInfraStagedResource",
     "DiffStatus",
     "MonitorConfig",
@@ -33,11 +36,11 @@ __all__ = [
     "StagedResource",
     "StagedResourceAncestor",
     "StagedResourceError",
-    "fetch_staged_resources_by_type_query",
     "MonitorTask",
     "MonitorTaskExecutionLog",
     "MonitorTaskType",
     "TaskRunType",
     "create_monitor_task_with_execution_log",
+    "is_monitor_task_paused",
     "update_monitor_task_with_execution_log",
 ]

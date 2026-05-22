@@ -51,6 +51,7 @@ class MonitorTask(WorkerTask, Base):
     )
     staged_resource_urns = Column(ARRAY(String), nullable=True)
     child_resource_urns = Column(ARRAY(String), nullable=True)
+    group_id = Column(String(255), nullable=True, index=True)
     dismissed = Column(Boolean, nullable=False, default=False)
 
     monitor_config = relationship(MonitorConfig, cascade="all, delete")
@@ -161,3 +162,14 @@ def update_monitor_task_with_execution_log(
     db.commit()
     db.refresh(task_record)
     return task_record
+
+
+def is_monitor_task_paused(db: Session, celery_id: str) -> bool:
+    """Check if a monitor task has been paused (awaiting_processing).
+
+    Tasks enter this state when stopped via the /stop endpoint.
+    """
+    task = MonitorTask.get_by(db=db, field="celery_id", value=celery_id)
+    if not task:
+        return False
+    return task.status == ExecutionLogStatus.awaiting_processing
