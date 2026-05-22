@@ -2284,28 +2284,21 @@ class TestRunErasureRequestRecreatesMissingTasks:
         erasure_request_task,
         policy,
     ):
-        """When some erasure tasks exist but fewer than the graph expects,
+        """When some erasure tasks exist but fewer than access tasks,
         run_erasure_request should create the missing ones."""
         from fides.api.graph.config import Collection, GraphDataset, ScalarField
         from fides.api.task.create_request_tasks import run_erasure_request
 
-        # erasure_request_task fixture creates some tasks, but we'll provide
-        # a graph with more nodes than tasks exist for
-        existing_count = privacy_request.erasure_tasks.count()
-        assert existing_count > 0
+        access_count = privacy_request.access_tasks.count()
+        erasure_count = privacy_request.erasure_tasks.count()
+        assert access_count > 0
+        assert erasure_count > 0
 
-        # Build a graph with more nodes than existing tasks
-        identity_field = ScalarField(name="email", primary_key=True)
-        identity_field.identity = "email"
-        collections = [
-            Collection(name=f"coll_{i}", fields=[identity_field])
-            for i in range(existing_count + 5)
-        ]
-        dataset = GraphDataset(
-            name="test_ds", collections=collections, connection_key="test_conn"
-        )
-        graph = DatasetGraph(dataset)
-        identity = {"email": "test@example.com"}
+        # Delete one erasure task to simulate partial creation
+        first_erasure = privacy_request.erasure_tasks.first()
+        first_erasure.delete(db)
+        db.flush()
+        assert privacy_request.erasure_tasks.count() < access_count
 
         # Add an erasure rule to the policy
         from fides.api.models.policy import Rule
@@ -2322,6 +2315,15 @@ class TestRunErasureRequestRecreatesMissingTasks:
                 },
             },
         )
+
+        identity_field = ScalarField(name="email", primary_key=True)
+        identity_field.identity = "email"
+        collection = Collection(name="users", fields=[identity_field])
+        dataset = GraphDataset(
+            name="test_ds", collections=[collection], connection_key="test_conn"
+        )
+        graph = DatasetGraph(dataset)
+        identity = {"email": "test@example.com"}
 
         mock_get_ready.return_value = []
 
