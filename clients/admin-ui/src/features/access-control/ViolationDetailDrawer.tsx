@@ -12,13 +12,8 @@ import {
   Tag,
   Typography,
 } from "fidesui";
-import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useMemo } from "react";
 
-import {
-  ACCESS_POLICIES_ROUTE,
-  ACCESS_POLICY_EDIT_ROUTE,
-} from "~/features/common/nav/routes";
 import { Editor } from "~/features/common/yaml/helpers";
 
 import { useGetViolationDetailQuery } from "./access-control.slice";
@@ -47,17 +42,13 @@ export const ViolationDetailDrawer = ({
 
   const timestamp = violation ? new Date(violation.timestamp) : null;
 
-  const [editorHeight, setEditorHeight] = useState(80);
-
-  const handleEditorMount = useCallback((editor: any) => {
-    const updateHeight = () => {
-      const contentHeight = editor.getContentHeight();
-      setEditorHeight(Math.max(80, contentHeight));
-      editor.layout();
-    };
-    updateHeight();
-    editor.onDidContentSizeChange(updateHeight);
-  }, []);
+  const editorHeight = useMemo(() => {
+    if (!violation) {
+      return 80;
+    }
+    const lineCount = (violation.sql_statement ?? "").split("\n").length;
+    return Math.max(80, lineCount * 18 + 42);
+  }, [violation]);
 
   return (
     <Drawer
@@ -149,7 +140,6 @@ export const ViolationDetailDrawer = ({
                 value={violation.sql_statement}
                 height={editorHeight}
                 theme="light"
-                onMount={handleEditorMount}
                 options={{
                   readOnly: true,
                   minimap: { enabled: false },
@@ -165,7 +155,6 @@ export const ViolationDetailDrawer = ({
                   scrollbar: {
                     vertical: "hidden",
                     horizontal: "hidden",
-                    alwaysConsumeMouseWheel: false,
                   },
                 }}
               />
@@ -174,13 +163,10 @@ export const ViolationDetailDrawer = ({
 
           <section>
             <Text type="secondary" strong className="mb-2 block">
-              Access policy
+              Policy deviated
             </Text>
             {violation.policy_id ? (
               <Card size="small">
-                <Tag color="success" className="mb-2">
-                  Allowed by policy
-                </Tag>
                 <Flex align="center" gap="small" className="mb-2">
                   <Title level={5} className="!m-0">
                     {violation.policy}
@@ -190,30 +176,17 @@ export const ViolationDetailDrawer = ({
                   </Tag>
                 </Flex>
                 <Text type="secondary">{violation.policy_description}</Text>
-                <Link
-                  href={
-                    violation.policy_id
-                      ? ACCESS_POLICY_EDIT_ROUTE.replace(
-                          "[id]",
-                          violation.policy_id,
-                        )
-                      : ACCESS_POLICIES_ROUTE
-                  }
-                >
-                  <Flex align="center" gap={4} className="mt-3">
-                    <Text type="secondary">View policy</Text>
-                    <Icons.ArrowRight size={14} />
-                  </Flex>
-                </Link>
+                <Flex align="center" gap={4} className="mt-3">
+                  <Text type="secondary">View policy</Text>
+                  <Icons.ArrowRight size={14} />
+                </Flex>
               </Card>
             ) : (
               <Card size="small" className="text-center">
                 <Text type="secondary" className="mb-2 block">
-                  No matching access policy
+                  No policy associated with this violation
                 </Text>
-                <Link href={`${ACCESS_POLICIES_ROUTE}/new`}>
-                  <Button size="small">Add policy</Button>
-                </Link>
+                <Button size="small">Add policy</Button>
               </Card>
             )}
           </section>
