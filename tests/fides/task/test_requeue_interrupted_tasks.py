@@ -4,6 +4,11 @@ from unittest import mock
 
 import pytest
 
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -93,6 +98,7 @@ def make_request_task(db):
         upstream=None,
         async_type=None,
         cached_subtask_id=None,
+        connection_key=None,
     ):
         data = {
             "action_type": ActionType.access,
@@ -106,6 +112,13 @@ def make_request_task(db):
         }
         if async_type is not None:
             data["async_type"] = async_type
+        if connection_key is not None:
+            data["traversal_details"] = {
+                "dataset_connection_key": connection_key,
+                "incoming_edges": [],
+                "outgoing_edges": [],
+                "input_keys": [],
+            }
         task = RequestTask.create(db, data=data)
         if cached_subtask_id:
             cache_task_tracking_key(task.id, cached_subtask_id)
@@ -529,3 +542,228 @@ class TestRequeueInterruptedTasks:
 
         reset_privacy_request_retry_count(pr.id)
         assert get_privacy_request_retry_count(pr.id) == 0
+
+
+# ---------------------------------------------------------------------------
+# Orphaned task tests (ENG-3834)
+#
+# These tests document the behavior of the watchdog when async tasks have
+# deleted or disabled connections.  Tests marked xfail demonstrate the
+# current bug — they will pass once the fix is applied.
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def make_connection_config(db):
+    """Factory: create ConnectionConfig instances with automatic teardown."""
+    created = []
+
+    def _make(key=None, disabled=False):
+        key = key or f"test_conn_{uuid.uuid4().hex[:8]}"
+        cc = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": key,
+                "name": key,
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "disabled": disabled,
+            },
+        )
+        created.append(cc)
+        return cc
+
+    yield _make
+    for cc in reversed(created):
+        try:
+            cc.delete(db)
+        except Exception:
+            pass
+
+
+class TestOrphanedAsyncTasks:
+    """ENG-3834: Watchdog behavior when async tasks have deleted/disabled connections."""
+
+    # -- Fixed: orphaned callback tasks are now detected and requeued --
+
+    @pytest.mark.parametrize(
+        "conn_state",
+        [
+            pytest.param("deleted", id="deleted"),
+            pytest.param("disabled", id="disabled"),
+        ],
+    )
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_callback_task_unavailable_connection_should_requeue(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+        make_connection_config,
+        conn_state,
+    ):
+        """Callback task whose connection is deleted or disabled — the PR
+        should be requeued so the task can be re-executed and skipped.
+        Currently the watchdog cannot see awaiting_processing tasks at all."""
+        conn_key = f"{conn_state}_conn"
+        if conn_state == "disabled":
+            make_connection_config(key=conn_key, disabled=True)
+        # "deleted" case: no ConnectionConfig created → key doesn't exist
+
+        pr = make_privacy_request()
+        make_request_task(
+            pr,
+            ExecutionLogStatus.awaiting_processing,
+            async_type=AsyncTaskType.callback,
+            connection_key=conn_key,
+            cached_subtask_id="old-celery-id",
+        )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
+
+    # -- Current behavior: should remain unchanged --
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_callback_task_valid_connection_not_requeued(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+        make_connection_config,
+    ):
+        """Callback task with a valid, enabled connection — legitimately
+        waiting for external callback.  Watchdog must NOT requeue."""
+        cc = make_connection_config(key="live_conn")
+        pr = make_privacy_request()
+        make_request_task(
+            pr,
+            ExecutionLogStatus.awaiting_processing,
+            async_type=AsyncTaskType.callback,
+            connection_key=cc.key,
+            cached_subtask_id="old-celery-id",
+        )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
+
+    # -- Fixed: exited async tasks no longer blind the watchdog --
+
+    @pytest.mark.parametrize(
+        "exited_status",
+        [
+            pytest.param(ExecutionLogStatus.complete, id="complete"),
+            pytest.param(ExecutionLogStatus.error, id="error"),
+            pytest.param(ExecutionLogStatus.skipped, id="skipped"),
+        ],
+    )
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_exited_async_task_does_not_blind_watchdog(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+        exited_status,
+    ):
+        """An async task in any exited status (complete, error, skipped)
+        should not prevent the watchdog from detecting stuck non-async tasks
+        in the same PR.  Currently _has_async_tasks_awaiting_external_completion
+        has no status filter, so any PR that ever had an async task is
+        permanently invisible to the watchdog."""
+        pr = make_privacy_request()
+        # Exited async task — should not blind the watchdog
+        make_request_task(
+            pr,
+            exited_status,
+            collection="async_coll",
+            async_type=AsyncTaskType.callback,
+        )
+        # Stuck non-async task — no subtask_id, should trigger requeue
+        make_request_task(
+            pr,
+            ExecutionLogStatus.in_processing,
+            collection="stuck_coll",
+        )
+        requeue_interrupted_tasks.apply().get()
+        # The stuck non-async task should cause a requeue
+        mock_requeue.assert_called_once()
+
+    # -- pending_external PR with orphaned async task should requeue, not cancel --
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_pending_external_pr_with_orphaned_task_requeued(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """A PR in pending_external (e.g. waiting for Jira) that also has an
+        orphaned async callback task should be requeued — not canceled.
+
+        On requeue, the orphaned task will be re-executed and skipped
+        (CollectionDisabled), while the Jira task re-pauses idempotently."""
+        pr = make_privacy_request(status=PrivacyRequestStatus.pending_external)
+        make_request_task(
+            pr,
+            ExecutionLogStatus.awaiting_processing,
+            async_type=AsyncTaskType.callback,
+            connection_key="deleted_conn",
+            cached_subtask_id="old-celery-id",
+        )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
+        mock_cancel.assert_not_called()
+
+    # -- Edge case: missing connection_key in traversal_details --
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_missing_connection_key_not_treated_as_orphaned(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """An awaiting_processing task whose traversal_details lacks
+        dataset_connection_key should NOT be treated as orphaned.  The
+        conservative default (return False) keeps the task in its current
+        state rather than incorrectly requeueing."""
+        pr = make_privacy_request()
+        # No connection_key → traversal_details won't have dataset_connection_key
+        make_request_task(
+            pr,
+            ExecutionLogStatus.awaiting_processing,
+            async_type=AsyncTaskType.callback,
+            cached_subtask_id="old-celery-id",
+        )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
