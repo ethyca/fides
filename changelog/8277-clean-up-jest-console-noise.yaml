@@ -1,4 +1,4 @@
 type: Developer Experience
-description: Cleaned up jest console error noise in admin-ui by fixing the iso-3166 mock, filtering antd-specific props from fidesui mocks in JiraConfigTab tests, and suppressing jsdom-specific warnings that don't indicate real bugs.
+description: Cleaned up jest console error noise in admin-ui.
 pr: 8277
 labels: []
