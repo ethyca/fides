@@ -7,7 +7,7 @@ import pytest
 from bson import ObjectId
 from fideslang.models import Dataset
 
-from fides.api.common_exceptions import SkippingConsentPropagation
+from fides.api.common_exceptions import CollectionDisabled, SkippingConsentPropagation
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -1390,3 +1390,50 @@ class TestTraversalOnlyBehavior:
             assert "traversal-only" in log.message.lower()
         else:
             mock_mask.assert_called_once()
+
+
+class TestDeletedConnectionConfig:
+    """ENG-3834: GraphTask behavior when ConnectionConfig has been deleted."""
+
+    @pytest.fixture(scope="function")
+    def deleted_conn_graph_task(self, privacy_request, policy, db):
+        """Build a GraphTask whose connection_key does NOT match any
+        ConnectionConfig in the provided list — simulating a hard-deleted
+        connection."""
+        resources = TaskResources(
+            privacy_request,
+            policy,
+            [],  # no connection configs → get_connector raises ConnectorNotFoundException
+            EMPTY_REQUEST_TASK,
+            db,
+        )
+        tn = TraversalNode(generate_node("deleted_ds", "deleted_coll", "id"))
+        rq = tn.to_mock_request_task()
+        rq.action_type = ActionType.access
+        rq.status = ExecutionLogStatus.pending
+        rq.id = str(uuid.uuid4())
+        db.add(rq)
+        db.commit()
+
+        resources.privacy_request_task = rq
+        return GraphTask(resources)
+
+    def test_connector_is_none_when_connection_deleted(self, deleted_conn_graph_task):
+        """GraphTask should set connector to None rather than crashing
+        when the ConnectionConfig has been deleted."""
+        assert deleted_conn_graph_task.connector is None
+
+    def test_saas_version_none_when_connection_deleted(self, deleted_conn_graph_task):
+        """_saas_version should be None when connector is missing."""
+        assert deleted_conn_graph_task._saas_version is None
+
+    def test_generate_dry_run_query_returns_none(self, deleted_conn_graph_task):
+        """generate_dry_run_query should return None instead of crashing
+        with AttributeError when connector is None."""
+        assert deleted_conn_graph_task.generate_dry_run_query() is None
+
+    def test_skip_if_disabled_raises_collection_disabled(self, deleted_conn_graph_task):
+        """skip_if_disabled should raise CollectionDisabled when connector
+        is None, just like it does for a disabled connection."""
+        with pytest.raises(CollectionDisabled, match="ConnectionConfig was deleted"):
+            deleted_conn_graph_task.skip_if_disabled()

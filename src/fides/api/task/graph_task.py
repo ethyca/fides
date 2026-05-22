@@ -15,6 +15,7 @@ from fides.api.common_exceptions import (
     AwaitingAsyncProcessing,
     AwaitingAsyncTask,
     CollectionDisabled,
+    ConnectorNotFoundException,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     SkippingConsentPropagation,
@@ -254,18 +255,27 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.request_task = resources.privacy_request_task
         self.execution_node = ExecutionNode(resources.privacy_request_task)
         self.resources = resources
-        self.connector: BaseConnector = resources.get_connector(
-            self.execution_node.connection_key  # ConnectionConfig.key
-        )
+        try:
+            self.connector: BaseConnector = resources.get_connector(
+                self.execution_node.connection_key  # ConnectionConfig.key
+            )
+        except ConnectorNotFoundException:
+            # ConnectionConfig was deleted.  Set connector to None so that
+            # skip_if_disabled() can detect it and raise CollectionDisabled,
+            # which the @retry decorator handles identically to a disabled
+            # connection — the task is marked skipped and downstream tasks
+            # proceed with empty data.
+            self.connector = None  # type: ignore[assignment]
 
         self.key: CollectionAddress = self.execution_node.address
 
-        saas_config_dict = self.connector.configuration.saas_config
-        # Snapshot version at construction so all log entries reflect the version
-        # that was active when the task started, not a potentially later value.
-        self._saas_version: Optional[str] = (
-            saas_config_dict.get("version") if saas_config_dict else None
-        )
+        if self.connector is not None:
+            saas_config_dict = self.connector.configuration.saas_config
+            self._saas_version: Optional[str] = (
+                saas_config_dict.get("version") if saas_config_dict else None
+            )
+        else:
+            self._saas_version = None
 
         self.execution_log_id = None
         # a local copy of the execution log record written to. If we write multiple status
@@ -277,6 +287,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def generate_dry_run_query(self) -> Optional[str]:
         """Type-specific query generated for this traversal_node."""
+        if self.connector is None:
+            return None
         return self.connector.dry_run_query(self.execution_node)
 
     def can_write_data(self) -> bool:
@@ -688,7 +700,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return self.connector.configuration
 
     def skip_if_disabled(self) -> None:
-        """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
+        """Skip execution if the ConnectionConfig is deleted or disabled.
+
+        A None connector means the ConnectionConfig was hard-deleted from the
+        database (caught during __init__).  This is treated identically to a
+        disabled connection — the @retry decorator catches CollectionDisabled
+        and marks the task as skipped.
+        """
+        if self.connector is None:
+            raise CollectionDisabled(
+                f"Skipping collection {self.execution_node.address}. "
+                f"ConnectionConfig was deleted.",
+            )
+
         connection_config: ConnectionConfig = self.get_connection_config()
 
         if connection_config.disabled:

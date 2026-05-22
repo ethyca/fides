@@ -1,5 +1,5 @@
 import { formatDistance } from "date-fns";
-import { type ColumnsType, Text } from "fidesui";
+import { type ColumnsType, Tag, Text } from "fidesui";
 
 import type { PolicyViolationLog } from "./types";
 
@@ -20,12 +20,24 @@ export const getRequestLogColumns = (): ColumnsType<PolicyViolationLog> => [
     ellipsis: true,
   },
   {
+    title: "Status",
+    dataIndex: "policy",
+    key: "status",
+    width: 100,
+    render: (_: unknown, record: PolicyViolationLog) =>
+      record.policy_id ? (
+        <Tag color="success">Allowed</Tag>
+      ) : (
+        <Tag color="error">Violation</Tag>
+      ),
+  },
+  {
     title: "Policy",
     dataIndex: "policy",
     key: "policy",
     width: 180,
     ellipsis: true,
-    render: (value: string | undefined) => value || "Missing",
+    render: (value: string | undefined) => value || "—",
   },
   {
     title: "Control",
