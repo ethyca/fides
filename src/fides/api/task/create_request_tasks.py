@@ -682,13 +682,18 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     # partway through. persist_initial_erasure_request_tasks is idempotent
     # (skips nodes that already have tasks), so this is safe for both the
     # zero-task and partial-task cases.
+    #
+    # Use the privacy request's own policy (not the passed-in policy) to
+    # check if erasure rules exist, since the access step used that same
+    # policy to decide whether to create erasure tasks originally.
     access_count = privacy_request.access_tasks.count()
     erasure_count = privacy_request.erasure_tasks.count()
+    pr_policy = privacy_request.policy
     if (
         access_count > 0
         and erasure_count < access_count
-        and policy
-        and policy.get_rules_for_action(action_type=ActionType.erasure)
+        and pr_policy
+        and pr_policy.get_rules_for_action(action_type=ActionType.erasure)
         and graph
         and identity
     ):
