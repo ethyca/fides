@@ -60,14 +60,15 @@ def make_request_task(db):
         privacy_request,
         status,
         collection="customer",
+        dataset="test_dataset",
         async_type=None,
     ):
         data = {
             "action_type": ActionType.access,
             "status": status,
             "privacy_request_id": privacy_request.id,
-            "collection_address": f"test_dataset:{collection}",
-            "dataset_name": "test_dataset",
+            "collection_address": f"{dataset}:{collection}",
+            "dataset_name": dataset,
             "collection_name": collection,
             "upstream_tasks": [],
             "downstream_tasks": [],
@@ -194,6 +195,34 @@ class TestDerivePrivacyRequestStatus:
         make_request_task(pr, ExecutionLogStatus.in_processing, collection="other_task")
         result = derive_privacy_request_status(db, pr)
         assert result == PrivacyRequestStatus.in_processing
+
+    def test_requires_input_transitions_to_in_processing_after_completion(
+        self, db, make_privacy_request, make_request_task
+    ):
+        """After all manual tasks complete, PR should transition from requires_input to in_processing."""
+        pr = make_privacy_request(status=PrivacyRequestStatus.requires_input)
+        # Manual task completed (was awaiting, now done)
+        make_request_task(pr, ExecutionLogStatus.complete, collection="manual_data")
+        # Other regular task still running
+        make_request_task(pr, ExecutionLogStatus.in_processing, collection="other_task")
+        result = derive_privacy_request_status(db, pr)
+        assert result == PrivacyRequestStatus.in_processing
+
+    def test_one_manual_done_another_still_awaiting(
+        self, db, make_privacy_request, make_request_task
+    ):
+        """One manual task done, another still awaiting → requires_input."""
+        pr = make_privacy_request(status=PrivacyRequestStatus.requires_input)
+        make_request_task(pr, ExecutionLogStatus.complete, collection="manual_data")
+        # Second manual task on a different connection, still awaiting
+        make_request_task(
+            pr,
+            ExecutionLogStatus.awaiting_processing,
+            collection="manual_data",
+            dataset="other_connection",
+        )
+        result = derive_privacy_request_status(db, pr)
+        assert result == PrivacyRequestStatus.requires_input
 
     def test_no_request_tasks_returns_current_status(self, db, make_privacy_request):
         """No request tasks at all → keep current status."""

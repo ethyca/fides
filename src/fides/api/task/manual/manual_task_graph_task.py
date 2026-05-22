@@ -18,6 +18,9 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.privacy_request.request_service import (
+    derive_privacy_request_status,
+)
 from fides.api.task.conditional_dependencies.logging_utils import (
     format_evaluation_failure_message,
     format_evaluation_success_message,
@@ -296,6 +299,15 @@ class ManualTaskGraphTask(GraphTask):
         if submitted_data is not None:
             result: list[Row] = [submitted_data] if submitted_data else []
             self.request_task.access_data = result
+
+            # Re-derive PR status now that this manual task is complete (ENG-3835).
+            # Other manual tasks may still need input, or all may be done.
+            derived_status = derive_privacy_request_status(
+                self.resources.session, self.resources.request
+            )
+            if self.resources.request.status != derived_status:
+                self.resources.request.status = derived_status
+                self.resources.request.save(self.resources.session)
 
             return result
 
