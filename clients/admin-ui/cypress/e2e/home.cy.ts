@@ -2,11 +2,7 @@ import { stubPlus } from "cypress/support/stubs";
 
 import { RoleRegistryEnum } from "~/types/api";
 
-const ALL_TILES = [
-  "View data map",
-  "View systems",
-  "Review privacy requests",
-];
+const ALL_TILES = ["View data map", "View systems", "Review privacy requests"];
 
 const verifyExpectedTiles = (expectedTiles: string[]) => {
   expectedTiles.forEach((tile) => {
