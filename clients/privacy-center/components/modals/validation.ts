@@ -52,10 +52,10 @@ export const emailValidation = (option?: string | null) => {
 
 export const phoneValidation = (option?: string | null) => {
   // E.164 international standard format
-  let validation = Yup.string().matches(
-    /^\+[1-9]\d{1,14}$/,
-    "Phone is invalid",
-  );
+  let validation = Yup.string().matches(/^\+[1-9]\d{1,14}$/, {
+    message: "Phone is invalid",
+    excludeEmptyString: true,
+  });
   if (option === "required") {
     validation = validation.required("Phone is required");
   } else {

@@ -25,9 +25,13 @@ import (
 // TableRef is a (collection, qualified_name) pair extracted from SQL.
 // QualifiedName is used as the identifier on UNCONFIGURED_DATASET gaps
 // when Collection does not resolve to a known dataset.
+// Columns holds the column names accessed from this table (extracted
+// by the Python SQL parser). An empty list means SELECT * or parse
+// failure — the pipeline falls back to all field categories.
 type TableRef struct {
-	Collection    string `json:"collection"`
-	QualifiedName string `json:"qualified_name,omitempty"`
+	Collection    string   `json:"collection"`
+	QualifiedName string   `json:"qualified_name,omitempty"`
+	Columns       []string `json:"columns,omitempty"`
 }
 
 // EvaluationRecord is the per-statement result. Mirrors
@@ -96,19 +100,19 @@ func Evaluate(f Fixtures, in Input) EvaluationRecord {
 	consumer, hasConsumer := f.Consumers[in.Identity]
 
 	// 2. Tables -> dataset_keys + per-dataset collection list + unresolved gaps
-	datasetKeys, collections, unresolvedGaps := resolveTables(in.Tables, f.Datasets.Tables)
+	resolved := resolveTables(in.Tables, f.Datasets.Tables)
 
 	// 3. Engine inputs
 	consumerPurposes := buildConsumerPurposes(in.Identity, consumer, hasConsumer)
-	datasetPurposes := buildDatasetPurposes(datasetKeys, f.Datasets.Purposes)
+	datasetPurposes := buildDatasetPurposes(resolved.DatasetKeys, f.Datasets.Purposes)
 
 	// 4. Purpose evaluation (pass the collection list so collection-level
 	//    purposes are picked up).
-	purposeResult := pbac.EvaluatePurpose(consumerPurposes, datasetPurposes, collections)
+	purposeResult := pbac.EvaluatePurpose(consumerPurposes, datasetPurposes, resolved.Collections)
 
 	// 5. Gap reclassification: consumer found but no purposes declared
 	gaps := append([]pbac.EvaluationGap{}, purposeResult.Gaps...)
-	gaps = append(gaps, unresolvedGaps...)
+	gaps = append(gaps, resolved.Gaps...)
 	if hasConsumer && len(consumer.Purposes) == 0 {
 		for i, g := range gaps {
 			if g.GapType == pbac.GapUnresolvedIdentity {
@@ -129,6 +133,8 @@ func Evaluate(f Fixtures, in Input) EvaluationRecord {
 		f.Purposes,
 		in.Identity,
 		in.Context,
+		resolved.Columns,
+		f.Datasets.FieldCategories,
 	)
 
 	compliant := len(gaps) == 0 && allSuppressed(violations)
@@ -143,7 +149,7 @@ func Evaluate(f Fixtures, in Input) EvaluationRecord {
 		QueryID:       in.QueryID,
 		Identity:      in.Identity,
 		Consumer:      consumerRef,
-		DatasetKeys:   datasetKeys,
+		DatasetKeys:   resolved.DatasetKeys,
 		IsCompliant:   compliant,
 		Violations:    violations,
 		Gaps:          gaps,
@@ -154,18 +160,28 @@ func Evaluate(f Fixtures, in Input) EvaluationRecord {
 
 // ── Private helpers ────────────────────────────────────────────────
 
+// resolveTablesResult holds everything produced by resolveTables.
+type resolveTablesResult struct {
+	DatasetKeys []string
+	Collections map[string][]string
+	Columns     map[string]map[string][]string // dataset_key -> collection -> columns
+	Gaps        []pbac.EvaluationGap
+}
+
 // resolveTables walks the input tables and produces:
 //   - dataset keys (deduplicated, in first-seen order)
 //   - a per-dataset collection list for EvaluatePurpose to pick up
 //     collection-level purpose overlap
+//   - per-dataset-collection column lists for data category resolution
 //   - UNCONFIGURED_DATASET gaps for any table the index didn't resolve
 func resolveTables(
 	tables []TableRef,
 	tableIndex map[string]string,
-) ([]string, map[string][]string, []pbac.EvaluationGap) {
+) resolveTablesResult {
 	seenKey := map[string]bool{}
 	keys := []string{}
 	collections := map[string][]string{}
+	columns := map[string]map[string][]string{}
 	seenCollection := map[string]bool{} // dataset|collection
 	gaps := []pbac.EvaluationGap{}
 
@@ -181,6 +197,12 @@ func resolveTables(
 				seenCollection[marker] = true
 				collections[key] = append(collections[key], coll)
 			}
+			if len(t.Columns) > 0 {
+				if columns[key] == nil {
+					columns[key] = map[string][]string{}
+				}
+				columns[key][coll] = append(columns[key][coll], t.Columns...)
+			}
 			continue
 		}
 		identifier := t.QualifiedName
@@ -193,7 +215,12 @@ func resolveTables(
 			Reason:     "Dataset is not registered",
 		})
 	}
-	return keys, collections, gaps
+	return resolveTablesResult{
+		DatasetKeys: keys,
+		Collections: collections,
+		Columns:     columns,
+		Gaps:        gaps,
+	}
 }
 
 func buildConsumerPurposes(
@@ -240,6 +267,8 @@ func filterViolationsThroughPolicies(
 	purposeIndex map[string]fixtures.Purpose,
 	identity string,
 	context map[string]interface{},
+	columnsByDataset map[string]map[string][]string,
+	fieldCategories map[string]map[string][]string,
 ) []pbac.PurposeViolation {
 	out := make([]pbac.PurposeViolation, 0, len(violations))
 	for _, v := range violations {
@@ -255,6 +284,15 @@ func filterViolationsThroughPolicies(
 		control := "purpose_restriction"
 		v.Control = &control
 
+		var collection string
+		if v.Collection != nil {
+			collection = *v.Collection
+		}
+		dataCategories := resolveDataCategories(
+			v.DatasetKey, collection,
+			columnsByDataset, fieldCategories,
+		)
+
 		req := &pbac.AccessEvaluationRequest{
 			Identity:         identity,
 			ConsumerID:       v.ConsumerID,
@@ -264,6 +302,7 @@ func filterViolationsThroughPolicies(
 			DatasetPurposes:  v.DatasetPurposes,
 			Collection:       v.Collection,
 			DataUses:         dataUses,
+			DataCategories:   dataCategories,
 			Context:          context,
 		}
 		result := pbac.EvaluatePolicies(policies, req)
@@ -313,6 +352,61 @@ func findPolicyAction(policies []pbac.AccessPolicy, key string) *pbac.PolicyActi
 		}
 	}
 	return nil
+}
+
+// resolveDataCategories looks up data categories for the columns accessed
+// in a specific dataset collection. If no specific columns were extracted
+// (SELECT * or parse failure), returns all categories from all fields in
+// the collection.
+func resolveDataCategories(
+	datasetKey string,
+	collection string,
+	columnsByDataset map[string]map[string][]string,
+	fieldCategories map[string]map[string][]string,
+) []string {
+	if fieldCategories == nil || collection == "" {
+		return nil
+	}
+
+	collFields, ok := fieldCategories[collection]
+	if !ok || len(collFields) == 0 {
+		return nil
+	}
+
+	var columns []string
+	if dsCols, ok := columnsByDataset[datasetKey]; ok {
+		columns = dsCols[collection]
+	}
+
+	catSet := map[string]bool{}
+
+	if len(columns) == 0 {
+		// SELECT * or no columns extracted — use all field categories
+		for _, cats := range collFields {
+			for _, c := range cats {
+				catSet[c] = true
+			}
+		}
+	} else {
+		for _, col := range columns {
+			if cats, ok := collFields[col]; ok {
+				for _, c := range cats {
+					catSet[c] = true
+				}
+			}
+		}
+	}
+
+	if len(catSet) == 0 {
+		return nil
+	}
+
+	out := make([]string, 0, len(catSet))
+	for c := range catSet {
+		out = append(out, c)
+	}
+	sort.Strings(out)
+	return out
 }
 
 func allSuppressed(violations []pbac.PurposeViolation) bool {

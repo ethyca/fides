@@ -1,0 +1,3 @@
+type: Fixed
+description: Fixed the Custom Fields edit form not populating the Template select when editing a taxonomy-backed custom field.
+pr: 8261
