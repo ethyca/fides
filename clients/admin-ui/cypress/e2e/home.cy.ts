@@ -4,7 +4,6 @@ import { RoleRegistryEnum } from "~/types/api";
 
 const ALL_TILES = [
   "View data map",
-  "Add systems",
   "View systems",
   "Review privacy requests",
 ];

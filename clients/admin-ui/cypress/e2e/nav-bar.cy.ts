@@ -21,7 +21,6 @@ describe("Nav Bar", () => {
       .parents(".ant-menu-submenu")
       .within(() => {
         cy.getByTestId("System inventory-nav-link");
-        cy.getByTestId("Add systems-nav-link");
         cy.getByTestId("Manage datasets-nav-link");
       });
     cy.getByTestId("Privacy requests-nav-group")

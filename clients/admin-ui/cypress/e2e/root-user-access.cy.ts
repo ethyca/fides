@@ -175,7 +175,6 @@ describe("Root User Access", () => {
 
       // Root user should see all data inventory links
       cy.getByTestId("System inventory-nav-link").should("be.visible");
-      cy.getByTestId("Add systems-nav-link").should("be.visible");
       cy.getByTestId("Manage datasets-nav-link").should("be.visible");
     });
 
