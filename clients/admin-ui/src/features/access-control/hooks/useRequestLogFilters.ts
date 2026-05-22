@@ -117,8 +117,7 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     const result: Partial<Record<FacetKey, string | string[]>> = {};
     searchValues.forEach((val) => {
       const [key, value] = val.split(SEPARATOR);
-      // value may be "" — represents the "Missing" option for that facet
-      if (key && value !== undefined) {
+      if (key && value) {
         const facetKey = key as FacetKey;
         const existing = result[facetKey];
         if (Array.isArray(existing)) {

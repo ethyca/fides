@@ -34,10 +34,8 @@ export interface ConsumerRequestsByConsumerResponse {
 }
 
 export interface PolicyViolationAggregate {
-  policy_key: string | null;
-  policy_label: string;
-  control_key: string | null;
-  control_label: string | null;
+  policy: string;
+  control: string;
   violation_count: number;
   last_violation: string;
 }
@@ -48,7 +46,6 @@ export interface PolicyViolationLog {
   consumer: string;
   consumer_email?: string;
   policy?: string;
-  policy_id?: string;
   policy_description?: string;
   control?: string;
   dataset: string;
@@ -71,15 +68,10 @@ export interface CursorPaginatedViolationLogs {
   size: number;
 }
 
-export interface FacetOption {
-  key: string;
-  label: string;
-}
-
 export interface FiltersResponse {
-  consumers: FacetOption[];
-  policies: FacetOption[];
-  datasets: FacetOption[];
-  data_uses: FacetOption[];
-  controls: FacetOption[];
+  consumers: string[];
+  policies: string[];
+  datasets: string[];
+  data_uses: string[];
+  controls: string[];
 }

@@ -39,26 +39,24 @@ export const DataConsumersCard = () => {
         </Col>
       </Row>
 
-      <div className="max-h-[180px] overflow-y-auto pr-2">
-        {items.map((item, index) => (
-          <Fragment key={item.name}>
-            <Divider className={index === 0 ? "my-2" : "my-1.5"} />
-            <Row wrap={false} align="middle">
-              <Col flex="auto" className="min-w-0">
-                <Text ellipsis={{ tooltip: item.name }}>{item.name}</Text>
-              </Col>
-              <Col flex="none" className="text-right">
-                {item.requests.toLocaleString()}
-              </Col>
-              <Col flex="none" className="ml-4 text-right">
-                <Text strong type={item.violations > 0 ? "danger" : "success"}>
-                  {item.violations.toLocaleString()}
-                </Text>
-              </Col>
-            </Row>
-          </Fragment>
-        ))}
-      </div>
+      {items.map((item, index) => (
+        <Fragment key={item.name}>
+          <Divider className={index === 0 ? "my-2" : "my-1.5"} />
+          <Row wrap={false} align="middle">
+            <Col flex="auto" className="min-w-0">
+              <Text ellipsis={{ tooltip: item.name }}>{item.name}</Text>
+            </Col>
+            <Col flex="none" className="text-right">
+              {item.requests.toLocaleString()}
+            </Col>
+            <Col flex="none" className="ml-4 text-right">
+              <Text strong type={item.violations > 0 ? "danger" : "success"}>
+                {item.violations.toLocaleString()}
+              </Text>
+            </Col>
+          </Row>
+        </Fragment>
+      ))}
     </Card>
   );
 };
