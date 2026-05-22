@@ -704,7 +704,7 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
             access_count,
             erasure_count,
         )
-        traversal = Traversal(graph, identity, policy=policy)
+        traversal = Traversal(graph, identity, policy=pr_policy)
         traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
         traversal.traverse(traversal_nodes, collect_tasks_fn)
         erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
