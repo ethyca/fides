@@ -25,20 +25,14 @@ import (
 // TableRef is a (collection, qualified_name) pair extracted from SQL.
 // QualifiedName is used as the identifier on UNCONFIGURED_DATASET gaps
 // when Collection does not resolve to a known dataset.
-<<<<<<< HEAD
 // Schema is the SQL schema (BQ dataset, Snowflake schema) used to
 // disambiguate collections that share the same name across datasets.
-=======
->>>>>>> origin/main
 // Columns holds the column names accessed from this table (extracted
 // by the Python SQL parser). An empty list means SELECT * or parse
 // failure — the pipeline falls back to all field categories.
 type TableRef struct {
 	Collection    string   `json:"collection"`
-<<<<<<< HEAD
 	Schema        string   `json:"schema,omitempty"`
-=======
->>>>>>> origin/main
 	QualifiedName string   `json:"qualified_name,omitempty"`
 	Columns       []string `json:"columns,omitempty"`
 }
@@ -300,15 +294,6 @@ func filterViolationsThroughPolicies(
 			du := dataUses[0]
 			v.DataUse = &du
 		}
-
-		var collection string
-		if v.Collection != nil {
-			collection = *v.Collection
-		}
-		dataCategories := resolveDataCategories(
-			v.DatasetKey, collection,
-			columnsByDataset, fieldCategories,
-		)
 
 		var collection string
 		if v.Collection != nil {
