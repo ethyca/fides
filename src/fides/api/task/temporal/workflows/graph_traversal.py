@@ -97,6 +97,17 @@ class GraphTraversalWorkflow:
     ) -> None:
         """Execute a single node after its upstream dependencies complete."""
 
+        # Skip nodes that are already completed and not dirty (clean on reprocess)
+        if (node.already_completed or node.already_skipped) and not node.is_dirty:
+            status = "skipped" if node.already_skipped else "complete"
+            self._completed[node.address] = NodeExecutionResult(
+                node_address=node.address, status=status
+            )
+            workflow.logger.info(
+                f"Skipping clean node {node.address} (already {status})"
+            )
+            return
+
         # Wait for all upstream nodes to be completed
         def _deps_satisfied() -> bool:
             return all(

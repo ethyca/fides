@@ -62,6 +62,8 @@ class NodeInfo:
     request_task_id: Optional[str] = None
     already_completed: bool = False
     already_skipped: bool = False
+    is_dirty: bool = False
+    dirty_reasons: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -75,6 +77,10 @@ class GraphPlan:
     privacy_request_id: str
     phase: str
     nodes: Dict[str, NodeInfo] = field(default_factory=dict)
+
+    @property
+    def has_dirty_nodes(self) -> bool:
+        return any(n.is_dirty for n in self.nodes.values())
 
 
 @dataclass

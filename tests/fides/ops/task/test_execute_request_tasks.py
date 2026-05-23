@@ -536,10 +536,10 @@ class TestGetUpstreamAccessDataForErasureTask:
             return_value=mock_graph_task,
         )
 
-        # Mock the _build_upstream_access_data function
+        # Mock the build_upstream_access_data function
         mock_upstream_data = [["test_data"]]
         mocker.patch(
-            "fides.api.task.execute_request_tasks._build_upstream_access_data",
+            "fides.api.task.execute_request_tasks.build_upstream_access_data",
             return_value=mock_upstream_data,
         )
 

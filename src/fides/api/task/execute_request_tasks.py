@@ -17,22 +17,20 @@ from fides.api.common_exceptions import (
     PrivacyRequestCanceled,
     PrivacyRequestNotFound,
     RequestTaskNotFound,
-    ResumeTaskException,
     UpstreamTasksNotReady,
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.graph_task import (
-    GraphTask,
-    mark_current_and_downstream_nodes_as_failed,
+from fides.api.task.graph_task import GraphTask
+from fides.api.task.graph_utils import (
+    build_upstream_access_data,
+    create_graph_task,
 )
-from fides.api.task.manual.manual_task_address import ManualTaskAddress
-from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
@@ -114,52 +112,6 @@ def run_prerequisite_task_checks(
             )
 
     return privacy_request, request_task, upstream_results
-
-
-def create_graph_task(
-    session: Session, request_task: RequestTask, resources: TaskResources
-) -> GraphTask:
-    """Hydrates a GraphTask from the saved collection details on the Request Task in the database
-
-    This could fail if things like our Collection definitions have changed since we created the Task
-    to begin with - this may be unrecoverable and a new Privacy Request should be created.
-    """
-    try:
-        collection_address = request_task.request_task_address
-
-        # Check if this is a manual task address
-        graph_task: GraphTask
-        if ManualTaskAddress.is_manual_task_address(collection_address):
-            graph_task = ManualTaskGraphTask(resources)
-        else:
-            graph_task = GraphTask(resources)
-
-    except Exception as exc:
-        logger.debug(
-            "Cannot execute task - error loading task from database. Exception {}",
-            str(exc),
-        )
-        # Normally the GraphTask takes care of creating the ExecutionLog, but in this case we can't create it in the first place!
-        ExecutionLog.create(
-            db=session,
-            data={
-                "connection_key": None,
-                "dataset_name": request_task.dataset_name,
-                "collection_name": request_task.collection_name,
-                "fields_affected": [],
-                "action_type": request_task.action_type,
-                "status": ExecutionLogStatus.error,
-                "privacy_request_id": request_task.privacy_request_id,
-                "message": str(exc),
-            },
-        )
-        mark_current_and_downstream_nodes_as_failed(request_task, session)
-
-        raise ResumeTaskException(
-            f"Cannot resume request task. Error hydrating task from database: Request Task {request_task.id} for Privacy Request {request_task.privacy_request_id}. {exc}"
-        )
-
-    return graph_task
 
 
 def can_run_task_body(
@@ -328,7 +280,7 @@ def run_access_node(
                         # Currently, upstream tasks and "input keys" (which are built by data dependencies)
                         # are the same, but they may not be the same in the future.
                         upstream_access_data: List[List[Row]] = (
-                            _build_upstream_access_data(
+                            build_upstream_access_data(
                                 graph_task.execution_node.input_keys, upstream_results
                             )
                         )
@@ -523,28 +475,6 @@ def log_task_complete(request_task: RequestTask) -> None:
     )
 
 
-def _order_tasks_by_input_key(
-    input_keys: List[CollectionAddress], upstream_tasks: Query
-) -> List[Optional[RequestTask]]:
-    """Order tasks by input key. If task doesn't exist, add None in its place
-
-    Data being passed to GraphTask.access_request is expected to have the same order
-    as input keys so we know which data belongs to which upstream collection
-    """
-    tasks: List[Optional[RequestTask]] = []
-    for key in input_keys:
-        task = next(
-            (
-                upstream
-                for upstream in upstream_tasks
-                if upstream.collection_address == key.value
-            ),
-            None,
-        )
-        tasks.append(task)
-    return tasks
-
-
 def get_upstream_access_data_for_erasure_task(
     erasure_request_task: RequestTask,
     session: Session,
@@ -590,26 +520,10 @@ def get_upstream_access_data_for_erasure_task(
     )
 
     # Build and return the upstream access data
-    return _build_upstream_access_data(
+    return build_upstream_access_data(
         access_graph_task.execution_node.input_keys,
         access_request_task.upstream_tasks_objects(session),
     )
-
-
-def _build_upstream_access_data(
-    input_keys: List[CollectionAddress],
-    upstream_tasks: Query,
-) -> List[List[Row]]:
-    """
-    Helper function to build the access data for the current node.
-    The access data is passed in the same order as the input keys.
-    If we don't have access data for an upstream node, return an empty list.
-    """
-
-    ordered_upstream: List[Optional[RequestTask]] = _order_tasks_by_input_key(
-        input_keys, upstream_tasks
-    )
-    return [task.get_access_data() if task else [] for task in ordered_upstream]
 
 
 mapping = {

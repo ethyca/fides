@@ -105,7 +105,7 @@ async def prepare_erasure_tasks(privacy_request_id: str) -> bool:
     Called between access and erasure phases. Returns True if erasure tasks exist.
     """
     from fides.api.models.privacy_request import PrivacyRequest
-    from fides.api.task.create_request_tasks import (
+    from fides.api.task.graph_utils import (
         update_erasure_tasks_with_access_data,
     )
     from fides.common.session_management import get_autoclose_db_session

@@ -30,8 +30,8 @@ async def execute_access_node(params: NodeExecutionParams) -> NodeExecutionResul
     from fides.api.models.policy import Policy
     from fides.api.models.privacy_request import PrivacyRequest, RequestTask
     from fides.api.schemas.policy import ActionType
-    from fides.api.task.execute_request_tasks import (
-        _build_upstream_access_data,
+    from fides.api.task.graph_utils import (
+        build_upstream_access_data,
         create_graph_task,
     )
     from fides.api.task.task_resources import TaskResources
@@ -64,7 +64,7 @@ async def execute_access_node(params: NodeExecutionParams) -> NodeExecutionResul
         ) as resources:
             graph_task = create_graph_task(session, request_task, resources)
 
-            upstream_access_data = _build_upstream_access_data(
+            upstream_access_data = build_upstream_access_data(
                 graph_task.execution_node.input_keys,
                 upstream_results,
             )
@@ -94,7 +94,7 @@ async def execute_erasure_node(params: NodeExecutionParams) -> NodeExecutionResu
     from fides.api.models.connectionconfig import ConnectionConfig
     from fides.api.models.policy import Policy
     from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-    from fides.api.task.execute_request_tasks import create_graph_task
+    from fides.api.task.graph_utils import create_graph_task
     from fides.api.task.task_resources import TaskResources
     from fides.common.session_management import get_autoclose_db_session
 
@@ -148,7 +148,7 @@ async def execute_consent_node(params: NodeExecutionParams) -> NodeExecutionResu
     from fides.api.models.connectionconfig import ConnectionConfig
     from fides.api.models.policy import Policy
     from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-    from fides.api.task.execute_request_tasks import create_graph_task
+    from fides.api.task.graph_utils import create_graph_task
     from fides.api.task.task_resources import TaskResources
     from fides.common.session_management import get_autoclose_db_session
 
@@ -215,8 +215,8 @@ async def execute_polling_node(params: NodeExecutionParams) -> NodeExecutionResu
     from fides.api.models.connectionconfig import ConnectionConfig
     from fides.api.models.policy import Policy
     from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-    from fides.api.task.execute_request_tasks import (
-        _build_upstream_access_data,
+    from fides.api.task.graph_utils import (
+        build_upstream_access_data,
         create_graph_task,
     )
     from fides.api.task.task_resources import TaskResources
@@ -257,7 +257,7 @@ async def execute_polling_node(params: NodeExecutionParams) -> NodeExecutionResu
                     graph_task = create_graph_task(session, request_task, resources)
 
                     if params.phase == TraversalPhase.ACCESS:
-                        upstream_data = _build_upstream_access_data(
+                        upstream_data = build_upstream_access_data(
                             graph_task.execution_node.input_keys,
                             upstream_results,
                         )
