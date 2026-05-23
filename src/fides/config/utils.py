@@ -62,6 +62,7 @@ CONFIG_KEY_ALLOWLIST = {
         "subject_identity_verification_required",
         "memory_watchdog_enabled",
         "sql_dry_run",
+        "use_temporal_workflow_engine",
     ],
     "storage": [
         "active_default_storage_type",

@@ -34,6 +34,7 @@ from .privacy_center_settings import PrivacyCenterSettings
 from .redis_settings import RedisSettings
 from .secrets_settings import SecretsSettings
 from .security_settings import SecuritySettings
+from .temporal_settings import TemporalSettings
 from .user_settings import UserSettings
 from .utils import (
     CONFIG_KEY_ALLOWLIST,
@@ -89,6 +90,7 @@ class FidesConfig(FidesSettings):
     privacy_center: PrivacyCenterSettings
     secrets: SecretsSettings
     security: SecuritySettings
+    temporal: TemporalSettings
     user: UserSettings
 
     model_config = SettingsConfigDict(case_sensitive=True)
@@ -141,6 +143,7 @@ class FidesConfig(FidesSettings):
             self.redis,
             self.security,
             self.execution,
+            self.temporal,
             self.admin_ui,
             self.privacy_center,
         ]:
@@ -204,6 +207,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "redis": RedisSettings,
         "secrets": SecretsSettings,
         "security": SecuritySettings,
+        "temporal": TemporalSettings,
         "user": UserSettings,
     }
 

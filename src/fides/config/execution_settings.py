@@ -117,4 +117,10 @@ class ExecutionSettings(FidesSettings):
         ge=1,
         description="Minutes between processing pending DSR lifecycle notifications.",
     )
+    use_temporal_workflow_engine: bool = Field(
+        default=False,
+        description="Use Temporal for DSR workflow execution instead of Celery. "
+        "Requires a running Temporal server.",
+    )
+
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

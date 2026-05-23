@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSR Execution: Temporal Migration</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f9fb;
+    --surface2: #f0f2f5;
+    --border: #e2e5ea;
+    --text: #1a1d23;
+    --text-dim: #6b7280;
+    --accent: #4f6df5;
+    --accent-light: #eef1fe;
+    --green: #059669;
+    --green-light: #ecfdf5;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --orange: #d97706;
+    --orange-light: #fffbeb;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --cyan: #0891b2;
+    --cyan-light: #ecfeff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 3rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 2.5rem; }
+  h2 {
+    font-size: 1.25rem; font-weight: 650; margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem; border-bottom: 2px solid var(--surface2);
+  }
+  h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+  section { margin-bottom: 3rem; }
+  p { margin-bottom: 0.75rem; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin-bottom: 2.5rem;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem; text-align: center;
+  }
+  .stat-value { font-size: 2rem; font-weight: 700; }
+  .stat-label { color: var(--text-dim); font-size: 0.8rem; margin-top: 0.15rem; }
+  .v-accent { color: var(--accent); }
+  .v-green { color: var(--green); }
+  .v-orange { color: var(--orange); }
+  .v-cyan { color: var(--cyan); }
+
+  /* Diagram containers */
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 1.25rem 0;
+    overflow-x: auto;
+  }
+  .diagram svg { display: block; margin: 0 auto; }
+
+  .comparison {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+  }
+  @media (max-width: 800px) { .comparison { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.5rem;
+  }
+
+  pre {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.25rem; overflow-x: auto;
+    font-size: 0.82rem; line-height: 1.55;
+    font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .kw { color: var(--purple); } .fn { color: var(--accent); }
+  .str { color: var(--green); } .comment { color: var(--text-dim); font-style: italic; }
+  .type { color: var(--cyan); } .cls { color: var(--orange); }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.88rem;
+    margin: 0.75rem 0;
+  }
+  th {
+    text-align: left; padding: 0.6rem 0.75rem; background: var(--surface2);
+    border-bottom: 2px solid var(--border); font-weight: 600;
+    color: var(--text-dim); font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .tag {
+    display: inline-block; padding: 0.1rem 0.45rem; border-radius: 4px;
+    font-size: 0.75rem; font-weight: 500;
+  }
+  .tag-old { background: var(--red-light); color: var(--red); }
+  .tag-new { background: var(--green-light); color: var(--green); }
+  .tag-same { background: var(--surface2); color: var(--text-dim); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  ul { padding-left: 1.25rem; margin: 0.5rem 0; }
+  li { margin-bottom: 0.3rem; font-size: 0.92rem; }
+  code {
+    background: var(--surface2); padding: 0.1rem 0.35rem;
+    border-radius: 4px; font-size: 0.85em;
+    font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<h1>DSR Execution: Temporal Migration</h1>
+<p class="subtitle">Feature-flagged swap from Celery task queues to Temporal durable workflows</p>
+
+<div class="stats">
+  <div class="stat"><div class="stat-value v-green">1</div><div class="stat-label">Feature Flag</div></div>
+  <div class="stat"><div class="stat-value v-accent">3</div><div class="stat-label">Workflows</div></div>
+  <div class="stat"><div class="stat-value v-orange">15</div><div class="stat-label">Activities</div></div>
+  <div class="stat"><div class="stat-value v-cyan">0</div><div class="stat-label">Connector Changes</div></div>
+</div>
+
+<!-- ===== ENGINE SWAP ===== -->
+<section>
+<h2>The Engine Swap</h2>
+<p>A single <code>DSREngine</code> protocol sits at <code>queue_privacy_request()</code>, the sole entry point for all DSR dispatching. Everything above it (approval, identity verification) is engine-agnostic.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 800 320" width="800" height="320" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <!-- API Layer -->
+  <rect x="250" y="10" width="300" height="44" rx="8" fill="#eef1fe" stroke="#4f6df5" stroke-width="1.5"/>
+  <text x="400" y="37" text-anchor="middle" font-size="13" font-weight="600" fill="#4f6df5">API Routes / Approval / Identity</text>
+
+  <line x1="400" y1="54" x2="400" y2="80" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- queue_privacy_request -->
+  <rect x="220" y="80" width="360" height="44" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="400" y="107" text-anchor="middle" font-size="13" font-weight="600" fill="#7c3aed">queue_privacy_request() → get_dsr_engine()</text>
+
+  <!-- Feature flag diamond -->
+  <polygon points="400,144 450,170 400,196 350,170" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="400" y="174" text-anchor="middle" font-size="10" font-weight="600" fill="#d97706">FLAG</text>
+
+  <line x1="400" y1="124" x2="400" y2="144" stroke="#bcc3d0" stroke-width="1.5"/>
+
+  <!-- Left: Celery -->
+  <line x1="350" y1="170" x2="200" y2="170" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="275" y="163" text-anchor="middle" font-size="10" fill="#6b7280">off</text>
+
+  <rect x="60" y="148" width="140" height="44" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="130" y="175" text-anchor="middle" font-size="12" font-weight="600" fill="#dc2626">CeleryDSREngine</text>
+
+  <line x1="130" y1="192" x2="130" y2="230" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="40" y="230" width="180" height="36" rx="6" fill="white" stroke="#e2e5ea" stroke-width="1"/>
+  <text x="130" y="253" text-anchor="middle" font-size="11" fill="#6b7280">run_privacy_request.apply_async()</text>
+
+  <line x1="130" y1="266" x2="130" y2="295" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="130" y="310" text-anchor="middle" font-size="11" fill="#dc2626">Celery Workers</text>
+
+  <!-- Right: Temporal -->
+  <line x1="450" y1="170" x2="600" y2="170" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="525" y="163" text-anchor="middle" font-size="10" fill="#6b7280">on</text>
+
+  <rect x="600" y="148" width="160" height="44" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="680" y="175" text-anchor="middle" font-size="12" font-weight="600" fill="#059669">TemporalDSREngine</text>
+
+  <line x1="680" y1="192" x2="680" y2="230" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="590" y="230" width="180" height="36" rx="6" fill="white" stroke="#e2e5ea" stroke-width="1"/>
+  <text x="680" y="253" text-anchor="middle" font-size="11" fill="#6b7280">client.start_workflow()</text>
+
+  <line x1="680" y1="266" x2="680" y2="295" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="680" y="310" text-anchor="middle" font-size="11" fill="#059669">Temporal Workers</text>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#bcc3d0"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+
+<pre><span class="kw">class</span> <span class="cls">DSREngine</span>(<span class="type">Protocol</span>):
+    <span class="kw">def</span> <span class="fn">dispatch_privacy_request</span>(self, privacy_request_id, from_webhook_id, from_step) -> <span class="type">str</span>: ...
+    <span class="kw">def</span> <span class="fn">dispatch_request_task</span>(self, request_task_id, privacy_request_id, action_type) -> <span class="type">None</span>: ...
+    <span class="kw">def</span> <span class="fn">signal_task_complete</span>(self, privacy_request_id, collection_address, data) -> <span class="type">None</span>: ...</pre>
+</section>
+
+<hr>
+
+<!-- ===== WORKFLOW HIERARCHY ===== -->
+<section>
+<h2>Temporal Workflow Hierarchy</h2>
+<p>Three workflow layers replace the Celery checkpoint system. Each layer has its own event history in the Temporal UI.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 820 520" width="820" height="520" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <!-- DSRLifecycleWorkflow -->
+  <rect x="10" y="10" width="800" height="500" rx="12" fill="none" stroke="#4f6df5" stroke-width="2" stroke-dasharray="6,3"/>
+  <rect x="20" y="4" width="200" height="20" rx="4" fill="white"/>
+  <text x="25" y="17" font-size="12" font-weight="700" fill="#4f6df5">DSRLifecycleWorkflow</text>
+
+  <!-- Activities row 1 -->
+  <rect x="40" y="40" width="140" height="34" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="110" y="62" text-anchor="middle" font-size="10" fill="#059669">load_context</text>
+
+  <rect x="195" y="40" width="140" height="34" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="265" y="62" text-anchor="middle" font-size="10" fill="#059669">pre_webhooks</text>
+
+  <rect x="350" y="40" width="170" height="34" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="435" y="62" text-anchor="middle" font-size="10" fill="#059669">build_access_graph</text>
+
+  <!-- Arrows -->
+  <line x1="180" y1="57" x2="195" y2="57" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="335" y1="57" x2="350" y2="57" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="435" y1="74" x2="435" y2="96" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <!-- GraphTraversalWorkflow - Access -->
+  <rect x="50" y="96" width="720" height="200" rx="10" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <rect x="60" y="90" width="280" height="18" rx="4" fill="white"/>
+  <text x="65" y="102" font-size="11" font-weight="600" fill="#7c3aed">GraphTraversalWorkflow (Access Phase)</text>
+
+  <!-- Node execution workflows inside -->
+  <rect x="80" y="120" width="200" height="160" rx="8" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <rect x="90" y="114" width="160" height="16" rx="3" fill="white"/>
+  <text x="95" y="125" font-size="9" font-weight="600" fill="#d97706">NodeExecutionWorkflow</text>
+
+  <rect x="100" y="140" width="160" height="28" rx="5" fill="#ecfdf5" stroke="#059669"/>
+  <text x="180" y="158" text-anchor="middle" font-size="9.5" fill="#059669">execute_access_node</text>
+  <text x="100" y="183" font-size="9" fill="#6b7280">Strategy: Regular</text>
+  <text x="100" y="196" font-size="9" fill="#6b7280">Connector: postgres</text>
+  <text x="100" y="209" font-size="9" fill="#6b7280">Collection: customers</text>
+  <rect x="100" y="220" width="160" height="22" rx="4" fill="#ecfdf5" stroke="#059669" stroke-dasharray="3,2"/>
+  <text x="180" y="235" text-anchor="middle" font-size="8.5" fill="#059669">✓ 42 rows retrieved</text>
+  <text x="180" y="265" text-anchor="middle" font-size="8" fill="#d97706">own event history</text>
+
+  <!-- Node 2 -->
+  <rect x="310" y="120" width="200" height="160" rx="8" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <rect x="320" y="114" width="160" height="16" rx="3" fill="white"/>
+  <text x="325" y="125" font-size="9" font-weight="600" fill="#d97706">NodeExecutionWorkflow</text>
+
+  <rect x="330" y="140" width="160" height="28" rx="5" fill="#ecfdf5" stroke="#059669"/>
+  <text x="410" y="158" text-anchor="middle" font-size="9.5" fill="#059669">execute_access_node</text>
+  <text x="330" y="183" font-size="9" fill="#6b7280">Strategy: Regular</text>
+  <text x="330" y="196" font-size="9" fill="#6b7280">Connector: stripe</text>
+  <text x="330" y="209" font-size="9" fill="#6b7280">Collection: customers</text>
+  <rect x="330" y="220" width="160" height="22" rx="4" fill="#ecfdf5" stroke="#059669" stroke-dasharray="3,2"/>
+  <text x="410" y="235" text-anchor="middle" font-size="8.5" fill="#059669">✓ 1 row retrieved</text>
+  <text x="410" y="265" text-anchor="middle" font-size="8" fill="#d97706">own event history</text>
+
+  <!-- Node 3 - manual -->
+  <rect x="540" y="120" width="200" height="160" rx="8" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <rect x="550" y="114" width="160" height="16" rx="3" fill="white"/>
+  <text x="555" y="125" font-size="9" font-weight="600" fill="#d97706">NodeExecutionWorkflow</text>
+
+  <rect x="560" y="140" width="160" height="28" rx="5" fill="#fffbeb" stroke="#d97706"/>
+  <text x="640" y="158" text-anchor="middle" font-size="9.5" fill="#d97706">wait_condition ⏳</text>
+  <text x="560" y="183" font-size="9" fill="#6b7280">Strategy: Manual</text>
+  <text x="560" y="196" font-size="9" fill="#6b7280">Waiting for signal...</text>
+  <text x="560" y="220" font-size="9" fill="#6b7280">→ Human submits data</text>
+  <text x="560" y="233" font-size="9" fill="#6b7280">→ Signal unblocks workflow</text>
+  <text x="560" y="246" font-size="9" fill="#6b7280">→ Re-execute activity</text>
+  <text x="640" y="265" text-anchor="middle" font-size="8" fill="#d97706">own event history</text>
+
+  <!-- ... dots -->
+  <text x="770" y="200" text-anchor="middle" font-size="18" fill="#bcc3d0">⋯</text>
+
+  <!-- Activities row 2 -->
+  <line x1="435" y1="296" x2="435" y2="315" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <rect x="350" y="315" width="170" height="34" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="435" y="337" text-anchor="middle" font-size="10" fill="#059669">upload_results</text>
+
+  <line x1="435" y1="349" x2="435" y2="368" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <!-- Erasure box -->
+  <rect x="200" y="368" width="220" height="34" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="310" y="390" text-anchor="middle" font-size="10" fill="#7c3aed">GraphTraversalWorkflow (Erasure)</text>
+
+  <!-- Consent box -->
+  <rect x="440" y="368" width="220" height="34" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="550" y="390" text-anchor="middle" font-size="10" fill="#7c3aed">GraphTraversalWorkflow (Consent)</text>
+
+  <line x1="310" y1="402" x2="410" y2="425" stroke="#bcc3d0" stroke-width="1.5"/>
+  <line x1="550" y1="402" x2="450" y2="425" stroke="#bcc3d0" stroke-width="1.5"/>
+
+  <!-- Post webhooks + finalize -->
+  <rect x="340" y="425" width="140" height="34" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="410" y="447" text-anchor="middle" font-size="10" fill="#059669">post_webhooks</text>
+
+  <line x1="480" y1="442" x2="540" y2="442" stroke="#bcc3d0" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <rect x="540" y="425" width="140" height="34" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="610" y="447" text-anchor="middle" font-size="10" fill="#059669">finalize_request</text>
+
+  <!-- Legend -->
+  <rect x="40" y="440" width="12" height="12" rx="3" fill="#ecfdf5" stroke="#059669"/>
+  <text x="58" y="451" font-size="9" fill="#6b7280">Activity</text>
+  <rect x="110" y="440" width="12" height="12" rx="3" fill="none" stroke="#7c3aed" stroke-dasharray="3,2"/>
+  <text x="128" y="451" font-size="9" fill="#6b7280">Child Workflow</text>
+  <rect x="210" y="440" width="12" height="12" rx="3" fill="none" stroke="#d97706" stroke-dasharray="3,2"/>
+  <text x="228" y="451" font-size="9" fill="#6b7280">Per-Node Workflow</text>
+
+  <!-- Check/error in failure -->
+  <rect x="40" y="460" width="12" height="12" rx="3" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="58" y="471" font-size="9" fill="#6b7280">Node fails → child fails → phase fails → request errors</text>
+
+  <defs>
+    <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#bcc3d0"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== DAG EXECUTION ===== -->
+<section>
+<h2>Graph Traversal: DAG-Ordered Concurrency</h2>
+<p>All collection nodes launch concurrently as child workflows. Each waits on <code>wait_condition</code> until its upstream dependencies complete. Independent branches run in parallel naturally.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 780 300" width="780" height="300" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <!-- ROOT -->
+  <circle cx="390" cy="30" r="22" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="390" y="34" text-anchor="middle" font-size="10" font-weight="600" fill="#7c3aed">ROOT</text>
+
+  <!-- Tier 1 (identity-reachable) -->
+  <rect x="60" y="80" width="130" height="36" rx="6" fill="white" stroke="#059669" stroke-width="1.5"/>
+  <text x="125" y="102" text-anchor="middle" font-size="10" fill="#059669">postgres:customer</text>
+
+  <rect x="230" y="80" width="130" height="36" rx="6" fill="white" stroke="#059669" stroke-width="1.5"/>
+  <text x="295" y="102" text-anchor="middle" font-size="10" fill="#059669">stripe:customer</text>
+
+  <rect x="400" y="80" width="150" height="36" rx="6" fill="white" stroke="#059669" stroke-width="1.5"/>
+  <text x="475" y="102" text-anchor="middle" font-size="10" fill="#059669">hubspot:contacts</text>
+
+  <rect x="590" y="80" width="150" height="36" rx="6" fill="white" stroke="#059669" stroke-width="1.5"/>
+  <text x="665" y="102" text-anchor="middle" font-size="10" fill="#059669">mailchimp:member</text>
+
+  <!-- ROOT arrows -->
+  <line x1="375" y1="50" x2="125" y2="80" stroke="#bcc3d0" stroke-width="1"/>
+  <line x1="385" y1="52" x2="295" y2="80" stroke="#bcc3d0" stroke-width="1"/>
+  <line x1="400" y1="52" x2="475" y2="80" stroke="#bcc3d0" stroke-width="1"/>
+  <line x1="410" y1="50" x2="665" y2="80" stroke="#bcc3d0" stroke-width="1"/>
+
+  <!-- Parallel indicator -->
+  <rect x="310" y="58" width="60" height="16" rx="3" fill="#ecfdf5"/>
+  <text x="340" y="69" text-anchor="middle" font-size="8" font-weight="600" fill="#059669">parallel</text>
+
+  <!-- Tier 2 (dependent on customer) -->
+  <rect x="20" y="160" width="120" height="36" rx="6" fill="white" stroke="#4f6df5" stroke-width="1.5"/>
+  <text x="80" y="182" text-anchor="middle" font-size="10" fill="#4f6df5">postgres:orders</text>
+
+  <rect x="160" y="160" width="120" height="36" rx="6" fill="white" stroke="#4f6df5" stroke-width="1.5"/>
+  <text x="220" y="182" text-anchor="middle" font-size="10" fill="#4f6df5">postgres:address</text>
+
+  <rect x="310" y="160" width="120" height="36" rx="6" fill="white" stroke="#4f6df5" stroke-width="1.5"/>
+  <text x="370" y="182" text-anchor="middle" font-size="10" fill="#4f6df5">stripe:charges</text>
+
+  <rect x="460" y="160" width="130" height="36" rx="6" fill="white" stroke="#4f6df5" stroke-width="1.5"/>
+  <text x="525" y="182" text-anchor="middle" font-size="10" fill="#4f6df5">stripe:payments</text>
+
+  <rect x="620" y="160" width="140" height="36" rx="6" fill="white" stroke="#4f6df5" stroke-width="1.5"/>
+  <text x="690" y="182" text-anchor="middle" font-size="10" fill="#4f6df5">hubspot:users</text>
+
+  <!-- Tier 1 → Tier 2 arrows -->
+  <line x1="100" y1="116" x2="80" y2="160" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr3)"/>
+  <line x1="140" y1="116" x2="220" y2="160" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr3)"/>
+  <line x1="295" y1="116" x2="370" y2="160" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr3)"/>
+  <line x1="295" y1="116" x2="525" y2="160" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr3)"/>
+  <line x1="475" y1="116" x2="690" y2="160" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr3)"/>
+
+  <!-- wait_condition labels -->
+  <text x="60" y="147" font-size="8" fill="#6b7280">waits on customer ✓</text>
+  <text x="400" y="147" font-size="8" fill="#6b7280">waits on stripe:customer ✓</text>
+
+  <!-- Tier 3 -->
+  <rect x="20" y="235" width="130" height="36" rx="6" fill="white" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="85" y="257" text-anchor="middle" font-size="10" fill="#0891b2">postgres:order_items</text>
+
+  <line x1="80" y1="196" x2="85" y2="235" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr3)"/>
+
+  <!-- TERMINATOR -->
+  <circle cx="390" cy="270" r="22" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="390" y="274" text-anchor="middle" font-size="8" font-weight="600" fill="#7c3aed">TERM</text>
+
+  <line x1="85" y1="271" x2="368" y2="270" stroke="#bcc3d0" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="690" y1="196" x2="412" y2="268" stroke="#bcc3d0" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="665" y1="116" x2="412" y2="260" stroke="#bcc3d0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <defs>
+    <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#bcc3d0"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== TASK TYPE STRATEGIES ===== -->
+<section>
+<h2>Task Type Strategies</h2>
+<p><code>NodeExecutionWorkflow</code> dispatches by task type. New types = new branch, no changes to orchestration.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 780 340" width="780" height="340" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <!-- Central dispatcher -->
+  <rect x="280" y="10" width="220" height="40" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="390" y="35" text-anchor="middle" font-size="12" font-weight="600" fill="#d97706">NodeExecutionWorkflow</text>
+
+  <!-- Branches -->
+  <line x1="310" y1="50" x2="100" y2="90" stroke="#bcc3d0" stroke-width="1.5"/>
+  <line x1="360" y1="50" x2="300" y2="90" stroke="#bcc3d0" stroke-width="1.5"/>
+  <line x1="420" y1="50" x2="500" y2="90" stroke="#bcc3d0" stroke-width="1.5"/>
+  <line x1="470" y1="50" x2="700" y2="90" stroke="#bcc3d0" stroke-width="1.5"/>
+
+  <!-- Regular -->
+  <rect x="20" y="90" width="160" height="28" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="100" y="108" text-anchor="middle" font-size="11" font-weight="600" fill="#059669">Regular</text>
+  <rect x="20" y="130" width="160" height="24" rx="4" fill="white" stroke="#e2e5ea"/>
+  <text x="100" y="146" text-anchor="middle" font-size="9" fill="#6b7280">execute_node activity</text>
+  <line x1="100" y1="118" x2="100" y2="130" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="20" y="166" width="160" height="24" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <text x="100" y="182" text-anchor="middle" font-size="9" fill="#059669">✓ Done</text>
+  <line x1="100" y1="154" x2="100" y2="166" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+
+  <!-- Manual -->
+  <rect x="210" y="90" width="160" height="28" rx="6" fill="#eef1fe" stroke="#4f6df5"/>
+  <text x="290" y="108" text-anchor="middle" font-size="11" font-weight="600" fill="#4f6df5">Manual</text>
+  <rect x="210" y="130" width="160" height="24" rx="4" fill="white" stroke="#e2e5ea"/>
+  <text x="290" y="146" text-anchor="middle" font-size="9" fill="#6b7280">execute_node activity</text>
+  <line x1="290" y1="118" x2="290" y2="130" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="210" y="166" width="160" height="24" rx="4" fill="#fffbeb" stroke="#d97706"/>
+  <text x="290" y="182" text-anchor="middle" font-size="9" fill="#d97706">⏳ wait_condition(signal)</text>
+  <line x1="290" y1="154" x2="290" y2="166" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="210" y="202" width="160" height="24" rx="4" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="290" y="218" text-anchor="middle" font-size="9" fill="#7c3aed">↓ human submits data</text>
+  <line x1="290" y1="190" x2="290" y2="202" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="210" y="238" width="160" height="24" rx="4" fill="white" stroke="#e2e5ea"/>
+  <text x="290" y="254" text-anchor="middle" font-size="9" fill="#6b7280">re-execute activity</text>
+  <line x1="290" y1="226" x2="290" y2="238" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="210" y="274" width="160" height="24" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <text x="290" y="290" text-anchor="middle" font-size="9" fill="#059669">✓ Done</text>
+  <line x1="290" y1="262" x2="290" y2="274" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+
+  <!-- Polling -->
+  <rect x="410" y="90" width="170" height="28" rx="6" fill="#ecfeff" stroke="#0891b2"/>
+  <text x="495" y="108" text-anchor="middle" font-size="11" font-weight="600" fill="#0891b2">Async Polling</text>
+  <rect x="410" y="130" width="170" height="24" rx="4" fill="white" stroke="#e2e5ea"/>
+  <text x="495" y="146" text-anchor="middle" font-size="9" fill="#6b7280">send initial request</text>
+  <line x1="495" y1="118" x2="495" y2="130" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="410" y="166" width="170" height="40" rx="4" fill="#ecfeff" stroke="#0891b2"/>
+  <text x="495" y="182" text-anchor="middle" font-size="9" fill="#0891b2">🔄 poll loop + heartbeat</text>
+  <text x="495" y="196" text-anchor="middle" font-size="8" fill="#6b7280">every N hours, single activity</text>
+  <line x1="495" y1="154" x2="495" y2="166" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="410" y="218" width="170" height="24" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <text x="495" y="234" text-anchor="middle" font-size="9" fill="#059669">✓ Done</text>
+  <line x1="495" y1="206" x2="495" y2="218" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+
+  <!-- Callback -->
+  <rect x="620" y="90" width="150" height="28" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="695" y="108" text-anchor="middle" font-size="11" font-weight="600" fill="#7c3aed">Async Callback</text>
+  <rect x="620" y="130" width="150" height="24" rx="4" fill="white" stroke="#e2e5ea"/>
+  <text x="695" y="146" text-anchor="middle" font-size="9" fill="#6b7280">send request + callback URL</text>
+  <line x1="695" y1="118" x2="695" y2="130" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="620" y="166" width="150" height="24" rx="4" fill="#fffbeb" stroke="#d97706"/>
+  <text x="695" y="182" text-anchor="middle" font-size="9" fill="#d97706">⏳ wait_condition(signal)</text>
+  <line x1="695" y1="154" x2="695" y2="166" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="620" y="202" width="150" height="24" rx="4" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="695" y="218" text-anchor="middle" font-size="9" fill="#7c3aed">↓ external POST received</text>
+  <line x1="695" y1="190" x2="695" y2="202" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="620" y="238" width="150" height="24" rx="4" fill="white" stroke="#e2e5ea"/>
+  <text x="695" y="254" text-anchor="middle" font-size="9" fill="#6b7280">process results</text>
+  <line x1="695" y1="226" x2="695" y2="238" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+  <rect x="620" y="274" width="150" height="24" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <text x="695" y="290" text-anchor="middle" font-size="9" fill="#059669">✓ Done</text>
+  <line x1="695" y1="262" x2="695" y2="274" stroke="#bcc3d0" stroke-width="1" marker-end="url(#arr4)"/>
+
+  <defs>
+    <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#bcc3d0"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== WHAT CHANGED ===== -->
+<section>
+<h2>What Changed vs. What Stayed</h2>
+
+<div class="comparison">
+  <div class="card">
+    <h3 style="color: var(--accent);">New / Modified</h3>
+    <ul>
+      <li><code>DSREngine</code> protocol + factory</li>
+      <li><code>CeleryDSREngine</code> wraps existing dispatch</li>
+      <li><code>TemporalDSREngine</code> starts workflows</li>
+      <li>3 workflow definitions (lifecycle, traversal, node)</li>
+      <li>15 activity definitions wrapping existing code</li>
+      <li><code>queue_privacy_request()</code> delegates to engine</li>
+      <li>Callback endpoint sends Temporal signal when flag on</li>
+      <li>Docker: +2 containers (Temporal server + UI)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="color: var(--text-dim);">Unchanged</h3>
+    <ul>
+      <li>All connectors (BaseConnector, SaaSConnector, DB connectors)</li>
+      <li>Graph construction (Traversal, DatasetGraph, Kahn's algorithm)</li>
+      <li>GraphTask execution (retrieve_data, mask_data)</li>
+      <li>RequestTask model (still written for API visibility)</li>
+      <li>ExecutionLog audit trail (still created per collection)</li>
+      <li>Celery path (fully functional when flag is off)</li>
+      <li>Admin UI (reads same RequestTask / ExecutionLog data)</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== INFRA ===== -->
+<section>
+<h2>Infrastructure</h2>
+
+<div class="diagram">
+<svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <!-- Postgres -->
+  <rect x="280" y="130" width="160" height="50" rx="8" fill="white" stroke="#4f6df5" stroke-width="1.5"/>
+  <text x="360" y="152" text-anchor="middle" font-size="11" font-weight="600" fill="#4f6df5">PostgreSQL 16</text>
+  <text x="360" y="168" text-anchor="middle" font-size="9" fill="#6b7280">fides + temporal + temporal_visibility</text>
+
+  <!-- Fides API -->
+  <rect x="20" y="10" width="140" height="44" rx="8" fill="white" stroke="#059669" stroke-width="1.5"/>
+  <text x="90" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#059669">Fides API</text>
+  <text x="90" y="44" text-anchor="middle" font-size="9" fill="#6b7280">:8080</text>
+
+  <!-- Temporal Server -->
+  <rect x="200" y="10" width="140" height="44" rx="8" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="270" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#7c3aed">Temporal Server</text>
+  <text x="270" y="44" text-anchor="middle" font-size="9" fill="#6b7280">:7233</text>
+
+  <!-- Temporal UI -->
+  <rect x="380" y="10" width="140" height="44" rx="8" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="450" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#7c3aed">Temporal UI</text>
+  <text x="450" y="44" text-anchor="middle" font-size="9" fill="#6b7280">:8085</text>
+
+  <!-- Temporal Worker -->
+  <rect x="560" y="10" width="140" height="44" rx="8" fill="white" stroke="#d97706" stroke-width="1.5"/>
+  <text x="630" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#d97706">Temporal Worker</text>
+  <text x="630" y="44" text-anchor="middle" font-size="9" fill="#6b7280">polls task queue</text>
+
+  <!-- Redis -->
+  <rect x="560" y="130" width="140" height="50" rx="8" fill="white" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="630" y="152" text-anchor="middle" font-size="11" font-weight="600" fill="#dc2626">Redis</text>
+  <text x="630" y="168" text-anchor="middle" font-size="9" fill="#6b7280">cache only (not broker)</text>
+
+  <!-- Lines -->
+  <line x1="90" y1="54" x2="340" y2="130" stroke="#bcc3d0" stroke-width="1"/>
+  <line x1="270" y1="54" x2="340" y2="130" stroke="#bcc3d0" stroke-width="1"/>
+  <line x1="450" y1="54" x2="270" y2="48" stroke="#bcc3d0" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="630" y1="54" x2="270" y2="48" stroke="#bcc3d0" stroke-width="1"/>
+  <line x1="630" y1="54" x2="400" y2="130" stroke="#bcc3d0" stroke-width="1"/>
+  <line x1="90" y1="54" x2="600" y2="130" stroke="#bcc3d0" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Labels -->
+  <rect x="10" y="75" width="60" height="16" rx="3" fill="#ecfdf5"/>
+  <text x="40" y="86" text-anchor="middle" font-size="8" font-weight="500" fill="#059669">existing</text>
+  <rect x="230" y="75" width="40" height="16" rx="3" fill="#f5f3ff"/>
+  <text x="250" y="86" text-anchor="middle" font-size="8" font-weight="500" fill="#7c3aed">new</text>
+  <rect x="410" y="75" width="40" height="16" rx="3" fill="#f5f3ff"/>
+  <text x="430" y="86" text-anchor="middle" font-size="8" font-weight="500" fill="#7c3aed">new</text>
+  <rect x="590" y="75" width="40" height="16" rx="3" fill="#fffbeb"/>
+  <text x="610" y="86" text-anchor="middle" font-size="8" font-weight="500" fill="#d97706">swap</text>
+</svg>
+</div>
+
+<p style="color: var(--text-dim); font-size: 0.9rem;">
+  Temporal shares the existing PostgreSQL instance (creates <code>temporal</code> and <code>temporal_visibility</code> databases alongside <code>fides</code>).
+  Redis is retained for caching but is no longer the task broker. The Temporal worker replaces the Celery DSR worker.
+</p>
+</section>
+
+</body>
+</html>

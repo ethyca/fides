@@ -1924,6 +1924,22 @@ def request_task_async_callback(
     request_task.update_status(db, ExecutionLogStatus.pending)
     request_task.save(db)
 
+    from fides.config import CONFIG
+
+    if CONFIG.execution.use_temporal_workflow_engine:
+        from fides.api.task.temporal.engine import TemporalDSREngine
+
+        engine = TemporalDSREngine()
+        engine.signal_task_complete(
+            privacy_request_id=str(privacy_request.id),
+            collection_address=request_task.collection_address,
+            data={
+                "access_results": data.access_results,
+                "rows_masked": data.rows_masked,
+            },
+        )
+        return {"task_signaled": True}
+
     log_task_queued(request_task, "callback")
     queue_request_task(request_task, privacy_request_proceed=True)
 

@@ -198,6 +198,17 @@ def worker(
     )
 
 
+@click.command(name="temporal-worker")
+@click.pass_context
+def temporal_worker(ctx: click.Context) -> None:
+    """
+    Start a Temporal worker for DSR workflow execution.
+    """
+    from fides.api.task.temporal.worker import start_temporal_worker
+
+    start_temporal_worker()
+
+
 @click.command()  # type: ignore
 @click.pass_context
 @dry_flag

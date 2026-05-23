@@ -1,0 +1,6 @@
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true
+    constraints: {}
+limit.maxIDLength:
+  - value: 255
+    constraints: {}

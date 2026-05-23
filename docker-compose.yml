@@ -254,6 +254,61 @@ services:
       - CELERY_BROKER_URL=redis://:redispassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:redispassword@redis:6379/0
 
+  temporal:
+    image: temporalio/auto-setup:1.26.2
+    container_name: temporal
+    depends_on:
+      fides-db:
+        condition: service_healthy
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=fides
+      - POSTGRES_SEEDS=fides-db
+      - DBNAME=temporal
+      - VISIBILITY_DBNAME=temporal_visibility
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - TEMPORAL_ADDRESS=temporal:7233
+    ports:
+      - "7233:7233"
+    volumes:
+      - ./docker/temporalconfig:/etc/temporal/config/dynamicconfig
+
+  temporal-ui:
+    image: temporalio/ui:2.34.0
+    container_name: temporal-ui
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports:
+      - "8085:8080"
+
+  worker-temporal:
+    image: ethyca/fides:local${IMAGE_SUFFIX:-}
+    command: fides temporal-worker
+    depends_on:
+      temporal:
+        condition: service_started
+      fides-db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__TEMPORAL__SERVER_URL: "temporal:7233"
+      FIDES__EXECUTION__USE_TEMPORAL_WORKFLOW_ENGINE: "True"
+      FIDES__LOGGING__COLORIZE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - type: bind
+        source: ./
+        target: /fides
+        read_only: False
+      - /fides/src/fides.egg-info
+
   # Redis Cluster (3 nodes) for cluster-mode testing. Standalone redis above for regular use.
   # Cluster forms with Docker hostnames so nodes can reach each other. Run cluster tests
   # FROM INSIDE the stack so the client can reach all nodes: docker compose run --rm fides

@@ -31,6 +31,7 @@ from .commands.ungrouped import (
     parse,
     push,
     status,
+    temporal_worker,
     webserver,
     worker,
 )
@@ -51,6 +52,7 @@ API_COMMANDS = [
     pull,
     push,
     worker,
+    temporal_worker,
     user,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS

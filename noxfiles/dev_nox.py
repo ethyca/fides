@@ -194,6 +194,7 @@ def dev(session: Session) -> None:
         - remote_debug = Run with remote debugging enabled (see docker-compose.remote-debug.yml)
         - workers-all = Run all available Fides workers (see below)
         - flower = Run Flower monitoring dashboard for Celery
+        - temporal = Run Temporal server, UI, and DSR worker
         - child = Run a Fides child node
         - nginx = Run two Fides webservers with nginx load balancer proxy
         - <datastore(s)> = Run a test datastore (e.g. 'mssql', 'mongodb')
@@ -248,6 +249,20 @@ def dev(session: Session) -> None:
         session.run(
             "docker", "compose", "up", "--wait", worker, external=True, env=compose_env
         )
+
+    if "temporal" in session.posargs:
+        session.run(
+            "docker",
+            "compose",
+            "up",
+            "-d",
+            "temporal",
+            "temporal-ui",
+            "worker-temporal",
+            external=True,
+            env=compose_env,
+        )
+        session.log(f"  Temporal UI:    http://localhost:8085")
 
     if "flower" in session.posargs:
         # Only start Flower if at least one worker is enabled

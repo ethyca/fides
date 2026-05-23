@@ -66,8 +66,6 @@ from fides.api.service.privacy_request.request_service import (
     cache_data,
 )
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
-from fides.api.tasks import DSR_QUEUE_NAME
-from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.session_management import get_autoclose_db_session
@@ -1285,30 +1283,27 @@ def queue_privacy_request(
 ) -> Optional[str]:
     """Queue a privacy request for processing.
 
-    Returns the task ID if successful, or None if scheduling fails.
+    Delegates to the configured DSR engine (Celery or Temporal) based on
+    the use_temporal_workflow_engine feature flag.
+
+    Returns the task/workflow ID if successful, or None if scheduling fails.
     On failure, the privacy request is marked as errored with the error message.
     """
+    from fides.api.task.engine import get_dsr_engine
+
     logger.info("Queueing privacy request from step {}", from_step)
 
-    from fides.api.service.privacy_request.request_runner_service import (
-        run_privacy_request,
-    )
-
     try:
-        task = run_privacy_request.apply_async(
-            queue=DSR_QUEUE_NAME,
-            kwargs={
-                "privacy_request_id": privacy_request_id,
-                "from_webhook_id": from_webhook_id,
-                "from_step": from_step,
-            },
+        engine = get_dsr_engine()
+        run_id = engine.dispatch_privacy_request(
+            privacy_request_id=privacy_request_id,
+            from_webhook_id=from_webhook_id,
+            from_step=from_step,
         )
-        cache_task_tracking_key(privacy_request_id, task.task_id)
 
-        # Clear any previous scheduling failure in the activity timeline
         _clear_scheduling_failure_if_exists(privacy_request_id)
 
-        return task.task_id
+        return run_id
     except Exception as exc:
         _handle_scheduling_failure(privacy_request_id, str(exc))
         raise
