@@ -12,7 +12,10 @@ import { useRouter } from "next/router";
 import React, { useMemo, useState } from "react";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
+import {
+  PRIVACY_EXPERIENCE_ROUTE,
+  TCF_VERSION_HISTORY_ROUTE,
+} from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useHasPermission } from "~/features/common/Restrict";
 import { TagExpandableCell } from "~/features/common/table/cells";
@@ -145,7 +148,7 @@ const usePrivacyExperiencesTable = () => {
           <Flex align="center" gap="small">
             <Tag>{COMPONENT_MAP.get(component)}</Tag>
             {component === ComponentType.TCF_OVERLAY && (
-              <RouterLink href={`/experience-config/${id}/tcf-version-history`}>
+              <RouterLink href={TCF_VERSION_HISTORY_ROUTE.replace("[id]", id)}>
                 History →
               </RouterLink>
             )}

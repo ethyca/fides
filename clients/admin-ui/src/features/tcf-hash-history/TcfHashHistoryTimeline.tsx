@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import {
+  Alert,
   Empty,
   Flex,
   Icons,
@@ -23,33 +24,22 @@ import {
   TRIGGER_SOURCE_DOT_COLORS,
   TRIGGER_SOURCE_LABELS,
 } from "./constants";
+import TcfHashDisplay from "./TcfHashDisplay";
 
 interface Props {
   experienceConfigId: string;
 }
 
-const HashText = ({ value }: { value: string | null | undefined }) =>
-  value ? (
-    <Tooltip title={value}>
-      <Typography.Text code className="text-xs">
-        {value.slice(0, 8)}
-      </Typography.Text>
-    </Tooltip>
-  ) : (
-    <Typography.Text type="secondary" className="text-xs">
-      (none)
-    </Typography.Text>
-  );
-
 const TcfHashHistoryTimeline = ({ experienceConfigId }: Props) => {
   const pagination = usePagination();
   const { pageIndex, pageSize } = pagination;
 
-  const { data, isLoading } = useGetExperienceConfigTCFHashHistoryQuery({
-    experienceConfigId,
-    page: pageIndex,
-    size: pageSize,
-  });
+  const { data, isLoading, isError } =
+    useGetExperienceConfigTCFHashHistoryQuery({
+      experienceConfigId,
+      page: pageIndex,
+      size: pageSize,
+    });
 
   const timelineItems = useMemo(() => {
     if (!data?.items) {
@@ -75,9 +65,9 @@ const TcfHashHistoryTimeline = ({ experienceConfigId }: Props) => {
             </Tooltip>
           </Flex>
           <Flex align="center" gap="small">
-            <HashText value={entry.previous_hash} />
+            <TcfHashDisplay value={entry.previous_hash} />
             <Typography.Text type="secondary">→</Typography.Text>
-            <HashText value={entry.current_hash} />
+            <TcfHashDisplay value={entry.current_hash} />
           </Flex>
         </Flex>
       ),
@@ -92,6 +82,10 @@ const TcfHashHistoryTimeline = ({ experienceConfigId }: Props) => {
         <Skeleton active paragraph={{ rows: 3 }} />
       </Flex>
     );
+  }
+
+  if (isError) {
+    return <Alert type="error" title="Failed to load TCF hash history" />;
   }
 
   if (!timelineItems.length) {

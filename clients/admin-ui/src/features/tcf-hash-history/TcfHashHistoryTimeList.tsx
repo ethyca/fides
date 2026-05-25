@@ -1,4 +1,4 @@
-import { Empty, Flex, Icons, List, Skeleton, Typography } from "fidesui";
+import { Alert, Empty, Flex, Icons, List, Skeleton, Typography } from "fidesui";
 import { useMemo } from "react";
 
 import { usePagination } from "~/features/common/hooks";
@@ -18,11 +18,12 @@ const TcfHashHistoryTimeList = ({ experienceConfigId }: Props) => {
   const pagination = usePagination();
   const { pageIndex, pageSize } = pagination;
 
-  const { data, isLoading } = useGetExperienceConfigTCFHashHistoryQuery({
-    experienceConfigId,
-    page: pageIndex,
-    size: pageSize,
-  });
+  const { data, isLoading, isError } =
+    useGetExperienceConfigTCFHashHistoryQuery({
+      experienceConfigId,
+      page: pageIndex,
+      size: pageSize,
+    });
 
   const entries = useMemo(() => data?.items ?? [], [data]);
 
@@ -34,6 +35,10 @@ const TcfHashHistoryTimeList = ({ experienceConfigId }: Props) => {
         <Skeleton active paragraph={{ rows: 3 }} />
       </Flex>
     );
+  }
+
+  if (isError) {
+    return <Alert type="error" title="Failed to load TCF hash history" />;
   }
 
   if (!entries.length) {

@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import {
+  Alert,
   Empty,
   Flex,
   Icons,
@@ -20,6 +21,7 @@ import {
 } from "~/features/privacy-experience/privacy-experience.slice";
 
 import { TRIGGER_SOURCE_COLORS, TRIGGER_SOURCE_LABELS } from "./constants";
+import TcfHashDisplay from "./TcfHashDisplay";
 import styles from "./TcfHashHistoryTable.module.scss";
 
 interface Props {
@@ -32,19 +34,6 @@ type ExpandIconFn = NonNullable<
     ComponentProps<typeof Table<TCFVersionHashHistoryResponse>>["expandable"]
   >["expandIcon"]
 >;
-
-const HashCell = ({ value }: { value: string | null | undefined }) =>
-  value ? (
-    <Tooltip title={value}>
-      <Typography.Text code className="text-xs">
-        {value.slice(0, 8)}
-      </Typography.Text>
-    </Tooltip>
-  ) : (
-    <Typography.Text type="secondary" className="text-xs">
-      (none)
-    </Typography.Text>
-  );
 
 type Chip = { label: string; type: "add" | "remove" | "change" };
 
@@ -302,13 +291,17 @@ const columns = [
     title: "Previous hash",
     dataIndex: "previous_hash",
     key: "previous_hash",
-    render: (value: string | null | undefined) => <HashCell value={value} />,
+    render: (value: string | null | undefined) => (
+      <TcfHashDisplay value={value} />
+    ),
   },
   {
     title: "Current hash",
     dataIndex: "current_hash",
     key: "current_hash",
-    render: (value: string | null | undefined) => <HashCell value={value} />,
+    render: (value: string | null | undefined) => (
+      <TcfHashDisplay value={value} />
+    ),
   },
 ];
 
@@ -316,11 +309,12 @@ const TcfHashHistoryTable = ({ experienceConfigId }: Props) => {
   const pagination = usePagination();
   const { pageIndex, pageSize } = pagination;
 
-  const { data, isLoading } = useGetExperienceConfigTCFHashHistoryQuery({
-    experienceConfigId,
-    page: pageIndex,
-    size: pageSize,
-  });
+  const { data, isLoading, isError } =
+    useGetExperienceConfigTCFHashHistoryQuery({
+      experienceConfigId,
+      page: pageIndex,
+      size: pageSize,
+    });
 
   const entries = useMemo(() => data?.items ?? [], [data]);
 
@@ -332,6 +326,10 @@ const TcfHashHistoryTable = ({ experienceConfigId }: Props) => {
         <Skeleton active paragraph={{ rows: 3 }} />
       </Flex>
     );
+  }
+
+  if (isError) {
+    return <Alert type="error" title="Failed to load TCF hash history" />;
   }
 
   if (!entries.length) {

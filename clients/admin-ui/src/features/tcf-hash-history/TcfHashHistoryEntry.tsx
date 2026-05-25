@@ -6,22 +6,12 @@ import { TCFVersionHashHistoryResponse } from "~/features/privacy-experience/pri
 import baseStyles from "~/features/privacy-requests/events-and-logs/ActivityTimelineEntry.module.scss";
 
 import { TRIGGER_SOURCE_COLORS, TRIGGER_SOURCE_LABELS } from "./constants";
+import TcfHashDisplay from "./TcfHashDisplay";
 import styles from "./TcfHashHistoryEntry.module.scss";
 
 interface Props {
   entry: TCFVersionHashHistoryResponse;
 }
-
-const HashChip = ({ value }: { value: string | null | undefined }) =>
-  value ? (
-    <Tooltip title={value}>
-      <span className={styles.hashCode}>{value.slice(0, 8)}</span>
-    </Tooltip>
-  ) : (
-    <Typography.Text type="secondary" className="text-xs">
-      (none)
-    </Typography.Text>
-  );
 
 const TcfHashHistoryEntry = ({ entry }: Props) => {
   const formattedDate = formatDate(new Date(entry.changed_at));
@@ -37,9 +27,9 @@ const TcfHashHistoryEntry = ({ entry }: Props) => {
         <span
           className={classNames(baseStyles.title, "flex items-center gap-1")}
         >
-          <HashChip value={entry.previous_hash} />
+          <TcfHashDisplay value={entry.previous_hash} />
           <span className={styles.arrow}>→</span>
-          <HashChip value={entry.current_hash} />
+          <TcfHashDisplay value={entry.current_hash} />
         </span>
 
         <div className="hidden xl:block">

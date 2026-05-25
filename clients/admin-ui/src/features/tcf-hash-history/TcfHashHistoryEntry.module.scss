@@ -3,16 +3,6 @@
   margin-left: auto;
 }
 
-.hashCode {
-  font-family: var(--fidesui-font-family-mono, monospace);
-  font-size: 0.75rem;
-  color: var(--fidesui-neutral-700);
-  background: var(--fidesui-neutral-50);
-  border: 1px solid var(--fidesui-neutral-200);
-  border-radius: 3px;
-  padding: 0 4px;
-}
-
 .arrow {
   color: var(--fidesui-neutral-400);
   flex-shrink: 0;
