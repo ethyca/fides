@@ -4,15 +4,14 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
+from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
+
 
 def test_load_returns_empty_when_no_policies_seeded(db: Session):
     from fides.service.mcp.policy_loader import load_enabled_v2_policies
 
     result = load_enabled_v2_policies(db)
     assert result == []
-
-
-from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
 
 
 def _seed_policy(
@@ -53,7 +52,6 @@ def test_load_excludes_disabled_policies(db: Session):
     invalidate_cache()
 
     result = load_enabled_v2_policies(db)
-    names = {p.get("key") for p in result}  # key is the policy id; we'll assert via count
     assert len(result) == 1
 
 
