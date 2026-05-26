@@ -73,7 +73,7 @@ class TestEnabledActions:
 
         access_results = access_runner_tester(
             privacy_request_with_erasure_policy,
-            erasure_policy,
+            policy,
             dataset_graph,
             [integration_postgres_config],
             {"email": "customer-1@example.com"},
