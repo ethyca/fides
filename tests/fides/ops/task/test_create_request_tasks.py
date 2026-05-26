@@ -2381,7 +2381,9 @@ class TestRunErasureRequestRecreatesMissingTasks:
         first_erasure = privacy_request.erasure_tasks.first()
         first_erasure.delete(db)
         db.flush()
-        assert privacy_request.erasure_tasks.count() < privacy_request.access_tasks.count()
+        assert (
+            privacy_request.erasure_tasks.count() < privacy_request.access_tasks.count()
+        )
 
         # Policy has no erasure rules (default policy fixture is access-only)
         assert not privacy_request.policy.get_rules_for_action(
