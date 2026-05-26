@@ -867,13 +867,13 @@ class TestWatchdogDetectsMissingErasureTasks:
         )
 
         pr = make_privacy_request()
+        # Both access and erasure tasks are complete — nothing to requeue
         make_request_task(pr, ExecutionLogStatus.complete, collection="users")
-        # Create an erasure task directly since the fixture hardcodes access
         RequestTask.create(
             db,
             data={
                 "action_type": ActionType.erasure,
-                "status": ExecutionLogStatus.pending,
+                "status": ExecutionLogStatus.complete,
                 "privacy_request_id": pr.id,
                 "collection_address": "test_dataset:users",
                 "dataset_name": "test_dataset",
