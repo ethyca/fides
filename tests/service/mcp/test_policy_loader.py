@@ -67,3 +67,31 @@ def test_load_excludes_soft_deleted_policies(db: Session):
 
     result = load_enabled_v2_policies(db)
     assert len(result) == 1
+
+
+def test_load_picks_latest_version_per_policy(db: Session):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    older = """
+decision: ALLOW
+priority: 1
+"""
+    newer = """
+decision: DENY
+priority: 9
+"""
+    policy = AccessPolicy(name="versioned", enabled=True, is_deleted=False)
+    db.add(policy)
+    db.flush()
+    db.add(AccessPolicyVersion(access_policy_id=policy.id, version=1, yaml=older))
+    db.add(AccessPolicyVersion(access_policy_id=policy.id, version=2, yaml=newer))
+    db.flush()
+    invalidate_cache()
+
+    result = load_enabled_v2_policies(db)
+    assert len(result) == 1
+    assert result[0]["decision"] == "DENY"
+    assert result[0]["priority"] == 9
