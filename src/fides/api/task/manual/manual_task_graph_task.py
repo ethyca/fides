@@ -39,6 +39,15 @@ from fides.api.util.collection_util import Row
 from fides.service.attachment_service import AttachmentService
 
 
+# Status priority for escalation-only writes (ENG-3835).
+# Higher value = more urgent.  Only escalate, never de-escalate.
+_STATUS_PRIORITY = {
+    PrivacyRequestStatus.in_processing: 0,
+    PrivacyRequestStatus.pending_external: 1,
+    PrivacyRequestStatus.requires_input: 2,
+}
+
+
 class ManualTaskGraphTask(GraphTask):
     """GraphTask implementation for ManualTask execution"""
 
@@ -87,6 +96,7 @@ class ManualTaskGraphTask(GraphTask):
 
         # We are picking up after awaiting input and have provided data – mark complete with record count
         self.log_end(ActionType.access, record_count=len(result))
+        self._update_privacy_request_status_after_completion()
         return result
 
     # Provide erasure support for manual tasks
@@ -122,6 +132,7 @@ class ManualTaskGraphTask(GraphTask):
 
         # Picking up after awaiting input, mark erasure node complete with rows masked count (always 0)
         self.log_end(ActionType.erasure, record_count=0)
+        self._update_privacy_request_status_after_completion()
         return 0
 
     # Provide consent support for manual tasks
@@ -152,7 +163,31 @@ class ManualTaskGraphTask(GraphTask):
 
         # Picking up after awaiting input, mark consent node complete
         self.log_end(ActionType.consent)
+        self._update_privacy_request_status_after_completion()
         return True
+
+    def _update_privacy_request_status_after_completion(self) -> None:
+        """Re-derive and update the PR status after a manual task completes (ENG-3835).
+
+        Called after log_end() so the completing task's RequestTask is already
+        marked ``complete`` in the database.  If derivation fails the task
+        completion is already durable (committed by log_end's separate session),
+        so we log and continue rather than failing the task.
+        """
+        try:
+            derived = derive_privacy_request_status(
+                self.resources.session, self.resources.request
+            )
+            if self.resources.request.status != derived:
+                self.resources.request.status = derived
+                self.resources.request.save(self.resources.session)
+        except Exception:
+            logger.warning(
+                "Failed to re-derive PR status after manual task completion "
+                "for privacy request {}",
+                self.resources.request.id,
+                exc_info=True,
+            )
 
     # ------------------------------------------------------------------------------------------------
     # Private methods
@@ -299,16 +334,6 @@ class ManualTaskGraphTask(GraphTask):
         if submitted_data is not None:
             result: list[Row] = [submitted_data] if submitted_data else []
             self.request_task.access_data = result
-
-            # Re-derive PR status now that this manual task is complete (ENG-3835).
-            # Other manual tasks may still need input, or all may be done.
-            derived_status = derive_privacy_request_status(
-                self.resources.session, self.resources.request
-            )
-            if self.resources.request.status != derived_status:
-                self.resources.request.status = derived_status
-                self.resources.request.save(self.resources.session)
-
             return result
 
         # Check if all instances for this task/action have been marked as failed
@@ -336,11 +361,6 @@ class ManualTaskGraphTask(GraphTask):
             if manual_task.task_type == ManualTaskType.jira_ticket
             else PrivacyRequestStatus.requires_input
         )
-        _STATUS_PRIORITY = {
-            PrivacyRequestStatus.in_processing: 0,
-            PrivacyRequestStatus.pending_external: 1,
-            PrivacyRequestStatus.requires_input: 2,
-        }
         current_priority = _STATUS_PRIORITY.get(self.resources.request.status, -1)
         new_priority = _STATUS_PRIORITY.get(awaiting_status, -1)
         if new_priority > current_priority:

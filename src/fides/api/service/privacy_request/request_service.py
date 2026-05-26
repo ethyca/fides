@@ -27,11 +27,9 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import (
-    TERMINAL_PRIVACY_REQUEST_STATUSES,
-    PrivacyRequestStatus,
-)
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.api.models.manual_task.manual_task import ManualTask, ManualTaskType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -524,6 +522,15 @@ def _get_request_task_ids_in_progress(
         yield (task.id, task.status, awaiting_upstream, task.async_type)
 
 
+_DERIVABLE_STATUSES = frozenset(
+    {
+        PrivacyRequestStatus.in_processing,
+        PrivacyRequestStatus.requires_input,
+        PrivacyRequestStatus.pending_external,
+    }
+)
+
+
 def derive_privacy_request_status(
     db: Session, privacy_request: PrivacyRequest
 ) -> PrivacyRequestStatus:
@@ -532,9 +539,11 @@ def derive_privacy_request_status(
     User-actionable statuses always surface:
         requires_input > pending_external > in_processing
 
-    Terminal statuses (error, complete, canceled, denied) are never overwritten.
+    Only derivable statuses (in_processing, requires_input, pending_external)
+    are ever modified.  All others — terminal, paused, awaiting_email_send,
+    etc. — pass through untouched.
     """
-    if privacy_request.status in TERMINAL_PRIVACY_REQUEST_STATUSES:
+    if privacy_request.status not in _DERIVABLE_STATUSES:
         return privacy_request.status
 
     awaiting_addrs: list[str] = [
@@ -550,11 +559,30 @@ def derive_privacy_request_status(
     if not awaiting_addrs:
         return PrivacyRequestStatus.in_processing
 
-    has_manual_awaiting = any(
-        ManualTaskAddress.is_manual_task_address(addr) for addr in awaiting_addrs
-    )
-    if has_manual_awaiting:
-        return PrivacyRequestStatus.requires_input
+    # Separate manual-address tasks from non-manual (async connectors).
+    manual_addrs = [
+        addr for addr in awaiting_addrs if ManualTaskAddress.is_manual_task_address(addr)
+    ]
+
+    if manual_addrs:
+        # Both user-input and Jira tasks share collection="manual_data".
+        # Join to ManualTask.task_type to tell them apart.
+        connection_keys = [addr.split(":")[0] for addr in manual_addrs]
+        has_user_input_task = (
+            db.query(ManualTask.id)
+            .join(
+                ConnectionConfig,
+                ManualTask.parent_entity_id == ConnectionConfig.id,
+            )
+            .filter(
+                ConnectionConfig.key.in_(connection_keys),
+                ManualTask.task_type == ManualTaskType.privacy_request,
+            )
+            .first()
+            is not None
+        )
+        if has_user_input_task:
+            return PrivacyRequestStatus.requires_input
 
     return PrivacyRequestStatus.pending_external
 
