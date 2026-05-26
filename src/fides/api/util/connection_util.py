@@ -62,6 +62,10 @@ def requeue_requires_input_requests(db: Session) -> None:
             # zero RequestTasks). DSRs paused by manual_task connections have
             # RequestTasks and should not be requeued here — they are waiting
             # for operator input on a manual task, not a manual webhook.
+            # NOTE: This uses RequestTask existence as a proxy for manual_task
+            # vs manual_webhook. Today only manual_task connections create
+            # RequestTasks, but this assumption could become fragile if new
+            # features pause requests without creating RequestTasks.
             has_request_tasks = (
                 db.query(RequestTask.id)
                 .filter(RequestTask.privacy_request_id == pr.id)

@@ -17,7 +17,7 @@ from fides.api.service.privacy_request.request_service import (
     requeue_interrupted_tasks,
 )
 
-_M = "fides.api.service.privacy_request.request_service"
+_REQUEST_SERVICE_MODULE = "fides.api.service.privacy_request.request_service"
 
 _PAUSED_STATUSES = [
     pytest.param(PrivacyRequestStatus.requires_input, id="requires_input"),
@@ -39,8 +39,10 @@ class TestWatchdogSkipsPausedRequests:
     before any cancellation or requeue logic runs."""
 
     @pytest.mark.parametrize("status", _PAUSED_STATUSES)
-    @mock.patch(f"{_M}.redis_lock")
-    @mock.patch(f"{_M}._get_task_ids_from_dsr_queue", return_value=[])
+    @mock.patch(f"{_REQUEST_SERVICE_MODULE}.redis_lock")
+    @mock.patch(
+        f"{_REQUEST_SERVICE_MODULE}._get_task_ids_from_dsr_queue", return_value=[]
+    )
     def test_paused_dsr_skipped_by_watchdog(
         self, _, mock_redis_lock, db, privacy_request, status
     ):
@@ -58,9 +60,11 @@ class TestWatchdogSkipsPausedRequests:
 class TestWatchdogStillCancelsActiveRequests:
     """Existing behavior: in_processing DSRs should still be canceled/requeued."""
 
-    @mock.patch(f"{_M}.redis_lock")
-    @mock.patch(f"{_M}._get_task_ids_from_dsr_queue", return_value=[])
-    @mock.patch(f"{_M}.get_cached_task_id", return_value=None)
+    @mock.patch(f"{_REQUEST_SERVICE_MODULE}.redis_lock")
+    @mock.patch(
+        f"{_REQUEST_SERVICE_MODULE}._get_task_ids_from_dsr_queue", return_value=[]
+    )
+    @mock.patch(f"{_REQUEST_SERVICE_MODULE}.get_cached_task_id", return_value=None)
     def test_in_processing_no_task_id_still_canceled(
         self, _, __, mock_redis_lock, db, privacy_request
     ):
