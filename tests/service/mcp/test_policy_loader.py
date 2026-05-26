@@ -95,3 +95,23 @@ priority: 9
     assert len(result) == 1
     assert result[0]["decision"] == "DENY"
     assert result[0]["priority"] == 9
+
+
+def test_load_normalizes_default_priority_unless_action(db: Session):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    minimal_yaml = "decision: ALLOW\n"
+    _seed_policy(db, name="minimal", yaml_body=minimal_yaml)
+    invalidate_cache()
+
+    result = load_enabled_v2_policies(db)
+    assert len(result) == 1
+    p = result[0]
+    assert p["priority"] == 0
+    assert p["match"] == {}
+    assert p["unless"] == []
+    assert p["action"] == {}
+    assert p["enabled"] is True
