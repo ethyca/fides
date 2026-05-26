@@ -711,7 +711,6 @@ export type * from "./models/PrivacyRequestBulkSelection";
 export type * from "./models/PrivacyRequestCreateExtended";
 export * from "./models/PrivacyRequestDRPStatus";
 export type * from "./models/PrivacyRequestDRPStatusResponse";
-export type * from "./models/PrivacyRequestDiagnosticsExportResponse";
 export type * from "./models/PrivacyRequestFieldDefinition";
 export type * from "./models/PrivacyRequestFieldsResponse";
 export type * from "./models/PrivacyRequestFilter";

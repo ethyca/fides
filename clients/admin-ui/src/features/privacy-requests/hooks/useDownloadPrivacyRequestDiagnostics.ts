@@ -1,13 +1,23 @@
 import { useMessage } from "fidesui";
+import { useState } from "react";
 
-import { getErrorMessage } from "~/features/common/helpers";
+import { useAppSelector } from "~/app/hooks";
+import { selectToken } from "~/features/auth/auth.slice";
+import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import { useLazyGetPrivacyRequestDiagnosticsQuery } from "../privacy-requests.slice";
 import { PrivacyRequestEntity } from "../types";
 
-const isLikelyRemoteUrl = (value: string) => /^https?:\/\//i.test(value);
+export const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
 
 const useDownloadPrivacyRequestDiagnostics = ({
   privacyRequest,
@@ -15,46 +25,46 @@ const useDownloadPrivacyRequestDiagnostics = ({
   privacyRequest: PrivacyRequestEntity;
 }) => {
   const message = useMessage();
+  const token = useAppSelector(selectToken);
+  const [isLoading, setIsLoading] = useState(false);
 
   const hasPermissionsToReadPrivacyRequests = useHasPermission([
     ScopeRegistryEnum.PRIVACY_REQUEST_READ,
   ]);
 
-  const [fetchDiagnostics, { isFetching }] =
-    useLazyGetPrivacyRequestDiagnosticsQuery();
-
   const downloadTroubleshootingData = async () => {
-    const result = await fetchDiagnostics({
-      privacy_request_id: privacyRequest.id,
-    });
+    setIsLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60_000);
+    try {
+      const headers = new Headers();
+      addCommonHeaders(headers, token);
 
-    if ("error" in result) {
-      message.error(
-        getErrorMessage(
-          result.error as NonNullable<typeof result.error>,
-          "Unable to resolve download URL",
-        ),
+      const resp = await fetch(
+        `${process.env.NEXT_PUBLIC_FIDESCTL_API}/privacy-request/${privacyRequest.id}/diagnostics`,
+        { headers, signal: controller.signal },
       );
-      return;
-    }
 
-    const downloadUrl = result.data?.download_url ?? "";
-    if (!downloadUrl) {
-      message.error("Unable to resolve download URL");
-      return;
-    }
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => null);
+        message.error(
+          body?.detail ?? "Unable to download troubleshooting data",
+        );
+        return;
+      }
 
-    if (!isLikelyRemoteUrl(downloadUrl)) {
-      message.info("Troubleshooting data stored locally cannot be downloaded");
-      return;
+      const blob = await resp.blob();
+      downloadBlob(blob, `diagnostics-${privacyRequest.id}.zip`);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        message.error("Download timed out. Please try again.");
+      } else {
+        message.error("Unable to download troubleshooting data");
+      }
+    } finally {
+      clearTimeout(timeoutId);
+      setIsLoading(false);
     }
-
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.click();
-    link.remove();
   };
 
   const showDownloadTroubleshootingData = hasPermissionsToReadPrivacyRequests;
@@ -62,7 +72,7 @@ const useDownloadPrivacyRequestDiagnostics = ({
   return {
     showDownloadTroubleshootingData,
     downloadTroubleshootingData,
-    isLoading: isFetching,
+    isLoading,
   };
 };
 

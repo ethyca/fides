@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed the Properties picker in the Privacy Experience editor only showing the first 50 properties
+pr: 8276
+labels: []

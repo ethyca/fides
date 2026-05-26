@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Cleaned up jest console error noise in admin-ui.
+pr: 8277
+labels: []
