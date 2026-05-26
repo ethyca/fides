@@ -206,3 +206,40 @@ def test_to_summary_dict_returns_full_summary_shape(db: Session):
         "version": 1,
         "controls": [],
     }
+
+
+def test_load_translates_full_yaml_to_libpbac_dict(db: Session):
+    rich_yaml = """
+decision: ALLOW
+priority: 42
+match:
+  data_use:
+    any:
+      - essential.service.operations.support
+unless:
+  - type: consent
+    requirement: opt_in
+action:
+  message: Allowed for support purpose with opt-in consent
+"""
+    policy = _seed_policy(db, name="rich-policy", yaml_body=rich_yaml)
+    invalidate_cache()
+
+    result = load_enabled_v2_policies(db)
+    assert result == [
+        {
+            "key": policy.id,
+            "priority": 42,
+            "enabled": True,
+            "decision": "ALLOW",
+            "match": {
+                "data_use": {
+                    "any": ["essential.service.operations.support"],
+                },
+            },
+            "unless": [
+                {"type": "consent", "requirement": "opt_in"},
+            ],
+            "action": {"message": "Allowed for support purpose with opt-in consent"},
+        },
+    ]

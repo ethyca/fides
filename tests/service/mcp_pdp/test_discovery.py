@@ -10,7 +10,12 @@ from fides.api.mcp_pdp.tools.discovery import (
     list_data_categories,
     list_data_uses,
 )
-from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
+from fides.api.models.access_policy import (
+    AccessPolicy,
+    AccessPolicyControl,
+    AccessPolicyVersion,
+    Control,
+)
 
 
 @pytest.mark.asyncio
@@ -138,3 +143,33 @@ async def test_list_policies_enabled_only_false_returns_disabled_too(db):
     by_name = {p["name"]: p for p in out}
     assert by_name["alive"]["enabled"] is True
     assert by_name["dormant"]["enabled"] is False
+
+
+@pytest.mark.asyncio
+async def test_list_policies_includes_control_keys(db):
+    from fides.api.mcp_pdp.tools.discovery import list_policies
+    from fides.service.mcp.policy_loader import invalidate_cache
+
+    control = Control(key="gdpr_art_6", label="GDPR Article 6")
+    db.add(control)
+    db.flush()
+
+    policy = _seed_policy_for_discovery(
+        db, name="with-control", yaml_body=_BASIC_ALLOW, enabled=True
+    )
+    db.add(
+        AccessPolicyControl(
+            access_policy_id=policy.id,
+            control_id=control.id,
+        )
+    )
+    db.flush()
+    invalidate_cache()
+
+    with patch(
+        "fides.api.mcp_pdp.tools.discovery._get_db_session", return_value=db
+    ):
+        out = await list_policies()
+
+    by_name = {p["name"]: p for p in out}
+    assert by_name["with-control"]["controls"] == ["gdpr_art_6"]
