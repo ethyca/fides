@@ -6,8 +6,10 @@ from fides.service.mcp.config import MCPSettings
 def test_mcp_settings_defaults():
     s = MCPSettings()
     assert s.pdp_enabled is False
-    assert s.stage1_model.endswith("sonnet-4-6")
-    assert s.stage2_model.endswith("haiku-4-5")
+    assert s.stage1_model.endswith("sonnet-4.6")
+    assert s.stage2_model.endswith("haiku-4.5")
+    assert s.stage1_model.startswith("openrouter/")
+    assert s.stage2_model.startswith("openrouter/")
     assert s.category_confidence_floor == 0.7
     assert s.purpose_confidence_floor == 0.6
 

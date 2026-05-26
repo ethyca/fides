@@ -15,8 +15,11 @@ class MCPSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="FIDES__MCP__", extra="ignore")
 
     pdp_enabled: bool = False
-    stage1_model: str = "anthropic/claude-sonnet-4-6"
-    stage2_model: str = "anthropic/claude-haiku-4-5"
+    # Model identifiers use the litellm `openrouter/` prefix so calls route
+    # through OpenRouter (which holds the API key) rather than being
+    # interpreted by litellm as direct Anthropic API calls.
+    stage1_model: str = "openrouter/anthropic/claude-sonnet-4.6"
+    stage2_model: str = "openrouter/anthropic/claude-haiku-4.5"
     stage1_timeout_s: float = 15.0
     stage2_timeout_s: float = 3.0
 
