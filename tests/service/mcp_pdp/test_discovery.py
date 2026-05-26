@@ -120,3 +120,25 @@ async def test_list_policies_default_returns_only_enabled(db):
     assert out[0]["priority"] == 50
     assert out[0]["enabled"] is True
     assert out[0]["version"] == 1
+
+
+@pytest.mark.asyncio
+async def test_list_policies_enabled_only_false_returns_disabled_too(db):
+    from fides.api.mcp_pdp.tools.discovery import list_policies
+    from fides.service.mcp.policy_loader import invalidate_cache
+
+    invalidate_cache()
+    _seed_policy_for_discovery(db, name="alive", yaml_body=_BASIC_ALLOW, enabled=True)
+    _seed_policy_for_discovery(db, name="dormant", yaml_body=_BASIC_ALLOW, enabled=False)
+    _seed_policy_for_discovery(db, name="gone", yaml_body=_BASIC_ALLOW, enabled=True, is_deleted=True)
+
+    with _patch_for_policies(
+        "fides.api.mcp_pdp.tools.discovery._get_db_session", return_value=db
+    ):
+        out = await list_policies(enabled_only=False)
+
+    names = sorted(p["name"] for p in out)
+    assert names == ["alive", "dormant"]  # soft-deleted is still excluded
+    by_name = {p["name"]: p for p in out}
+    assert by_name["alive"]["enabled"] is True
+    assert by_name["dormant"]["enabled"] is False
