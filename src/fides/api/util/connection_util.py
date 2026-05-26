@@ -18,7 +18,7 @@ from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.schemas.api import BulkUpdateFailed
@@ -58,8 +58,31 @@ def requeue_requires_input_requests(db: Session) -> None:
         for pr in PrivacyRequest.query_without_large_columns(db).filter(
             PrivacyRequest.status == PrivacyRequestStatus.requires_input
         ):
+            # Only requeue DSRs that were paused by manual webhooks (pre-graph,
+            # zero RequestTasks). DSRs paused by manual_task connections have
+            # RequestTasks and should not be requeued here — they are waiting
+            # for operator input on a manual task, not a manual webhook.
+            # NOTE: This uses RequestTask existence as a proxy for manual_task
+            # vs manual_webhook. Today only manual_task connections create
+            # RequestTasks, but this assumption could become fragile if new
+            # features pause requests without creating RequestTasks.
+            has_request_tasks = (
+                db.query(RequestTask.id)
+                .filter(RequestTask.privacy_request_id == pr.id)
+                .first()
+                is not None
+            )
+            if has_request_tasks:
+                logger.debug(
+                    "Skipping requeue of privacy request '{}' — has RequestTasks "
+                    "(paused by a manual_task, not a manual_webhook).",
+                    pr.id,
+                )
+                continue
+
             logger.info(
-                "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",
+                "Queuing privacy request '{}' with '{}' status now that manual "
+                "inputs are no longer required.",
                 pr.id,
                 pr.status.value,
             )
