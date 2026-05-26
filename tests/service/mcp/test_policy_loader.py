@@ -10,3 +10,62 @@ def test_load_returns_empty_when_no_policies_seeded(db: Session):
 
     result = load_enabled_v2_policies(db)
     assert result == []
+
+
+from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
+
+
+def _seed_policy(
+    db: Session,
+    *,
+    name: str,
+    yaml_body: str,
+    enabled: bool = True,
+    is_deleted: bool = False,
+    version: int = 1,
+) -> AccessPolicy:
+    policy = AccessPolicy(name=name, enabled=enabled, is_deleted=is_deleted)
+    db.add(policy)
+    db.flush()
+    db.add(AccessPolicyVersion(access_policy_id=policy.id, version=version, yaml=yaml_body))
+    db.flush()
+    return policy
+
+
+_BASIC_ALLOW_YAML = """
+decision: ALLOW
+priority: 100
+match:
+  data_use:
+    any:
+      - essential.service.operations.support
+"""
+
+
+def test_load_excludes_disabled_policies(db: Session):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    _seed_policy(db, name="enabled-one", yaml_body=_BASIC_ALLOW_YAML, enabled=True)
+    _seed_policy(db, name="disabled-one", yaml_body=_BASIC_ALLOW_YAML, enabled=False)
+    invalidate_cache()
+
+    result = load_enabled_v2_policies(db)
+    names = {p.get("key") for p in result}  # key is the policy id; we'll assert via count
+    assert len(result) == 1
+
+
+def test_load_excludes_soft_deleted_policies(db: Session):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    _seed_policy(db, name="alive", yaml_body=_BASIC_ALLOW_YAML, enabled=True, is_deleted=False)
+    _seed_policy(db, name="dead", yaml_body=_BASIC_ALLOW_YAML, enabled=True, is_deleted=True)
+    invalidate_cache()
+
+    result = load_enabled_v2_policies(db)
+    assert len(result) == 1

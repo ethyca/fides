@@ -60,7 +60,58 @@ def _load(db: Session, *, enabled_only: bool = True) -> list[CachedPolicyEntry]:
 
     Malformed YAML / missing-decision rows are logged at WARNING and skipped.
     """
-    return []
+    query = db.query(AccessPolicy).filter(AccessPolicy.is_deleted.is_(False))
+    if enabled_only:
+        query = query.filter(AccessPolicy.enabled.is_(True))
+
+    entries: list[CachedPolicyEntry] = []
+    for policy in query.all():
+        if not policy.versions:
+            continue
+        latest = policy.versions[0]  # relationship is order_by=version.desc()
+        entry = _parse_policy(policy, latest)
+        if entry is not None:
+            entries.append(entry)
+    return entries
+
+
+def _parse_policy(
+    policy: AccessPolicy, version: AccessPolicyVersion
+) -> CachedPolicyEntry | None:
+    try:
+        body = yaml.safe_load(version.yaml)
+    except yaml.YAMLError as exc:
+        _LOG.warning(
+            "policy_loader: skipping policy %s (%s) — yaml error: %s",
+            policy.id, policy.name, exc,
+        )
+        return None
+    if not isinstance(body, dict):
+        _LOG.warning(
+            "policy_loader: skipping policy %s (%s) — yaml root is not a mapping",
+            policy.id, policy.name,
+        )
+        return None
+    decision = body.get("decision")
+    if decision not in _VALID_DECISIONS:
+        _LOG.warning(
+            "policy_loader: skipping policy %s (%s) — invalid or missing decision: %r",
+            policy.id, policy.name, decision,
+        )
+        return None
+    return CachedPolicyEntry(
+        id=str(policy.id),
+        name=policy.name,
+        description=policy.description,
+        enabled=bool(policy.enabled),
+        version=int(version.version),
+        controls=tuple(c.key for c in (policy.controls or [])),
+        decision=decision,
+        priority=int(body.get("priority", 0) or 0),
+        match=dict(body.get("match") or {}),
+        unless=list(body.get("unless") or []),
+        action=dict(body.get("action") or {}),
+    )
 
 
 def load_cached_entries(db: Session) -> list[CachedPolicyEntry]:
