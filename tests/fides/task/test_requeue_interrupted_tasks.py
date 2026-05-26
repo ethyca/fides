@@ -868,22 +868,21 @@ class TestWatchdogDetectsMissingErasureTasks:
 
         pr = make_privacy_request()
         make_request_task(pr, ExecutionLogStatus.complete, collection="users")
-        make_request_task(
-            pr,
-            ExecutionLogStatus.pending,
-            collection="users_erasure",
+        # Create an erasure task directly since the fixture hardcodes access
+        RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.erasure,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": pr.id,
+                "collection_address": "test_dataset:users",
+                "dataset_name": "test_dataset",
+                "collection_name": "users",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+                "all_descendant_tasks": [],
+            },
         )
-        # Manually set the erasure task's action_type
-        erasure_task = (
-            db.query(RequestTask)
-            .filter(
-                RequestTask.privacy_request_id == pr.id,
-                RequestTask.collection_address == "test_dataset:users_erasure",
-            )
-            .first()
-        )
-        erasure_task.action_type = ActionType.erasure
-        db.flush()
 
         requeue_interrupted_tasks.apply().get()
         mock_requeue.assert_not_called()
