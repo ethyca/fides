@@ -37,6 +37,7 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
     get_connection_configs_with_manual_tasks,
 )
+from fides.api.util.lock import redis_lock
 from fides.api.util.logger_context_utils import log_context
 
 
@@ -696,20 +697,38 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
         and graph
         and identity
     ):
-        logger.warning(
-            "Privacy request {} has {} access tasks but only {} erasure tasks. "
-            "Creating missing erasure tasks.",
-            privacy_request.id,
-            access_count,
-            erasure_count,
-        )
-        traversal = Traversal(graph, identity, policy=pr_policy)
-        traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
-        traversal.traverse(traversal_nodes, collect_tasks_fn)
-        erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
-        persist_initial_erasure_request_tasks(
-            session, privacy_request, traversal_nodes, erasure_end_nodes, graph
-        )
+        lock_key = f"erasure_task_recreation:{privacy_request.id}"
+        with redis_lock(lock_key, timeout=60) as lock:
+            if lock is None:
+                logger.info(
+                    "Another process is already recreating erasure tasks for "
+                    "privacy request {}, skipping.",
+                    privacy_request.id,
+                )
+            else:
+                # Re-check inside the lock in case another process already created them
+                erasure_count = privacy_request.erasure_tasks.count()
+                if erasure_count < access_count:
+                    logger.warning(
+                        "Privacy request {} has {} access tasks but only {} erasure tasks. "
+                        "Creating missing erasure tasks.",
+                        privacy_request.id,
+                        access_count,
+                        erasure_count,
+                    )
+                    traversal = Traversal(graph, identity, policy=pr_policy)
+                    traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
+                    traversal.traverse(traversal_nodes, collect_tasks_fn)
+                    erasure_end_nodes: List[CollectionAddress] = list(
+                        graph.nodes.keys()
+                    )
+                    persist_initial_erasure_request_tasks(
+                        session,
+                        privacy_request,
+                        traversal_nodes,
+                        erasure_end_nodes,
+                        graph,
+                    )
 
     update_erasure_tasks_with_access_data(session, privacy_request)
     ready_tasks: List[RequestTask] = (
