@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.85.1"
+    "version": "2.86.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13652,6 +13652,25 @@
             }
           },
           {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrivacyRequestSource"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          },
+          {
             "name": "verbose",
             "in": "query",
             "required": false,
@@ -21374,7 +21393,9 @@
           "policy_evaluated",
           "pre_approval_webhook_triggered",
           "pre_approval_eligible",
-          "pre_approval_not_eligible"
+          "pre_approval_not_eligible",
+          "access_package_approved",
+          "access_package_redacted"
         ],
         "title": "AuditLogAction",
         "description": "Enum for audit log actions, reflecting what a user did."
@@ -33218,6 +33239,23 @@
             ],
             "title": "Action Type"
           },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyRequestSource"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
           "verbose": {
             "anyOf": [
               {
@@ -33750,7 +33788,8 @@
           "error",
           "duplicate",
           "awaiting_pre_approval",
-          "pre_approval_not_eligible"
+          "pre_approval_not_eligible",
+          "awaiting_access_review"
         ],
         "title": "PrivacyRequestStatus",
         "description": "Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"
@@ -37331,6 +37370,7 @@
           "messaging:delete",
           "messaging:read",
           "notification:read",
+          "notification:update",
           "organization:create",
           "organization:read",
           "organization:delete",

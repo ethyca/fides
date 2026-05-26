@@ -281,6 +281,9 @@ allow_custom_privacy_request_field_collection = false # boolean
 # Allows custom privacy request fields to be used in request execution.
 allow_custom_privacy_request_fields_in_request_execution = false # boolean
 
+# Allows file uploads to be attached to incoming privacy requests.
+allow_custom_privacy_request_file_upload = false # boolean
+
 # The number of seconds a request task should live.
 request_task_ttl = 604800 # integer
 
@@ -331,6 +334,12 @@ task_soft_time_limit_seconds = 0 # integer
 
 # Minutes between polling Jira for ticket status updates.
 jira_polling_interval_minutes = 3 # integer
+
+# Minutes between polling the IMAP mailbox for DSR reply messages.
+reply_polling_interval_minutes = 3 # integer
+
+# Minutes between processing pending DSR lifecycle notifications.
+notification_interval_minutes = 5 # integer
 
 #-------------#
 #-- LOGGING --#
@@ -564,6 +573,11 @@ request_rate_limit = "2000/minute" # string
 # the specified time period.
 auth_rate_limit = "10/minute" # string
 
+# Per-IP rate limit for the unauthenticated privacy-request attachment
+# upload endpoint. Tighter than the global limit because the endpoint
+# accepts large multipart bodies.
+privacy_request_attachment_rate_limit = "30/minute" # string
+
 # The list of scopes that are given to the root user.
 root_user_scopes = [] # array
 
@@ -587,7 +601,7 @@ subject_request_download_link_ttl_seconds = 432000 # integer
 # 'monitor' validates but only logs warnings instead of blocking.
 # 'disabled' skips validation entirely. Set via
 # FIDES__SECURITY__DOMAIN_VALIDATION_MODE.
-domain_validation_mode = "monitor" # 
+domain_validation_mode = "enabled" # 
 
 # Either enables the collection of audit log resource data or bypasses
 # the middleware
