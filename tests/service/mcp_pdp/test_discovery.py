@@ -74,3 +74,49 @@ async def test_get_consumer_returns_full_detail(db):
 
     assert c["mode"] == "agent"
     assert c["allowable_purpose_keys"] == ["essential.service.operations.support"]
+
+
+from unittest.mock import patch as _patch_for_policies  # local alias to avoid collision if tests are split later
+
+from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
+
+
+def _seed_policy_for_discovery(
+    db,
+    *,
+    name: str,
+    yaml_body: str,
+    enabled: bool = True,
+    is_deleted: bool = False,
+) -> AccessPolicy:
+    policy = AccessPolicy(name=name, enabled=enabled, is_deleted=is_deleted)
+    db.add(policy)
+    db.flush()
+    db.add(AccessPolicyVersion(access_policy_id=policy.id, version=1, yaml=yaml_body))
+    db.flush()
+    return policy
+
+
+_BASIC_ALLOW = "decision: ALLOW\npriority: 50\n"
+
+
+@pytest.mark.asyncio
+async def test_list_policies_default_returns_only_enabled(db):
+    from fides.api.mcp_pdp.tools.discovery import list_policies
+    from fides.service.mcp.policy_loader import invalidate_cache
+
+    invalidate_cache()
+    _seed_policy_for_discovery(db, name="alive", yaml_body=_BASIC_ALLOW, enabled=True)
+    _seed_policy_for_discovery(db, name="dormant", yaml_body=_BASIC_ALLOW, enabled=False)
+
+    with _patch_for_policies(
+        "fides.api.mcp_pdp.tools.discovery._get_db_session", return_value=db
+    ):
+        out = await list_policies()
+
+    names = [p["name"] for p in out]
+    assert names == ["alive"]
+    assert out[0]["decision"] == "ALLOW"
+    assert out[0]["priority"] == 50
+    assert out[0]["enabled"] is True
+    assert out[0]["version"] == 1

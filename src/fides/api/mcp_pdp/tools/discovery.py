@@ -95,5 +95,24 @@ async def list_purposes() -> list[dict[str, Any]]:
 
 
 async def list_policies(enabled_only: bool = True) -> list[dict[str, Any]]:
-    """Phase 1 stub — returns []. Wires to the PolicyV2 table when its admin surface lands."""
-    return []
+    """Return policy summaries from the AccessPolicy/AccessPolicyVersion store.
+
+    `enabled_only=True` (default) reads the cached enabled-only entry list so the
+    evaluator and discovery see the same snapshot. `enabled_only=False` performs
+    a fresh, uncached query so operators can see disabled policies too.
+    """
+    from fides.service.mcp.policy_loader import (
+        _load,
+        _to_summary_dict,
+        load_cached_entries,
+    )
+
+    db = _get_db_session()
+    try:
+        if enabled_only:
+            entries = load_cached_entries(db)
+        else:
+            entries = _load(db, enabled_only=False)
+        return [_to_summary_dict(e) for e in entries]
+    finally:
+        db.close()
