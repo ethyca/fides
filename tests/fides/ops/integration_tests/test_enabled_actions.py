@@ -96,13 +96,14 @@ class TestEnabledActions:
             db,
         )
 
-        # erasure was disabled for the connection, so no data should have been erased.
-        # Erasure tasks exist (created by access step) but enabled_actions filtering
-        # prevents actual masking — all counts should be 0 or None.
-        filtered_erasure_results = filter_by_enabled_actions(
-            erasure_results, [integration_postgres_config]
-        )
-        assert filtered_erasure_results == {}
+        # Erasure was disabled for the connection, so no data should have been
+        # actually erased. Erasure tasks exist (created by access step) but
+        # enabled_actions filtering prevents actual masking — all counts
+        # should be 0 or None.
+        for key, count in erasure_results.items():
+            assert count is None or count == 0, (
+                f"Expected no erasure for {key} but got count={count}"
+            )
 
     @pytest.mark.asyncio
     async def test_access_disabled_for_manual_webhook_integrations(
