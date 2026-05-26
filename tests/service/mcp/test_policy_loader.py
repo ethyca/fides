@@ -7,7 +7,12 @@ import logging
 from sqlalchemy.orm import Session
 
 from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
-from fides.service.mcp.policy_loader import invalidate_cache, load_enabled_v2_policies
+from fides.service.mcp.policy_loader import (
+    _to_summary_dict,
+    invalidate_cache,
+    load_cached_entries,
+    load_enabled_v2_policies,
+)
 
 
 def test_load_returns_empty_when_no_policies_seeded(db: Session):
@@ -180,11 +185,6 @@ def test_invalidate_cache_forces_refresh(db: Session):
 
 
 def test_to_summary_dict_returns_full_summary_shape(db: Session):
-    from fides.service.mcp.policy_loader import (
-        _to_summary_dict,
-        load_cached_entries,
-    )
-
     policy = _seed_policy(
         db, name="payments-allow", yaml_body=_BASIC_ALLOW_YAML
     )
