@@ -2149,12 +2149,17 @@ class TestRunErasureRequestWithRequestTasks:
 
 
 class TestRunErasureRequestRecreatesMissingTasks:
-    """Tests that run_erasure_request recreates erasure tasks when they are missing."""
+    """Tests that run_erasure_request recreates erasure tasks when they are missing.
+
+    In production, run_access_request always creates erasure tasks when the
+    privacy request's policy has erasure rules. Zero or partial erasure tasks
+    with access tasks present means creation failed.
+    """
 
     @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
     @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
     @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
-    def test_recreates_erasure_tasks_when_zero(
+    def test_recreates_when_zero_erasure_tasks(
         self,
         mock_get_ready,
         mock_update_erasure,
@@ -2165,18 +2170,15 @@ class TestRunErasureRequestRecreatesMissingTasks:
         policy,
     ):
         """When access tasks exist but zero erasure tasks, and the privacy
-        request's policy has erasure rules, recreate them. In production,
-        run_access_request always creates erasure tasks when the policy has
-        erasure rules, so zero means creation failed."""
+        request's policy has erasure rules, recreate them."""
         from fides.api.graph.config import Collection, GraphDataset, ScalarField
+        from fides.api.models.policy import Rule
         from fides.api.task.create_request_tasks import run_erasure_request
 
         assert privacy_request.access_tasks.count() > 0
         assert privacy_request.erasure_tasks.count() == 0
 
-        # Add an erasure rule to the privacy request's policy
-        from fides.api.models.policy import Rule
-
+        # Add an erasure rule to the privacy request's own policy
         Rule.create(
             db=db,
             data={
