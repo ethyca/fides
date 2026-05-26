@@ -60,3 +60,33 @@ def test_evaluator_returns_no_decision_when_no_match():
     with patch("fides.service.mcp.evaluator._call_libpbac", lambda *a, **k: no_match):
         d = MCPEvaluator(policies_loader=lambda: []).evaluate(_input())
     assert d.decision == DecisionOutcome.NO_DECISION
+
+
+def test_evaluator_emits_libpbac_request_shape():
+    """Regression test: libpbac wants top-level data_uses/data_categories/
+    data_subjects and `context`, not a nested `declaration` block or
+    `environment`. See policy-engine/pkg/pbac/policy_types.go:81.
+    """
+    captured: dict = {}
+
+    def _capture(policies, request):
+        captured["policies"] = policies
+        captured["request"] = request
+        return {
+            "decision": "NO_DECISION",
+            "decisive_policy_key": None,
+            "action_message": None,
+            "evaluated_policies": [],
+        }
+
+    with patch("fides.service.mcp.evaluator._call_libpbac", _capture):
+        MCPEvaluator(policies_loader=lambda: []).evaluate(_input())
+
+    req = captured["request"]
+    assert req["data_uses"] == ["essential.service.operations.support"]
+    assert req["data_categories"] == ["user.contact.email"]
+    assert req["data_subjects"] == ["customer"]
+    assert req["context"] == {"geo_location": "US-CA"}
+    # The legacy shape must not leak through:
+    assert "declaration" not in req
+    assert "environment" not in req

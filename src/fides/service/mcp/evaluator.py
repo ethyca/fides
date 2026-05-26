@@ -31,21 +31,20 @@ class MCPEvaluator:
         self._policies_loader = policies_loader
 
     def evaluate(self, eval_input: EvaluationInput) -> Decision:
-        request = {
+        # libpbac's AccessEvaluationRequest expects data_uses/data_categories/
+        # data_subjects as top-level string lists and runtime context under
+        # `context` (see policy-engine/pkg/pbac/policy_types.go:81).
+        request: dict = {
             "consumer_id": eval_input.consumer_fides_key,
             "consumer_name": eval_input.consumer_fides_key,
             "consumer_purposes": [eval_input.data_use],
-            "dataset_key": None,
-            "collection": None,
             "dataset_purposes": [eval_input.data_use],
-            "system_fides_key": None,
-            # MCP-specific declaration shape mapped onto libpbac's match input
-            "declaration": {
-                "data_use": eval_input.data_use,
-                "data_categories": eval_input.data_categories,
-                "data_subject": eval_input.data_subject,
-            },
-            "environment": eval_input.environment,
+            "data_uses": [eval_input.data_use],
+            "data_categories": list(eval_input.data_categories or []),
+            "data_subjects": (
+                [eval_input.data_subject] if eval_input.data_subject else []
+            ),
+            "context": dict(eval_input.environment or {}),
         }
         raw = _call_libpbac(self._policies_loader(), request)
         return Decision(
