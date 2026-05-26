@@ -186,3 +186,17 @@ def test_load_skips_invalid_decision_value_with_warning(db: Session, caplog):
 
     assert len(result) == 1
     assert any("decision" in r.message.lower() for r in caplog.records)
+
+
+def test_load_uses_access_policy_id_as_libpbac_key(db: Session):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    policy = _seed_policy(db, name="known", yaml_body=_BASIC_ALLOW_YAML)
+    invalidate_cache()
+
+    result = load_enabled_v2_policies(db)
+    assert len(result) == 1
+    assert result[0]["key"] == policy.id
