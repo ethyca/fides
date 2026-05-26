@@ -200,3 +200,36 @@ def test_load_uses_access_policy_id_as_libpbac_key(db: Session):
     result = load_enabled_v2_policies(db)
     assert len(result) == 1
     assert result[0]["key"] == policy.id
+
+
+def test_cache_returns_same_result_within_ttl(db: Session):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    invalidate_cache()
+    _seed_policy(db, name="first", yaml_body=_BASIC_ALLOW_YAML)
+    first_call = load_enabled_v2_policies(db)
+    assert len(first_call) == 1
+
+    _seed_policy(db, name="second", yaml_body=_BASIC_ALLOW_YAML)
+    second_call_cached = load_enabled_v2_policies(db)
+    # Cache must not have picked up the new row.
+    assert len(second_call_cached) == 1
+
+
+def test_invalidate_cache_forces_refresh(db: Session):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    invalidate_cache()
+    _seed_policy(db, name="first", yaml_body=_BASIC_ALLOW_YAML)
+    load_enabled_v2_policies(db)  # populate cache
+
+    _seed_policy(db, name="second", yaml_body=_BASIC_ALLOW_YAML)
+    invalidate_cache()
+    refreshed = load_enabled_v2_policies(db)
+    assert len(refreshed) == 2
