@@ -10,6 +10,7 @@ from fides.api.mcp_pdp.tools.discovery import (
     list_data_categories,
     list_data_uses,
 )
+from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
 
 
 @pytest.mark.asyncio
@@ -76,11 +77,6 @@ async def test_get_consumer_returns_full_detail(db):
     assert c["allowable_purpose_keys"] == ["essential.service.operations.support"]
 
 
-from unittest.mock import patch as _patch_for_policies  # local alias to avoid collision if tests are split later
-
-from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
-
-
 def _seed_policy_for_discovery(
     db,
     *,
@@ -109,7 +105,7 @@ async def test_list_policies_default_returns_only_enabled(db):
     _seed_policy_for_discovery(db, name="alive", yaml_body=_BASIC_ALLOW, enabled=True)
     _seed_policy_for_discovery(db, name="dormant", yaml_body=_BASIC_ALLOW, enabled=False)
 
-    with _patch_for_policies(
+    with patch(
         "fides.api.mcp_pdp.tools.discovery._get_db_session", return_value=db
     ):
         out = await list_policies()
@@ -132,7 +128,7 @@ async def test_list_policies_enabled_only_false_returns_disabled_too(db):
     _seed_policy_for_discovery(db, name="dormant", yaml_body=_BASIC_ALLOW, enabled=False)
     _seed_policy_for_discovery(db, name="gone", yaml_body=_BASIC_ALLOW, enabled=True, is_deleted=True)
 
-    with _patch_for_policies(
+    with patch(
         "fides.api.mcp_pdp.tools.discovery._get_db_session", return_value=db
     ):
         out = await list_policies(enabled_only=False)

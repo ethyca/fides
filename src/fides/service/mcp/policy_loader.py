@@ -160,6 +160,21 @@ def _to_summary_dict(entry: CachedPolicyEntry) -> dict[str, Any]:
     }
 
 
+def load_policy_summaries(db: Session, *, enabled_only: bool = True) -> list[dict[str, Any]]:
+    """Discovery-facing view used by `list_policies`.
+
+    When `enabled_only=True` (default), reads the cached enabled-only entry list
+    so the evaluator and discovery surface the same snapshot. When
+    `enabled_only=False`, performs a fresh uncached query so operators can see
+    disabled policies too. Soft-deleted policies are never included.
+    """
+    if enabled_only:
+        entries = load_cached_entries(db)
+    else:
+        entries = _load(db, enabled_only=False)
+    return [_to_summary_dict(e) for e in entries]
+
+
 def invalidate_cache() -> None:
     """Drop the cached entry list. Used by tests; future write-hook will also call it."""
     _cache.clear()

@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.mcp_consumer_settings import MCPConsumerSettings
 from fides.service.mcp.taxonomy import TenantTaxonomy
+from fides.service.mcp.policy_loader import load_policy_summaries
 
 _TAXONOMY = TenantTaxonomy.from_fideslang_defaults()
 
@@ -101,18 +102,8 @@ async def list_policies(enabled_only: bool = True) -> list[dict[str, Any]]:
     evaluator and discovery see the same snapshot. `enabled_only=False` performs
     a fresh, uncached query so operators can see disabled policies too.
     """
-    from fides.service.mcp.policy_loader import (
-        _load,
-        _to_summary_dict,
-        load_cached_entries,
-    )
-
     db = _get_db_session()
     try:
-        if enabled_only:
-            entries = load_cached_entries(db)
-        else:
-            entries = _load(db, enabled_only=False)
-        return [_to_summary_dict(e) for e in entries]
+        return load_policy_summaries(db, enabled_only=enabled_only)
     finally:
         db.close()
