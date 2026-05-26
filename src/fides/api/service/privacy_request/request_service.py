@@ -639,19 +639,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 should_requeue = False
                 logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
 
-                # Skip requests that are intentionally paused for manual input
-                # or an external system (e.g. manual webhook, manual task, Jira).
-                # These requests have no running Celery task by design.
-                if privacy_request.status in (
-                    PrivacyRequestStatus.requires_input,
-                    PrivacyRequestStatus.pending_external,
-                ):
-                    logger.debug(
-                        f"Skipping privacy request {privacy_request.id} in "
-                        f"{privacy_request.status.value} status - intentionally paused"
-                    )
-                    continue
-
                 try:
                     task_id = get_cached_task_id(privacy_request.id)
                 except Exception as cache_exc:
@@ -667,6 +654,18 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 # If the task ID is not cached, we can't check if it's running
                 # This means the request is stuck - cancel it
                 if not task_id:
+                    # Paused requests (manual webhook, manual task, Jira) have
+                    # no running Celery task by design — don't cancel them.
+                    if privacy_request.status in (
+                        PrivacyRequestStatus.requires_input,
+                        PrivacyRequestStatus.pending_external,
+                    ):
+                        logger.debug(
+                            f"Skipping privacy request {privacy_request.id} in "
+                            f"{privacy_request.status.value} status with no cached "
+                            f"task ID - intentionally paused"
+                        )
+                        continue
                     _cancel_interrupted_tasks_and_error_privacy_request(
                         db,
                         privacy_request,
@@ -715,6 +714,23 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
                         # If the task ID is not cached, we can't check if it's running
                         if not subtask_id:
+                            # Paused requests may have request tasks with no
+                            # cached subtask ID — this is expected when the
+                            # Celery worker completed and the DSR is waiting
+                            # for manual input or an external system. Don't
+                            # requeue or cancel these.
+                            if privacy_request.status in (
+                                PrivacyRequestStatus.requires_input,
+                                PrivacyRequestStatus.pending_external,
+                            ):
+                                logger.debug(
+                                    f"Request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) has no "
+                                    f"cached subtask ID in {privacy_request.status.value} "
+                                    f"status - intentionally paused, skipping"
+                                )
+                                continue
+
                             # A pending task awaiting upstream is not stuck — it was
                             # never dispatched because its prerequisites aren't done.
                             # Skip it and continue checking other tasks. (ENG-2756)
