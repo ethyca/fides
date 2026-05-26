@@ -10,7 +10,10 @@ from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
+    Collection,
     CollectionAddress,
+    GraphDataset,
+    ScalarField,
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
@@ -20,6 +23,7 @@ from fides.api.models.manual_task import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
+from fides.api.models.policy import Rule
 from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
@@ -2171,9 +2175,6 @@ class TestRunErasureRequestRecreatesMissingTasks:
     ):
         """When access tasks exist but zero erasure tasks, and the privacy
         request's policy has erasure rules, recreate them."""
-        from fides.api.graph.config import Collection, GraphDataset, ScalarField
-        from fides.api.models.policy import Rule
-        from fides.api.task.create_request_tasks import run_erasure_request
 
         assert privacy_request.access_tasks.count() > 0
         assert privacy_request.erasure_tasks.count() == 0
@@ -2227,7 +2228,6 @@ class TestRunErasureRequestRecreatesMissingTasks:
         erasure_request_task,
     ):
         """When erasure tasks already exist, run_erasure_request should not recreate them."""
-        from fides.api.task.create_request_tasks import run_erasure_request
 
         assert privacy_request.erasure_tasks.count() > 0
 
@@ -2254,7 +2254,6 @@ class TestRunErasureRequestRecreatesMissingTasks:
         request_task,
     ):
         """When graph/policy/identity are not provided, skip recreation even if tasks are missing."""
-        from fides.api.task.create_request_tasks import run_erasure_request
 
         assert privacy_request.access_tasks.count() > 0
         assert privacy_request.erasure_tasks.count() == 0
@@ -2285,9 +2284,6 @@ class TestRunErasureRequestRecreatesMissingTasks:
     ):
         """When some erasure tasks exist but fewer than access tasks,
         run_erasure_request should create the missing ones."""
-        from fides.api.graph.config import Collection, GraphDataset, ScalarField
-        from fides.api.task.create_request_tasks import run_erasure_request
-
         access_count = privacy_request.access_tasks.count()
         erasure_count = privacy_request.erasure_tasks.count()
         assert access_count > 0
@@ -2298,9 +2294,6 @@ class TestRunErasureRequestRecreatesMissingTasks:
         first_erasure.delete(db)
         db.flush()
         assert privacy_request.erasure_tasks.count() < access_count
-
-        # Add an erasure rule to the policy
-        from fides.api.models.policy import Rule
 
         Rule.create(
             db=db,
