@@ -21,7 +21,7 @@ class MCPSettings(BaseSettings):
     stage1_model: str = "openrouter/anthropic/claude-sonnet-4.6"
     stage2_model: str = "openrouter/anthropic/claude-haiku-4.5"
     stage1_timeout_s: float = 15.0
-    stage2_timeout_s: float = 3.0
+    stage2_timeout_s: float = 15.0
 
     category_confidence_floor: float = Field(default=0.7, ge=0.0, le=1.0)
     purpose_confidence_floor: float = Field(default=0.6, ge=0.0, le=1.0)
