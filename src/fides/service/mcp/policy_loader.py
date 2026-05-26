@@ -147,6 +147,19 @@ def _to_libpbac_dict(entry: CachedPolicyEntry) -> dict[str, Any]:
     }
 
 
+def _to_summary_dict(entry: CachedPolicyEntry) -> dict[str, Any]:
+    return {
+        "key": entry.id,
+        "name": entry.name,
+        "description": entry.description,
+        "priority": entry.priority,
+        "decision": entry.decision,
+        "enabled": entry.enabled,
+        "version": entry.version,
+        "controls": list(entry.controls),
+    }
+
+
 def invalidate_cache() -> None:
     """Drop the cached entry list. Used by tests; future write-hook will also call it."""
     _cache.clear()

@@ -177,3 +177,32 @@ def test_invalidate_cache_forces_refresh(db: Session):
     invalidate_cache()
     refreshed = load_enabled_v2_policies(db)
     assert len(refreshed) == 2
+
+
+def test_to_summary_dict_returns_full_summary_shape(db: Session):
+    from fides.service.mcp.policy_loader import (
+        _to_summary_dict,
+        load_cached_entries,
+    )
+
+    policy = _seed_policy(
+        db, name="payments-allow", yaml_body=_BASIC_ALLOW_YAML
+    )
+    policy.description = "Payments analytics allowance"
+    db.flush()
+    invalidate_cache()
+
+    entries = load_cached_entries(db)
+    assert len(entries) == 1
+    summary = _to_summary_dict(entries[0])
+
+    assert summary == {
+        "key": policy.id,
+        "name": "payments-allow",
+        "description": "Payments analytics allowance",
+        "priority": 100,
+        "decision": "ALLOW",
+        "enabled": True,
+        "version": 1,
+        "controls": [],
+    }
