@@ -37,6 +37,7 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
     get_connection_configs_with_manual_tasks,
 )
+from fides.api.util.lock import redis_lock
 from fides.api.util.logger_context_utils import log_context
 
 
@@ -663,13 +664,72 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     session: Session,
     privacy_request_proceed: bool = True,
+    graph: Optional[DatasetGraph] = None,
+    identity: Optional[Dict[str, Any]] = None,
 ) -> List[RequestTask]:
     """
     DSR 3.0: Update erasure Request Tasks that were built in the "run_access_request" step with data
     collected to build masking requests and queue the root task for processing.
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
+
+    If erasure tasks are missing (e.g., task creation failed on a previous run), recreate them
+    from the current graph before proceeding.
     """
+    # Ensure erasure tasks exist when they should. Access tasks are created
+    # alongside erasure tasks in run_access_request, so if access tasks exist
+    # but erasure tasks are missing or incomplete, task creation failed
+    # partway through. persist_initial_erasure_request_tasks is idempotent
+    # (skips nodes that already have tasks), so this is safe for both the
+    # zero-task and partial-task cases.
+    #
+    # Use the privacy request's own policy (not the passed-in policy) to
+    # check if erasure rules exist, since the access step used that same
+    # policy to decide whether to create erasure tasks originally.
+    access_count = privacy_request.access_tasks.count()
+    erasure_count = privacy_request.erasure_tasks.count()
+    pr_policy = privacy_request.policy
+    if (
+        access_count > 0
+        and erasure_count < access_count
+        and pr_policy
+        and pr_policy.get_rules_for_action(action_type=ActionType.erasure)
+        and graph
+        and identity
+    ):
+        lock_key = f"erasure_task_recreation:{privacy_request.id}"
+        with redis_lock(lock_key, timeout=60) as lock:
+            if lock is None:
+                logger.info(
+                    "Another process is already recreating erasure tasks for "
+                    "privacy request {}, skipping.",
+                    privacy_request.id,
+                )
+            else:
+                # Re-check inside the lock in case another process already created them
+                erasure_count = privacy_request.erasure_tasks.count()
+                if erasure_count < access_count:
+                    logger.warning(
+                        "Privacy request {} has {} access tasks but only {} erasure tasks. "
+                        "Creating missing erasure tasks.",
+                        privacy_request.id,
+                        access_count,
+                        erasure_count,
+                    )
+                    traversal = Traversal(graph, identity, policy=pr_policy)
+                    traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
+                    traversal.traverse(traversal_nodes, collect_tasks_fn)
+                    erasure_end_nodes: List[CollectionAddress] = list(
+                        graph.nodes.keys()
+                    )
+                    persist_initial_erasure_request_tasks(
+                        session,
+                        privacy_request,
+                        traversal_nodes,
+                        erasure_end_nodes,
+                        graph,
+                    )
+
     update_erasure_tasks_with_access_data(session, privacy_request)
     ready_tasks: List[RequestTask] = (
         get_existing_ready_tasks(session, privacy_request, ActionType.erasure) or []

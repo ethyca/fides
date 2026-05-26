@@ -767,3 +767,76 @@ class TestOrphanedAsyncTasks:
         requeue_interrupted_tasks.apply().get()
         mock_requeue.assert_not_called()
         mock_cancel.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Watchdog blind spot: missing erasure tasks (ENG-3950)
+# ---------------------------------------------------------------------------
+
+
+class TestWatchdogDetectsMissingErasureTasks:
+    """The watchdog should detect when access tasks exist but erasure tasks
+    are missing, and requeue the privacy request."""
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_requeues_when_access_tasks_but_no_erasure_tasks(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        db,
+        make_privacy_request,
+        make_request_task,
+        policy,
+    ):
+        """If access tasks exist but zero erasure tasks and the policy has
+        erasure rules, the watchdog should requeue."""
+        from fides.api.models.policy import Rule as PolicyRule
+
+        PolicyRule.create(
+            db=db,
+            data={
+                "action_type": "erasure",
+                "name": "watchdog_erasure_rule",
+                "policy_id": policy.id,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            },
+        )
+
+        pr = make_privacy_request()
+        make_request_task(pr, ExecutionLogStatus.complete, collection="users")
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_does_not_requeue_when_policy_has_no_erasure_rules(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """If the policy has no erasure rules, zero erasure tasks is expected.
+        The watchdog should not requeue."""
+        pr = make_privacy_request()
+        make_request_task(pr, ExecutionLogStatus.complete, collection="users")
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+
+    # Note: a negative test for "erasure tasks exist, no requeue" is omitted
+    # because the watchdog has multiple requeue paths that fire for
+    # in_processing requests with complete tasks (task ID not in queue,
+    # etc.), making it difficult to isolate just the erasure count check
+    # without mocking the entire watchdog internals.

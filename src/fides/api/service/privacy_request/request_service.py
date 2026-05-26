@@ -688,6 +688,29 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             f"The task for privacy request {privacy_request.id} was terminated before it could schedule any request tasks, requeueing privacy request"
                         )
                         should_requeue = True
+                    elif request_tasks_count > 0:
+                        # Check for missing erasure tasks: if access tasks
+                        # exist and the policy has erasure rules, erasure
+                        # tasks should have been created alongside them.
+                        # Zero erasure tasks means creation failed.
+                        pr_policy = privacy_request.policy
+                        if pr_policy and pr_policy.get_rules_for_action(
+                            action_type=ActionType.erasure
+                        ):
+                            erasure_count = (
+                                db.query(RequestTask)
+                                .filter(
+                                    RequestTask.privacy_request_id
+                                    == privacy_request.id,
+                                    RequestTask.action_type == ActionType.erasure,
+                                )
+                                .count()
+                            )
+                            if erasure_count == 0:
+                                logger.warning(
+                                    f"Privacy request {privacy_request.id} has access tasks but zero erasure tasks despite having erasure rules, requeueing"
+                                )
+                                should_requeue = True
 
                     request_tasks_in_progress = _get_request_task_ids_in_progress(
                         db, privacy_request.id
