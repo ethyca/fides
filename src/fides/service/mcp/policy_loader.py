@@ -93,9 +93,15 @@ def _parse_policy(
         )
         return None
     decision = body.get("decision")
+    if decision is None:
+        _LOG.warning(
+            "policy_loader: skipping policy %s (%s) — missing decision field",
+            policy.id, policy.name,
+        )
+        return None
     if decision not in _VALID_DECISIONS:
         _LOG.warning(
-            "policy_loader: skipping policy %s (%s) — invalid or missing decision: %r",
+            "policy_loader: skipping policy %s (%s) — invalid decision value: %r",
             policy.id, policy.name, decision,
         )
         return None

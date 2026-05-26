@@ -7,11 +7,10 @@ import logging
 from sqlalchemy.orm import Session
 
 from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
+from fides.service.mcp.policy_loader import invalidate_cache, load_enabled_v2_policies
 
 
 def test_load_returns_empty_when_no_policies_seeded(db: Session):
-    from fides.service.mcp.policy_loader import load_enabled_v2_policies
-
     result = load_enabled_v2_policies(db)
     assert result == []
 
@@ -44,11 +43,6 @@ match:
 
 
 def test_load_excludes_disabled_policies(db: Session):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     _seed_policy(db, name="enabled-one", yaml_body=_BASIC_ALLOW_YAML, enabled=True)
     _seed_policy(db, name="disabled-one", yaml_body=_BASIC_ALLOW_YAML, enabled=False)
     invalidate_cache()
@@ -58,11 +52,6 @@ def test_load_excludes_disabled_policies(db: Session):
 
 
 def test_load_excludes_soft_deleted_policies(db: Session):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     _seed_policy(db, name="alive", yaml_body=_BASIC_ALLOW_YAML, enabled=True, is_deleted=False)
     _seed_policy(db, name="dead", yaml_body=_BASIC_ALLOW_YAML, enabled=True, is_deleted=True)
     invalidate_cache()
@@ -72,11 +61,6 @@ def test_load_excludes_soft_deleted_policies(db: Session):
 
 
 def test_load_picks_latest_version_per_policy(db: Session):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     older = """
 decision: ALLOW
 priority: 1
@@ -100,11 +84,6 @@ priority: 9
 
 
 def test_load_normalizes_default_priority_unless_action(db: Session):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     minimal_yaml = "decision: ALLOW\n"
     _seed_policy(db, name="minimal", yaml_body=minimal_yaml)
     invalidate_cache()
@@ -120,11 +99,6 @@ def test_load_normalizes_default_priority_unless_action(db: Session):
 
 
 def test_load_skips_malformed_yaml_with_warning(db: Session, caplog):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     # `unclosed [` is unambiguous YAML garbage.
     _seed_policy(db, name="broken", yaml_body="decision: ALLOW\nmatch: [unclosed")
     _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
@@ -138,11 +112,6 @@ def test_load_skips_malformed_yaml_with_warning(db: Session, caplog):
 
 
 def test_load_skips_non_dict_yaml_with_warning(db: Session, caplog):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     _seed_policy(db, name="scalar", yaml_body="just-a-string")
     _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
     invalidate_cache()
@@ -155,11 +124,6 @@ def test_load_skips_non_dict_yaml_with_warning(db: Session, caplog):
 
 
 def test_load_skips_missing_decision_with_warning(db: Session, caplog):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     _seed_policy(db, name="no-decision", yaml_body="priority: 5")
     _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
     invalidate_cache()
@@ -168,15 +132,10 @@ def test_load_skips_missing_decision_with_warning(db: Session, caplog):
         result = load_enabled_v2_policies(db)
 
     assert len(result) == 1
-    assert any("decision" in r.message.lower() for r in caplog.records)
+    assert any("missing decision" in r.message.lower() for r in caplog.records)
 
 
 def test_load_skips_invalid_decision_value_with_warning(db: Session, caplog):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     _seed_policy(db, name="bad-decision", yaml_body="decision: MAYBE\n")
     _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
     invalidate_cache()
@@ -185,15 +144,10 @@ def test_load_skips_invalid_decision_value_with_warning(db: Session, caplog):
         result = load_enabled_v2_policies(db)
 
     assert len(result) == 1
-    assert any("decision" in r.message.lower() for r in caplog.records)
+    assert any("invalid decision" in r.message.lower() for r in caplog.records)
 
 
 def test_load_uses_access_policy_id_as_libpbac_key(db: Session):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     policy = _seed_policy(db, name="known", yaml_body=_BASIC_ALLOW_YAML)
     invalidate_cache()
 
@@ -203,11 +157,6 @@ def test_load_uses_access_policy_id_as_libpbac_key(db: Session):
 
 
 def test_cache_returns_same_result_within_ttl(db: Session):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     invalidate_cache()
     _seed_policy(db, name="first", yaml_body=_BASIC_ALLOW_YAML)
     first_call = load_enabled_v2_policies(db)
@@ -220,11 +169,6 @@ def test_cache_returns_same_result_within_ttl(db: Session):
 
 
 def test_invalidate_cache_forces_refresh(db: Session):
-    from fides.service.mcp.policy_loader import (
-        invalidate_cache,
-        load_enabled_v2_policies,
-    )
-
     invalidate_cache()
     _seed_policy(db, name="first", yaml_body=_BASIC_ALLOW_YAML)
     load_enabled_v2_policies(db)  # populate cache
