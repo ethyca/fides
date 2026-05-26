@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed permanently stuck privacy requests when erasure task creation fails silently by recreating missing erasure tasks from the current graph on retry
+pr: 8268
+labels: []

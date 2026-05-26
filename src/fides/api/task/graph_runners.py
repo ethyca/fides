@@ -50,6 +50,8 @@ def erasure_runner(
     """Run an erasure request using task-based execution."""
     run_erasure_request(
         privacy_request=privacy_request,
+        graph=graph,
+        identity=identity,
         session=session,
         privacy_request_proceed=privacy_request_proceed,
     )

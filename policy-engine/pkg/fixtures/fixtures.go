@@ -81,9 +81,10 @@ type datasetFile struct {
 type Datasets struct {
 	// Purposes is keyed by dataset fides_key and fed to the engine.
 	Purposes map[string]pbac.DatasetPurposes `json:"purposes"`
-	// Tables maps a lowercase table name to its owning dataset's
-	// fides_key. Assumes table names are globally unique across
-	// datasets; on collision the last one loaded wins.
+	// Tables maps a table identifier to its owning dataset's fides_key.
+	// Indexed by both bare collection name ("transactions") and
+	// schema-qualified name ("financial_data.transactions") when the
+	// dataset fides_key serves as the schema qualifier.
 	Tables map[string]string `json:"tables"`
 	// FieldCategories maps collection_name -> field_name -> data_categories.
 	// Used to resolve SQL column references to Fides data categories
@@ -203,8 +204,10 @@ func LoadDatasets(dir string) (Datasets, error) {
 				fieldCats := collectionFieldCategories(c)
 				if len(fieldCats) > 0 {
 					result.FieldCategories[name] = fieldCats
+					result.FieldCategories[strings.ToLower(ds.FidesKey)+"."+name] = fieldCats
 				}
 				result.Tables[name] = ds.FidesKey
+				result.Tables[strings.ToLower(ds.FidesKey)+"."+name] = ds.FidesKey
 			}
 			result.Purposes[ds.FidesKey] = dp
 		}

@@ -20,21 +20,23 @@ if (
   NodeList.prototype.includes = Array.prototype.includes;
 }
 
-// nwsapi 2.2.18 + jsdom: when antd v6 stylesheets contain `:has()` selectors,
-// the resolver crashes inside `getComputedStyle` (called by Chakra's
-// color-mode-provider on mount). Wrap `getComputedStyle` so a thrown selector
-// returns an empty CSSStyleDeclaration instead of breaking the render.
+// Wrap `getComputedStyle` for two jsdom limitations:
+//   1. jsdom doesn't implement pseudo-element styles, so any `pseudoElt`
+//      argument triggers a "Not implemented: window.computedStyle(elt,
+//      pseudoElt)" log via its VirtualConsole. @rc-component's scrollbar
+//      measurement passes one, so we drop it (pseudo-element styles aren't
+//      available in jsdom anyway).
+//   2. nwsapi 2.2.18 crashes resolving antd v6's `:has()` selectors, so fall
+//      back to an empty CSSStyleDeclaration when the underlying call throws.
 if (typeof window !== "undefined") {
   const originalGetComputedStyle = window.getComputedStyle.bind(window);
-  window.getComputedStyle = ((
-    elt: Element,
-    pseudoElt?: string | null,
-  ): CSSStyleDeclaration => {
+  window.getComputedStyle = ((elt: Element): CSSStyleDeclaration => {
     try {
-      return originalGetComputedStyle(elt, pseudoElt ?? undefined);
+      return originalGetComputedStyle(elt);
     } catch {
       return {
         getPropertyValue: () => "",
+        length: 0,
       } as unknown as CSSStyleDeclaration;
     }
   }) as typeof window.getComputedStyle;
@@ -60,3 +62,30 @@ if (typeof window !== "undefined") {
 }
 
 installMessageChannelMock();
+
+// Filter console.error output for known noise that doesn't indicate a real bug.
+// React passes its warnings as a format string + substitutions (e.g.
+// `console.error("An update to %s inside a test...", "BaseSelect")`), so we
+// match against the unformatted first argument.
+//   - antd List deprecation warning (no drop-in replacement exists yet)
+//   - rc-trigger's "same shadow root" warning (jsdom doesn't implement shadow DOM)
+//   - `NaN` height from antd-x Sender/Bubble.List measuring DOM that jsdom can't lay out
+//   - React `act()` warnings from async updates in antd Select / next/dynamic /
+//     rc-trigger that fire after the test assertion and can't be reasonably awaited
+const SUPPRESSED_CONSOLE_ERRORS = [
+  "[antd: List] The `List` component is deprecated",
+  "trigger element and popup element should in same shadow root",
+  "`NaN` is an invalid value for the `%s` css style property",
+  "An update to %s inside a test was not wrapped in act",
+];
+
+/* eslint-disable no-console */
+const originalConsoleError = console.error;
+console.error = (...args: unknown[]) => {
+  const message = String(args[0] ?? "");
+  if (SUPPRESSED_CONSOLE_ERRORS.some((pattern) => message.includes(pattern))) {
+    return;
+  }
+  originalConsoleError(...args);
+};
+/* eslint-enable no-console */

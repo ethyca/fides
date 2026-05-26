@@ -24,7 +24,7 @@ from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session, selectinload
-from starlette.responses import StreamingResponse
+from starlette.responses import Response, StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
@@ -181,9 +181,7 @@ from fides.service.dataset.dataset_config_service import (
 )
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.diagnostics import (
-    DefaultStorageNotConfiguredError,
-    PrivacyRequestDiagnosticsExportResponse,
-    export_privacy_request_diagnostics,
+    build_diagnostics_zip,
 )
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
@@ -631,32 +629,44 @@ def get_request_status_logs(
 @router.get(
     PRIVACY_REQUEST_DIAGNOSTICS,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
-    response_model=PrivacyRequestDiagnosticsExportResponse,
     status_code=HTTP_200_OK,
+    response_class=Response,
+    responses={
+        200: {
+            "content": {"application/zip": {}},
+            "description": "ZIP file containing diagnostics.json",
+        }
+    },
 )
 def get_privacy_request_diagnostics_report(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-) -> PrivacyRequestDiagnosticsExportResponse:
+) -> Response:
     """
-    Export a non-PII diagnostics snapshot for a single privacy request and return a download URL.
-
-    This report intentionally excludes any fields that could contain PII.
+    Export a non-PII diagnostics snapshot for a single privacy request
+    as a downloadable ZIP file.
     """
-
     try:
-        return export_privacy_request_diagnostics(privacy_request_id, db)
+        buf = build_diagnostics_zip(privacy_request_id, db)
     except PrivacyRequestNotFound:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No privacy request found with id '{privacy_request_id}'.",
         )
-    except DefaultStorageNotConfiguredError as exc:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=exc.detail,
-        )
+
+    # Sanitize the ID before embedding in a header to guard against injection
+    # if the ID format ever changes beyond safe UUID characters.
+    safe_id = "".join(c for c in privacy_request_id if c.isalnum() or c in "-_")
+    filename = f"diagnostics-{safe_id}.zip"
+    content = buf.getvalue()
+    return Response(
+        content=content,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
 
 
 @router.get(

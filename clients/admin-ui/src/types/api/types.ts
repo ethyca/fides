@@ -410,7 +410,6 @@ import type { PrivacyPreferenceStats } from "./models/PrivacyPreferenceStats";
 import type { PrivacyRequestAccessResults } from "./models/PrivacyRequestAccessResults";
 import type { PrivacyRequestBulkSelection } from "./models/PrivacyRequestBulkSelection";
 import type { PrivacyRequestCreateExtended } from "./models/PrivacyRequestCreateExtended";
-import type { PrivacyRequestDiagnosticsExportResponse } from "./models/PrivacyRequestDiagnosticsExportResponse";
 import type { PrivacyRequestDRPStatusResponse } from "./models/PrivacyRequestDRPStatusResponse";
 import type { PrivacyRequestFieldsResponse } from "./models/PrivacyRequestFieldsResponse";
 import type { PrivacyRequestFilter } from "./models/PrivacyRequestFilter";
@@ -8349,41 +8348,6 @@ export type getRequestStatusLogsApiV1PrivacyRequestPrivacyRequestIdLogGetRespons
 
 export type getRequestStatusLogsApiV1PrivacyRequestPrivacyRequestIdLogGetResponse =
   getRequestStatusLogsApiV1PrivacyRequestPrivacyRequestIdLogGetResponses[keyof getRequestStatusLogsApiV1PrivacyRequestPrivacyRequestIdLogGetResponses];
-
-export type getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetData =
-  {
-    body?: never;
-    path: {
-      /**
-       * Privacy Request Id
-       */
-      privacy_request_id: string;
-    };
-    query?: never;
-    url: "/api/v1/privacy-request/{privacy_request_id}/diagnostics";
-  };
-
-export type getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetErrors =
-  {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-  };
-
-export type getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetError =
-  getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetErrors[keyof getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetErrors];
-
-export type getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetResponses =
-  {
-    /**
-     * Successful Response
-     */
-    200: PrivacyRequestDiagnosticsExportResponse;
-  };
-
-export type getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetResponse =
-  getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetResponses[keyof getPrivacyRequestDiagnosticsReportApiV1PrivacyRequestPrivacyRequestIdDiagnosticsGetResponses];
 
 export type getPrivacyRequestNotificationInfoApiV1PrivacyRequestNotificationGetData =
   {

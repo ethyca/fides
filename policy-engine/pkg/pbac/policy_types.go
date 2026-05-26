@@ -23,6 +23,7 @@ type AccessPolicy struct {
 	Match    MatchBlock     `json:"match" yaml:"match,omitempty"`
 	Unless   []Constraint   `json:"unless,omitempty" yaml:"unless,omitempty"`
 	Action   *PolicyAction  `json:"action,omitempty" yaml:"action,omitempty"`
+	Control  string         `json:"control,omitempty" yaml:"control,omitempty"`
 }
 
 // MatchBlock declares which taxonomy dimensions a policy applies to.

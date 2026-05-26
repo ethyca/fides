@@ -40,6 +40,8 @@ jest.mock("fidesui", () => ({
     message,
     description,
     action,
+    showIcon: _showIcon,
+    type: _type,
     ...props
   }: Record<string, unknown>) => (
     <div data-testid="alert" {...props}>
@@ -48,8 +50,17 @@ jest.mock("fidesui", () => ({
       {action as React.ReactNode}
     </div>
   ),
-  Button: ({ children, ...props }: Record<string, unknown>) => (
-    <button type="button" {...props}>
+  Button: ({
+    children,
+    htmlType,
+    loading: _loading,
+    ...props
+  }: Record<string, unknown>) => (
+    <button
+      // eslint-disable-next-line react/button-has-type
+      type={(htmlType as "button" | "submit" | "reset" | undefined) ?? "button"}
+      {...props}
+    >
       {children as React.ReactNode}
     </button>
   ),

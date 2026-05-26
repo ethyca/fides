@@ -1,6 +1,6 @@
 import json
+from io import BytesIO
 from typing import Any, Dict
-from unittest.mock import patch
 from zipfile import ZipFile
 
 from fastapi.testclient import TestClient
@@ -24,7 +24,7 @@ class TestPrivacyRequestDiagnostics:
         generate_auth_header,
         privacy_request,
     ) -> None:
-        """Diagnostics endpoint should return 200 and exclude raw identity values."""
+        """Diagnostics endpoint should return a ZIP and exclude raw identity values."""
         identity_value = "user@example.com"
         ProvidedIdentity.create(
             db,
@@ -44,15 +44,13 @@ class TestPrivacyRequestDiagnostics:
 
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
+        assert resp.headers["content-type"] == "application/zip"
+        assert "attachment" in resp.headers["content-disposition"]
+        assert resp.headers["content-length"] == str(len(resp.content))
 
-        payload: Dict[str, Any] = resp.json()
-        assert payload["download_url"]
-        assert payload["object_key"].startswith("privacy-request-diagnostics/")
-
-        # In test/dev mode, local storage is used and the "download_url" is a local file path.
-        with ZipFile(payload["download_url"]) as zf:
+        with ZipFile(BytesIO(resp.content)) as zf:
             diagnostics_json = zf.read("diagnostics.json").decode("utf-8")
-        diagnostics_payload = json.loads(diagnostics_json)
+        diagnostics_payload: Dict[str, Any] = json.loads(diagnostics_json)
 
         assert diagnostics_payload["privacy_request"]["id"] == privacy_request.id
 
@@ -92,25 +90,3 @@ class TestPrivacyRequestDiagnostics:
 
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 403
-
-    def test_diagnostics_422_when_no_default_storage(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        privacy_request,
-    ) -> None:
-        """Endpoint returns 422 when no default storage backend is configured."""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_DIAGNOSTICS.format(
-            privacy_request_id=privacy_request.id
-        )
-
-        with patch(
-            "fides.service.privacy_request.diagnostics.export.get_active_default_storage_config",
-            return_value=None,
-        ):
-            resp = api_client.get(url, headers=auth_header)
-
-        assert resp.status_code == 422
-        payload: Dict[str, Any] = resp.json()
-        assert "storage" in payload["detail"].lower()
