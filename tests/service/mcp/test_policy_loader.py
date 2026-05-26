@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from sqlalchemy.orm import Session
 
 from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
@@ -115,3 +117,72 @@ def test_load_normalizes_default_priority_unless_action(db: Session):
     assert p["unless"] == []
     assert p["action"] == {}
     assert p["enabled"] is True
+
+
+def test_load_skips_malformed_yaml_with_warning(db: Session, caplog):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    # `unclosed [` is unambiguous YAML garbage.
+    _seed_policy(db, name="broken", yaml_body="decision: ALLOW\nmatch: [unclosed")
+    _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
+    invalidate_cache()
+
+    with caplog.at_level(logging.WARNING, logger="fides.service.mcp.policy_loader"):
+        result = load_enabled_v2_policies(db)
+
+    assert len(result) == 1
+    assert any("yaml error" in r.message.lower() for r in caplog.records)
+
+
+def test_load_skips_non_dict_yaml_with_warning(db: Session, caplog):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    _seed_policy(db, name="scalar", yaml_body="just-a-string")
+    _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
+    invalidate_cache()
+
+    with caplog.at_level(logging.WARNING, logger="fides.service.mcp.policy_loader"):
+        result = load_enabled_v2_policies(db)
+
+    assert len(result) == 1
+    assert any("not a mapping" in r.message.lower() for r in caplog.records)
+
+
+def test_load_skips_missing_decision_with_warning(db: Session, caplog):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    _seed_policy(db, name="no-decision", yaml_body="priority: 5")
+    _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
+    invalidate_cache()
+
+    with caplog.at_level(logging.WARNING, logger="fides.service.mcp.policy_loader"):
+        result = load_enabled_v2_policies(db)
+
+    assert len(result) == 1
+    assert any("decision" in r.message.lower() for r in caplog.records)
+
+
+def test_load_skips_invalid_decision_value_with_warning(db: Session, caplog):
+    from fides.service.mcp.policy_loader import (
+        invalidate_cache,
+        load_enabled_v2_policies,
+    )
+
+    _seed_policy(db, name="bad-decision", yaml_body="decision: MAYBE\n")
+    _seed_policy(db, name="ok", yaml_body=_BASIC_ALLOW_YAML)
+    invalidate_cache()
+
+    with caplog.at_level(logging.WARNING, logger="fides.service.mcp.policy_loader"):
+        result = load_enabled_v2_policies(db)
+
+    assert len(result) == 1
+    assert any("decision" in r.message.lower() for r in caplog.records)
