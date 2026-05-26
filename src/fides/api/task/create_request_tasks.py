@@ -691,7 +691,7 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     pr_policy = privacy_request.policy
     if (
         access_count > 0
-        and 0 < erasure_count < access_count
+        and erasure_count < access_count
         and pr_policy
         and pr_policy.get_rules_for_action(action_type=ActionType.erasure)
         and graph

@@ -2153,17 +2153,70 @@ class TestRunErasureRequestWithRequestTasks:
 
 
 class TestRunErasureRequestRecreatesMissingTasks:
-    """Tests that run_erasure_request recreates erasure tasks on partial failure.
-
-    Zero erasure tasks are handled by the watchdog (requeue -> run_access_request
-    recreates them). The guard in run_erasure_request handles the partial case
-    where some but not all erasure tasks were created (creation crashed midway).
+    """Tests that run_erasure_request recreates erasure tasks when they are
+    missing (zero or partial). In production, run_access_request always creates
+    erasure tasks when the privacy request's policy has erasure rules, so
+    missing erasure tasks means creation failed.
     """
 
     @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
     @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
     @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
-    def test_does_not_recreate_when_zero_erasure_tasks(
+    def test_recreates_when_zero_erasure_tasks(
+        self,
+        mock_get_ready,
+        mock_update_erasure,
+        mock_persist_erasure,
+        db,
+        privacy_request,
+        request_task,
+        policy,
+    ):
+        """When access tasks exist but zero erasure tasks, and the privacy
+        request's policy has erasure rules, recreate them."""
+
+        assert privacy_request.access_tasks.count() > 0
+        assert privacy_request.erasure_tasks.count() == 0
+
+        # Add an erasure rule to the privacy request's own policy
+        Rule.create(
+            db=db,
+            data={
+                "action_type": "erasure",
+                "name": "test_erasure_rule",
+                "policy_id": policy.id,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            },
+        )
+
+        identity_field = ScalarField(name="email", primary_key=True)
+        identity_field.identity = "email"
+        collection = Collection(name="users", fields=[identity_field])
+        dataset = GraphDataset(
+            name="test_ds", collections=[collection], connection_key="test_conn"
+        )
+        graph = DatasetGraph(dataset)
+        identity = {"email": "test@example.com"}
+
+        mock_get_ready.return_value = []
+
+        run_erasure_request(
+            privacy_request,
+            db,
+            privacy_request_proceed=False,
+            graph=graph,
+            identity=identity,
+        )
+
+        mock_persist_erasure.assert_called_once()
+
+    @patch("fides.api.task.create_request_tasks.persist_initial_erasure_request_tasks")
+    @patch("fides.api.task.create_request_tasks.update_erasure_tasks_with_access_data")
+    @patch("fides.api.task.create_request_tasks.get_existing_ready_tasks")
+    def test_does_not_recreate_when_zero_and_no_graph(
         self,
         mock_get_ready,
         mock_update_erasure,
@@ -2172,9 +2225,8 @@ class TestRunErasureRequestRecreatesMissingTasks:
         privacy_request,
         request_task,
     ):
-        """Zero erasure tasks could mean creation was never attempted (different
-        policy, disabled erasure) or total failure. The watchdog handles this
-        case via requeue, not run_erasure_request."""
+        """When graph/identity are not provided, skip recreation even with
+        zero erasure tasks (backward compat for callers without graph)."""
 
         assert privacy_request.access_tasks.count() > 0
         assert privacy_request.erasure_tasks.count() == 0

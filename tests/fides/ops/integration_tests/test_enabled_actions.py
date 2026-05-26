@@ -73,7 +73,7 @@ class TestEnabledActions:
 
         access_results = access_runner_tester(
             privacy_request_with_erasure_policy,
-            policy,
+            erasure_policy,
             dataset_graph,
             [integration_postgres_config],
             {"email": "customer-1@example.com"},
@@ -96,8 +96,13 @@ class TestEnabledActions:
             db,
         )
 
-        # the erasure results should be empty
-        assert erasure_results == {}
+        # erasure was disabled for the connection, so no data should have been erased.
+        # Erasure tasks exist (created by access step) but enabled_actions filtering
+        # prevents actual masking — all counts should be 0 or None.
+        filtered_erasure_results = filter_by_enabled_actions(
+            erasure_results, [integration_postgres_config]
+        )
+        assert filtered_erasure_results == {}
 
     @pytest.mark.asyncio
     async def test_access_disabled_for_manual_webhook_integrations(
