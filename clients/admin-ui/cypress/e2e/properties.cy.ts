@@ -104,6 +104,93 @@ describe("Properties page", () => {
         expect(body.paths).to.eql([]);
       });
     });
+
+    it("Should include paths in the create payload", () => {
+      cy.intercept("POST", "/api/v1/plus/property", {
+        statusCode: 200,
+        body: {
+          id: "FDS-NEW456",
+          name: "Test Property",
+          type: "Website",
+          paths: ["/privacy", "/dsr"],
+          experiences: [],
+        },
+      }).as("createProperty");
+
+      cy.visit(ADD_PROPERTY_ROUTE);
+      cy.getByTestId("input-name").type("Test Property");
+
+      // Add two paths via the Form.List
+      cy.contains("button", "Add path").click();
+      cy.get("#paths_0").type("/privacy");
+      cy.contains("button", "Add path").click();
+      cy.get("#paths_1").type("/dsr");
+
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@createProperty").then((interception) => {
+        const { body } = interception.request;
+        expect(body.paths).to.eql(["/privacy", "/dsr"]);
+      });
+    });
+
+    it("Should allow removing a path before saving", () => {
+      cy.intercept("POST", "/api/v1/plus/property", {
+        statusCode: 200,
+        body: {
+          id: "FDS-NEW789",
+          name: "Test Property",
+          type: "Website",
+          paths: ["/dsr"],
+          experiences: [],
+        },
+      }).as("createProperty");
+
+      cy.visit(ADD_PROPERTY_ROUTE);
+      cy.getByTestId("input-name").type("Test Property");
+
+      // Add two paths, then remove the first
+      cy.contains("button", "Add path").click();
+      cy.get("#paths_0").type("/privacy");
+      cy.contains("button", "Add path").click();
+      cy.get("#paths_1").type("/dsr");
+      cy.get("button[aria-label='Remove path']").first().click();
+
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@createProperty").then((interception) => {
+        const { body } = interception.request;
+        expect(body.paths).to.eql(["/dsr"]);
+      });
+    });
+  });
+
+  describe("Edit", () => {
+    it("Should load existing paths and include them in the update payload", () => {
+      cy.intercept("GET", "/api/v1/plus/property/*", {
+        fixture: "properties/property.json",
+      }).as("getProperty");
+      cy.intercept("PUT", "/api/v1/plus/property/*", {
+        fixture: "properties/property.json",
+      }).as("updateProperty");
+
+      cy.getAntTableRow("FDS-CEA9EV").contains("Property A").click();
+      cy.wait("@getProperty");
+
+      // Verify existing path is loaded
+      cy.get("#paths_0").should("have.value", "/privacy");
+
+      // Add another path
+      cy.contains("button", "Add path").click();
+      cy.get("#paths_1").type("/dsr");
+
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@updateProperty").then((interception) => {
+        const { body } = interception.request;
+        expect(body.paths).to.eql(["/privacy", "/dsr"]);
+      });
+    });
   });
 
   describe("Delete", () => {
