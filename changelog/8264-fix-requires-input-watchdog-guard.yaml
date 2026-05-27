@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed watchdog incorrectly erroring privacy requests paused for manual webhook or manual task input, and fixed connection config updates incorrectly requeuing manual task DSRs
-pr: 8264
-labels: []
