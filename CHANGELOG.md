@@ -19,7 +19,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.86.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.86.1..main)
+
+## [2.86.1](https://github.com/ethyca/fides/compare/2.86.0..2.86.1)
+
+### Fixed
+- Fixed stuck DSRs when async task ConnectionConfig is deleted or disabled [#8211](https://github.com/ethyca/fides/pull/8211)
+- Fixed property form paths not saving and actions not working during property creation [#8271](https://github.com/ethyca/fides/pull/8271)
+- Fixed "Download troubleshooting data" feature to stream diagnostics ZIP directly instead of uploading to storage, eliminating storage configuration dependency and reliability issues [#8254](https://github.com/ethyca/fides/pull/8254)
+- Fixed watchdog incorrectly erroring privacy requests paused for manual webhook or manual task input, and fixed connection config updates incorrectly requeuing manual task DSRs [#8264](https://github.com/ethyca/fides/pull/8264)
+- Fixed permanently stuck privacy requests when erasure task creation fails silently by recreating missing erasure tasks from the current graph on retry [#8268](https://github.com/ethyca/fides/pull/8268)
 
 ## [2.86.0](https://github.com/ethyca/fides/compare/2.85.1..2.86.0)
 

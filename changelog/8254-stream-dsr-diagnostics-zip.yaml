@@ -1,3 +1,0 @@
-type: Fixed
-description: Fixed "Download troubleshooting data" feature to stream diagnostics ZIP directly instead of uploading to storage, eliminating storage configuration dependency and reliability issues
-pr: 8254
