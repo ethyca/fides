@@ -2457,9 +2457,7 @@ class TestGetExistingReadyTasksOrphanedFix:
     """Tests for the two-pass fix in get_existing_ready_tasks that prevents
     errored tasks from being orphaned on retry."""
 
-    def test_errored_root_task_queued_on_retry(
-        self, db, privacy_request, request_task
-    ):
+    def test_errored_root_task_queued_on_retry(self, db, privacy_request, request_task):
         """An errored task whose upstream (ROOT) is complete should be
         queued on retry."""
         task = (
@@ -2506,9 +2504,7 @@ class TestGetExistingReadyTasksOrphanedFix:
             db.refresh(t)
             assert t.status == ExecutionLogStatus.pending
 
-    def test_completed_tasks_not_rerun(
-        self, db, privacy_request, request_task
-    ):
+    def test_completed_tasks_not_rerun(self, db, privacy_request, request_task):
         """Completed tasks should not be touched or re-queued."""
         root = (
             db.query(RequestTask)
