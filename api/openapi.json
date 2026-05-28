@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.86.0"
+    "version": "2.86.1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14036,7 +14036,7 @@
           "Privacy Requests"
         ],
         "summary": "Get Privacy Request Diagnostics Report",
-        "description": "Export a non-PII diagnostics snapshot for a single privacy request and return a download URL.\n\nThis report intentionally excludes any fields that could contain PII.",
+        "description": "Export a non-PII diagnostics snapshot for a single privacy request\nas a downloadable ZIP file.",
         "operationId": "get_privacy_request_diagnostics_report_api_v1_privacy_request__privacy_request_id__diagnostics_get",
         "security": [
           {
@@ -14058,13 +14058,9 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "ZIP file containing diagnostics.json",
             "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PrivacyRequestDiagnosticsExportResponse"
-                }
-              }
+              "application/zip": {}
             }
           },
           "422": {
@@ -32995,37 +32991,6 @@
         ],
         "title": "PrivacyRequestDRPStatusResponse",
         "description": "A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."
-      },
-      "PrivacyRequestDiagnosticsExportResponse": {
-        "properties": {
-          "download_url": {
-            "type": "string",
-            "title": "Download Url"
-          },
-          "storage_type": {
-            "type": "string",
-            "title": "Storage Type"
-          },
-          "object_key": {
-            "type": "string",
-            "title": "Object Key"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "download_url",
-          "storage_type",
-          "object_key",
-          "created_at"
-        ],
-        "title": "PrivacyRequestDiagnosticsExportResponse",
-        "description": "Response payload for a diagnostics export request."
       },
       "PrivacyRequestFilter": {
         "properties": {
