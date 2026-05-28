@@ -806,11 +806,8 @@ def get_existing_ready_tasks(
     of creating new ones.
 
     Two-pass approach:
-    1. Reset all errored tasks to pending (so upstream checks see them as retryable)
-    2. Queue tasks whose upstream dependencies are now satisfied
-
-    This fixes the orphaned task bug where errored tasks were reset to pending
-    but never queued because their upstream siblings were also errored.
+    1. Reset stopped tasks to pending (so can_run_task_body allows execution)
+    2. Queue tasks whose upstream dependencies are complete
     """
     ready: List[RequestTask] = []
     request_task_count: int = privacy_request.get_tasks_by_action(action_type).count()
