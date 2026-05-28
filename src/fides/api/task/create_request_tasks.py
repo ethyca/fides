@@ -821,12 +821,18 @@ def get_existing_ready_tasks(
         )
         incomplete_tasks: Query = RequestTask.query_with_deferred_data(base_query)
 
-        # Pass 1: Reset all errored tasks to pending so that upstream
-        # dependency checks in pass 2 see retryable tasks instead of
-        # permanently errored ones.
+        # Pass 1: Reset errored and awaiting_processing tasks to pending so
+        # that upstream dependency checks in pass 2 see retryable tasks
+        # instead of permanently stuck ones.  awaiting_processing tasks
+        # (e.g. manual tasks that were waiting for user input) must also be
+        # reset because can_run_task_body() only executes tasks whose status
+        # is in resumable_statuses ({pending, polling}).
         tasks_to_evaluate: List[RequestTask] = []
         for task in incomplete_tasks:
-            if task.status == ExecutionLogStatus.error:
+            if task.status in (
+                ExecutionLogStatus.error,
+                ExecutionLogStatus.awaiting_processing,
+            ):
                 task.update_status(session, ExecutionLogStatus.pending)
             tasks_to_evaluate.append(task)
 
