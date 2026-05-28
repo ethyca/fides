@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed custom privacy request fields named "phone" or "email" incorrectly receiving E.164/email format validation when those identity inputs were not configured; also improved phone validation error message to specify expected format
+pr: 8282
+labels: []

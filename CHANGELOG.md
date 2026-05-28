@@ -21,9 +21,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.86.1..main)
 
-### Fixed
-- Fixed custom privacy request fields named "phone" or "email" incorrectly receiving E.164/email format validation when those identity inputs were not configured; also improved phone validation error message to specify expected format [#8282](https://github.com/ethyca/fides/pull/8282)
-
 ## [2.86.1](https://github.com/ethyca/fides/compare/2.86.0..2.86.1)
 
 ### Fixed
