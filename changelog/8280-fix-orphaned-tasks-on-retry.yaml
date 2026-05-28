@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed errored DSR tasks being orphaned on retry by resetting all errored tasks to pending before evaluating which are ready to queue
+pr: 8280
+labels: []

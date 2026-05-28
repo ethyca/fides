@@ -803,7 +803,14 @@ def get_existing_ready_tasks(
 ) -> List[RequestTask]:
     """
     Return existing RequestTasks if applicable in the event of reprocessing instead
-    of creating new ones
+    of creating new ones.
+
+    Two-pass approach:
+    1. Reset all errored tasks to pending (so upstream checks see them as retryable)
+    2. Queue tasks whose upstream dependencies are now satisfied
+
+    This fixes the orphaned task bug where errored tasks were reset to pending
+    but never queued because their upstream siblings were also errored.
     """
     ready: List[RequestTask] = []
     request_task_count: int = privacy_request.get_tasks_by_action(action_type).count()
@@ -814,14 +821,27 @@ def get_existing_ready_tasks(
         )
         incomplete_tasks: Query = RequestTask.query_with_deferred_data(base_query)
 
+        # Pass 1: Reset all errored tasks to pending so that upstream
+        # dependency checks in pass 2 see retryable tasks instead of
+        # permanently errored ones.
+        tasks_to_evaluate: List[RequestTask] = []
         for task in incomplete_tasks:
-            # Checks if both upstream tasks are complete and the task is not currently in-flight (if using workers)
+            if task.status == ExecutionLogStatus.error:
+                task.update_status(session, ExecutionLogStatus.pending)
+            tasks_to_evaluate.append(task)
+
+        # Flush so that upstream_tasks_complete() queries see the updated statuses
+        session.flush()
+
+        # Pass 2: Queue tasks whose upstream dependencies are satisfied.
+        # Tasks reset from error to pending in pass 1 won't block their
+        # downstream — pending is not in COMPLETED_EXECUTION_LOG_STATUSES,
+        # but tasks at the root level (upstream = ROOT which is complete)
+        # will be queued, and their completion will unblock downstream tasks
+        # in subsequent processing cycles.
+        for task in tasks_to_evaluate:
             if task.can_queue_request_task(session, should_log=True):
-                task.update_status(session, ExecutionLogStatus.pending)
                 ready.append(task)
-            elif task.status == ExecutionLogStatus.error:
-                # Important to reset errored status to pending so it can be rerun
-                task.update_status(session, ExecutionLogStatus.pending)
 
         if ready:
             logger.info(

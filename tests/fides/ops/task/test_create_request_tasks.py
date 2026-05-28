@@ -2451,3 +2451,79 @@ class TestRunErasureRequestRecreatesMissingTasks:
         )
 
         mock_persist_erasure.assert_not_called()
+
+
+class TestGetExistingReadyTasksOrphanedFix:
+    """Tests for the two-pass fix in get_existing_ready_tasks that prevents
+    errored tasks from being orphaned on retry."""
+
+    def test_errored_root_task_queued_on_retry(
+        self, db, privacy_request, request_task
+    ):
+        """An errored task whose upstream (ROOT) is complete should be
+        queued on retry."""
+        task = (
+            db.query(RequestTask)
+            .filter(
+                RequestTask.privacy_request_id == privacy_request.id,
+                RequestTask.action_type == ActionType.access,
+                RequestTask.collection_address == "test_dataset:test_collection",
+            )
+            .first()
+        )
+        task.update_status(db, ExecutionLogStatus.error)
+        db.flush()
+
+        ready = get_existing_ready_tasks(db, privacy_request, ActionType.access)
+
+        assert len(ready) >= 1
+        ready_addresses = [t.collection_address for t in ready]
+        assert "test_dataset:test_collection" in ready_addresses
+        db.refresh(task)
+        assert task.status == ExecutionLogStatus.pending
+
+    def test_errored_tasks_all_reset_before_queuing(
+        self, db, privacy_request, request_task
+    ):
+        """All errored tasks should be reset to pending in pass 1 before
+        any queuing decisions are made in pass 2."""
+        tasks = (
+            db.query(RequestTask)
+            .filter(
+                RequestTask.privacy_request_id == privacy_request.id,
+                RequestTask.action_type == ActionType.access,
+                RequestTask.collection_address != ROOT_COLLECTION_ADDRESS.value,
+            )
+            .all()
+        )
+        for t in tasks:
+            t.update_status(db, ExecutionLogStatus.error)
+        db.flush()
+
+        get_existing_ready_tasks(db, privacy_request, ActionType.access)
+
+        for t in tasks:
+            db.refresh(t)
+            assert t.status == ExecutionLogStatus.pending
+
+    def test_completed_tasks_not_rerun(
+        self, db, privacy_request, request_task
+    ):
+        """Completed tasks should not be touched or re-queued."""
+        root = (
+            db.query(RequestTask)
+            .filter(
+                RequestTask.privacy_request_id == privacy_request.id,
+                RequestTask.action_type == ActionType.access,
+                RequestTask.collection_address == ROOT_COLLECTION_ADDRESS.value,
+            )
+            .first()
+        )
+        assert root.status == ExecutionLogStatus.complete
+
+        ready = get_existing_ready_tasks(db, privacy_request, ActionType.access)
+
+        ready_addresses = [t.collection_address for t in ready]
+        assert ROOT_COLLECTION_ADDRESS.value not in ready_addresses
+        db.refresh(root)
+        assert root.status == ExecutionLogStatus.complete
