@@ -108,54 +108,63 @@ const usePrivacyRequestForm = ({
 
   const initialValues = useMemo(() => getInitialValues(), [getInitialValues]);
 
-  // Build the static portion of the validation schema (identity fields)
-  const identityValidationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        name: nameValidation(nameInput),
-        email: emailValidation(emailInput).test(
-          "one of email or phone entered",
-          "You must enter either email or phone",
-          (_value, context) => {
-            if (emailInput === "optional" && phoneInput === "optional") {
-              return Boolean(context.parent.phone || context.parent.email);
-            }
-            return true;
-          },
-        ),
-        phone: phoneValidation(phoneInput).test(
-          "one of email or phone entered",
-          "You must enter either email or phone",
-          (_value, context) => {
-            if (emailInput === "optional" && phoneInput === "optional") {
-              return Boolean(context.parent.phone || context.parent.email);
-            }
-            return true;
-          },
-        ),
-        ...Object.fromEntries(
-          Object.entries(customIdentityFields).flatMap(([key, value]) => {
-            if (!value) {
-              return [];
-            }
-            if (value.field_type === "date") {
-              return [
-                [
-                  key,
-                  dateFieldValidation(
-                    value,
-                    value.label,
-                    value.required !== false,
-                  ),
-                ],
-              ];
-            }
-            return [[key, Yup.string().required(`${value.label} is required`)]];
-          }),
-        ),
-      }),
-    [emailInput, phoneInput, nameInput, customIdentityFields],
-  );
+  // Build the static portion of the validation schema (identity fields).
+  // Only include validation rules for identity fields that are actually configured,
+  // to avoid conflicts with custom_privacy_request_fields that may use the same keys.
+  const identityValidationSchema = useMemo(() => {
+    const schemaFields: Record<string, Yup.StringSchema> = {};
+
+    // Only add name validation if name is configured in identity_inputs
+    if (nameInput) {
+      schemaFields.name = nameValidation(nameInput);
+    }
+
+    // Only add email validation if email is configured in identity_inputs
+    if (emailInput) {
+      schemaFields.email = emailValidation(emailInput).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (_value, context) => {
+          if (emailInput === "optional" && phoneInput === "optional") {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        },
+      );
+    }
+
+    // Only add phone validation if phone is configured in identity_inputs
+    if (phoneInput) {
+      schemaFields.phone = phoneValidation(phoneInput).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (_value, context) => {
+          if (emailInput === "optional" && phoneInput === "optional") {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        },
+      );
+    }
+
+    // Add custom identity field validations
+    Object.entries(customIdentityFields).forEach(([key, value]) => {
+      if (!value) {
+        return;
+      }
+      if (value.field_type === "date") {
+        schemaFields[key] = dateFieldValidation(
+          value,
+          value.label,
+          value.required !== false,
+        );
+      } else {
+        schemaFields[key] = Yup.string().required(`${value.label} is required`);
+      }
+    });
+
+    return Yup.object().shape(schemaFields);
+  }, [emailInput, phoneInput, nameInput, customIdentityFields]);
 
   const { validate, applicableFieldsRef, validationError } =
     useConditionalValidate({

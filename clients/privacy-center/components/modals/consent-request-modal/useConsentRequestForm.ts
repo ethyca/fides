@@ -64,33 +64,42 @@ const useConsentRequestForm = ({
 
   const initialValues = useMemo(() => getInitialValues(), [getInitialValues]);
 
-  // Build the static portion of the validation schema (identity fields)
-  const identityValidationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        email: emailValidation(identityInputs?.email!).test(
-          "one of email or phone entered",
-          "You must enter an email",
-          (_value, context) => {
-            if (identityInputs?.email === "required") {
-              return Boolean(context.parent.email);
-            }
-            return true;
-          },
-        ),
-        phone: phoneValidation(identityInputs?.phone!).test(
-          "one of email or phone entered",
-          "You must enter a phone number",
-          (_value, context) => {
-            if (identityInputs?.phone === "required") {
-              return Boolean(context.parent.phone);
-            }
-            return true;
-          },
-        ),
-      }),
-    [identityInputs?.email, identityInputs?.phone],
-  );
+  // Build the static portion of the validation schema (identity fields).
+  // Only include validation rules for identity fields that are actually configured,
+  // to avoid conflicts with custom_privacy_request_fields that may use the same keys.
+  const identityValidationSchema = useMemo(() => {
+    const schemaFields: Record<string, Yup.StringSchema> = {};
+
+    // Only add email validation if email is configured in identity_inputs
+    if (identityInputs?.email) {
+      schemaFields.email = emailValidation(identityInputs.email).test(
+        "one of email or phone entered",
+        "You must enter an email",
+        (_value, context) => {
+          if (identityInputs.email === "required") {
+            return Boolean(context.parent.email);
+          }
+          return true;
+        },
+      );
+    }
+
+    // Only add phone validation if phone is configured in identity_inputs
+    if (identityInputs?.phone) {
+      schemaFields.phone = phoneValidation(identityInputs.phone).test(
+        "one of email or phone entered",
+        "You must enter a phone number",
+        (_value, context) => {
+          if (identityInputs.phone === "required") {
+            return Boolean(context.parent.phone);
+          }
+          return true;
+        },
+      );
+    }
+
+    return Yup.object().shape(schemaFields);
+  }, [identityInputs?.email, identityInputs?.phone]);
 
   const { validate, applicableFieldsRef, validationError } =
     useConditionalValidate({

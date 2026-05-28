@@ -53,7 +53,7 @@ export const emailValidation = (option?: string | null) => {
 export const phoneValidation = (option?: string | null) => {
   // E.164 international standard format
   let validation = Yup.string().matches(/^\+[1-9]\d{1,14}$/, {
-    message: "Phone is invalid",
+    message: "Phone must be in E.164 format (e.g. +15551234567)",
     excludeEmptyString: true,
   });
   if (option === "required") {

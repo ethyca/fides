@@ -35,7 +35,7 @@ export const generateFormRulesFromAction = (
 
   const phonePattern = /^\+?[1-9]\d{1,14}$/;
   const phoneMessage =
-    "Phone number must be formatted correctly (e.g. 15555555555)";
+    "Phone must be in E.164 format (e.g. +15551234567 or 15551234567)";
 
   if (action.identity_inputs?.phone === "required") {
     rules["identity.phone_number"] = [
