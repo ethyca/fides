@@ -14,6 +14,7 @@ import { monitorFieldUtil } from "~/features/data-discovery-and-detection/action
 import { useDiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredSystemAggregateTable";
 import MonitorStats from "~/features/data-discovery-and-detection/action-center/MonitorStats";
 import { DiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredSystemAggregateTable";
+import MonitorReportDownload from "~/features/data-discovery-and-detection/monitor-report/MonitorReportDownload";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 const MonitorFeatureError = () => (
@@ -63,6 +64,7 @@ const MonitorResultSystems: NextPage = () => {
         isSticky={false}
         rightContent={
           <Flex gap="small">
+            <MonitorReportDownload />
             <Button
               aria-label="Page refresh"
               icon={<Icons.Renew />}
@@ -86,6 +88,7 @@ const MonitorResultSystems: NextPage = () => {
           </Flex>
         }
       />
+
       <MonitorStats
         monitorId={monitorId}
         monitorType={APIMonitorType.WEBSITE}
