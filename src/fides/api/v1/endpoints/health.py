@@ -154,20 +154,26 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
     pools: Dict[str, PoolStatus] = {}
     async_readonly_pool_prewarmed: Optional[bool] = None
 
-    migration_health, current_revision = get_db_health(
-        db_cred_provider.get_database_url(), db=db
+    loop = asyncio.get_running_loop()
+
+    migration_health, current_revision = await loop.run_in_executor(
+        None, get_db_health, db_cred_provider.get_database_url(), db
     )
 
     # Primary sync pool (already checked out by dependency-injected session).
-    pools["api_sync_primary"] = PoolStatus(health=_check_sync_session(db))
+    pools["api_sync_primary"] = PoolStatus(
+        health=await loop.run_in_executor(None, _check_sync_session, db)
+    )
 
     # Optional sync readonly pool.
     if CONFIG.database.sqlalchemy_readonly_database_uri:
         readonly_db: Optional[Session] = None
         try:
-            readonly_db = get_readonly_api_session()
+            readonly_db = await loop.run_in_executor(None, get_readonly_api_session)
             pools["api_sync_readonly"] = PoolStatus(
-                health=_check_sync_session(readonly_db)
+                health=await loop.run_in_executor(
+                    None, _check_sync_session, readonly_db
+                )
             )
         except Exception as error:  # pylint: disable=broad-except
             logger.error(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import datetime, timezone
 from functools import update_wrapper
@@ -702,7 +703,11 @@ async def extract_token_and_load_client_async(
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
-        token_data = json.loads(extract_payload(authorization, get_encryption_key()))
+        loop = asyncio.get_running_loop()
+        payload = await loop.run_in_executor(
+            None, extract_payload, authorization, get_encryption_key()
+        )
+        token_data = await loop.run_in_executor(None, json.loads, payload)
     except (JoseError, ValueError) as exc:
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc

@@ -1,3 +1,4 @@
+import contextvars
 from typing import Any, ContextManager, Dict, List, Optional
 
 import celery_redis_cluster_backend  # type: ignore[import-untyped]  # noqa: F401 - registers redis+cluster/rediss+cluster backends
@@ -210,6 +211,11 @@ def _propagate_request_id(headers: Dict[str, Any], **kwargs: Any) -> None:
         headers["request_id"] = request_id
 
 
+_task_log_context: contextvars.ContextVar = contextvars.ContextVar(
+    "_task_log_context", default=None
+)
+
+
 @task_prerun.connect
 def _restore_request_id(task: Task, **kwargs: Any) -> None:
     """Restore request_id from the task headers into the worker's ContextVar.
@@ -220,6 +226,9 @@ def _restore_request_id(task: Task, **kwargs: Any) -> None:
     request_id = getattr(task.request, "request_id", None)
     if request_id is not None:
         set_request_id(request_id)
+        ctx = logger.contextualize(request_id=request_id)
+        ctx.__enter__()
+        _task_log_context.set(ctx)
 
 
 @task_postrun.connect
@@ -230,6 +239,10 @@ def _clear_request_id(**kwargs: Any) -> None:
     a request_id from Task A would leak into Task B if Task B was dispatched
     without a request_id header.
     """
+    ctx = _task_log_context.get()
+    if ctx is not None:
+        ctx.__exit__(None, None, None)
+        _task_log_context.set(None)
     set_request_id(None)
 
 
