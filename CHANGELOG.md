@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.86.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.86.2..main)
+
+## [2.86.2](https://github.com/ethyca/fides/compare/2.86.1..2.86.2)
+
+### Changed
+- Reduced per-request overhead in logging and JWE token decryption to improve API performance [#8284](https://github.com/ethyca/fides/pull/8284)
 
 ## [2.86.1](https://github.com/ethyca/fides/compare/2.86.0..2.86.1)
 
