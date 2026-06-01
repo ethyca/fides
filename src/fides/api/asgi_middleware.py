@@ -199,23 +199,26 @@ class LogRequestMiddleware(BaseASGIMiddleware):
 
         status_code = 500
 
-        try:
-            await self.app(scope, receive, wrapped_send)
-            status_code = get_status()
-        except Exception as e:
-            logger.exception(f"Unhandled exception processing request: '{e}'")
-            await self.send_response(send_with_headers, 500, b"Internal Server Error")
-            status_code = 500
+        with logger.contextualize(request_id=request_id):
+            try:
+                await self.app(scope, receive, wrapped_send)
+                status_code = get_status()
+            except Exception as e:
+                logger.exception(f"Unhandled exception processing request: '{e}'")
+                await self.send_response(
+                    send_with_headers, 500, b"Internal Server Error"
+                )
+                status_code = 500
 
-        handler_time = round((perf_counter() - start_time) * 1000, 3)
+            handler_time = round((perf_counter() - start_time) * 1000, 3)
 
-        logger.bind(
-            method=method,
-            status_code=status_code,
-            handler_time=f"{handler_time}ms",
-            path=path,
-            fides_client=fides_client,
-        ).info("Request received")
+            logger.bind(
+                method=method,
+                status_code=status_code,
+                handler_time=f"{handler_time}ms",
+                path=path,
+                fides_client=fides_client,
+            ).info("Request received")
 
 
 class AuditLogMiddleware(BaseASGIMiddleware):

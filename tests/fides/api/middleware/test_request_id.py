@@ -18,6 +18,7 @@ from fides.api.tasks import (
     _clear_request_id,
     _propagate_request_id,
     _restore_request_id,
+    _task_log_context,
 )
 
 from .conftest import (
@@ -29,9 +30,14 @@ from .conftest import (
 
 @pytest.fixture(autouse=True)
 def _clean_request_context():
-    """Reset request context before and after each test."""
+    """Reset request context and Loguru log context before and after each test."""
     reset_request_context()
     yield
+    # Clean up any leaked Loguru contextualize from Celery signal tests
+    ctx = _task_log_context.get()
+    if ctx is not None:
+        ctx.__exit__(None, None, None)
+        _task_log_context.set(None)
     reset_request_context()
 
 
@@ -193,7 +199,7 @@ class TestRequestIdMiddleware:
         assert UUID_PATTERN.match(request_id_headers[0])
 
     async def test_request_id_in_log_output(self, mock_asgi_app, loguru_caplog):
-        """Request ID appears in log records via the patcher."""
+        """Request ID appears in log records via logger.contextualize()."""
         app, _ = mock_asgi_app()
         middleware = LogRequestMiddleware(app)
 
@@ -268,20 +274,28 @@ class TestRequestIdMiddleware:
         assert id1 != id2
 
 
-class TestLoggerPatcher:
-    """Tests for the Loguru patcher that injects request_id."""
+class TestLoggerContextualize:
+    """Tests for request_id injection via logger.contextualize()."""
 
-    def test_patcher_injects_request_id(self, loguru_caplog):
-        """When request_id is set, it appears in log records."""
-        set_request_id("patcher-test-abc")
-        logger.info("test message")
+    def test_contextualize_injects_request_id(self, loguru_caplog):
+        """When logger.contextualize is active, request_id appears in log records."""
+        with logger.contextualize(request_id="ctx-test-abc"):
+            logger.info("test message")
 
         record = loguru_caplog.records[-1]
-        assert record.extra.get("request_id") == "patcher-test-abc"
+        assert record.extra.get("request_id") == "ctx-test-abc"
 
-    def test_patcher_omits_request_id_when_none(self, loguru_caplog):
-        """When no request_id is set, it's not added to log records."""
+    def test_no_request_id_outside_context(self, loguru_caplog):
+        """When no contextualize is active, request_id is not in log records."""
         logger.info("test message without context")
+
+        record = loguru_caplog.records[-1]
+        assert "request_id" not in record.extra
+
+    def test_set_request_id_alone_does_not_inject_into_logs(self, loguru_caplog):
+        """set_request_id without contextualize does not inject into log records."""
+        set_request_id("only-context-var")
+        logger.info("test message")
 
         record = loguru_caplog.records[-1]
         assert "request_id" not in record.extra
@@ -325,6 +339,23 @@ class TestCelerySignals:
 
         assert get_request_id() is None
 
+    def test_restore_injects_request_id_into_logs(self, loguru_caplog):
+        """task_prerun sets up logger.contextualize so logs get request_id."""
+        mock_task = type(
+            "MockTask",
+            (),
+            {"request": type("MockRequest", (), {"request_id": "celery-log-789"})()},
+        )()
+
+        _restore_request_id(task=mock_task)
+        logger.info("task log message")
+
+        record = loguru_caplog.records[-1]
+        assert record.extra.get("request_id") == "celery-log-789"
+
+        # Cleanup
+        _clear_request_id()
+
     def test_clear_request_id_after_task(self):
         """task_postrun clears only the request_id, not other context."""
         set_request_context(request_id="should-be-cleared", user_id="keep-me")
@@ -332,3 +363,18 @@ class TestCelerySignals:
 
         assert get_request_id() is None
         assert get_user_id() == "keep-me"
+
+    def test_clear_removes_log_context(self, loguru_caplog):
+        """task_postrun cleans up logger.contextualize so logs no longer get request_id."""
+        mock_task = type(
+            "MockTask",
+            (),
+            {"request": type("MockRequest", (), {"request_id": "celery-clear-test"})()},
+        )()
+
+        _restore_request_id(task=mock_task)
+        _clear_request_id()
+
+        logger.info("after task")
+        record = loguru_caplog.records[-1]
+        assert "request_id" not in record.extra
