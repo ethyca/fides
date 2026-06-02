@@ -53,17 +53,13 @@ export const WebsiteFindingsRow = ({
           key: "classified",
           label: "Classified",
           count: labeled,
-          icon: (
-            <Icons.Checkmark style={{ color: "var(--fidesui-brand-minos)" }} />
-          ),
+          icon: <SparkleIcon color="black" />,
         },
         {
           key: "unlabeled",
           label: "Unlabeled",
           count: unlabeled,
-          icon: (
-            <Icons.TagGroup style={{ color: "var(--fidesui-brand-minos)" }} />
-          ),
+          icon: <SparkleIcon color="black" />,
         },
         {
           key: "compliance",
@@ -71,6 +67,7 @@ export const WebsiteFindingsRow = ({
           count: complianceIssues,
           icon: (
             <Icons.WarningAltFilled
+              size={14}
               style={{ color: "var(--fidesui-color-error)" }}
             />
           ),
@@ -100,15 +97,26 @@ export const WebsiteFindingsRow = ({
             </Space>
           }
           actions={[
-            <RouterLink href={reviewHref} key="review">
-              <Button
-                type="text"
-                size="small"
-                icon={<Icons.ListBoxes />}
-                aria-label={`Review ${item.label} assets`}
-              >
-                Review
-              </Button>
+            <RouterLink href={reviewHref} key="action">
+              {item.key === "classified" ? (
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<Icons.CheckmarkOutline />}
+                  aria-label="Approve classified assets"
+                >
+                  Approve
+                </Button>
+              ) : (
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<Icons.ListBoxes />}
+                  aria-label={`Review ${item.label} assets`}
+                >
+                  Review
+                </Button>
+              )}
             </RouterLink>,
           ]}
         />
