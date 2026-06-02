@@ -1,0 +1,22 @@
+.asset-explorer-tree {
+  // vertically center the row content so the leading icon (rendered inside
+  // titleRender) lines up with the system name, and keep horizontal padding so
+  // the hover/selected fill has left/right breathing room around the content
+  :global(.ant-tree-node-content-wrapper) {
+    display: flex;
+    align-items: center;
+    padding-inline: var(--fidesui-padding-sm, 8px);
+  }
+
+  // This is a flat (all-leaf) tree, so the empty switcher column just creates a
+  // strange gap to the left of the system names — hide it.
+  :global(.ant-tree-switcher-noop) {
+    display: none;
+  }
+
+  // let the title fill the row so the count + warning icon right-align
+  :global(.ant-tree-title) {
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+}

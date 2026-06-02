@@ -14,6 +14,13 @@
     "test": true,
     "production": false
   },
+  "webMonitorExplorer": {
+    "label": "Web monitor explorer",
+    "description": "Single-page tree + list + detail drawer view for website monitors (consistent with datastore/infrastructure monitors)",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "assetConsentStatusLabels": {
     "label": "Asset consent status labels",
     "description": "Consent status labels for assets discovered by the web monitor",

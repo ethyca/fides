@@ -31,12 +31,18 @@ interface DiscoveredAssetActionsCellProps {
   showComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
   ) => void;
+  /** Render Approve/Ignore/Restore as icon-only buttons (datastore-style). */
+  iconButtons?: boolean;
+  /** Hide the compliance-issue warning button (e.g. in the drawer footer). */
+  hideComplianceWarning?: boolean;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
   onTabChange,
   showComplianceIssueDetails,
+  iconButtons,
+  hideComplianceWarning,
 }: DiscoveredAssetActionsCellProps) => {
   const { flags } = useFeatures();
   const { assetConsentStatusLabels: isConsentStatusFlagEnabled } = flags;
@@ -89,7 +95,7 @@ export const DiscoveredAssetActionsCell = ({
       const systemToLink = userAssignedSystemKey || systemKey;
       const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
       notification.success({
-        message: "Added to inventory",
+        message: "Approved",
         description: `${type} "${truncatedAssetName}" has been added to the system inventory.`,
         actions: systemToLink ? (
           <ToastLink onClick={() => router.push(href)}>View</ToastLink>
@@ -146,8 +152,8 @@ export const DiscoveredAssetActionsCell = ({
           <Tooltip
             title={
               !asset.system
-                ? `This asset requires a system before you can add it to the inventory.`
-                : undefined
+                ? `This asset requires a system before you can approve it.`
+                : "Approve"
             }
           >
             <Button
@@ -156,47 +162,59 @@ export const DiscoveredAssetActionsCell = ({
               onClick={handleAdd}
               disabled={!asset.system || anyActionIsLoading}
               loading={isAddingResults}
+              icon={iconButtons ? <Icons.Checkmark /> : undefined}
+              aria-label="Approve"
             >
-              Add
+              {iconButtons ? undefined : "Approve"}
             </Button>
           </Tooltip>
-          <Button
-            data-testid="ignore-btn"
-            size="small"
-            onClick={handleIgnore}
-            disabled={anyActionIsLoading}
-            loading={isIgnoringResults}
-          >
-            Ignore
-          </Button>
-          {showConsentComplianceWarning && isConsentStatusFlagEnabled && (
+          <Tooltip title={iconButtons ? "Ignore" : undefined}>
             <Button
-              data-testid="view-compliance-details-btn"
+              data-testid="ignore-btn"
               size="small"
-              onClick={handleViewComplianceDetails}
+              onClick={handleIgnore}
               disabled={anyActionIsLoading}
-              loading={isRestoringResults}
-              icon={
-                <Icons.WarningAltFilled
-                  style={{ color: "var(--fidesui-color-error)", width: 14 }}
-                />
-              }
-              title="View compliance issue"
-              aria-label="View compliance issue"
-            />
-          )}
+              loading={isIgnoringResults}
+              icon={iconButtons ? <Icons.ViewOff /> : undefined}
+              aria-label="Ignore"
+            >
+              {iconButtons ? undefined : "Ignore"}
+            </Button>
+          </Tooltip>
+          {!hideComplianceWarning &&
+            showConsentComplianceWarning &&
+            isConsentStatusFlagEnabled && (
+              <Button
+                data-testid="view-compliance-details-btn"
+                size="small"
+                onClick={handleViewComplianceDetails}
+                disabled={anyActionIsLoading}
+                loading={isRestoringResults}
+                icon={
+                  <Icons.WarningAltFilled
+                    style={{ color: "var(--fidesui-color-error)", width: 14 }}
+                  />
+                }
+                title="View compliance issue"
+                aria-label="View compliance issue"
+              />
+            )}
         </>
       )}
       {diffStatus === DiffStatus.MUTED && (
-        <Button
-          data-testid="restore-btn"
-          size="small"
-          onClick={handleRestore}
-          disabled={anyActionIsLoading}
-          loading={isRestoringResults}
-        >
-          Restore
-        </Button>
+        <Tooltip title={iconButtons ? "Restore" : undefined}>
+          <Button
+            data-testid="restore-btn"
+            size="small"
+            onClick={handleRestore}
+            disabled={anyActionIsLoading}
+            loading={isRestoringResults}
+            icon={iconButtons ? <Icons.View /> : undefined}
+            aria-label="Restore"
+          >
+            {iconButtons ? undefined : "Restore"}
+          </Button>
+        </Tooltip>
       )}
     </Space>
   );

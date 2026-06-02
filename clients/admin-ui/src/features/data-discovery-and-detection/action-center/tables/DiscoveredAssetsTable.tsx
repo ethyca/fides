@@ -174,11 +174,11 @@ export const DiscoveredAssetsTable = ({
                             <Tooltip
                               title={
                                 hasUncategorizedSelectedAssets
-                                  ? "The selected assets must be assigned to a system before you can add them to the inventory."
+                                  ? "The selected assets must be assigned to a system before you can approve them."
                                   : undefined
                               }
                             >
-                              Add
+                              Approve
                             </Tooltip>
                           ),
                           onClick: handleBulkAdd,
@@ -224,7 +224,7 @@ export const DiscoveredAssetsTable = ({
             <Tooltip
               title={
                 disableAddAll
-                  ? `These assets require a system before you can add them to the inventory.`
+                  ? `These assets require a system before you can approve them.`
                   : undefined
               }
             >
@@ -237,7 +237,7 @@ export const DiscoveredAssetsTable = ({
                 iconPlacement="end"
                 data-testid="add-all"
               >
-                Add all
+                Approve all
               </Button>
             </Tooltip>
           </Space>

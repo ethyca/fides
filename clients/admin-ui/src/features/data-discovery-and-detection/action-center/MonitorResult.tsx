@@ -15,6 +15,7 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { useFeatures } from "~/features/common/features/features.slice";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   formatDate,
@@ -33,6 +34,8 @@ import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import styles from "./MonitorResult.module.scss";
 import { MonitorResultDescription } from "./MonitorResultDescription";
 import { MonitorAggregatedResults } from "./types";
+import { WebsiteFindingsRow } from "./website/WebsiteFindingsRow";
+import WebsiteMonitorSubheader from "./website/WebsiteMonitorSubheader";
 
 const { Text } = Typography;
 
@@ -78,6 +81,10 @@ export const MonitorResult = ({
       lowConfidenceCount: datastoreUpdates?.classified_low_confidence ?? 0,
     };
   }
+  const { flags } = useFeatures();
+  const showWebsiteSubheader =
+    flags.webMonitorExplorer && monitorType === APIMonitorType.WEBSITE && !!key;
+
   const [isConfidenceRowExpanded, setIsConfidenceRowExpanded] = useState(false);
 
   const hasConfidenceCounts =
@@ -88,6 +95,11 @@ export const MonitorResult = ({
 
   const showConfidenceRow =
     monitorType === APIMonitorType.DATASTORE && hasConfidenceCounts && !!key;
+
+  // Website monitors get the same "Findings" expansion, with cards for
+  // classified / unclassified / compliance-issue assets.
+  const showWebsiteFindings = showWebsiteSubheader && (totalUpdates ?? 0) > 0;
+  const showFindings = showConfidenceRow || showWebsiteFindings;
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -111,25 +123,33 @@ export const MonitorResult = ({
       {...props}
       className={`flex-wrap gap-x-4 lg:gap-x-8 ${styles["monitor-result"]}`}
       extra={
-        showConfidenceRow &&
-        confidenceCounts && (
+        showFindings && (
           <ExpandCollapse
             isExpanded={isConfidenceRowExpanded}
-            motionKey={`confidence-row-${key}`}
+            motionKey={`findings-row-${key}`}
             className="mt-4 w-full flex-auto"
           >
-            <ConfidenceRow
-              confidenceCounts={confidenceCounts}
-              reviewHref={href}
-              monitorId={key}
-              monitorType={monitorType}
-              id={`confidence-row-${key}`}
-            />
+            {showConfidenceRow && confidenceCounts ? (
+              <ConfidenceRow
+                confidenceCounts={confidenceCounts}
+                reviewHref={href}
+                monitorId={key}
+                monitorType={monitorType}
+                id={`findings-row-${key}`}
+              />
+            ) : (
+              <WebsiteFindingsRow
+                monitorId={key}
+                totalAdditions={totalUpdates ?? 0}
+                reviewHref={href}
+                id={`findings-row-${key}`}
+              />
+            )}
           </ExpandCollapse>
         )
       }
       actions={[
-        ...(showConfidenceRow
+        ...(showFindings
           ? [
               <Button
                 key="findings"
@@ -142,7 +162,7 @@ export const MonitorResult = ({
                 }
                 aria-haspopup="true"
                 aria-expanded={isConfidenceRowExpanded}
-                aria-controls={`confidence-row-${key}`}
+                aria-controls={`findings-row-${key}`}
                 aria-label={`${isConfidenceRowExpanded ? "Collapse" : "Expand"} findings`}
               >
                 <Space>
@@ -200,11 +220,18 @@ export const MonitorResult = ({
           </Flex>
         }
         description={
-          !!updates && (
-            <MonitorResultDescription
-              updates={updates}
-              isAssetList={monitorType === APIMonitorType.WEBSITE}
+          showWebsiteSubheader ? (
+            <WebsiteMonitorSubheader
+              monitorId={key}
+              totalAdditions={totalUpdates ?? 0}
             />
+          ) : (
+            !!updates && (
+              <MonitorResultDescription
+                updates={updates}
+                isAssetList={monitorType === APIMonitorType.WEBSITE}
+              />
+            )
           )
         }
       />

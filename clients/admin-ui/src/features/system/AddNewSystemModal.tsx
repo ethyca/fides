@@ -4,7 +4,6 @@ import {
   Form,
   FormRule,
   Input,
-  Select,
   Typography,
   useMessage,
 } from "fidesui";
@@ -235,10 +234,9 @@ export const AddNewSystemModal = ({
       >
         <Flex vertical gap={20} className="pb-6 pt-4">
           <Text>
-            Fides will add this system to your inventory and configure it for
-            consent using the categories of consent listed below. Optionally,
-            you can check if this system is listed within the Fides compass
-            library by selecting the compass icon below.
+            Enter a name and save to add this system to your inventory.
+            Optionally, check if it&apos;s listed in the Fides compass library
+            by selecting the compass icon.
           </Text>
           {dictionaryService ? (
             <VendorSelector
@@ -262,33 +260,6 @@ export const AddNewSystemModal = ({
               <Input data-testid="input-name" />
             </Form.Item>
           )}
-          <Form.Item
-            name="description"
-            label="Description"
-            tooltip="What services does this system perform?"
-            className="mb-0"
-          >
-            <Input.TextArea
-              disabled={lockedForGVL}
-              data-testid="input-description"
-            />
-          </Form.Item>
-          {/* TODO [HJ-379] Add in the Categories of consent */}
-          {/* TODO [HJ-373] Add in the Data steward support */}
-          <Form.Item
-            name="tags"
-            label="System Tags"
-            tooltip="Are there any tags to associate with this system?"
-            className="mb-0"
-          >
-            <Select
-              mode="tags"
-              options={[]}
-              disabled={lockedForGVL}
-              aria-label="System Tags"
-              data-testid="input-tags"
-            />
-          </Form.Item>
         </Flex>
       </Form>
     </ConfirmCloseModal>

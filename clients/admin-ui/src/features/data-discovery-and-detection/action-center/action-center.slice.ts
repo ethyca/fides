@@ -370,6 +370,30 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results", "System Assets"],
     }),
+    /**
+     * Same as updateAssetsSystem but does NOT invalidate "Discovery Monitor
+     * Results", so the website explorer list/tree don't auto-refetch. Used by
+     * the tree+list view to drive optimistic feedback (the caller patches the
+     * cached results + tree counts locally; a manual refresh reconciles).
+     */
+    updateAssetsSystemOptimistic: build.mutation<
+      Schema,
+      {
+        monitorId: string;
+        urnList: string[];
+        systemKey: string;
+      }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitorId}/results`,
+        body: params.urnList.map((urn) => ({
+          urn,
+          user_assigned_system_key: params.systemKey,
+        })),
+      }),
+      // Intentionally no invalidatesTags — feedback is handled optimistically.
+    }),
     updateAssetsDataUse: build.mutation<
       Schema,
       { monitorId: string; urnList: string[]; dataUses: string[] }
@@ -668,6 +692,7 @@ export const {
   useIgnoreMonitorResultAssetsMutation,
   useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,
+  useUpdateAssetsSystemOptimisticMutation,
   useUpdateAssetsDataUseMutation,
   useUpdateAssetsMutation,
   useGetConsentBreakdownQuery,

@@ -95,6 +95,7 @@ const DiscoveredAssetDataUseCell = ({
             onClick={() => setIsAdding(true)}
             data-testid="taxonomy-add-btn"
             addable
+            bordered={false}
             aria-label="Add data use"
           />
           <TagExpandableCell

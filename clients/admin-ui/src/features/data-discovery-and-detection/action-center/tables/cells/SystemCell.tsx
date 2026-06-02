@@ -14,6 +14,17 @@ interface SystemCellProps {
   monitorConfigId: string;
   readonly?: boolean;
   onChange?: (systemKey: string) => void;
+  /**
+   * Optional override for the assignment side effect. When provided, it is
+   * called instead of the default invalidating mutation (and is responsible
+   * for its own success/error feedback). Returns whether the assignment
+   * succeeded. Used by the website explorer for optimistic feedback.
+   */
+  assignOverride?: (
+    fidesKey: string,
+    systemName: string,
+    isNewSystem?: boolean,
+  ) => Promise<boolean>;
 }
 
 export const SystemCell = ({
@@ -21,6 +32,7 @@ export const SystemCell = ({
   monitorConfigId,
   readonly,
   onChange,
+  assignOverride,
 }: SystemCellProps) => {
   const {
     resource_type: assetType,
@@ -51,6 +63,21 @@ export const SystemCell = ({
     newSystemName: string,
     isNewSystem?: boolean,
   ) => {
+    // When an override is provided (website explorer), delegate the side
+    // effect + feedback to it and skip the default invalidating mutation.
+    if (assignOverride) {
+      const succeeded = await assignOverride(
+        fidesKey,
+        newSystemName,
+        isNewSystem,
+      );
+      if (succeeded) {
+        onChange?.(fidesKey);
+      }
+      setIsEditing(false);
+      return;
+    }
+
     const result = await updateResourceCategoryMutation({
       staged_resource_urn: urn,
       monitor_config_id: monitorConfigId,
