@@ -131,7 +131,11 @@ export const WebsiteAssetListItem = ({
             {/* System assignment is read-only here — edit it in the detail
                 drawer (click the asset name) or via bulk "Assign system". */}
             {systemName ? (
-              <Tag data-testid="asset-system" className="whitespace-nowrap">
+              <Tag
+                color="sandstone"
+                data-testid="asset-system"
+                className="whitespace-nowrap"
+              >
                 {systemName}
               </Tag>
             ) : (

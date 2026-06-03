@@ -223,6 +223,7 @@ export {
   InputNumber,
   Layout,
   Menu,
+  message,
   Modal,
   notification,
   Pagination,

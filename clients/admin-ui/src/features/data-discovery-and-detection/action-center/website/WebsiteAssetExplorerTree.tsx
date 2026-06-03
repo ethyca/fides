@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Badge,
   Button,
   Dropdown,
@@ -24,7 +25,11 @@ import {
 } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { nFormatter, pluralize } from "~/features/common/utils";
+import {
+  getBrandIconUrl,
+  nFormatter,
+  pluralize,
+} from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
 
 import {
@@ -54,18 +59,32 @@ const WebsiteTreeNodeTitle = ({
   nodeData: WebsiteSystemTreeNodeData;
   isRecentlyChanged: boolean;
 }) => {
-  // Render the leading icon inside the title so it shares the same flex
-  // row as the name and stays vertically centered with it. Uncategorized
-  // uses the carbon tag-group icon; systems use the same fallback icon as
-  // the infrastructure monitor.
-  const LeadingIcon = isUncategorizedKey(nodeData.key)
-    ? Icons.TagGroup
-    : Icons.TransformInstructions;
+  // Leading visual: a brand logo for systems (via brandfetch, by domain),
+  // falling back to the generic system icon when no logo is found. The
+  // Uncategorized grouping uses the carbon tag-group icon.
+  const isUncategorized = isUncategorizedKey(nodeData.key);
+  const domain = nodeData.record.domains?.[0];
+  const logoUrl = !isUncategorized && domain ? getBrandIconUrl(domain, 36) : "";
 
   return (
     <Flex align="center" justify="space-between" gap="small" className="w-full">
       <Flex align="center" gap="small" className="overflow-hidden">
-        <LeadingIcon className="flex-none" />
+        {isUncategorized ? (
+          <Icons.TagGroup className="flex-none" />
+        ) : (
+          <Avatar
+            src={logoUrl}
+            shape="square"
+            size={20}
+            icon={
+              <Icons.TransformInstructions
+                style={{ color: "var(--fidesui-brand-minos)" }}
+              />
+            }
+            className="flex-none bg-transparent"
+            alt={nodeData.title}
+          />
+        )}
         <Badge
           dot={isRecentlyChanged}
           color="var(--fidesui-warning)"
