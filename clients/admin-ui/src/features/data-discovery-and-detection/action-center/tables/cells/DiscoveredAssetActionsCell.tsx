@@ -35,6 +35,12 @@ interface DiscoveredAssetActionsCellProps {
   iconButtons?: boolean;
   /** Hide the compliance-issue warning button (e.g. in the drawer footer). */
   hideComplianceWarning?: boolean;
+  /**
+   * Render Approve as a filled primary button (website explorer). The fill
+   * draws the eye to the next step once an asset has a system; the button is
+   * still disabled until one is assigned.
+   */
+  primaryApprove?: boolean;
 }
 
 export const DiscoveredAssetActionsCell = ({
@@ -43,6 +49,7 @@ export const DiscoveredAssetActionsCell = ({
   showComplianceIssueDetails,
   iconButtons,
   hideComplianceWarning,
+  primaryApprove,
 }: DiscoveredAssetActionsCellProps) => {
   const { flags } = useFeatures();
   const { assetConsentStatusLabels: isConsentStatusFlagEnabled } = flags;
@@ -159,6 +166,7 @@ export const DiscoveredAssetActionsCell = ({
             <Button
               data-testid="add-btn"
               size="small"
+              type={primaryApprove ? "primary" : undefined}
               onClick={handleAdd}
               disabled={!asset.system || anyActionIsLoading}
               loading={isAddingResults}

@@ -162,6 +162,8 @@ interface AssetDetailsDrawerProps {
     systemName: string,
     isNewSystem?: boolean,
   ) => Promise<boolean>;
+  /** Clear the asset's system assignment (the select's clear button). */
+  onSystemRemove?: (asset: StagedResourceAPIResponse) => void | Promise<void>;
 }
 
 export const AssetDetailsDrawer = ({
@@ -171,6 +173,7 @@ export const AssetDetailsDrawer = ({
   readonly,
   onTabChange,
   onSystemAssign,
+  onSystemRemove,
 }: AssetDetailsDrawerProps) => {
   const locations = asset?.locations ?? [];
   const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
@@ -188,6 +191,7 @@ export const AssetDetailsDrawer = ({
             <DiscoveredAssetActionsCell
               asset={asset}
               hideComplianceWarning
+              primaryApprove
               onTabChange={async (tab) => {
                 await onTabChange(tab);
                 onClose();
@@ -226,6 +230,7 @@ export const AssetDetailsDrawer = ({
                 key={asset.urn}
                 className="w-full"
                 placeholder="Select a system"
+                allowClear
                 defaultValue={
                   asset.user_assigned_system_key ||
                   asset.system_key ||
@@ -233,6 +238,7 @@ export const AssetDetailsDrawer = ({
                 }
                 disabled={readonly}
                 onAddSystem={() => setIsNewSystemModalOpen(true)}
+                onClear={() => onSystemRemove?.(asset)}
                 onSelect={(value, option) =>
                   onSystemAssign?.(
                     asset,

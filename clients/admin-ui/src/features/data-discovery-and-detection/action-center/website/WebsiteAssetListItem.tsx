@@ -3,6 +3,7 @@ import {
   Checkbox,
   Flex,
   formatIsoLocation,
+  Icons,
   isoStringToEntry,
   List,
   Tag,
@@ -79,7 +80,7 @@ export const WebsiteAssetListItem = ({
         locations && locations.length > 0 ? (
           <Flex key="locations" gap={4} wrap="wrap" className="max-w-60">
             {locations.map((location) => (
-              <Tag key={location} color="white" bordered>
+              <Tag key={location} color="default">
                 {formatLocation(location)}
               </Tag>
             ))}
@@ -95,6 +96,7 @@ export const WebsiteAssetListItem = ({
               onTabChange={onTabChange}
               showComplianceIssueDetails={showComplianceIssueDetails}
               iconButtons
+              primaryApprove
             />
           </div>
         ) : null,
@@ -133,6 +135,7 @@ export const WebsiteAssetListItem = ({
             {systemName ? (
               <Tag
                 color="sandstone"
+                icon={<Icons.TransformInstructions />}
                 data-testid="asset-system"
                 className="whitespace-nowrap"
               >

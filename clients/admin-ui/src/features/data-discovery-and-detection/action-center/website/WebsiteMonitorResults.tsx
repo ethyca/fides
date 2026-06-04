@@ -13,6 +13,7 @@ import {
   Title,
   Tooltip,
   useMessage,
+  useModal,
   useNotification,
 } from "fidesui";
 import { uniq } from "lodash";
@@ -23,10 +24,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import {
-  SYSTEM_ROUTE,
-  UNCATEGORIZED_SEGMENT,
-} from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import ToastLink from "~/features/common/ToastLink";
 import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
@@ -87,8 +85,14 @@ const WebsiteMonitorResults = ({
   const { assetConsentStatusLabels } = flags;
 
   const treeRef = useRef<WebsiteAssetExplorerTreeRef>(null);
+  const modalApi = useModal();
 
   const [selectedSystemId, setSelectedSystemId] = useState<string>();
+  // Assets reassigned in the drawer stay put until the user confirms a move on
+  // tree-navigate. Keyed by urn → its pending target system name.
+  const [pendingReassignments, setPendingReassignments] = useState<
+    Map<string, { assetName: string; toSystemName: string }>
+  >(new Map());
   const [detailsAsset, setDetailsAsset] = useState<StagedResourceAPIResponse>();
   const [selectedUrns, setSelectedUrns] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
@@ -186,9 +190,54 @@ const WebsiteMonitorResults = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSystemId]);
 
-  const handleSelectSystem = useCallback((systemId: string | undefined) => {
-    setSelectedSystemId(systemId);
-  }, []);
+  const handleSelectSystem = useCallback(
+    async (systemId: string | undefined) => {
+      // If reassignments are pending and we're navigating to a different
+      // system, ask whether to relocate them now or leave them in place.
+      if (pendingReassignments.size > 0 && systemId !== selectedSystemId) {
+        const pending = [...pendingReassignments.entries()];
+        const isSingle = pending.length === 1;
+        const move = await modalApi.confirm({
+          title: "Move assets to their new systems?",
+          centered: true,
+          okText: "Move now",
+          cancelText: "Keep here for now",
+          content: (
+            <>
+              <Text>
+                {isSingle
+                  ? "You changed the system for this asset:"
+                  : `You changed the system for ${pending.length} assets:`}
+              </Text>
+              <ul className="my-2 ml-5 list-disc">
+                {pending.map(([urn, p]) => (
+                  <li key={urn}>
+                    <Text>{`${p.assetName} → ${p.toSystemName}`}</Text>
+                  </li>
+                ))}
+              </ul>
+              <Text type="secondary">
+                {isSingle
+                  ? "“Move now” updates the list so it appears under its new system. “Keep here for now” leaves it in the current view until you refresh."
+                  : "“Move now” updates the list so each appears under its new system. “Keep here for now” leaves them in the current view until you refresh."}
+              </Text>
+            </>
+          ),
+        });
+        if (move) {
+          // Backend already persisted each reassignment; refetching the list +
+          // tree aggregate relocates the assets and recomputes counts.
+          dispatch(
+            actionCenterUtil.invalidateTags(["Discovery Monitor Results"]),
+          );
+          setPendingReassignments(new Map());
+        }
+        // Either way, complete the navigation.
+      }
+      setSelectedSystemId(systemId);
+    },
+    [pendingReassignments, selectedSystemId, modalApi, dispatch],
+  );
 
   const handleFiltersChange = useCallback(
     (next: DiscoveredAssetsFilterValues) => {
@@ -238,8 +287,9 @@ const WebsiteMonitorResults = ({
 
   /**
    * Rich-feedback inline system assignment: assign without invalidating (so the
-   * row stays put), then optimistically patch the cached row, bump the tree
-   * counts + flash a temporary alert dot, and toast.
+   * row stays put), then optimistically patch the cached row and record a
+   * pending reassignment. The actual relocation + count change is deferred
+   * until the user confirms a move when navigating away in the tree.
    */
   const handleSystemAssign = useCallback(
     async (
@@ -247,11 +297,6 @@ const WebsiteMonitorResults = ({
       fidesKey: string,
       systemName: string,
     ): Promise<boolean> => {
-      const fromSystemId =
-        asset.user_assigned_system_key ||
-        asset.system_key ||
-        UNCATEGORIZED_SEGMENT;
-
       const result = await updateAssetsSystemOptimisticMutation({
         monitorId,
         urnList: [asset.urn],
@@ -270,22 +315,84 @@ const WebsiteMonitorResults = ({
             const cached = draft.items.find((item) => item.urn === asset.urn);
             if (cached) {
               cached.user_assigned_system_key = fidesKey;
+              // Show the reassigned system on the row (the asset still stays put
+              // until the user confirms a move on tree-navigate).
               cached.system = systemName;
             }
           },
         ),
       );
 
-      treeRef.current?.bumpSystemCounts({
-        fromSystemId,
-        toSystemId: fidesKey,
+      setPendingReassignments((prev) => {
+        const next = new Map(prev);
+        next.set(asset.urn, {
+          assetName: asset.name ?? asset.urn,
+          toSystemName: systemName,
+        });
+        return next;
       });
 
       notification.success({
-        message: "System assigned",
-        description: `${asset.resource_type ?? "Asset"} "${asset.name}" assigned to ${systemName}. Refresh to update the list.`,
+        message: "System reassigned",
+        description: `"${asset.name}" reassigned to ${systemName} (pending). You'll be asked to move it when you switch systems.`,
       });
       return true;
+    },
+    [
+      updateAssetsSystemOptimisticMutation,
+      monitorId,
+      dispatch,
+      assetsQueryArgs,
+      message,
+      notification,
+    ],
+  );
+
+  /**
+   * Remove an asset's system assignment from the drawer. Clears optimistically
+   * (so it reads as Unassigned and stays put) and records a pending change so
+   * the move dialog can relocate it to Uncategorized on tree-navigate.
+   */
+  const handleSystemRemove = useCallback(
+    async (asset: StagedResourceAPIResponse): Promise<void> => {
+      // An empty systemKey clears the assignment server-side.
+      const result = await updateAssetsSystemOptimisticMutation({
+        monitorId,
+        urnList: [asset.urn],
+        systemKey: "",
+      });
+      if (isErrorResult(result)) {
+        message.error(getErrorMessage(result.error));
+        return;
+      }
+
+      dispatch(
+        actionCenterUtil.updateQueryData(
+          "getDiscoveredAssets",
+          assetsQueryArgs,
+          (draft) => {
+            const cached = draft.items.find((item) => item.urn === asset.urn);
+            if (cached) {
+              cached.user_assigned_system_key = null;
+              cached.system = null;
+            }
+          },
+        ),
+      );
+
+      setPendingReassignments((prev) => {
+        const next = new Map(prev);
+        next.set(asset.urn, {
+          assetName: asset.name ?? asset.urn,
+          toSystemName: "Unassigned",
+        });
+        return next;
+      });
+
+      notification.success({
+        message: "System removed",
+        description: `"${asset.name}" is now unassigned (pending). You'll be asked to move it when you switch systems.`,
+      });
     },
     [
       updateAssetsSystemOptimisticMutation,
@@ -572,6 +679,7 @@ const WebsiteMonitorResults = ({
         readonly={false}
         onTabChange={noTabChange}
         onSystemAssign={handleSystemAssign}
+        onSystemRemove={handleSystemRemove}
       />
 
       <AssignSystemModal

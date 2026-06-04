@@ -33,6 +33,7 @@ import {
   setLockedForGVL,
   setSuggestions,
 } from "./dictionary-form/dict-suggestion.slice";
+import { MOCK_COMPASS_VENDORS } from "./mockCompassVendors";
 import {
   useCreateSystemMutation,
   useLazyGetSystemsQuery,
@@ -69,11 +70,21 @@ export const AddNewSystemModal = ({
 }: AddNewSystemModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
-  const { tcf, dictionaryService } = useFeatures();
+  const { tcf, dictionaryService, flags } = useFeatures();
   const { isLoading } = useGetAllDictionaryEntriesQuery(undefined, {
     skip: !dictionaryService,
   });
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
+
+  // The dictionary/compass service is often disabled in local dev. Behind the
+  // explorer flag, fall back to mock compass vendors so the "Search Fides
+  // Compass" path stays demoable; picking one creates a system tagged with its
+  // vendor_id (compass-sourced), while a free-typed name creates a blank one.
+  const useMockCompass = !dictionaryService && flags.webMonitorExplorer;
+  const showCompassSearch = dictionaryService || useMockCompass;
+  const vendorOptions = dictionaryService
+    ? dictionaryOptions
+    : MOCK_COMPASS_VENDORS;
   const lockedForGVL = useAppSelector(selectLockedForGVL);
   const suggestionsState = useAppSelector(selectSuggestions);
   const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
@@ -158,7 +169,11 @@ export const AddNewSystemModal = ({
 
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-    if (values.vendor_id) {
+    // Only the real Compass service can mint vendor-backed systems via
+    // system-vendors. With the mock path, a picked vendor_id rides along into
+    // createSystem below (spread from `values`) so the system is still tagged
+    // as compass-sourced offline.
+    if (values.vendor_id && dictionaryService) {
       const result = await postVendorIds([values.vendor_id]);
       if (isErrorResult(result)) {
         message.error(getErrorMessage(result.error));
@@ -234,18 +249,18 @@ export const AddNewSystemModal = ({
       >
         <Flex vertical gap={20} className="pb-6 pt-4">
           <Text>
-            Enter a name and save to add this system to your inventory.
-            Optionally, check if it&apos;s listed in the Fides compass library
-            by selecting the compass icon.
+            {showCompassSearch
+              ? "Select a known Compass vendor, or enter a new name to create a system in your inventory."
+              : "Enter a name and save to add this system to your inventory."}
           </Text>
-          {dictionaryService ? (
+          {showCompassSearch ? (
             <VendorSelector
-              label="System name"
-              options={dictionaryOptions}
+              label="Enter system name"
+              options={vendorOptions}
               onVendorSelected={handleVendorSelected}
               isCreate
               lockedForGVL={lockedForGVL}
-              isLoading={isLoading}
+              isLoading={dictionaryService ? isLoading : false}
               nameRules={nameRules}
             />
           ) : (
