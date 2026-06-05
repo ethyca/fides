@@ -81,6 +81,7 @@ export {
   Star,
   Table,
   Tag,
+  TagGroup,
   Time,
   TransformInstructions,
   TrashCan,

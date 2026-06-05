@@ -4,7 +4,6 @@ import {
   Form,
   FormRule,
   Input,
-  Select,
   Typography,
   useMessage,
 } from "fidesui";
@@ -34,6 +33,7 @@ import {
   setLockedForGVL,
   setSuggestions,
 } from "./dictionary-form/dict-suggestion.slice";
+import { MOCK_COMPASS_VENDORS } from "./mockCompassVendors";
 import {
   useCreateSystemMutation,
   useLazyGetSystemsQuery,
@@ -75,6 +75,17 @@ export const AddNewSystemModal = ({
     skip: !dictionaryService,
   });
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
+
+  // The dictionary/compass service is often disabled in local dev. Fall back to
+  // mock compass vendors so the "Search Fides Compass" path stays demoable when
+  // there's no real Compass service; picking one creates a system tagged with
+  // its vendor_id (compass-sourced), while a free-typed name creates a blank
+  // one. (In an env with a live Compass service, the real options are used.)
+  const useMockCompass = !dictionaryService;
+  const showCompassSearch = dictionaryService || useMockCompass;
+  const vendorOptions = dictionaryService
+    ? dictionaryOptions
+    : MOCK_COMPASS_VENDORS;
   const lockedForGVL = useAppSelector(selectLockedForGVL);
   const suggestionsState = useAppSelector(selectSuggestions);
   const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
@@ -159,7 +170,11 @@ export const AddNewSystemModal = ({
 
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-    if (values.vendor_id) {
+    // Only the real Compass service can mint vendor-backed systems via
+    // system-vendors. With the mock path, a picked vendor_id rides along into
+    // createSystem below (spread from `values`) so the system is still tagged
+    // as compass-sourced offline.
+    if (values.vendor_id && dictionaryService) {
       const result = await postVendorIds([values.vendor_id]);
       if (isErrorResult(result)) {
         message.error(getErrorMessage(result.error));
@@ -235,19 +250,18 @@ export const AddNewSystemModal = ({
       >
         <Flex vertical gap={20} className="pb-6 pt-4">
           <Text>
-            Fides will add this system to your inventory and configure it for
-            consent using the categories of consent listed below. Optionally,
-            you can check if this system is listed within the Fides compass
-            library by selecting the compass icon below.
+            {showCompassSearch
+              ? "Select a known Compass vendor, or enter a new name to create a system in your inventory."
+              : "Enter a name and save to add this system to your inventory."}
           </Text>
-          {dictionaryService ? (
+          {showCompassSearch ? (
             <VendorSelectorAnt
-              label="System name"
-              options={dictionaryOptions}
+              label="Enter system name"
+              options={vendorOptions}
               onVendorSelected={handleVendorSelected}
               isCreate
               lockedForGVL={lockedForGVL}
-              isLoading={isLoading}
+              isLoading={dictionaryService ? isLoading : false}
               nameRules={nameRules}
             />
           ) : (
@@ -262,33 +276,6 @@ export const AddNewSystemModal = ({
               <Input data-testid="input-name" />
             </Form.Item>
           )}
-          <Form.Item
-            name="description"
-            label="Description"
-            tooltip="What services does this system perform?"
-            className="mb-0"
-          >
-            <Input.TextArea
-              disabled={lockedForGVL}
-              data-testid="input-description"
-            />
-          </Form.Item>
-          {/* TODO [HJ-379] Add in the Categories of consent */}
-          {/* TODO [HJ-373] Add in the Data steward support */}
-          <Form.Item
-            name="tags"
-            label="System Tags"
-            tooltip="Are there any tags to associate with this system?"
-            className="mb-0"
-          >
-            <Select
-              mode="tags"
-              options={[]}
-              disabled={lockedForGVL}
-              aria-label="System Tags"
-              data-testid="input-tags"
-            />
-          </Form.Item>
         </Flex>
       </Form>
     </ConfirmCloseModal>

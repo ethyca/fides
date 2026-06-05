@@ -84,40 +84,42 @@ export const MockCloudInfraResourceListItem = ({
       <List.Item
         key={item.urn}
         actions={[
-          <Space key="actions" size="middle">
+          <Space key="actions" size={32}>
             {item.location && <Tag color="default">{item.location}</Tag>}
-            {isMuted ? (
-              <Tooltip title="Restore">
+            <Space size="small">
+              {isMuted ? (
+                <Tooltip title="Restore">
+                  <Button
+                    size="small"
+                    icon={<Icons.View />}
+                    aria-label="Restore"
+                    data-testid={`restore-btn-${item.urn}`}
+                    onClick={() => onRestore(item.urn)}
+                  />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Ignore">
+                  <Button
+                    size="small"
+                    icon={<Icons.ViewOff />}
+                    aria-label="Ignore"
+                    data-testid={`ignore-btn-${item.urn}`}
+                    onClick={() => onIgnore(item.urn)}
+                  />
+                </Tooltip>
+              )}
+              <Tooltip title={approveTooltip}>
                 <Button
                   size="small"
-                  icon={<Icons.View />}
-                  aria-label="Restore"
-                  data-testid={`restore-btn-${item.urn}`}
-                  onClick={() => onRestore(item.urn)}
+                  type={approveDisabled ? "default" : "primary"}
+                  icon={<Icons.Checkmark />}
+                  aria-label="Approve"
+                  disabled={approveDisabled}
+                  data-testid={`approve-btn-${item.urn}`}
+                  onClick={() => onApprove(item.urn)}
                 />
               </Tooltip>
-            ) : (
-              <Tooltip title="Ignore">
-                <Button
-                  size="small"
-                  icon={<Icons.ViewOff />}
-                  aria-label="Ignore"
-                  data-testid={`ignore-btn-${item.urn}`}
-                  onClick={() => onIgnore(item.urn)}
-                />
-              </Tooltip>
-            )}
-            <Tooltip title={approveTooltip}>
-              <Button
-                size="small"
-                type={approveDisabled ? "default" : "primary"}
-                icon={<Icons.Checkmark />}
-                aria-label="Approve"
-                disabled={approveDisabled}
-                data-testid={`approve-btn-${item.urn}`}
-                onClick={() => onApprove(item.urn)}
-              />
-            </Tooltip>
+            </Space>
           </Space>,
         ]}
       >
@@ -154,7 +156,7 @@ export const MockCloudInfraResourceListItem = ({
               >
                 {name}
               </button>
-              {item.service && <Tag color="white">{serviceLabel}</Tag>}
+              {item.service && <Tag color="sandstone">{serviceLabel}</Tag>}
               {isMuted && (
                 <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[DiffStatus.MUTED]}>
                   Ignored
@@ -188,21 +190,32 @@ export const MockCloudInfraResourceListItem = ({
                 </Flex>
               )}
               <Flex
-                align="center"
+                vertical
                 gap="small"
-                wrap="wrap"
+                align="start"
                 style={{ minHeight: 32 }}
               >
                 {isAssigning ? (
+                  // Multi-select (mirrors the detail drawer): tick several
+                  // systems at once; untick to remove. Stays open until blur.
                   <SystemSelect
                     autoFocus
                     defaultOpen
+                    mode="multiple"
+                    labelInValue
                     placeholder="Search systems..."
-                    style={{ minWidth: 240 }}
+                    style={{ minWidth: 240, maxWidth: "100%" }}
+                    value={assignedSystems}
                     onAddSystem={onAddNewSystemClick}
-                    onSelect={(_, option) => {
-                      onAddSystem(item.urn, option);
-                      setIsAssigning(false);
+                    onSelect={(_, option) => onAddSystem(item.urn, option)}
+                    onDeselect={(value) => {
+                      const optionValue =
+                        typeof value === "object" &&
+                        value !== null &&
+                        "value" in value
+                          ? (value as DefaultOptionType).value
+                          : value;
+                      onRemoveSystem(item.urn, optionValue);
                     }}
                     onDropdownVisibleChange={(open) => {
                       if (open) {
@@ -219,26 +232,41 @@ export const MockCloudInfraResourceListItem = ({
                     data-testid={`system-select-${item.urn}`}
                   />
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsAssigning(true)}
-                    data-testid={`assign-system-btn-${item.urn}`}
-                    className="inline-flex items-center gap-1 text-xs text-[var(--fidesui-minos)] hover:underline"
-                  >
-                    <Icons.Add size={14} />
-                    {hasAssigned ? "Add system" : "Assign system"}
-                  </button>
+                  <>
+                    {assignedSystems.length > 0 && (
+                      <Flex gap="small" wrap="wrap">
+                        {assignedSystems.map((system) => (
+                          <Tag
+                            key={String(system.value)}
+                            color="white"
+                            bordered
+                            closable
+                            onClose={() =>
+                              onRemoveSystem(item.urn, system.value)
+                            }
+                            data-testid={`assigned-system-${item.urn}-${system.value}`}
+                          >
+                            {system.label}
+                          </Tag>
+                        ))}
+                      </Flex>
+                    )}
+                    <Tooltip
+                      title={hasAssigned ? "Add system" : "Assign system"}
+                    >
+                      <Button
+                        size="small"
+                        type="text"
+                        icon={<Icons.Add />}
+                        onClick={() => setIsAssigning(true)}
+                        aria-label={
+                          hasAssigned ? "Add system" : "Assign system"
+                        }
+                        data-testid={`assign-system-btn-${item.urn}`}
+                      />
+                    </Tooltip>
+                  </>
                 )}
-                {assignedSystems.map((system) => (
-                  <Tag
-                    key={String(system.value)}
-                    closable
-                    onClose={() => onRemoveSystem(item.urn, system.value)}
-                    data-testid={`assigned-system-${item.urn}-${system.value}`}
-                  >
-                    {system.label}
-                  </Tag>
-                ))}
               </Flex>
             </Flex>
           }
