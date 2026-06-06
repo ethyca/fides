@@ -99,6 +99,11 @@ class AWSIAMAuthenticationStrategy(AuthenticationStrategy):
         if cached_key and cached_secret and cached_token and cached_expiry:
             if not self._is_close_to_expiration(cached_expiry):
                 return Credentials(cached_key, cached_secret, cached_token)
+        elif any([cached_key, cached_secret, cached_token, cached_expiry]):
+            logger.debug(
+                "Partial cached credentials found for {}; refreshing.",
+                connection_config.key,
+            )
 
         return self._refresh_assumed_role_credentials(secrets, connection_config)
 
@@ -107,6 +112,7 @@ class AWSIAMAuthenticationStrategy(AuthenticationStrategy):
         secrets: Dict[str, Any],
         connection_config: ConnectionConfig,
     ) -> Credentials:
+        # Imported lazily to avoid a hard dependency on boto3 at module load time.
         import boto3
 
         assume_role_arn = secrets["aws_assume_role_arn"]
@@ -155,6 +161,7 @@ class AWSIAMAuthenticationStrategy(AuthenticationStrategy):
 
         except (ClientError, NoCredentialsError) as exc:
             self._handle_credential_error(exc, connection_config)
+            raise  # unreachable; _handle_credential_error is NoReturn
 
     def _resolve_region(
         self, url: Optional[str], connection_config: ConnectionConfig
@@ -174,6 +181,12 @@ class AWSIAMAuthenticationStrategy(AuthenticationStrategy):
             if len(parts) >= 4 and parts[-2] == "amazonaws" and parts[-1] == "com":
                 return parts[-3]
 
+        logger.warning(
+            "Could not infer AWS region from URL or secrets for connector {}; "
+            "defaulting to us-east-1. Set aws_region in the connector secrets or "
+            "authentication configuration to avoid this.",
+            connection_config.key,
+        )
         return "us-east-1"
 
     def _is_close_to_expiration(self, expires_at: int) -> bool:
@@ -224,9 +237,12 @@ class AWSIAMAuthenticationStrategy(AuthenticationStrategy):
 
         if isinstance(exc, NoCredentialsError):
             user_message = (
-                "No AWS credentials found. Provide either aws_access_key_id "
-                "and aws_secret_access_key, or ensure the Fides environment "
-                "has AWS credentials configured (e.g. via instance profile)."
+                "No base AWS credentials found to authenticate the STS AssumeRole call. "
+                "Providing an IAM Role ARN alone is not sufficient. AWS requires credentials "
+                "to call sts:AssumeRole. Either provide aws_access_key_id and "
+                "aws_secret_access_key alongside the ARN, or ensure the Fides environment "
+                "has ambient AWS credentials configured (e.g. instance profile, environment "
+                "variables, or ~/.aws/credentials)."
             )
         elif isinstance(exc, ClientError):
             error_code = exc.response.get("Error", {}).get("Code", "")

@@ -334,6 +334,7 @@ class ConnectorParam(BaseModel):
     multiselect: Optional[bool] = False
     description: Optional[str] = None
     sensitive: Optional[bool] = False
+    optional: bool = False
     type: Optional[str] = None
     allowed_values: Optional[List[str]] = None
     # type="endpoint" marks this param as a URL endpoint/domain param.

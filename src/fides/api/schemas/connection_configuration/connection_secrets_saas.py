@@ -162,7 +162,7 @@ class SaaSSchemaFactory:
                         json_schema_extra=extra,
                     ),
                 )
-                if connector_param.default_value
+                if connector_param.default_value or connector_param.optional
                 else (
                     param_type,
                     FieldInfo(

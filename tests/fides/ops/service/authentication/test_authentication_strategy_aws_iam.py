@@ -59,9 +59,7 @@ class TestStrategyConfiguration:
         assert strategy.service == "execute-api"
 
     def test_custom_service(self):
-        strategy = AuthenticationStrategy.get_strategy(
-            "aws_iam", {"service": "lambda"}
-        )
+        strategy = AuthenticationStrategy.get_strategy("aws_iam", {"service": "lambda"})
         assert strategy.service == "lambda"
 
     def test_custom_region(self):
@@ -142,9 +140,7 @@ class TestCredentialResolution:
 
 class TestAssumeRole:
     @patch("fides.api.service.authentication.authentication_strategy_aws_iam.boto3")
-    def test_assume_role_signs_request(
-        self, mock_boto3, assume_role_connection_config
-    ):
+    def test_assume_role_signs_request(self, mock_boto3, assume_role_connection_config):
         future_expiry = datetime.now(timezone.utc) + timedelta(hours=1)
         mock_sts = MagicMock()
         mock_sts.assume_role.return_value = {
@@ -253,7 +249,7 @@ class TestAssumeRole:
 
         with pytest.raises(FidesopsException) as exc:
             strategy.add_authentication(req, assume_role_connection_config)
-        assert "No AWS credentials found" in str(exc.value)
+        assert "No base AWS credentials found" in str(exc.value)
 
 
 class TestCredentialCaching:
@@ -291,9 +287,7 @@ class TestCredentialCaching:
     ):
         from botocore.credentials import Credentials
 
-        mock_refresh.return_value = Credentials(
-            "ASIA_NEW", "new_secret", "new_token"
-        )
+        mock_refresh.return_value = Credentials("ASIA_NEW", "new_secret", "new_token")
 
         close_expiry = int(
             (
@@ -325,9 +319,7 @@ class TestCredentialCaching:
 
 class TestRegionResolution:
     def test_region_from_configuration(self, static_key_secrets):
-        connection_config = ConnectionConfig(
-            key="test", secrets=static_key_secrets
-        )
+        connection_config = ConnectionConfig(key="test", secrets=static_key_secrets)
         req = Request(
             method="GET",
             url="https://abc123.execute-api.us-east-1.amazonaws.com/prod/users",
@@ -342,9 +334,7 @@ class TestRegionResolution:
         assert "ap-southeast-1" in auth_header
 
     def test_region_from_secrets(self, static_key_secrets):
-        connection_config = ConnectionConfig(
-            key="test", secrets=static_key_secrets
-        )
+        connection_config = ConnectionConfig(key="test", secrets=static_key_secrets)
         req = Request(
             method="GET",
             url="https://custom-domain.example.com/users",
@@ -447,9 +437,7 @@ class TestRequestSigning:
             url="https://abc123.execute-api.us-west-2.amazonaws.com/prod/users",
         ).prepare()
 
-        strategy = AuthenticationStrategy.get_strategy(
-            "aws_iam", {"service": "lambda"}
-        )
+        strategy = AuthenticationStrategy.get_strategy("aws_iam", {"service": "lambda"})
         authenticated_request = strategy.add_authentication(
             req, static_key_connection_config
         )

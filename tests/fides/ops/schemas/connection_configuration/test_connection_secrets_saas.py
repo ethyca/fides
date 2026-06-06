@@ -10,7 +10,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_saas import (
 )
 from fides.api.schemas.saas.saas_config import (
     ConnectorParam,
-    ExternalDatasetReference,
     SaaSConfig,
 )
 from fides.config.security_settings import DomainValidationMode
@@ -44,22 +43,23 @@ class TestSaaSConnectionSecrets:
         with pytest.raises(ValidationError) as exc:
             schema.model_validate(config)
 
-        required_fields = [
-            connector_param.name
-            for connector_param in (
-                saas_config.connector_params + saas_config.external_references
-            )
-            if isinstance(
-                connector_param, ExternalDatasetReference
-            )  # external refs are required
-            or not connector_param.default_value
-        ]
-
         errors = exc._excinfo[1].errors()
         assert (
             errors[0]["msg"]
             == "Value error, custom_schema must be supplied all of: [username, api_key, api_version, page_size, account_types, customer_id]."
         )
+
+    def test_optional_param_not_required(self, saas_config: SaaSConfig):
+        saas_config.connector_params = [
+            ConnectorParam(name="required_key"),
+            ConnectorParam(name="optional_key", optional=True),
+        ]
+        saas_config.external_references = []
+        schema = SaaSSchemaFactory(saas_config).get_saas_schema()
+        # optional_key absent — should not raise
+        schema.model_validate({"required_key": "value"})
+        # optional_key present — should also work
+        schema.model_validate({"required_key": "value", "optional_key": "val"})
 
     def test_extra_fields(
         self, saas_config: SaaSConfig, saas_example_secrets: Dict[str, Any]
