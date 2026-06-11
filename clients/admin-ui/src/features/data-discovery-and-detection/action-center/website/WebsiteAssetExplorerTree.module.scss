@@ -5,7 +5,9 @@
   :global(.ant-tree-node-content-wrapper) {
     display: flex;
     align-items: center;
-    padding-inline: var(--fidesui-padding-sm, 8px);
+    // Keep left breathing room before the icon, but hug the count closer to the
+    // right edge so there isn't a wide gap before the splitter divider.
+    padding-inline: var(--fidesui-padding-sm, 8px) var(--fidesui-padding-xs, 4px);
   }
 
   // This is a flat (all-leaf) tree, so the empty switcher column just creates a

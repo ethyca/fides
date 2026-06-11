@@ -9,7 +9,6 @@ import {
 import { MouseEventHandler, useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
-import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { formatDate } from "~/features/common/utils";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 import { DiffStatus } from "~/types/api";
@@ -19,8 +18,9 @@ import { DetailsDrawer } from "../fields/DetailsDrawer";
 import { DetailsAction } from "../fields/DetailsDrawer/types";
 import {
   getServiceIconUrl,
-  getServiceLabel,
+  getServiceTypeLabel,
 } from "../utils/cloudInfraServiceInfo";
+import { MockSystemSelect } from "./MockSystemSelect";
 
 const { Text } = Typography;
 
@@ -105,14 +105,9 @@ export const MockCloudInfraResourceDetailsDrawer = ({
 
   const items = [
     {
-      key: "service",
-      label: "Service",
-      children: getServiceLabel(resource.service),
-    },
-    {
-      key: "provider",
-      label: "Provider",
-      children: resource.meta?.provider?.toUpperCase() ?? "—",
+      key: "type",
+      label: "Type",
+      children: getServiceTypeLabel(resource.service),
     },
     {
       key: "region",
@@ -147,17 +142,8 @@ export const MockCloudInfraResourceDetailsDrawer = ({
       ),
     },
     {
-      key: "source_type",
-      label: "Source type",
-      children: (
-        <Text code className="text-xs">
-          {resource.meta?.source_type ?? "—"}
-        </Text>
-      ),
-    },
-    {
-      key: "approved",
-      label: "Approved",
+      key: "detected",
+      label: "Detected",
       children: resource.updated_at
         ? formatDate(new Date(resource.updated_at))
         : "—",
@@ -235,7 +221,7 @@ export const MockCloudInfraResourceDetailsDrawer = ({
           <Descriptions bordered size="small" column={1} items={items} />
           <Flex vertical gap={4}>
             <Text strong>Assigned systems</Text>
-            <SystemSelect
+            <MockSystemSelect
               mode="multiple"
               labelInValue
               placeholder="Search systems..."

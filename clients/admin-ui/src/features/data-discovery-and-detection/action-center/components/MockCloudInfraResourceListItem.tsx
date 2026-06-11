@@ -7,22 +7,24 @@ import {
   Icons,
   List,
   Space,
+  SparkleIcon,
   Tag,
   Tooltip,
 } from "fidesui";
 import { MouseEventHandler, useRef, useState } from "react";
 
-import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { LabeledText } from "~/features/privacy-requests/dashboard/list-item/components/LabeledText";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 import { DiffStatus } from "~/types/api";
 import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
 import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "../constants";
+import { isSuggestedSystem } from "../mock/mockCloudInfraSystems";
 import {
   getServiceIconUrl,
   getServiceLabel,
 } from "../utils/cloudInfraServiceInfo";
+import { MockSystemSelect } from "./MockSystemSelect";
 
 interface MockCloudInfraResourceListItemProps {
   item: CloudInfraStagedResource;
@@ -198,7 +200,7 @@ export const MockCloudInfraResourceListItem = ({
                 {isAssigning ? (
                   // Multi-select (mirrors the detail drawer): tick several
                   // systems at once; untick to remove. Stays open until blur.
-                  <SystemSelect
+                  <MockSystemSelect
                     autoFocus
                     defaultOpen
                     mode="multiple"
@@ -232,25 +234,7 @@ export const MockCloudInfraResourceListItem = ({
                     data-testid={`system-select-${item.urn}`}
                   />
                 ) : (
-                  <>
-                    {assignedSystems.length > 0 && (
-                      <Flex gap="small" wrap="wrap">
-                        {assignedSystems.map((system) => (
-                          <Tag
-                            key={String(system.value)}
-                            color="white"
-                            bordered
-                            closable
-                            onClose={() =>
-                              onRemoveSystem(item.urn, system.value)
-                            }
-                            data-testid={`assigned-system-${item.urn}-${system.value}`}
-                          >
-                            {system.label}
-                          </Tag>
-                        ))}
-                      </Flex>
-                    )}
+                  <Flex gap="small" wrap="wrap" align="center">
                     <Tooltip
                       title={hasAssigned ? "Add system" : "Assign system"}
                     >
@@ -263,9 +247,30 @@ export const MockCloudInfraResourceListItem = ({
                           hasAssigned ? "Add system" : "Assign system"
                         }
                         data-testid={`assign-system-btn-${item.urn}`}
+                        className="flex-none"
                       />
                     </Tooltip>
-                  </>
+                    {assignedSystems.map((system) => (
+                      <Tag
+                        key={String(system.value)}
+                        color="white"
+                        bordered
+                        closable
+                        onClose={() => onRemoveSystem(item.urn, system.value)}
+                        data-testid={`assigned-system-${item.urn}-${system.value}`}
+                      >
+                        <Flex align="center" gap="small">
+                          {isSuggestedSystem(system.value) && (
+                            <SparkleIcon
+                              className="flex-none"
+                              style={{ color: "var(--fidesui-brand-minos)" }}
+                            />
+                          )}
+                          {system.label}
+                        </Flex>
+                      </Tag>
+                    ))}
+                  </Flex>
                 )}
               </Flex>
             </Flex>

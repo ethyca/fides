@@ -16,24 +16,32 @@ import {
   Tooltip,
   Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useSearch } from "~/features/common/hooks";
 import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
+import { pluralize } from "~/features/common/utils";
 import { DiffStatus, SystemStagedResourcesAggregateRecord } from "~/types/api";
 import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
-import { AssignSystemModal } from "../AssignSystemModal";
+import { MockAssignSystemModal } from "../components/MockAssignSystemModal";
 import { MockCloudInfraResourceDetailsDrawer } from "../components/MockCloudInfraResourceDetailsDrawer";
 import { MockCloudInfraResourceListItem } from "../components/MockCloudInfraResourceListItem";
 import { useCloudInfraFilters } from "../fields/useCloudInfraFilters";
 import RegexToggle from "../forms/RegexToggle";
 import { useMockCloudInfraResources } from "../hooks/useMockCloudInfraResources";
 import { MOCK_AWS_RESOURCES } from "../mock/awsCloudInfraMock";
+import {
+  getMockSystemLogoSource,
+  isSuggestedSystem,
+} from "../mock/mockCloudInfraSystems";
 import { getServiceLabel } from "../utils/cloudInfraServiceInfo";
-import WebsiteAssetExplorerTree from "../website/WebsiteAssetExplorerTree";
+import WebsiteAssetExplorerTree, {
+  AssetExplorerNodeAction,
+} from "../website/WebsiteAssetExplorerTree";
 import { WebsiteSystemTreeNodeData } from "../website/websiteTreeUtils";
 
 const { Text } = Typography;
@@ -70,11 +78,14 @@ export const MockCloudInfraResourcesTable = ({
   showApproved = false,
 }: MockCloudInfraResourcesTableProps) => {
   const messageApi = useMessage();
+  const modalApi = useModal();
   const filters = useCloudInfraFilters();
   const search = useSearch();
   const [searchRegex, setSearchRegex] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [selectedSystem, setSelectedSystem] = useState<string>();
+  // Tree container selection — supports modifier-key multi-select for bulk
+  // actions; also drives the list filter (union of selected systems).
+  const [selectedSystemKeys, setSelectedSystemKeys] = useState<string[]>([]);
   // Recently-changed urns that should "stay put" in the current filtered view
   // until you navigate to another tree node (avoids the jarring vanish when a
   // resource is assigned/unassigned while filtered).
@@ -114,7 +125,6 @@ export const MockCloudInfraResourcesTable = ({
     statusFilters: effectiveStatusFilters,
     locationFilters: filters.locationFilters,
     serviceFilters: filters.serviceFilters,
-    accountFilters: filters.accountFilters,
     search: search.searchQuery ?? "",
     searchRegex,
   });
@@ -124,9 +134,10 @@ export const MockCloudInfraResourcesTable = ({
 
   // Navigating to another tree node clears the sticky set so the list
   // re-filters cleanly (assigned resources correctly leave "Unassigned").
+  const selectionKey = selectedSystemKeys.join("|");
   useEffect(() => {
     setStickyUrns(new Set());
-  }, [selectedSystem]);
+  }, [selectionKey]);
 
   // Build the explorer tree: a single "Resources" grouping for unassigned
   // resources, plus a node per assigned system (with resource counts). Systems
@@ -164,6 +175,10 @@ export const MockCloudInfraResourcesTable = ({
         total_updates: count,
       } as SystemStagedResourcesAggregateRecord,
       count,
+      // Leading icon: logo for known inventory systems, sparkle for
+      // Fides-suggested systems, generic icon otherwise.
+      logoSource: getMockSystemLogoSource(key),
+      suggested: isSuggestedSystem(key),
     });
     return [
       makeNode(UNCATEGORIZED_SEGMENT, "Unassigned resources", unassigned),
@@ -173,28 +188,84 @@ export const MockCloudInfraResourcesTable = ({
     ];
   }, [data.items, getAssignedSystems]);
 
-  // Filter the list by the selected tree node (a system, the unassigned
-  // "Resources" group, or nothing = show all).
+  // Filter the list by the selected tree node(s): a system, the unassigned
+  // "Resources" group, or nothing = show all. With multiple selected we show
+  // the union of their resources.
   const visibleItems = useMemo(() => {
     const matchesNode = (i: CloudInfraStagedResource) => {
-      if (!selectedSystem) {
+      if (!selectedSystemKeys.length) {
         return true;
       }
-      if (selectedSystem === UNCATEGORIZED_SEGMENT) {
-        return getAssignedSystems(i.urn).length === 0;
-      }
-      return getAssignedSystems(i.urn).some(
-        (s) => String(s.value) === selectedSystem,
+      return selectedSystemKeys.some((key) =>
+        key === UNCATEGORIZED_SEGMENT
+          ? getAssignedSystems(i.urn).length === 0
+          : getAssignedSystems(i.urn).some((s) => String(s.value) === key),
       );
     };
     // A row stays if it still matches the selected node OR was just changed
     // (sticky) — so assigning a system never yanks the row out from under you.
     return data.items.filter((i) => matchesNode(i) || stickyUrns.has(i.urn));
-  }, [data.items, selectedSystem, getAssignedSystems, stickyUrns]);
+  }, [data.items, selectedSystemKeys, getAssignedSystems, stickyUrns]);
 
   const total = visibleItems.length;
   const startIndex = (page - 1) * pageSize;
   const pageItems = visibleItems.slice(startIndex, startIndex + pageSize);
+
+  // Resources under a tree node that can still be approved: assigned to that
+  // system and not already approved/ignored. Unassigned resources can't be
+  // approved (no system), so that grouping yields nothing.
+  const approvableUrnsForNode = (nodeKey: string): string[] =>
+    nodeKey === UNCATEGORIZED_SEGMENT
+      ? []
+      : data.items
+          .filter(
+            (i) =>
+              i.diff_status !== DiffStatus.MONITORED &&
+              i.diff_status !== DiffStatus.MUTED,
+          )
+          .filter((i) =>
+            getAssignedSystems(i.urn).some((s) => String(s.value) === nodeKey),
+          )
+          .map((i) => i.urn);
+
+  const approvableUrnsForNodes = (
+    nodes: WebsiteSystemTreeNodeData[],
+  ): string[] =>
+    Array.from(
+      new Set(nodes.flatMap((node) => approvableUrnsForNode(node.key))),
+    );
+
+  // Approve the selected system(s) and all their child resources, mirroring the
+  // datastore monitor's confirm-then-promote flow.
+  const handleApproveNodes = (nodes: WebsiteSystemTreeNodeData[]) => {
+    const urns = approvableUrnsForNodes(nodes);
+    if (!urns.length) {
+      return;
+    }
+    const label = pluralize(urns.length, "resource", "resources");
+    modalApi.confirm({
+      title: "Approve resources",
+      content: `Approve ${urns.length} ${label}? This adds them to your inventory.`,
+      okText: "Approve",
+      onOk: () => {
+        urns.forEach((urn) => approve(urn));
+        markSticky(urns);
+        messageApi.success(`Approved ${urns.length} ${label}`);
+      },
+    });
+  };
+
+  // Only action needed in the tree: approve a system (and its resources).
+  // Disabled when the selection has nothing left to approve.
+  const treeNodeActions: AssetExplorerNodeAction[] = [
+    {
+      key: "approve",
+      label: "Approve",
+      icon: <Icons.Checkmark />,
+      disabled: (nodes) => approvableUrnsForNodes(nodes).length === 0,
+      onClick: handleApproveNodes,
+    },
+  ];
 
   // Filter option lists derived from the full mock dataset (not filtered set,
   // so the dropdowns always show every value).
@@ -210,13 +281,6 @@ export const MockCloudInfraResourcesTable = ({
       Array.from(new Set(MOCK_AWS_RESOURCES.map((r) => r.service))).map(
         (svc) => ({ label: getServiceLabel(svc), value: svc }),
       ),
-    [],
-  );
-  const accountOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(MOCK_AWS_RESOURCES.map((r) => r.cloud_account_id)),
-      ).map((acct) => ({ label: acct, value: acct })),
     [],
   );
 
@@ -347,15 +411,16 @@ export const MockCloudInfraResourcesTable = ({
       <Splitter className="h-[calc(100%-48px)] overflow-hidden">
         <Splitter.Panel
           defaultSize={250}
-          style={{ paddingRight: "var(--fidesui-padding-md)" }}
+          style={{ paddingRight: "var(--fidesui-padding-sm)" }}
         >
           <WebsiteAssetExplorerTree
             title="Resource explorer"
             nodes={treeNodes}
-            selectedKey={selectedSystem}
+            selectedKeys={selectedSystemKeys}
             isLoading={isLoading}
-            onSelectSystem={(key) => {
-              setSelectedSystem(key);
+            nodeActions={treeNodeActions}
+            onSelectKeys={(keys) => {
+              setSelectedSystemKeys(keys);
               setPage(1);
             }}
           />
@@ -371,7 +436,7 @@ export const MockCloudInfraResourcesTable = ({
               showIcon
               type="info"
               message="Review detected AWS resources"
-              description="Fides detected the following resources in your AWS infrastructure. Assign one or more systems to each resource, then approve to add it to your inventory. Ignore resources that aren't relevant to your privacy program."
+              description="Fides detected the following resources in your AWS infrastructure. Assign one or more systems to each resource, then approve to add it to your inventory. Ignore resources that aren't relevant to your privacy needs."
             />
             <Flex justify="space-between" gap="medium" wrap="wrap">
               <Space.Compact>
@@ -427,20 +492,6 @@ export const MockCloudInfraResourcesTable = ({
                   maxTagPlaceholder={renderTagPlaceholder}
                   className="w-40"
                   aria-label="Filter by service"
-                />
-                <Select
-                  placeholder="Account ID"
-                  options={accountOptions}
-                  value={filters.accountFilters ?? []}
-                  onChange={(values: string[]) =>
-                    filters.setAccountFilters(values)
-                  }
-                  mode="multiple"
-                  allowClear
-                  maxTagCount="responsive"
-                  maxTagPlaceholder={renderTagPlaceholder}
-                  className="w-48"
-                  aria-label="Filter by account ID"
                 />
                 <Dropdown
                   menu={{ items: actionMenuItems }}
@@ -573,7 +624,7 @@ export const MockCloudInfraResourcesTable = ({
           messageApi.info(`Restored ${detailsResource?.name ?? urn}`);
         }}
       />
-      <AssignSystemModal
+      <MockAssignSystemModal
         isOpen={bulkAssignOpen}
         onClose={() => setBulkAssignOpen(false)}
         onSave={(system) => {

@@ -5,11 +5,24 @@ import { DiffStatus } from "~/types/api";
 import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
 import { MOCK_AWS_RESOURCES } from "../mock/awsCloudInfraMock";
+import {
+  DEFAULT_RESOURCE_SYSTEM_ASSIGNMENTS,
+  getDefaultAssignedSystems,
+} from "../mock/mockCloudInfraSystems";
 
 interface ResourceOverride {
   assignedSystems: DefaultOptionType[];
   diff_status?: DiffStatus;
 }
+
+// Seed the scan with Fides-suggested (and a known-inventory) system mapping so
+// those system groupings show up in the tree by default.
+const SEEDED_OVERRIDES: Record<string, ResourceOverride> = Object.fromEntries(
+  Object.keys(DEFAULT_RESOURCE_SYSTEM_ASSIGNMENTS).map((urn) => [
+    urn,
+    { assignedSystems: getDefaultAssignedSystems(urn) },
+  ]),
+);
 
 interface UseMockCloudInfraResourcesArgs {
   statusFilters?: string[] | null;
@@ -51,9 +64,8 @@ export const useMockCloudInfraResources = ({
   search,
   searchRegex,
 }: UseMockCloudInfraResourcesArgs) => {
-  const [overrides, setOverrides] = useState<Record<string, ResourceOverride>>(
-    {},
-  );
+  const [overrides, setOverrides] =
+    useState<Record<string, ResourceOverride>>(SEEDED_OVERRIDES);
 
   const merged = useMemo<CloudInfraStagedResource[]>(
     () =>
