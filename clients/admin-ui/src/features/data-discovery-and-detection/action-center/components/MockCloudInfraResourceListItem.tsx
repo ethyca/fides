@@ -260,8 +260,16 @@ export const MockCloudInfraResourceListItem = ({
                         data-testid={`assigned-system-${item.urn}-${system.value}`}
                       >
                         <Flex align="center" gap="small">
-                          {isSuggestedSystem(system.value) && (
+                          {isSuggestedSystem(system.value) ? (
+                            // Fides-suggested staged system → sparkle.
                             <SparkleIcon
+                              className="flex-none"
+                              style={{ color: "var(--fidesui-brand-minos)" }}
+                            />
+                          ) : (
+                            // Exists in inventory / Compass (or user-created) →
+                            // generic system icon.
+                            <Icons.TransformInstructions
                               className="flex-none"
                               style={{ color: "var(--fidesui-brand-minos)" }}
                             />

@@ -1,6 +1,4 @@
 import {
-  Button,
-  Dropdown,
   Empty,
   Flex,
   Icons,
@@ -10,7 +8,7 @@ import {
   Title,
   Tree,
 } from "fidesui";
-import { ReactNode, useMemo } from "react";
+import { useMemo } from "react";
 
 import { nFormatter } from "~/features/common/utils";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -23,56 +21,6 @@ import {
 } from "./websiteTreeUtils";
 
 const NODE_LOGO_SIZE = 18;
-
-/**
- * A row action surfaced both in the per-node hover menu and the multi-select
- * footer (mirrors the datastore monitor tree's pattern). Actions receive the
- * list of target nodes — one for the hover menu, many for the footer.
- */
-export interface AssetExplorerNodeAction {
-  key: string;
-  label: string;
-  icon?: ReactNode;
-  onClick: (nodes: WebsiteSystemTreeNodeData[]) => void;
-  /** Return true to render the action disabled for the given node(s). */
-  disabled?: (nodes: WebsiteSystemTreeNodeData[]) => boolean;
-}
-
-const TreeNodeActions = ({
-  nodeData,
-  actions,
-}: {
-  nodeData: WebsiteSystemTreeNodeData;
-  actions: AssetExplorerNodeAction[];
-}) => (
-  <Dropdown
-    destroyOnHidden
-    menu={{
-      items: actions.map((action) => ({
-        key: action.key,
-        label: action.label,
-        icon: action.icon,
-        disabled: action.disabled?.([nodeData]),
-      })),
-      onClick: ({ key, domEvent }) => {
-        domEvent.preventDefault();
-        domEvent.stopPropagation();
-        actions.find((action) => action.key === key)?.onClick([nodeData]);
-      },
-    }}
-  >
-    <Button
-      aria-label="Show node actions"
-      type="text"
-      size="small"
-      // Tight (override antd's icon-only 24px width + padding) so the kebab
-      // sits centered in the same slot the count occupies.
-      className="!h-5 !w-4 !min-w-0 flex-none !p-0"
-      onClick={(e) => e.stopPropagation()}
-      icon={<Icons.OverflowMenuVertical />}
-    />
-  </Dropdown>
-);
 
 const TreeNodeLeadingVisual = ({
   nodeData,
@@ -113,71 +61,19 @@ const TreeNodeLeadingVisual = ({
 
 const TreeNodeTitle = ({
   nodeData,
-  actions,
 }: {
   nodeData: WebsiteSystemTreeNodeData;
-  actions?: AssetExplorerNodeAction[];
 }) => {
   return (
-    <Flex
-      align="center"
-      justify="space-between"
-      gap="small"
-      className="group w-full"
-    >
+    <Flex align="center" justify="space-between" gap="small" className="w-full">
       <Flex align="center" gap="small" className="overflow-hidden">
         <TreeNodeLeadingVisual nodeData={nodeData} />
         <Text ellipsis={{ tooltip: nodeData.title }}>{nodeData.title}</Text>
       </Flex>
       <Flex align="center" gap="small" className="flex-none">
         <DiscoveryStatusIcon consentStatus={nodeData.record.consent_status} />
-        {actions?.length ? (
-          // The slot shrink-wraps the count (no extra right padding); on hover
-          // the kebab fades in centered over the count, so it stays in place.
-          <span className="relative inline-flex items-center">
-            <Text
-              type="secondary"
-              className="transition-opacity group-hover:opacity-0"
-            >
-              {nFormatter(nodeData.count)}
-            </Text>
-            <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-              <TreeNodeActions nodeData={nodeData} actions={actions} />
-            </span>
-          </span>
-        ) : (
-          <Text type="secondary">{nFormatter(nodeData.count)}</Text>
-        )}
+        <Text type="secondary">{nFormatter(nodeData.count)}</Text>
       </Flex>
-    </Flex>
-  );
-};
-
-const TreeActionFooter = ({
-  selectedNodes,
-  actions,
-}: {
-  selectedNodes: WebsiteSystemTreeNodeData[];
-  actions: AssetExplorerNodeAction[];
-}) => {
-  const [primaryAction] = actions;
-  return (
-    <Flex
-      justify="space-between"
-      align="center"
-      gap="small"
-      className="flex-none"
-    >
-      <Text ellipsis>{`${selectedNodes.length} selected`}</Text>
-      <Button
-        aria-label={`${primaryAction.label} ${selectedNodes.length} selected`}
-        icon={primaryAction.icon}
-        size="small"
-        disabled={primaryAction.disabled?.(selectedNodes)}
-        onClick={() => primaryAction.onClick(selectedNodes)}
-        className="flex-none"
-        data-testid={`tree-footer-action-${primaryAction.key}`}
-      />
     </Flex>
   );
 };
@@ -187,26 +83,18 @@ export interface WebsiteAssetExplorerTreeProps {
   nodes: WebsiteSystemTreeNodeData[];
   /** Currently-selected node keys (empty = nothing selected → show all). */
   selectedKeys: string[];
-  /**
-   * Fired when the selection changes. Supports modifier-key multi-select
-   * (shift for ranges, cmd/ctrl for individual toggles) via the tree.
-   */
+  /** Fired when the selection changes (single-select; clears on re-click). */
   onSelectKeys: (keys: string[]) => void;
   isLoading?: boolean;
   /** Panel heading. */
   title?: string;
-  /**
-   * Optional actions for a node (hover overflow menu) and any multi-selection
-   * (footer bar) — e.g. approve a system + its resources.
-   */
-  nodeActions?: AssetExplorerNodeAction[];
 }
 
 /**
  * Presentational tree for the monitor "explorer" left panel. The parent builds
- * the flat node list (one grouping per system, plus a catch-all) and owns
- * selection; this component renders + styles it, plus an optional per-node
- * hover menu and a multi-select footer for bulk actions.
+ * the flat node list (one grouping per system, plus a catch-all); this
+ * component renders it and owns single-select navigation/filtering — clicking a
+ * node filters the list, clicking it again clears the filter.
  */
 const WebsiteAssetExplorerTree = ({
   nodes,
@@ -214,7 +102,6 @@ const WebsiteAssetExplorerTree = ({
   onSelectKeys,
   isLoading,
   title = "Asset explorer",
-  nodeActions,
 }: WebsiteAssetExplorerTreeProps) => {
   const treeData = useMemo(
     () =>
@@ -230,14 +117,6 @@ const WebsiteAssetExplorerTree = ({
   const nodesByKey = useMemo(
     () => new Map(nodes.map((node) => [node.key, node])),
     [nodes],
-  );
-
-  const selectedNodes = useMemo(
-    () =>
-      selectedKeys
-        .map((key) => nodesByKey.get(key))
-        .filter((node): node is WebsiteSystemTreeNodeData => !!node),
-    [selectedKeys, nodesByKey],
   );
 
   return (
@@ -260,7 +139,6 @@ const WebsiteAssetExplorerTree = ({
         <div className="flex-1 overflow-y-auto">
           <Tree.DirectoryTree
             blockNode
-            multiple
             showIcon={false}
             rootClassName={styles["asset-explorer-tree"]}
             selectedKeys={selectedKeys}
@@ -272,19 +150,11 @@ const WebsiteAssetExplorerTree = ({
               if (!nodeData) {
                 return null;
               }
-              return (
-                <TreeNodeTitle nodeData={nodeData} actions={nodeActions} />
-              );
+              return <TreeNodeTitle nodeData={nodeData} />;
             }}
-            onSelect={(keys, info) => {
-              const native = info.nativeEvent as MouseEvent;
-              // Modifier keys → native multi-select (cmd/ctrl toggle, shift
-              // range). Plain click → single select, toggling off when the
-              // sole selected node is clicked again (reveals all resources).
-              if (native.metaKey || native.ctrlKey || native.shiftKey) {
-                onSelectKeys(keys.map(String));
-                return;
-              }
+            onSelect={(_keys, info) => {
+              // Single-select filter: clicking the already-selected node clears
+              // the selection (revealing all resources).
               const clickedKey = info.node.key.toString();
               const isOnlySelected =
                 selectedKeys.length === 1 && selectedKeys[0] === clickedKey;
@@ -292,9 +162,6 @@ const WebsiteAssetExplorerTree = ({
             }}
           />
         </div>
-      ) : null}
-      {nodeActions?.length && selectedNodes.length > 0 ? (
-        <TreeActionFooter selectedNodes={selectedNodes} actions={nodeActions} />
       ) : null}
     </Flex>
   );

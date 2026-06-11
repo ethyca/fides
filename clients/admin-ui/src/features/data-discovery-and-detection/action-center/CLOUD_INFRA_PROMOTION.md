@@ -18,17 +18,17 @@ build against. We deliberately keep most of this invisible in the UI — the use
 
 ## When is a System created in the inventory?
 
-**On promotion, if it doesn't already exist (create-if-absent, idempotent).**
+**When a resource is promoted, all of its assigned systems are created if they don't
+already exist (create-if-absent, idempotent).**
 
-- **Compass/inventory** → already exists; promotion just links the resource(s) to it.
-- **Suggested** → does _not_ exist as a real System until the first resource assigned to
-  it is promoted. Promotion materializes it, keyed by its stable `fides_key` (and
-  `vendor_id` when Compass-matched). Reuse the website-monitor pattern
-  (`create_system_from_vendor`).
+- **Compass/inventory** → already exists; promotion just links the resource to it.
+- **Suggested** → does _not_ exist as a real System until a resource assigned to it is
+  promoted. Promotion materializes it, keyed by its stable `fides_key` (and `vendor_id`
+  when Compass-matched). Reuse the website-monitor pattern (`create_system_from_vendor`).
 - **New (user-created)** → already created at assign time; promotion just links.
 
-Net: **assignment is staged intent; the System is guaranteed to exist at promote time,
-created lazily if needed.** Re-promoting never duplicates a system.
+Net: **assignment is staged intent; promoting a resource guarantees its systems exist,
+creating any that are missing.** Re-promoting never duplicates a system.
 
 ## Multi-system membership
 
@@ -36,22 +36,27 @@ A resource can be assigned to **multiple systems**. This does **not** duplicate 
 resource — it is one resource record that is a _member_ of several systems (a
 resource↔system association, not copies).
 
-## How promotion works across multiple systems (per-membership)
+## How promotion works across multiple systems (per-resource)
 
-Promotion is scoped to the **membership** (resource × system), not the whole resource.
+Promotion is a **per-resource** action, taken in the main resource list (a resource's
+Approve button, or the list's bulk Approve). The explorer tree is navigation/filtering
+only — there is **no "promote this system"** action.
 
-Example — resource **X** is assigned to **A, B, C**; you promote **System A**:
+Promoting a resource realizes it under **all** of its assigned systems at once, creating
+any that don't yet exist.
 
-- X is realized / monitored **under System A only**.
-- X's memberships in **B** and **C** stay **pending** until B and C are each promoted.
-- There is still **one** X; promoting B later realizes X under B, and so on.
+Example — resource **X** is assigned to **A, B, C**; you promote **X**:
 
-Why: each system can be reviewed/owned independently — promoting one system must not
-silently approve a resource into systems no one has reviewed.
+- A, B, C are each created in the inventory if absent (create-if-absent).
+- X is linked to / monitored under **A, B, and C** together.
 
-**Data-model implication:** promotion/diff state must be tracked **per (resource, system)
-membership**, not as a single resource-level status. "Approve System A" = promote the
-pending memberships of A's resources into A.
+A system shared by multiple resources is created the first time _any_ resource assigned to
+it is promoted; other resources assigned to that system stay **pending** until they are
+each promoted.
+
+**Data-model note:** resource↔system associations still exist (one resource can be a
+member of several systems); promotion promotes **all of a resource's memberships at
+once**, with system create-if-absent keyed by `fides_key` / `vendor_id`.
 
 ## Current state & gaps (what to build)
 
@@ -62,16 +67,16 @@ pending memberships of A's resources into A.
   model change (a resource↔system association carrying its own promotion/diff status).
 - **Create-if-absent on promotion already exists** for website monitors
   (`create_system_from_vendor`) — reuse for compass-matched and suggested systems.
-- **The frontend mock is a simplification** — it flips one resource-level `diff_status`
-  (approving via A flips X everywhere). That is _not_ the intended per-membership
-  behavior above; treat the mock as UX exploration only.
+- **The frontend mock** promotes per resource (row / bulk Approve in the list) and only
+  flips `diff_status` — it does **not** actually create systems (there is no inventory in
+  the mock). Treat it as UX exploration; create-if-absent + linking is the backend's job.
 
 ## UX/UI suggestions (optional)
 
-- On a resource assigned to multiple systems, show **per-system promotion state** (e.g. a
-  check vs. a pending dot on each system tag) so it's clear X is approved in A but pending
-  in B/C.
+- Tags on a resource distinguish **suggested** (sparkle) from systems that already exist
+  in inventory/Compass or are user-created (generic system icon), so it's clear which are
+  staged vs. real.
 - Keep distinguishing suggested (sparkle) vs. inventory (logo) vs. new (generic) in the
-  dropdown and tree (already done) so users see which systems will be created.
-- Optional: on bulk approve, a light "promoting will create N new systems" note on the
-  confirm modal.
+  assign dropdown and tree so users see which systems will be created on promotion.
+- Optional: when promoting a resource that will create new systems, a light "promoting
+  will add N new systems to your inventory" hint on the confirm/toast.

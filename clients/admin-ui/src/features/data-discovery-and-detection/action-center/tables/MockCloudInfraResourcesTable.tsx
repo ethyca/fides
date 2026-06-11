@@ -16,14 +16,12 @@ import {
   Tooltip,
   Typography,
   useMessage,
-  useModal,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useSearch } from "~/features/common/hooks";
 import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
-import { pluralize } from "~/features/common/utils";
 import { DiffStatus, SystemStagedResourcesAggregateRecord } from "~/types/api";
 import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
@@ -39,9 +37,7 @@ import {
   isSuggestedSystem,
 } from "../mock/mockCloudInfraSystems";
 import { getServiceLabel } from "../utils/cloudInfraServiceInfo";
-import WebsiteAssetExplorerTree, {
-  AssetExplorerNodeAction,
-} from "../website/WebsiteAssetExplorerTree";
+import WebsiteAssetExplorerTree from "../website/WebsiteAssetExplorerTree";
 import { WebsiteSystemTreeNodeData } from "../website/websiteTreeUtils";
 
 const { Text } = Typography;
@@ -78,7 +74,6 @@ export const MockCloudInfraResourcesTable = ({
   showApproved = false,
 }: MockCloudInfraResourcesTableProps) => {
   const messageApi = useMessage();
-  const modalApi = useModal();
   const filters = useCloudInfraFilters();
   const search = useSearch();
   const [searchRegex, setSearchRegex] = useState(false);
@@ -210,62 +205,6 @@ export const MockCloudInfraResourcesTable = ({
   const total = visibleItems.length;
   const startIndex = (page - 1) * pageSize;
   const pageItems = visibleItems.slice(startIndex, startIndex + pageSize);
-
-  // Resources under a tree node that can still be approved: assigned to that
-  // system and not already approved/ignored. Unassigned resources can't be
-  // approved (no system), so that grouping yields nothing.
-  const approvableUrnsForNode = (nodeKey: string): string[] =>
-    nodeKey === UNCATEGORIZED_SEGMENT
-      ? []
-      : data.items
-          .filter(
-            (i) =>
-              i.diff_status !== DiffStatus.MONITORED &&
-              i.diff_status !== DiffStatus.MUTED,
-          )
-          .filter((i) =>
-            getAssignedSystems(i.urn).some((s) => String(s.value) === nodeKey),
-          )
-          .map((i) => i.urn);
-
-  const approvableUrnsForNodes = (
-    nodes: WebsiteSystemTreeNodeData[],
-  ): string[] =>
-    Array.from(
-      new Set(nodes.flatMap((node) => approvableUrnsForNode(node.key))),
-    );
-
-  // Approve the selected system(s) and all their child resources, mirroring the
-  // datastore monitor's confirm-then-promote flow.
-  const handleApproveNodes = (nodes: WebsiteSystemTreeNodeData[]) => {
-    const urns = approvableUrnsForNodes(nodes);
-    if (!urns.length) {
-      return;
-    }
-    const label = pluralize(urns.length, "resource", "resources");
-    modalApi.confirm({
-      title: "Approve resources",
-      content: `Approve ${urns.length} ${label}? This adds them to your inventory.`,
-      okText: "Approve",
-      onOk: () => {
-        urns.forEach((urn) => approve(urn));
-        markSticky(urns);
-        messageApi.success(`Approved ${urns.length} ${label}`);
-      },
-    });
-  };
-
-  // Only action needed in the tree: approve a system (and its resources).
-  // Disabled when the selection has nothing left to approve.
-  const treeNodeActions: AssetExplorerNodeAction[] = [
-    {
-      key: "approve",
-      label: "Approve",
-      icon: <Icons.Checkmark />,
-      disabled: (nodes) => approvableUrnsForNodes(nodes).length === 0,
-      onClick: handleApproveNodes,
-    },
-  ];
 
   // Filter option lists derived from the full mock dataset (not filtered set,
   // so the dropdowns always show every value).
@@ -418,7 +357,6 @@ export const MockCloudInfraResourcesTable = ({
             nodes={treeNodes}
             selectedKeys={selectedSystemKeys}
             isLoading={isLoading}
-            nodeActions={treeNodeActions}
             onSelectKeys={(keys) => {
               setSelectedSystemKeys(keys);
               setPage(1);
