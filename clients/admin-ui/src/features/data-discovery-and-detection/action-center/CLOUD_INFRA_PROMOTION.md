@@ -13,8 +13,8 @@ build against. We deliberately keep most of this invisible in the UI — the use
 | Kind                    | What it is                                                                                       | Already in inventory? | Icon           |
 | ----------------------- | ------------------------------------------------------------------------------------------------ | --------------------- | -------------- |
 | **Compass / inventory** | A known system that already exists in inventory (Snowflake, Salesforce, …), usually Compass/vendor-matched | Yes                   | connector logo |
-| **Suggested**           | A Fides-suggested staged business application, proposed from the detected resources; not a real System yet | No (staged only)      | sparkle        |
-| **New (user-created)**  | A system the user creates on the fly while assigning                                             | Created at assign time | generic        |
+| **Suggested**           | A Fides-suggested staged business application, proposed from the detected resources; not a real System yet | No (staged only)      | system icon (sparkle on the resource tags only) |
+| **New (user-created)**  | A system the user creates on the fly while assigning                                             | Created at assign time | system icon + green "new" dot |
 
 ## When is a System created in the inventory?
 
@@ -73,10 +73,10 @@ once**, with system create-if-absent keyed by `fides_key` / `vendor_id`.
 
 ## UX/UI suggestions (optional)
 
-- Tags on a resource distinguish **suggested** (sparkle) from systems that already exist
-  in inventory/Compass or are user-created (generic system icon), so it's clear which are
-  staged vs. real.
-- Keep distinguishing suggested (sparkle) vs. inventory (logo) vs. new (generic) in the
-  assign dropdown and tree so users see which systems will be created on promotion.
+- Icon scheme: the tree and assign dropdown show the **connector logo** for
+  Compass/inventory systems and the plain **system icon** otherwise; **user-created**
+  systems carry a small green "new" dot. The **suggested** (sparkle) distinction is shown
+  only on a resource's assigned-system **tags**, where it's most actionable — keeping the
+  tree/dropdown calm.
 - Optional: when promoting a resource that will create new systems, a light "promoting
   will add N new systems to your inventory" hint on the confirm/toast.

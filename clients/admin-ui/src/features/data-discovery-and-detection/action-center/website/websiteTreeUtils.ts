@@ -1,5 +1,4 @@
 import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
-import type { ConnectionLogoSource } from "~/features/datastore-connections/ConnectionTypeLogo";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 /**
@@ -16,16 +15,6 @@ export interface WebsiteSystemTreeNodeData {
   record: SystemStagedResourcesAggregateRecord;
   /** Locally-tracked asset count (kept in sync for optimistic feedback). */
   count: number;
-  /**
-   * Optional logo for the node's leading visual (known inventory systems).
-   * When present it replaces the generic system icon.
-   */
-  logoSource?: ConnectionLogoSource;
-  /**
-   * Fides-suggested staged system — renders a sparkle icon (takes precedence
-   * over the generic icon, but not over a logo).
-   */
-  suggested?: boolean;
 }
 
 /**

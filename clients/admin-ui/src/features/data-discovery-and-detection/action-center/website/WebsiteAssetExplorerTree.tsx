@@ -1,26 +1,15 @@
-import {
-  Empty,
-  Flex,
-  Icons,
-  SparkleIcon,
-  Spin,
-  Text,
-  Title,
-  Tree,
-} from "fidesui";
+import { Empty, Flex, Icons, Spin, Text, Title, Tree } from "fidesui";
 import { useMemo } from "react";
 
 import { nFormatter } from "~/features/common/utils";
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 
+import { SystemLeadingIcon } from "../components/SystemLeadingIcon";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import styles from "./WebsiteAssetExplorerTree.module.scss";
 import {
   isUncategorizedKey,
   WebsiteSystemTreeNodeData,
 } from "./websiteTreeUtils";
-
-const NODE_LOGO_SIZE = 18;
 
 const TreeNodeLeadingVisual = ({
   nodeData,
@@ -31,32 +20,9 @@ const TreeNodeLeadingVisual = ({
   if (isUncategorizedKey(nodeData.key)) {
     return <Icons.TagGroup className="flex-none" />;
   }
-  // Known inventory (Compass) system → its connector logo.
-  if (nodeData.logoSource) {
-    return (
-      <ConnectionTypeLogo
-        data={nodeData.logoSource}
-        size={NODE_LOGO_SIZE}
-        className="flex-none"
-      />
-    );
-  }
-  // Fides-suggested staged system → sparkle icon.
-  if (nodeData.suggested) {
-    return (
-      <SparkleIcon
-        className="flex-none"
-        style={{ color: "var(--fidesui-brand-minos)" }}
-      />
-    );
-  }
-  // User-created / no Compass match → generic system icon.
-  return (
-    <Icons.TransformInstructions
-      className="flex-none"
-      style={{ color: "var(--fidesui-brand-minos)" }}
-    />
-  );
+  // Compass/inventory → logo; otherwise the generic system icon (green "new"
+  // dot for user-created systems). Suggested systems aren't marked in the tree.
+  return <SystemLeadingIcon value={nodeData.key} />;
 };
 
 const TreeNodeTitle = ({

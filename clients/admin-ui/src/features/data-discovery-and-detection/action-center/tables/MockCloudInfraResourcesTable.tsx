@@ -32,10 +32,6 @@ import { useCloudInfraFilters } from "../fields/useCloudInfraFilters";
 import RegexToggle from "../forms/RegexToggle";
 import { useMockCloudInfraResources } from "../hooks/useMockCloudInfraResources";
 import { MOCK_AWS_RESOURCES } from "../mock/awsCloudInfraMock";
-import {
-  getMockSystemLogoSource,
-  isSuggestedSystem,
-} from "../mock/mockCloudInfraSystems";
 import { getServiceLabel } from "../utils/cloudInfraServiceInfo";
 import WebsiteAssetExplorerTree from "../website/WebsiteAssetExplorerTree";
 import { WebsiteSystemTreeNodeData } from "../website/websiteTreeUtils";
@@ -170,10 +166,6 @@ export const MockCloudInfraResourcesTable = ({
         total_updates: count,
       } as SystemStagedResourcesAggregateRecord,
       count,
-      // Leading icon: logo for known inventory systems, sparkle for
-      // Fides-suggested systems, generic icon otherwise.
-      logoSource: getMockSystemLogoSource(key),
-      suggested: isSuggestedSystem(key),
     });
     return [
       makeNode(UNCATEGORIZED_SEGMENT, "Unassigned resources", unassigned),

@@ -1,48 +1,10 @@
-import { Flex, Icons, Select, SelectProps, SparkleIcon } from "fidesui";
+import { Flex, Select, SelectProps } from "fidesui";
 import { MouseEventHandler, ReactNode } from "react";
 
 import { CustomSelectOption } from "~/features/common/form/CustomSelectOption";
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 
-import {
-  getMockSystemLogoSource,
-  isSuggestedSystem,
-  MOCK_SYSTEM_SELECT_OPTIONS,
-} from "../mock/mockCloudInfraSystems";
-
-const LOGO_SIZE = 18;
-
-/**
- * Leading icon for a system: a connector logo for known inventory (Compass)
- * systems, a sparkle for Fides-suggested systems, otherwise the generic
- * system icon.
- */
-const SystemLogo = ({ value }: { value?: string | number | null }) => {
-  const logoSource = getMockSystemLogoSource(value);
-  if (logoSource) {
-    return (
-      <ConnectionTypeLogo
-        data={logoSource}
-        size={LOGO_SIZE}
-        className="flex-none"
-      />
-    );
-  }
-  if (isSuggestedSystem(value)) {
-    return (
-      <SparkleIcon
-        className="flex-none"
-        style={{ color: "var(--fidesui-brand-minos)" }}
-      />
-    );
-  }
-  return (
-    <Icons.TransformInstructions
-      className="flex-none"
-      style={{ color: "var(--fidesui-brand-minos)" }}
-    />
-  );
-};
+import { MOCK_SYSTEM_SELECT_OPTIONS } from "../mock/mockCloudInfraSystems";
+import { SystemLeadingIcon } from "./SystemLeadingIcon";
 
 const SystemLabel = ({
   value,
@@ -52,7 +14,7 @@ const SystemLabel = ({
   label?: ReactNode;
 }) => (
   <Flex align="center" gap="small" className="overflow-hidden">
-    <SystemLogo value={value} />
+    <SystemLeadingIcon value={value} />
     <span className="overflow-hidden text-ellipsis">{label}</span>
   </Flex>
 );

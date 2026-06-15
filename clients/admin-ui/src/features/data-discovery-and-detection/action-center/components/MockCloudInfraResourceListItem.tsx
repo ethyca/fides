@@ -7,7 +7,6 @@ import {
   Icons,
   List,
   Space,
-  SparkleIcon,
   Tag,
   Tooltip,
 } from "fidesui";
@@ -19,12 +18,12 @@ import { DiffStatus } from "~/types/api";
 import { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
 import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "../constants";
-import { isSuggestedSystem } from "../mock/mockCloudInfraSystems";
 import {
   getServiceIconUrl,
   getServiceLabel,
 } from "../utils/cloudInfraServiceInfo";
 import { MockSystemSelect } from "./MockSystemSelect";
+import { SystemTagIcon } from "./SystemLeadingIcon";
 
 interface MockCloudInfraResourceListItemProps {
   item: CloudInfraStagedResource;
@@ -260,20 +259,7 @@ export const MockCloudInfraResourceListItem = ({
                         data-testid={`assigned-system-${item.urn}-${system.value}`}
                       >
                         <Flex align="center" gap="small">
-                          {isSuggestedSystem(system.value) ? (
-                            // Fides-suggested staged system → sparkle.
-                            <SparkleIcon
-                              className="flex-none"
-                              style={{ color: "var(--fidesui-brand-minos)" }}
-                            />
-                          ) : (
-                            // Exists in inventory / Compass (or user-created) →
-                            // generic system icon.
-                            <Icons.TransformInstructions
-                              className="flex-none"
-                              style={{ color: "var(--fidesui-brand-minos)" }}
-                            />
-                          )}
+                          <SystemTagIcon value={system.value} />
                           {system.label}
                         </Flex>
                       </Tag>

@@ -103,6 +103,13 @@ export const isSuggestedSystem = (fidesKey?: string | number | null): boolean =>
   getMockSystem(fidesKey)?.kind === MockSystemKind.SUGGESTED;
 
 /**
+ * True for a system that isn't in the catalog — i.e. a user-created system not
+ * matched to Compass/inventory or a suggestion (gets a green-dot "new" badge).
+ */
+export const isNewSystem = (fidesKey?: string | number | null): boolean =>
+  fidesKey !== null && fidesKey !== undefined && !getMockSystem(fidesKey);
+
+/**
  * Flat value/label option list for the assign dropdown. Labels are kept as
  * plain strings so the stored selection (labelInValue) renders correctly in the
  * tree and tags; icons are layered on via optionRender/labelRender.
