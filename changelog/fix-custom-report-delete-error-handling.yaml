@@ -1,4 +1,4 @@
 type: Fixed
 description: Fixed custom report deletion silently reporting success when the delete request failed, and clearing the applied report before the delete completed
-pr: 0 # TODO: replace with the PR number once opened
+pr: 8287
 labels: []
