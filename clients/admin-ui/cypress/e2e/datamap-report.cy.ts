@@ -638,6 +638,26 @@ describe("Data map report table", () => {
         .its("request.url")
         .should("include", "1234");
     });
+    it("should surface an error and keep the report when deletion fails", () => {
+      cy.intercept("DELETE", "/api/v1/plus/custom-report/*", {
+        statusCode: 500,
+        body: "Internal Server Error",
+      }).as("deleteCustomReportError");
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("delete-report-button").first().click();
+      });
+      cy.getAntModalConfirmButtons().should("be.visible");
+      cy.getAntModalConfirmButtons().find(".ant-btn-dangerous").click();
+      cy.wait("@deleteCustomReportError");
+      // The failure is surfaced and nothing is silently cleared.
+      cy.shouldShowMessage("error");
+      cy.get(".ant-message-success").should("not.exist");
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("custom-report-item").should("have.length", 2);
+      });
+    });
   });
 
   describe("Exporting", () => {

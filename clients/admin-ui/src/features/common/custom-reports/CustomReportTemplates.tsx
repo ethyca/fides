@@ -16,7 +16,7 @@ import {
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
 import {
   CustomReportResponse,
@@ -144,11 +144,22 @@ export const CustomReportTemplates = ({
   };
 
   const handleDeleteReport = async (id: string) => {
+    const result = await deleteCustomReportMutationTrigger(id);
+    if (isErrorResult(result)) {
+      message.error(
+        getErrorMessage(
+          result.error,
+          `A problem occurred while deleting the ${CUSTOM_REPORT_TITLE.toLowerCase()}.`,
+        ),
+      );
+      return;
+    }
+    // Only clear the applied report once the delete has actually succeeded.
     if (id === fetchedReport?.id) {
       handleReset();
       onSavedReportDeleted();
     }
-    deleteCustomReportMutationTrigger(id);
+    message.success(`${CUSTOM_REPORT_TITLE} deleted successfully.`);
   };
 
   const onDelete = (report: CustomReportResponseMinimal) => {
