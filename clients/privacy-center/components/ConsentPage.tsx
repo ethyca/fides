@@ -11,7 +11,12 @@ import {
   saveFidesCookie,
   setupI18n,
 } from "fides-js";
-import { ChakraStack as Stack, useChakraToast as useToast } from "fidesui";
+import {
+  ChakraSpinner as Spinner,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraToast as useToast,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -62,7 +67,8 @@ const ConsentPage: NextPage = () => {
     [config],
   );
   const { setI18nInstance } = useI18n();
-  useSubscribeToPrivacyExperienceQuery();
+  const { isLoading: isExperienceLoading } =
+    useSubscribeToPrivacyExperienceQuery();
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
   const [
@@ -269,18 +275,10 @@ const ConsentPage: NextPage = () => {
     setIsI18nInitialized(true);
   }, [experience, setI18nInstance, isConfigDrivenConsent]);
 
-  return (
-    <Stack
-      as="main"
-      align="center"
-      data-testid="consent"
-      className="pc-page pc-page--consent pc-consent"
-    >
-      <ClientMetadata title="Privacy Center" icon={config.favicon_path} />
-
-      {/* Wait until i18n is initalized so we can diplay the correct language and
-       also we can use the correct history ids */}
-      {isI18nInitialized && (
+  const renderConsentBody = () => {
+    // i18n ready: render the consent UI.
+    if (isI18nInitialized) {
+      return (
         <Stack
           align="center"
           py={["6", "16"]}
@@ -295,7 +293,50 @@ const ConsentPage: NextPage = () => {
           {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
           <ConsentToggles storePreferences={storeConsentPreferences} />
         </Stack>
-      )}
+      );
+    }
+    // Still resolving geolocation / privacy experience: show a loading state.
+    if (isExperienceLoading) {
+      return (
+        <Stack align="center" py={["6", "16"]} data-testid="consent-loading">
+          <Spinner />
+        </Stack>
+      );
+    }
+    // Notice-driven consent could not resolve a privacy experience (e.g. no
+    // region available). Surface a message instead of rendering a blank page.
+    if (!isConfigDrivenConsent && !experience) {
+      return (
+        <Stack
+          align="center"
+          py={["6", "16"]}
+          maxWidth="720px"
+          px={[4, 6, 0]}
+          data-testid="consent-unavailable"
+        >
+          <Text textAlign="center">
+            We&apos;re unable to load your consent settings right now. Please
+            refresh the page or try again later.
+          </Text>
+        </Stack>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <Stack
+      as="main"
+      align="center"
+      data-testid="consent"
+      className="pc-page pc-page--consent pc-consent"
+    >
+      <ClientMetadata title="Privacy Center" icon={config.favicon_path} />
+
+      {/* Wait until i18n is initialized so we display the correct language and
+       use the correct history ids; otherwise show a loading or unavailable
+       state so the page is never silently blank. */}
+      {renderConsentBody()}
     </Stack>
   );
 };

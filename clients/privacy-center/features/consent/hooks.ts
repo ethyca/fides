@@ -35,7 +35,7 @@ export const useSubscribeToPrivacyExperienceQuery = () => {
     !GEOLOCATION_API_URL ||
     !!region;
 
-  useGetUserGeolocationQuery(GEOLOCATION_API_URL, {
+  const geolocationQuery = useGetUserGeolocationQuery(GEOLOCATION_API_URL, {
     skip: skipFetchGeolocation,
   });
 
@@ -45,7 +45,19 @@ export const useSubscribeToPrivacyExperienceQuery = () => {
     region: region as PrivacyNoticeRegion,
     property_id: propertyId,
   };
-  useGetPrivacyExperienceQuery(params, {
+  const experienceQuery = useGetPrivacyExperienceQuery(params, {
     skip: !region || skipFetchExperience,
   });
+
+  // True while geolocation or the privacy experience is still being resolved.
+  // Lets consumers render a loading state instead of a blank page until the
+  // experience is known (or known to be unavailable).
+  const isLoading =
+    (!skipFetchGeolocation &&
+      (geolocationQuery.isLoading || geolocationQuery.isFetching)) ||
+    (!!region &&
+      !skipFetchExperience &&
+      (experienceQuery.isLoading || experienceQuery.isFetching));
+
+  return { isLoading };
 };
