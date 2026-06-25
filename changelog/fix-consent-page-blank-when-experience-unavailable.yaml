@@ -1,4 +1,4 @@
 type: Fixed
 description: Fixed the Privacy Center consent page rendering a blank screen in notice-driven mode when a privacy experience could not be resolved; it now shows a loading state while resolving and a message when the experience is unavailable
-pr: 0 # TODO: replace with the PR number once opened
+pr: 8288
 labels: []
