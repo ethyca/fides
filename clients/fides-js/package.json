@@ -62,7 +62,7 @@
     "@rollup/plugin-replace": "^6.0.2",
     "a11y-dialog": "^7.5.3",
     "astring": "^1.9.0",
-    "js-cookie": "^3.0.5",
+    "js-cookie": "^3.0.8",
     "preact": "~10.22.0"
   },
   "devDependencies": {
@@ -87,7 +87,7 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "postcss": "^8.4.31",
+    "postcss": "^8.5.10",
     "prettier": "^3.8.3",
     "rollup": "~4.53.2",
     "rollup-plugin-copy": "^3.4.0",

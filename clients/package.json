@@ -35,12 +35,12 @@
     "openapi:generate": "turbo run openapi:generate"
   },
   "devDependencies": {
-    "turbo": "^2.2.3"
+    "turbo": "^2.9.14"
   },
   "dependencies": {
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "next": "^16.2.0",
+    "next": "^15.5.18",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
