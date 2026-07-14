@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@ant-design/cli": "^6.4.3",
-    "@hey-api/openapi-ts": "^0.88.2",
+    "@hey-api/openapi-ts": "^0.99.0",
     "@jest/globals": "^29.7.0",
     "@next/bundle-analyzer": "^16.2.0",
     "@testing-library/cypress": "^10.0.3",
