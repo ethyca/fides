@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.86.2..main)
 
+### Added
+- Initial support for IAB TCF Policy v5.0.b / GVL specification version 4 (feature standard explanation texts)
+
 ## [2.86.2](https://github.com/ethyca/fides/compare/2.86.1..2.86.2)
 
 ### Changed

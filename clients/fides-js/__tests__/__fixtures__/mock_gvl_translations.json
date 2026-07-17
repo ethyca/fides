@@ -139,7 +139,10 @@
         "id": 3,
         "name": "Identify devices based on information transmitted automatically",
         "description": "Your device might be distinguished from other devices based on information it automatically sends when accessing the Internet (for instance, the IP address of your Internet connection or the type of browser you are using) in support of the purposes exposed in this notice.",
-        "illustrations": []
+        "illustrations": [
+          "Example illustration: your browser's IP address and user-agent string are read to distinguish your device."
+        ],
+        "standardTexts": "We and our technology partners may identify your device based on information it transmits automatically in support of the purposes explained in this notice."
       }
     },
     "specialFeatures": {

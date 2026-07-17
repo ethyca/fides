@@ -370,6 +370,10 @@ describe("i18n-utils", () => {
           // Example feature
           "exp.tcf.features.3.name": /^Identify devices based on information/,
           "exp.tcf.features.3.description": /^Your device might be /,
+          // Feature illustrations & standard-explanation text (GVL spec v4)
+          "exp.tcf.features.3.illustrations.0": /^Example illustration/,
+          "exp.tcf.features.3.standard_texts":
+            /^We and our technology partners/,
           // Example special feature
           "exp.tcf.specialFeatures.1.name": /^Use precise geolocation data/,
           "exp.tcf.specialFeatures.1.description": /^With your acceptance/,

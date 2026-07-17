@@ -98,6 +98,12 @@ export type TCFFeatureRecord = {
   id: number;
   name: string;
   description: string;
+  // Optional, introduced with IAB TCF Policy v5.0.b / GVL specification version
+  // 4. Features can now carry "illustrations" (mirroring purposes) and a
+  // standard feature-explanation text. These are optional and render-if-present
+  // so older GVL specification versions (which omit them) remain unaffected.
+  illustrations?: Array<string>;
+  standard_texts?: string;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };
@@ -112,6 +118,11 @@ export type TCFSpecialFeatureRecord = {
   id: number;
   name: string;
   description: string;
+  // Optional, introduced with IAB TCF Policy v5.0.b / GVL specification version
+  // 4. See TCFFeatureRecord above for details. Render-if-present and safe to
+  // omit for older GVL specification versions.
+  illustrations?: Array<string>;
+  standard_texts?: string;
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference; // NOTE: added on the client-side
   vendors?: Array<EmbeddedVendor>;

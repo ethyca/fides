@@ -205,6 +205,13 @@ function extractMessagesFromGVLTranslations(
               messages[`${prefix}.illustrations.${i}`] = illustration;
             });
           }
+          // Introduced with IAB TCF Policy v5.0.b / GVL specification version 4:
+          // Features (and special features) may carry a standard
+          // feature-explanation text. Guarded so absent fields are a no-op for
+          // older GVL specification versions.
+          if (record.standardTexts) {
+            messages[`${prefix}.standard_texts`] = record.standardTexts;
+          }
         });
       });
 

@@ -1,5 +1,6 @@
 import { PrivacyExperience } from "../../lib/consent-types";
 import { FidesEventDetailsPreference } from "../../lib/events";
+import { messageExists } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import {
   EnabledIds,
@@ -15,15 +16,31 @@ const FeatureChildren = ({
   feature,
 }: {
   type: RecordListType;
-  feature: TCFFeatureRecord;
+  feature: TCFFeatureRecord | TCFSpecialFeatureRecord;
 }) => {
   const { i18n } = useI18n();
   const vendors = [...(feature.vendors || []), ...(feature.systems || [])];
+  // The standard feature-explanation text and illustrations were introduced
+  // with IAB TCF Policy v5.0.b / GVL specification version 4. They are rendered
+  // only when present, mirroring how purpose illustrations are handled, so
+  // older GVL specification versions render exactly as before.
+  const standardTextKey = `exp.tcf.${type}.${feature.id}.standard_texts`;
   return (
     <div>
       <p className="fides-tcf-toggle-content">
         {i18n.t(`exp.tcf.${type}.${feature.id}.description`)}
       </p>
+      {(feature.illustrations || []).map((illustration, i) => (
+        <p
+          key={illustration}
+          className="fides-tcf-illustration fides-background-dark"
+        >
+          {i18n.t(`exp.tcf.${type}.${feature.id}.illustrations.${i}`)}
+        </p>
+      ))}
+      {messageExists(i18n, standardTextKey) && (
+        <p className="fides-tcf-toggle-content">{i18n.t(standardTextKey)}</p>
+      )}
       <EmbeddedVendorList vendors={vendors} />
     </div>
   );
