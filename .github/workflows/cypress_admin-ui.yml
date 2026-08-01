@@ -108,7 +108,7 @@ jobs:
 
       - name: Cache node_modules and Cypress binary
         id: deps-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             clients/node_modules
@@ -162,7 +162,7 @@ jobs:
           node-version: 24.x
 
       - name: Restore node_modules and Cypress binary
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: |
             clients/node_modules

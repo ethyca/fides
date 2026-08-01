@@ -88,7 +88,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -200,7 +200,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -261,7 +261,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -321,7 +321,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -443,7 +443,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -517,7 +517,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-pytest_redis_cluster_docker-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -575,7 +575,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -650,7 +650,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
@@ -771,7 +771,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
